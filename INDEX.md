@@ -84,6 +84,13 @@ Baca ikut **urutan kronologi** untuk pengalaman narrative arc yang lengkap:
 **Arc:** Energy Asia RM100M vs Putra Heights RM65.4M rebuild. Cancel Raya tapi proceed party.  
 **Key Evidence:** Cost comparison, TT Energy Asia promotion vs victim trauma.
 
+### 9. [Jilid 4] Pemimpin Tak Dak Amanah: Saja Nak Perang Lama-Lama
+**File:** `2026-03-01_09_Pemimpin_Tak_Dak_Amanah_Jilid_4.md`  
+**Tarikh Kejadian:** Feb 2026 (The Edge report)  
+**Mode:** F11/F5/F1 Crisis Prolongation  
+**Arc:** Netanyahu-TT analogy. "Waves" March-July-August as perpetual power tool. 18-month torture vs 2016's 3-month VSS.  
+**Key Evidence:** The Edge Feb 2026 report, 18-month timeline, "waves" structure vs decisive action.
+
 ---
 
 ## 📊 **PETA PERLEMBAGAAN (arifOS Floors)**
@@ -98,6 +105,7 @@ Baca ikut **urutan kronologi** untuk pengalaman narrative arc yang lengkap:
 | 6. Bon Raksasa (J2) | ⭐ | | ⭐ | | | ⭐ | |
 | 7. Asap Putra (J1) | ⭐ | ⭐ | ⭐ | | | | |
 | 8. Teater Hijau (J3) | ⭐ | | | ⭐ | ⭐ | | |
+| 9. Pemimpin Tak Dak Amanah (J4) | ⭐ | | | ⭐ | ⭐ | ⭐ | |
 
 **Legend:** ⭐ = Primary Floor | ✓ = Secondary Floor
 
@@ -130,4 +138,4 @@ Gunakan **Fasa 3 (Trilogi)** untuk public campaign materials.
 **Ditempa Bukan Diberi — besi dah sejuk, retak, dan kini menjadi pedang.** ⚔️🔥
 
 *Last Updated: 1 Mac 2026*  
-*Version: 1.0 (Trilogy Complete)*
+*Version: 1.1 (Jilid 4 Added - Perpetual Crisis Pattern)*
