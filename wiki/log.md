@@ -4,6 +4,13 @@
 
 ---
 
+## [2026-04-13] cosmology | AGI·arifOS·GEOX·WEALTH doctrine committed
+- Wrote `COSMOLOGY.md` at repo root — active doctrine for the four-layer stack.
+- Defined the closed-loop civilization engine and the framework→standard→protocol execution path.
+- Added wiki pages: `cosmology.md`, `source-cosmology.md`.
+- Updated wiki index and log.
+- Emphasized Phase A non-negotiability: one working node with real capital advantage.
+
 ## [2026-04-13] build | Layer 1 Kernel + capitalx implementation
 - Forged runnable Node.js 22 ESM kernel under `src/`.
 - Ported canonical CJS logic from `kernel/` and `wealth/` to unified ESM.
