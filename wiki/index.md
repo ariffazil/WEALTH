@@ -24,6 +24,12 @@ tags: [index, meta, wealth, arifos]
 | [[synthesis-foundations-of-wealth]] | The five pillars of wealth in the arifOS frame: cooling prosperity, stewardship logic, thermodynamic ethics, proxy efficiency, and contextual vitality. |
 | [[cosmology]] | The AGI·arifOS·GEOX·WEALTH closed-loop civilization engine. Protocol intent with framework execution discipline. |
 
+## Civilizational Intelligence
+
+| Page | Summary |
+|------|---------|
+| [[civilizational-mcp-architecture]] | **Civilizational-Level MCP Apps Architecture**: Scaling constitutional governance (F1-F13) from individual wealth to planetary prosperity across six key domains. |
+
 ## Architecture & Roadmap
 
 | Page | Summary |
@@ -73,4 +79,4 @@ tags: [index, meta, wealth, arifos]
 
 ---
 
-*Last updated: 2026-04-13 | Total pages: 26*
+*Last updated: 2026-04-14 | Total pages: 27*

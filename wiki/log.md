@@ -4,6 +4,16 @@
 
 ---
 
+## [2026-04-14] civilization | Civilizational-Level MCP Apps Architecture forged
+- Expanded WEALTH from personal finance to civilizational-level intelligence.
+- Implemented `domains/` structure for Markets, Energy, Food, Water, Climate, and Supply Chains.
+- Created `civilizational/` engine: Prosperity Index (Global Maruah), Boundary Monitor, and Cascade Detector.
+- Forged `mcp/server.py` — Python-based FastMCP server with civilizational tools and resources.
+- Created MCP app manifests for WEALTH-Markets, WEALTH-Energy, and WEALTH-Food.
+- Added `datasources/` documentation for global data integration (Yahoo Finance, World Bank, FAO, etc.).
+- Created wiki page `civilizational-mcp-architecture.md` documenting the transformation.
+- This is the transition from individual wealth to collective prosperity governance — F1-F13 scaled to the planetary level.
+
 ## [2026-04-13] canon | Knowledge Spine forged — 11 canonical artifacts
 - Created `canon/` directory with the 7 core + 4 optional canonical artifacts.
 - Each core artifact follows the strict 5-section structure: Definition, Variables, Invariants, State Transitions, Failure Modes.
