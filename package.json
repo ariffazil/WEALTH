@@ -11,7 +11,8 @@
     "boot": "node cli.js boot",
     "check": "node cli.js check",
     "seal": "node cli.js seal",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "mcp": "node mcp/server.js"
   },
   "engines": {
     "node": ">=22.0.0"
@@ -22,8 +23,13 @@
     "governance",
     "capital",
     "post-agi",
-    "constitutional"
+    "constitutional",
+    "mcp"
   ],
   "author": "Muhammad Arif bin Fazil",
-  "license": "AGPL-3.0"
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.9.0",
+    "zod": "^3.25.0"
+  }
 }

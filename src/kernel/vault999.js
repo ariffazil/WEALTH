@@ -1,6 +1,6 @@
 /**
  * WEALTH by arifOS — VAULT999 Append-Only Ledger
- *
+ * 
  * Every decision path is immutable. No mutation. No deletion.
  * DITEMPA BUKAN DIBERI — 999 SEAL ALIVE
  */

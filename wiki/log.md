@@ -4,6 +4,14 @@
 
 ---
 
+## [2026-04-13] mcp | WEALTH MCP Server packaged and validated
+- Built `mcp/server.js` — stdio MCP server with 9 tools + 3 resources.
+- Added `@modelcontextprotocol/sdk` and `zod` to `package.json`.
+- Validated server initializes and responds to MCP protocol correctly.
+- Created `mcp/README.md` with integration guide (Claude Desktop, Cursor, etc.).
+- Created wiki page `mcp-server-packaging.md` documenting the bridge to capital-aware ecosystem.
+- This is the callable surface that enables Phase A: external agents querying WEALTH for real capital advantage.
+
 ## [2026-04-13] cosmology | AGI·arifOS·GEOX·WEALTH doctrine committed
 - Wrote `COSMOLOGY.md` at repo root — active doctrine for the four-layer stack.
 - Defined the closed-loop civilization engine and the framework→standard→protocol execution path.

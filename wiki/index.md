@@ -23,6 +23,7 @@ tags: [index, meta, wealth, arifos]
 | Page | Summary |
 |------|---------|
 | [[layered-architecture]] | The 5-layer operational stack: Kernel → Domain → Governance → Federation → GEOX → capitalx. |
+| [[mcp-server-packaging]] | MCP stdio server exposing WEALTH primitives to external agents (Claude, lenders, insurance bots). |
 
 ## Concept Pages
 
@@ -66,4 +67,4 @@ tags: [index, meta, wealth, arifos]
 
 ---
 
-*Last updated: 2026-04-13 | Total pages: 24*
+*Last updated: 2026-04-13 | Total pages: 25*
