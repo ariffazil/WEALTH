@@ -1,0 +1,13 @@
+[project]
+name = "wealth-mcp"
+version = "0.1.0"
+description = "WEALTH Sovereign Governance FastMCP Server"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp>=0.4.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

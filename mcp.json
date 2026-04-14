@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "wealth": {
+      "command": "python",
+      "args": ["server.py"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}

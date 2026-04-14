@@ -12,7 +12,8 @@
     "check": "node cli.js check",
     "seal": "node cli.js seal",
     "test": "node --test tests/*.test.js",
-    "mcp": "node mcp/server.js"
+    "mcp": "node mcp/server.js",
+    "fastmcp": "python server.py"
   },
   "engines": {
     "node": ">=22.0.0"
