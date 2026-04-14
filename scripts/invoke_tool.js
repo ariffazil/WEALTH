@@ -129,6 +129,44 @@ const tools = {
     if (sign_changes > 1) warnings.push("Non-normal cash flows: Multiple IRRs possible.");
     if (initial_investment <= 0) warnings.push("Zero or negative initial investment detected.");
     return { sign_changes, potential_issues: warnings, audit_verdict: warnings.length === 0 ? "PASS" : "WARN", epistemic: "CLAIM" };
+  },
+
+  "capital.dscr": (a) => {
+    const { ebitda, principal, interest } = a;
+    const dscr = ebitda / (principal + interest);
+    return {
+      dscr: Number(dscr.toFixed(2)),
+      verdict: dscr >= 1.2 ? "SAFE" : "RISK",
+      epistemic: "CLAIM"
+    };
+  },
+
+  "capital.terminal": (a) => {
+    const { final_cash_flow, growth_rate, wacc, method = "gordon_growth", exit_multiple = 0 } = a;
+    let terminal_value = 0;
+    if (method === "gordon_growth") {
+      terminal_value = (final_cash_flow * (1 + growth_rate)) / (wacc - growth_rate);
+    } else if (method === "exit_multiple") {
+      terminal_value = final_cash_flow * exit_multiple;
+    }
+    return {
+      terminal_value: Number(terminal_value.toFixed(2)),
+      method,
+      epistemic: "CLAIM"
+    };
+  },
+
+  "capital.sensitivity": (a) => {
+    const { initial_investment, cash_flows, discount_rate, variations = [0.9, 1.0, 1.1] } = a;
+    const results = variations.map(v => {
+      const adj_dr = discount_rate * v;
+      let npv = -initial_investment;
+      for (let t = 0; t < cash_flows.length; t++) {
+        npv += cash_flows[t] / Math.pow(1 + adj_dr, t + 1);
+      }
+      return { variation: v, discount_rate: adj_dr, npv: Number(npv.toFixed(2)) };
+    });
+    return { sensitivity_table: results, epistemic: "CLAIM" };
   }
 };
 

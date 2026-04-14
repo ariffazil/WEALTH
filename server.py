@@ -121,6 +121,24 @@ def capital_audit(initial_investment: float, cash_flows: List[float]) -> Any:
     args = {"initial_investment": initial_investment, "cash_flows": cash_flows}
     return invoke_node_tool("capital.audit", args)
 
+@mcp.tool(name="wealth.capital.dscr")
+def capital_dscr(ebitda: float, principal: float, interest: float) -> Any:
+    """Compute Debt Service Coverage Ratio (DSCR). Safety/Lending indicator."""
+    args = {"ebitda": ebitda, "principal": principal, "interest": interest}
+    return invoke_node_tool("capital.dscr", args)
+
+@mcp.tool(name="wealth.capital.terminal")
+def capital_terminal(final_cash_flow: float, growth_rate: float, wacc: float, method: str = "gordon_growth", exit_multiple: float = 0) -> Any:
+    """Compute Terminal Value (Gordon Growth or Exit Multiple)."""
+    args = {"final_cash_flow": final_cash_flow, "growth_rate": growth_rate, "wacc": wacc, "method": method, "exit_multiple": exit_multiple}
+    return invoke_node_tool("capital.terminal", args)
+
+@mcp.tool(name="wealth.capital.sensitivity")
+def capital_sensitivity(initial_investment: float, cash_flows: List[float], discount_rate: float, variations: List[float] = [0.9, 1.0, 1.1]) -> Any:
+    """Run sensitivity analysis on NPV by varying the discount rate."""
+    args = {"initial_investment": initial_investment, "cash_flows": cash_flows, "discount_rate": discount_rate, "variations": variations}
+    return invoke_node_tool("capital.sensitivity", args)
+
 # --- Resources ---
 
 @mcp.resource("wealth://valuation/kernel")
