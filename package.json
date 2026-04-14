@@ -12,7 +12,7 @@
     "check": "node cli.js check",
     "seal": "node cli.js seal",
     "test": "node --test tests/*.test.js",
-    "mcp": "node mcp/server.js",
+    "mcp": "python server.py",
     "fastmcp": "python server.py"
   },
   "engines": {

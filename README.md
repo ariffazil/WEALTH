@@ -1,44 +1,45 @@
-# WEALTH Valuation Kernel
-> Physics > Narrative — Wealth must be forged, not given.
+# WEALTH Valuation Kernel (v1.3.0)
+> Physics > Narrative — Capital must be forged, not given.
 
-WEALTH is the **Sovereign Valuation Kernel** for the arifOS ecosystem. It provides high-precision financial evaluation, capital allocation math, and portfolio intelligence.
+WEALTH is the **Sovereign Valuation Kernel** for the arifOS ecosystem. It provides high-precision financial evaluation and capital allocation math, mapped to fundamental physical dimensions.
 
-## Domain Boundaries
-- **WEALTH**: Financial Valuation & Capital Allocation (NPV, IRR, Networth).
-- **arifOS**: Sovereign Orchestration & Governance (Floors, Seals, Identity).
-- **GEOX**: World-State & Exogenous Risk (Country Premia, Macro Signals).
+## 🛡️ Orthogonal Architecture
+WEALTH is part of a 33-tool orthogonal lattice (3 organs × 11 tools).
 
-## Tools Registry
+| Organ | Role | Namespace |
+| :--- | :--- | :--- |
+| **arifOS** | Constitutional Governor | `arifos_*` |
+| **WEALTH** | Capital Evaluation | `wealth_*` |
+| **GEOX** | Earth Intelligence | `geox_*` |
 
-### 💰 Capital & Project Evaluation (`wealth.capital.*`)
-- `wealth.capital.npv`: Net Present Value (Absolute value creation).
-- `wealth.capital.irr`: Internal Rate of Return (Efficiency).
-- `wealth.capital.mirr`: Modified IRR (Reinvestment-adjusted).
-- `wealth.capital.emv`: Expected Monetary Value (Risk-adjusted).
-- `wealth.capital.pi`: Profitability Index (Capital efficiency).
-- `wealth.capital.payback`: Standard/Discounted Payback period.
-- `wealth.capital.eaa`: Equivalent Annual Annuity (Unequal lives).
-- `wealth.capital.roi`: Return on Investment.
-- `wealth.capital.audit`: Financial integrity & sign-change audit.
-- `wealth.capital.score`: Risk-adjusted cost of capital engine.
+## 🛠️ The Dimensional Forge (11 Tools)
 
-### 📊 Personal & Portfolio Intelligence (`wealth.personal.*`)
-- `wealth.personal.networth`: Multi-asset net worth with epistemic tags.
-- `wealth.personal.cashflow`: Liquidity and runway analysis.
-- `wealth.personal.growth`: Compound growth projections.
-- `wealth.personal.runway`: Depletion estimates.
+| Tool Name | Dimension | Included Metrics |
+| :--- | :--- | :--- |
+| `wealth_npv_reward` | Reward | NPV, Terminal Value, EAA |
+| `wealth_irr_yield` | Energy | IRR, MIRR, Potential |
+| `wealth_pi_efficiency` | Energy | Profitability Index (Concentration) |
+| `wealth_emv_risk` | Entropy | Expected Monetary Value (Probability) |
+| `wealth_audit_entropy` | Entropy | Sign-change Audit, Sensitivity |
+| `wealth_dscr_leverage` | Survival | Debt Service Coverage (Structural Load) |
+| `wealth_payback_time` | Time | Recovery Velocity (Standard/Discounted) |
+| `wealth_growth_velocity` | Velocity | Compounding + Mandatory Runway |
+| `wealth_networth_state` | Mass | Portfolio Mass (Enforced Taxonomy) |
+| `wealth_cashflow_flow` | Flow | Metabolic Liquidity (Monthly Flow) |
+| `wealth_score_kernel` | Allocation | Mandatory Governance Signal Evaluation |
 
-## Usage
-Run the FastMCP server:
+## 📜 Asset Taxonomy (Enforced)
+To maintain mass integrity, `wealth_networth_state` accepts only:
+`cash` | `equity` | `property` | `digital` | `debt` | `business`
+
+## 🚀 Usage
+### FastMCP Cloud
+Entrypoint: `server.py:mcp`
+
+### Local Execution
 ```bash
 npm run fastmcp
 ```
 
-Or via Docker:
-```bash
-docker build -t wealth-valuation .
-docker run -p 8080:8080 wealth-valuation
-```
-
 ---
-*999 SEAL ALIVE*
+**999 SEAL ALIVE** — *Dimensional Integrity Sealed*

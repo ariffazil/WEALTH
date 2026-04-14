@@ -1,4 +1,10 @@
 export function calculateRiskAdjustedRate(base_rate, signals, opts = {}) {
+  const flags = [];
+
+  if (!Number.isFinite(base_rate) || base_rate < 0) {
+    flags.push("INVALID_BASE_RATE");
+  }
+
   let deltaCiv = signals.deltaCiv ?? 0;
   const wealth_basis = opts.wealth_basis ?? signals.wealth_basis ?? null;
   const defects = opts.defects ?? signals.defects ?? null;
@@ -31,8 +37,20 @@ export function calculateRiskAdjustedRate(base_rate, signals, opts = {}) {
 
   const r_adj = Math.max(0, Number(raw_r_adj.toFixed(6)));
   const clamped = r_adj !== Number(raw_r_adj.toFixed(6));
+  if ((signals.dS ?? 0) > 0.3) flags.push("HIGH_ENTROPY_SIGNAL");
+  if ((signals.maruahScore ?? 0.5) < 0.6) flags.push("SOVEREIGN_DIGNITY_LOW");
+  if (clamped) flags.push("RATE_CLAMP_TRIGGERED");
+
+  const shadow = defects?.shadow ?? 0;
+  const uncertaintyRadius = Number((0.01 + shadow * 0.05 + (signals.dS ?? 0) * 0.02).toFixed(6));
+  const uncertainty_band = [
+    Math.max(0, Number((r_adj - uncertaintyRadius).toFixed(6))),
+    Number((r_adj + uncertaintyRadius).toFixed(6)),
+  ];
 
   return {
+    base_rate: Number(base_rate.toFixed(6)),
+    adjusted_rate: r_adj,
     r_adj,
     adjustments: {
       entropy_penalty: Number(entropyPenalty.toFixed(6)),
@@ -42,8 +60,13 @@ export function calculateRiskAdjustedRate(base_rate, signals, opts = {}) {
       civ_discount: Number(civDiscount.toFixed(6)),
     },
     anomaly: clamped ? "RATE_CLAMP_TRIGGERED" : undefined,
-    uncertainty_band: [0.03, 0.09],
+    integrity_flags: flags,
+    uncertainty_band,
     epistemic: "ESTIMATE",
+    assumptions: [
+      "CapitalX pricing is an estimate layered on top of the base rate.",
+      "If entropy or shadow rises, r_adj must not decrease.",
+    ],
     vault_log_entry: { tool: "wealth_price_capitalx", epoch: new Date().toISOString() },
     witness: { human: false, ai: true, earth: true },
   };
@@ -54,9 +77,14 @@ export function compareCapitalAdvantage(base_rate, wealth_signals, extractive_si
   const extractive = calculateRiskAdjustedRate(base_rate, extractive_signals);
   const advantage_bps = Math.round((extractive.r_adj - wealth.r_adj) * 10000);
   return {
+    base_rate: Number(base_rate.toFixed(6)),
     wealth_r_adj: wealth.r_adj,
     extractive_r_adj: extractive.r_adj,
     advantage_bps,
+    integrity_flags: [
+      ...(wealth.integrity_flags ?? []),
+      ...(extractive.integrity_flags ?? []),
+    ],
     epistemic: "ESTIMATE",
     vault_log_entry: { tool: "wealth_capitalx_compare", epoch: new Date().toISOString() },
     witness: { human: false, ai: true, earth: true },

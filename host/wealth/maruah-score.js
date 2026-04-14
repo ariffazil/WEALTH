@@ -28,6 +28,8 @@ export function computeMaruahScore(dimensions = {}) {
   return {
     maruah_score: Number(score.toFixed(2)),
     maruah_band: band,
+    below_floor: score < 0.6,
+    hold_triggered: score < 0.6,
     dimensions: { financial_integrity, sovereignty, debt_dignity, amanah_index, community_contribution },
     epistemic: "ESTIMATE",
     vault_log_entry: { tool: "wealth_compute_maruah", epoch: new Date().toISOString() },
