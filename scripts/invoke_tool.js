@@ -61,6 +61,7 @@ const tools = {
         pv_outflows: measurement.pv_outflows,
         period_count: measurement.period_count,
         period_unit: measurement.period_unit,
+        confidence_band: measurement.confidence_band,
       },
       measurement.flags,
       { assumptions: measurement.assumptions },
@@ -154,7 +155,7 @@ const tools = {
       "wealth_dscr_leverage",
       "Survival",
       { dscr: measurement.dscr },
-      { basis: measurement.basis, period_unit: measurement.period_unit },
+      { basis: measurement.basis, period_unit: measurement.period_unit, confidence_band: measurement.confidence_band },
       measurement.flags,
       { assumptions: measurement.assumptions },
     );

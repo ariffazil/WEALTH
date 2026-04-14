@@ -1,7 +1,8 @@
 [project]
 name = "wealth-valuation-kernel"
 version = "1.3.0"
-description = "WEALTH Sovereign Valuation Kernel - 11 Dimensional tools for arifOS"
+version = "1.3.1"
+description = "WEALTH Sovereign Valuation Kernel - hardened MCP finance kernel for arifOS"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

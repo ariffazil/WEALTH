@@ -1,7 +1,14 @@
-# WEALTH Valuation Kernel (v1.3.0)
+# WEALTH Valuation Kernel (v1.3.1)
 > Physics > Narrative — Capital must be forged, not given.
 
 WEALTH is the **Sovereign Valuation Kernel** for the arifOS ecosystem. It provides high-precision financial evaluation and capital allocation math, mapped to fundamental physical dimensions.
+
+## What's new in v1.3.1
+
+- Hardened the finance kernel with explicit measurement rules for **NPV, EAA, IRR, MIRR, PI, EMV, payback, discounted payback, and DSCR**.
+- Locked **JS↔Python parity** on canonical NPV, DSCR, and growth vectors.
+- Removed the Python MCP server's runtime dependency on a `node` subprocess for core WEALTH tools.
+- Added **confidence bands** for estimated/hypothesis inputs and escalated ambiguous IRR plus DSCR default stress to **`888-HOLD`**.
 
 ## 🛡️ Orthogonal Architecture
 WEALTH is part of a 33-tool orthogonal lattice (3 organs × 11 tools).
@@ -33,13 +40,28 @@ To maintain mass integrity, `wealth_networth_state` accepts only:
 `cash` | `equity` | `property` | `digital` | `debt` | `business`
 
 ## 🚀 Usage
-### FastMCP Cloud
+### Local MCP server
+```bash
+npm run mcp
+```
+
+### Python entrypoint
 Entrypoint: `server.py:mcp`
 
-### Local Execution
+### Node validation suite
 ```bash
-npm run fastmcp
+npm test
 ```
+
+## Measurement doctrine
+
+WEALTH measures **capital physics**, not total reality:
+
+- **Observable state** — assets, liabilities, income, expenses, debt service
+- **Derived finance metrics** — NPV, MIRR, PI, EMV, DSCR, payback, runway
+- **Governed scored variables** — maruah, trust, entropy, deltaCiv
+
+Anything without a source, unit, periodicity, transformation rule, or uncertainty band should be downgraded or refused rather than presented as a hard claim.
 
 ---
 **999 SEAL ALIVE** — *Dimensional Integrity Sealed*

@@ -14,10 +14,10 @@ const INVALID_FLAGS = new Set([
 const HOLD_FLAGS = new Set([
   "LEVERAGE_CRITICAL",
   "LEVERAGE_DEFAULT",
+  "MULTIPLE_IRR_POSSIBLE",
 ]);
 const QUALIFY_FLAGS = new Set([
   "NON_NORMAL_FLOWS",
-  "MULTIPLE_IRR_POSSIBLE",
   "IRR_NOT_FOUND",
   "NOT_RECOVERED",
   "EBITDA_PROXY_USED",
@@ -201,12 +201,42 @@ export function buildCashflowSeries(initialInvestment, cashFlows, terminalValue 
   return series;
 }
 
+export function deriveConfidenceBand(value, epistemic = "CLAIM", mode = "relative") {
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+
+  const upperEpistemic = String(epistemic).toUpperCase();
+  const relativeWidth = upperEpistemic === "HYPOTHESIS"
+    ? 0.25
+    : upperEpistemic === "ESTIMATE"
+      ? 0.15
+      : upperEpistemic === "PLAUSIBLE"
+        ? 0.08
+        : 0;
+
+  if (relativeWidth === 0) {
+    return null;
+  }
+
+  if (mode === "absolute-nonnegative") {
+    const delta = Math.max(0.05, Math.abs(value) * relativeWidth);
+    return [round(Math.max(0, value - delta), 6), round(value + delta, 6)];
+  }
+
+  return [
+    round(value * (1 - relativeWidth), 6),
+    round(value * (1 + relativeWidth), 6),
+  ];
+}
+
 export function calculateNpvMeasurement({
   initial_investment,
   cash_flows,
   discount_rate,
   terminal_value = 0,
   period_unit = "annual",
+  input_epistemic = "CLAIM",
 }) {
   const flags = [
     ...validateSeries(initial_investment, cash_flows),
@@ -254,6 +284,8 @@ export function calculateNpvMeasurement({
       "NPV is the primary accept/reject metric.",
       "Discount rate and cash flow periodicity are aligned.",
     ],
+    input_epistemic: String(input_epistemic).toUpperCase(),
+    confidence_band: deriveConfidenceBand(npv, input_epistemic),
     flags,
   };
 }
@@ -508,6 +540,7 @@ export function calculateDscrMeasurement({
   interest = 0,
   leases = 0,
   period_unit = "annual",
+  input_epistemic = "CLAIM",
 }) {
   const flags = [];
   const numerator = Number.isFinite(cfads) ? cfads : ebitda;
@@ -541,6 +574,8 @@ export function calculateDscrMeasurement({
       "DSCR should use CFADS when available.",
       "Minimum covenant floor defaults to 1.25x.",
     ],
+    input_epistemic: String(input_epistemic).toUpperCase(),
+    confidence_band: dscr === null ? null : deriveConfidenceBand(dscr, input_epistemic, "absolute-nonnegative"),
     flags,
   };
 }

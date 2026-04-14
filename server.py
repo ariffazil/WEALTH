@@ -3,7 +3,31 @@ import math
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from fastmcp import FastMCP
+__version__ = "1.3.1"
+"""WEALTH v1.3.1 - native Python MCP surface for the hardened finance kernel."""
+
+try:
+    from fastmcp import FastMCP
+    FASTMCP_AVAILABLE = True
+except ImportError:
+    FASTMCP_AVAILABLE = False
+
+    class FastMCP:  # type: ignore[override]
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def tool(self, name: Optional[str] = None):
+            def decorator(func):
+                return func
+            return decorator
+
+        def resource(self, _uri: str):
+            def decorator(func):
+                return func
+            return decorator
+
+        def run(self):
+            raise RuntimeError("fastmcp is not installed; import and call the WEALTH functions directly or install FastMCP to serve MCP.")
 
 mcp = FastMCP("WEALTH Valuation Kernel")
 
@@ -22,7 +46,8 @@ INVALID_FLAGS = {
     "INVALID_BASE_RATE",
 }
 HOLD_FLAGS = {"LEVERAGE_CRITICAL", "LEVERAGE_DEFAULT", "SOVEREIGN_DIGNITY_LOW"}
-QUALIFY_FLAGS = {"NON_NORMAL_FLOWS", "MULTIPLE_IRR_POSSIBLE", "IRR_NOT_FOUND", "NOT_RECOVERED", "EBITDA_PROXY_USED"}
+HOLD_FLAGS.add("MULTIPLE_IRR_POSSIBLE")
+QUALIFY_FLAGS = {"NON_NORMAL_FLOWS", "IRR_NOT_FOUND", "NOT_RECOVERED", "EBITDA_PROXY_USED"}
 EPISTEMIC_ORDER = ["UNKNOWN", "HYPOTHESIS", "ESTIMATE", "PLAUSIBLE", "CLAIM"]
 RELIABILITY_TO_TAG = {
     "guaranteed": "CLAIM",
@@ -56,6 +81,19 @@ def build_cashflow_series(initial_investment: float, cash_flows: List[float], te
     if terminal_value and len(series) > 1:
         series[-1] += terminal_value
     return series
+
+
+def derive_confidence_band(value: Optional[float], epistemic: str = "CLAIM", mode: str = "relative") -> Optional[List[float]]:
+    if value is None or not math.isfinite(value):
+        return None
+    upper_epistemic = str(epistemic).upper()
+    relative_width = 0.25 if upper_epistemic == "HYPOTHESIS" else 0.15 if upper_epistemic == "ESTIMATE" else 0.08 if upper_epistemic == "PLAUSIBLE" else 0
+    if relative_width == 0:
+        return None
+    if mode == "absolute-nonnegative":
+        delta = max(0.05, abs(value) * relative_width)
+        return [round_value(max(0.0, value - delta), 6), round_value(value + delta, 6)]
+    return [round_value(value * (1 - relative_width), 6), round_value(value * (1 + relative_width), 6)]
 
 
 def npv_from_series(cashflow_series: List[float], discount_rate: float) -> float:
@@ -165,7 +203,7 @@ def create_envelope(
     }
 
 
-def measurement_npv(initial_investment: float, cash_flows: List[float], discount_rate: float, terminal_value: float = 0, period_unit: str = "annual") -> Dict[str, Any]:
+def measurement_npv(initial_investment: float, cash_flows: List[float], discount_rate: float, terminal_value: float = 0, period_unit: str = "annual", input_epistemic: str = "CLAIM") -> Dict[str, Any]:
     flags = [*validate_series(initial_investment, cash_flows), *validate_rate(discount_rate, "INVALID_DISCOUNT_RATE")]
     assumptions = [
         "NPV is the primary accept/reject metric.",
@@ -203,6 +241,8 @@ def measurement_npv(initial_investment: float, cash_flows: List[float], discount
         "period_count": periods,
         "period_unit": period_unit,
         "assumptions": assumptions,
+        "input_epistemic": str(input_epistemic).upper(),
+        "confidence_band": derive_confidence_band(npv, input_epistemic),
         "flags": flags,
     }
 
@@ -413,7 +453,7 @@ def measurement_payback(initial_investment: float, cash_flows: List[float], disc
     }
 
 
-def measurement_dscr(cfads: Optional[float], debt_service: Optional[float], ebitda: Optional[float], principal: float = 0, interest: float = 0, leases: float = 0, period_unit: str = "annual") -> Dict[str, Any]:
+def measurement_dscr(cfads: Optional[float], debt_service: Optional[float], ebitda: Optional[float], principal: float = 0, interest: float = 0, leases: float = 0, period_unit: str = "annual", input_epistemic: str = "CLAIM") -> Dict[str, Any]:
     flags: List[str] = []
     numerator = cfads if cfads is not None else ebitda
     denominator = debt_service if debt_service is not None else principal + interest + leases
@@ -437,6 +477,8 @@ def measurement_dscr(cfads: Optional[float], debt_service: Optional[float], ebit
             "DSCR should use CFADS when available.",
             "Minimum covenant floor defaults to 1.25x.",
         ],
+        "input_epistemic": str(input_epistemic).upper(),
+        "confidence_band": None if dscr is None else derive_confidence_band(dscr, input_epistemic, "absolute-nonnegative"),
         "flags": flags,
     }
 
@@ -486,9 +528,9 @@ def capitalx(base_rate: float, signals: Dict[str, float]) -> Dict[str, Any]:
 
 
 @mcp.tool(name="wealth_npv_reward")
-def npv_reward(initial_investment: float, cash_flows: List[float], discount_rate: float, terminal_value: float = 0, period_unit: str = "annual") -> Any:
+def npv_reward(initial_investment: float, cash_flows: List[float], discount_rate: float, terminal_value: float = 0, period_unit: str = "annual", input_epistemic: str = "CLAIM") -> Any:
     """Compute NPV, Terminal Value, and EAA. [Reward Dimension]"""
-    measurement = measurement_npv(initial_investment, cash_flows, discount_rate, terminal_value, period_unit)
+    measurement = measurement_npv(initial_investment, cash_flows, discount_rate, terminal_value, period_unit, input_epistemic)
     return create_envelope(
         "wealth_npv_reward",
         "Reward",
@@ -499,6 +541,7 @@ def npv_reward(initial_investment: float, cash_flows: List[float], discount_rate
             "pv_outflows": measurement["pv_outflows"],
             "period_count": measurement["period_count"],
             "period_unit": measurement["period_unit"],
+            "confidence_band": measurement["confidence_band"],
         },
         measurement["flags"],
         measurement["assumptions"],
@@ -581,14 +624,14 @@ def audit_entropy(initial_investment: float, cash_flows: List[float], discount_r
 
 
 @mcp.tool(name="wealth_dscr_leverage")
-def dscr_leverage(ebitda: Optional[float] = None, principal: float = 0, interest: float = 0, leases: float = 0, cfads: Optional[float] = None, debt_service: Optional[float] = None, period_unit: str = "annual") -> Any:
+def dscr_leverage(ebitda: Optional[float] = None, principal: float = 0, interest: float = 0, leases: float = 0, cfads: Optional[float] = None, debt_service: Optional[float] = None, period_unit: str = "annual", input_epistemic: str = "CLAIM") -> Any:
     """Compute Debt Service Coverage Ratio (Structural Load). [Survival Dimension]"""
-    measurement = measurement_dscr(cfads, debt_service, ebitda, principal, interest, leases, period_unit)
+    measurement = measurement_dscr(cfads, debt_service, ebitda, principal, interest, leases, period_unit, input_epistemic)
     return create_envelope(
         "wealth_dscr_leverage",
         "Survival",
         {"dscr": measurement["dscr"]},
-        {"basis": measurement["basis"], "period_unit": measurement["period_unit"]},
+        {"basis": measurement["basis"], "period_unit": measurement["period_unit"], "confidence_band": measurement["confidence_band"]},
         measurement["flags"],
         measurement["assumptions"],
     )
@@ -739,7 +782,7 @@ def get_valuation_doctrine() -> str:
             "F4: Leverage must never break the DSCR floor (1.25x).",
             "F5: Mandatory governance signals (dS, peace2, maruah) for SEAL."
         ],
-        "protocol": "Dimensional Forge v1.3.0"
+        "protocol": f"Dimensional Forge v{__version__}"
     }, indent=2)
 
 
