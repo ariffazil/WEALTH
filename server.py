@@ -104,6 +104,30 @@ def capital_payback(initial_investment: float, cash_flows: List[float], discount
     args = {"initial_investment": initial_investment, "cash_flows": cash_flows, "discounted": discounted, "discount_rate": discount_rate}
     return invoke_node_tool("capital_payback", args)
 
+@mcp.tool()
+def capital_mirr(initial_investment: float, cash_flows: List[float], finance_rate: float, reinvestment_rate: float) -> Any:
+    """Compute Modified Internal Rate of Return (MIRR). Fixes IRR reinvestment flaws."""
+    args = {"initial_investment": initial_investment, "cash_flows": cash_flows, "finance_rate": finance_rate, "reinvestment_rate": reinvestment_rate}
+    return invoke_node_tool("capital_mirr", args)
+
+@mcp.tool()
+def capital_roi(initial_investment: float, cash_flows: List[float]) -> Any:
+    """Compute Return on Investment (ROI). Basic gain-to-cost ratio."""
+    args = {"initial_investment": initial_investment, "cash_flows": cash_flows}
+    return invoke_node_tool("capital_roi", args)
+
+@mcp.tool()
+def capital_eaa(npv: float, discount_rate: float, years: int) -> Any:
+    """Compute Equivalent Annual Annuity (EAA). For comparing projects with unequal lives."""
+    args = {"npv": npv, "discount_rate": discount_rate, "years": years}
+    return invoke_node_tool("capital_eaa", args)
+
+@mcp.tool()
+def capital_audit(initial_investment: float, cash_flows: List[float]) -> Any:
+    """Audit project cash flows for non-normal patterns and potential IRR issues (F2 CLAIM)."""
+    args = {"initial_investment": initial_investment, "cash_flows": cash_flows}
+    return invoke_node_tool("capital_audit", args)
+
 # --- Resources ---
 
 @mcp.resource("wealth://governance/floors")

@@ -110,6 +110,68 @@ const tools = {
       payback_years: remaining === 0 ? Number(years.toFixed(2)) : Infinity,
       epistemic: "CLAIM"
     };
+  },
+
+  capital_mirr: (a) => {
+    const { initial_investment, cash_flows, finance_rate, reinvestment_rate } = a;
+    const n = cash_flows.length;
+    let fv_inflows = 0;
+    for (let t = 0; t < n; t++) {
+      if (cash_flows[t] > 0) {
+        fv_inflows += cash_flows[t] * Math.pow(1 + reinvestment_rate, n - (t + 1));
+      }
+    }
+    const mirr = Math.pow(fv_inflows / initial_investment, 1 / n) - 1;
+    return {
+      mirr: Number(mirr.toFixed(4)),
+      epistemic: "CLAIM",
+      timestamp: new Date().toISOString()
+    };
+  },
+
+  capital_roi: (a) => {
+    const { initial_investment, cash_flows } = a;
+    const total_return = cash_flows.reduce((acc, cf) => acc + cf, 0);
+    const roi = (total_return - initial_investment) / initial_investment;
+    return {
+      roi: Number(roi.toFixed(4)),
+      epistemic: "CLAIM"
+    };
+  },
+
+  capital_eaa: (a) => {
+    const { npv, discount_rate, years } = a;
+    const eaa = (npv * discount_rate) / (1 - Math.pow(1 + discount_rate, -years));
+    return {
+      eaa: Number(eaa.toFixed(2)),
+      epistemic: "CLAIM"
+    };
+  },
+
+  capital_audit: (a) => {
+    const { initial_investment, cash_flows } = a;
+    // Check for sign changes (Descartes' Rule of Signs for multiple IRRs)
+    let sign_changes = 0;
+    let current_sign = -1; // Initial investment is negative
+    for (const cf of cash_flows) {
+      if (cf !== 0) {
+        let sign = cf > 0 ? 1 : -1;
+        if (sign !== current_sign) {
+          sign_changes++;
+          current_sign = sign;
+        }
+      }
+    }
+    const warnings = [];
+    if (sign_changes > 1) warnings.push("Non-normal cash flows: Multiple IRRs possible.");
+    if (initial_investment <= 0) warnings.push("Zero or negative initial investment detected.");
+    
+    return {
+      sign_changes,
+      potential_issues: warnings,
+      audit_verdict: warnings.length === 0 ? "PASS" : "WARN",
+      epistemic: "CLAIM"
+    };
   }
 };
 
