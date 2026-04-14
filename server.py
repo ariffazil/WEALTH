@@ -72,6 +72,38 @@ def civilizational_prosperity_index(gdp_per_capita_growth: Optional[float] = Non
     args = {"gdp_per_capita_growth": gdp_per_capita_growth, "employment_quality": employment_quality, "energy_access": energy_access}
     return invoke_node_tool("civilizational_prosperity", args)
 
+# --- Capital Budgeting & Project Analysis (F2 CLAIM) ---
+
+@mcp.tool()
+def capital_npv(initial_investment: float, cash_flows: List[float], discount_rate: float) -> Any:
+    """Compute Net Present Value (NPV). Absolute value creation indicator."""
+    args = {"initial_investment": initial_investment, "cash_flows": cash_flows, "discount_rate": discount_rate}
+    return invoke_node_tool("capital_npv", args)
+
+@mcp.tool()
+def capital_irr(initial_investment: float, cash_flows: List[float]) -> Any:
+    """Compute Internal Rate of Return (IRR). Efficiency indicator."""
+    args = {"initial_investment": initial_investment, "cash_flows": cash_flows}
+    return invoke_node_tool("capital_irr", args)
+
+@mcp.tool()
+def capital_emv(scenarios: List[dict]) -> Any:
+    """Compute Expected Monetary Value (EMV). Probability-weighted risk adjustment."""
+    args = {"scenarios": scenarios}
+    return invoke_node_tool("capital_emv", args)
+
+@mcp.tool()
+def capital_pi(initial_investment: float, cash_flows: List[float], discount_rate: float) -> Any:
+    """Compute Profitability Index (PI). Efficiency indicator (PV inflows / PV outflows)."""
+    args = {"initial_investment": initial_investment, "cash_flows": cash_flows, "discount_rate": discount_rate}
+    return invoke_node_tool("capital_pi", args)
+
+@mcp.tool()
+def capital_payback(initial_investment: float, cash_flows: List[float], discounted: bool = False, discount_rate: float = 0) -> Any:
+    """Compute Payback Period (standard or discounted). Recovery speed indicator."""
+    args = {"initial_investment": initial_investment, "cash_flows": cash_flows, "discounted": discounted, "discount_rate": discount_rate}
+    return invoke_node_tool("capital_payback", args)
+
 # --- Resources ---
 
 @mcp.resource("wealth://governance/floors")

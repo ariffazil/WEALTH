@@ -26,6 +26,91 @@ const tools = {
   project_runway: (a) => projectRunwayDepletion(a.current_savings, a.monthly_burn, a.monthly_income),
   civilizational_prosperity: (a) => computeCivilizationalProsperityIndex(a),
   civilizational_risk: (a) => detectSystemicRisk(a),
+  
+  // --- Capital Budgeting & Project Analysis (F2 CLAIM) ---
+  
+  capital_npv: (a) => {
+    const { initial_investment, cash_flows, discount_rate } = a;
+    let npv = -initial_investment;
+    for (let t = 0; t < cash_flows.length; t++) {
+      npv += cash_flows[t] / Math.pow(1 + discount_rate, t + 1);
+    }
+    return { 
+      npv: Number(npv.toFixed(2)),
+      verdict: npv > 0 ? "SEAL" : "VOID",
+      epistemic: "CLAIM",
+      timestamp: new Date().toISOString()
+    };
+  },
+
+  capital_irr: (a) => {
+    const { initial_investment, cash_flows } = a;
+    // Simple Newton-Raphson for IRR
+    const npv_func = (r) => {
+      let val = -initial_investment;
+      for (let t = 0; t < cash_flows.length; t++) {
+        val += cash_flows[t] / Math.pow(1 + r, t + 1);
+      }
+      return val;
+    };
+    let irr = 0.1; // Initial guess
+    for (let i = 0; i < 20; i++) {
+      let val = npv_func(irr);
+      let eps = 0.0001;
+      let derivative = (npv_func(irr + eps) - val) / eps;
+      irr = irr - val / derivative;
+    }
+    return { 
+      irr: Number(irr.toFixed(4)),
+      epistemic: "CLAIM",
+      timestamp: new Date().toISOString()
+    };
+  },
+
+  capital_emv: (a) => {
+    const { scenarios } = a; // [{ probability, outcome }]
+    const emv = scenarios.reduce((acc, s) => acc + (s.probability * s.outcome), 0);
+    return { 
+      emv: Number(emv.toFixed(2)),
+      epistemic: "CLAIM",
+      timestamp: new Date().toISOString()
+    };
+  },
+
+  capital_pi: (a) => {
+    const { initial_investment, cash_flows, discount_rate } = a;
+    let pv_inflows = 0;
+    for (let t = 0; t < cash_flows.length; t++) {
+      pv_inflows += cash_flows[t] / Math.pow(1 + discount_rate, t + 1);
+    }
+    const pi = pv_inflows / initial_investment;
+    return { 
+      profitability_index: Number(pi.toFixed(4)),
+      verdict: pi > 1 ? "SEAL" : "VOID",
+      epistemic: "CLAIM"
+    };
+  },
+
+  capital_payback: (a) => {
+    const { initial_investment, cash_flows, discounted = false, discount_rate = 0 } = a;
+    let remaining = initial_investment;
+    let years = 0;
+    for (let t = 0; t < cash_flows.length; t++) {
+      let cf = discounted ? cash_flows[t] / Math.pow(1 + discount_rate, t + 1) : cash_flows[t];
+      if (remaining > cf) {
+        remaining -= cf;
+        years++;
+      } else {
+        years += remaining / cf;
+        remaining = 0;
+        break;
+      }
+    }
+    return { 
+      payback_years: remaining === 0 ? Number(years.toFixed(2)) : Infinity,
+      epistemic: "CLAIM"
+    };
+  }
 };
 
 if (!tools[toolName]) {
