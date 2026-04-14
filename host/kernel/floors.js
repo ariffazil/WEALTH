@@ -14,7 +14,13 @@ export const FLOORS = {
   F13: "Human Veto — final authority",
 };
 
-export const EPISTEMIC = ["CLAIM", "PLAUSIBLE", "HYPOTHESIS", "ESTIMATE", "UNKNOWN"];
+export const EPISTEMIC = Object.freeze({
+  CLAIM: "CLAIM",
+  PLAUSIBLE: "PLAUSIBLE",
+  HYPOTHESIS: "HYPOTHESIS",
+  ESTIMATE: "ESTIMATE",
+  UNKNOWN: "UNKNOWN",
+});
 
 export const HOLD = {
   type: "888_HOLD",
@@ -27,7 +33,7 @@ export function checkFloors(args) {
   const warnings = [];
 
   if (args.reversible === false && !args.human_confirmed) {
-    holds.push("F1: Irreversible action requires human confirmation.");
+    holds.push("F1: 888_HOLD — Irreversible action requires human confirmation.");
   }
   if (args.epistemic === "UNKNOWN") {
     warnings.push("F2: Epistemic state is UNKNOWN.");
@@ -48,6 +54,7 @@ export function checkFloors(args) {
   else if (warnings.length > 0) verdict = "CAUTION";
 
   return {
+    pass: verdict === "SEAL" || verdict === "CAUTION",
     verdict,
     violations,
     holds,

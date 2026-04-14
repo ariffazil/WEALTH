@@ -1,0 +1,48 @@
+{
+  "organ_registry": {
+    "arifos": {
+      "role": "Constitutional Governor",
+      "tools": [
+        "arifos_init", "arifos_sense", "arifos_mind", "arifos_route",
+        "arifos_heart", "arifos_ops", "arifos_memory", "arifos_judge",
+        "arifos_vault", "arifos_forge", "arifos_gateway"
+      ]
+    },
+    "wealth": {
+      "role": "Capital Engine (Valuation Kernel)",
+      "tools": [
+        "wealth_npv_reward", "wealth_irr_yield", "wealth_emv_risk",
+        "wealth_pi_efficiency", "wealth_payback_time", "wealth_audit_entropy",
+        "wealth_dscr_leverage", "wealth_networth_state", "wealth_cashflow_flow",
+        "wealth_growth_velocity", "wealth_score_kernel"
+      ]
+    },
+    "geox": {
+      "role": "Earth Engine (Subsurface Intelligence)",
+      "tools": [
+        "geox_intake_context", "geox_qc_evidence", "geox_well_bundle",
+        "geox_petrophysics", "geox_stratigraphy", "geox_structure",
+        "geox_map_context", "geox_cross_evidence", "geox_play_risk",
+        "geox_decision_kernel", "geox_forge_product"
+      ]
+    }
+  },
+  "orthogonal_bands": [
+    { "id": "01", "name": "Context", "arifos": "arifos_init", "wealth": "wealth_networth_state", "geox": "geox_intake_context" },
+    { "id": "02", "name": "Integrity", "arifos": "arifos_sense", "wealth": "wealth_audit_entropy", "geox": "geox_qc_evidence" },
+    { "id": "03", "name": "Bundling", "arifos": "arifos_memory", "wealth": "wealth_cashflow_flow", "geox": "geox_well_bundle" },
+    { "id": "04", "name": "Physics", "arifos": "arifos_mind", "wealth": "wealth_npv_reward", "geox": "geox_petrophysics" },
+    { "id": "05", "name": "Temporal", "arifos": "arifos_route", "wealth": "wealth_payback_time", "geox": "geox_stratigraphy" },
+    { "id": "06", "name": "Structural", "arifos": "arifos_heart", "wealth": "wealth_dscr_leverage", "geox": "geox_structure" },
+    { "id": "07", "name": "Spatial", "arifos": "arifos_ops", "wealth": "wealth_score_kernel", "geox": "geox_map_context" },
+    { "id": "08", "name": "Witness", "arifos": "arifos_memory", "wealth": "wealth_emv_risk", "geox": "geox_cross_evidence" },
+    { "id": "09", "name": "Risk", "arifos": "arifos_heart", "wealth": "wealth_emv_risk", "geox": "geox_play_risk" },
+    { "id": "10", "name": "Decision", "arifos": "arifos_judge", "wealth": "wealth_score_kernel", "geox": "geox_decision_kernel" },
+    { "id": "11", "name": "Product", "arifos": "arifos_forge", "wealth": "wealth_vault", "geox": "geox_forge_product" }
+  ],
+  "meta": {
+    "version": "1.3.0",
+    "seal": "999_SEAL_ALIVE",
+    "ortho_guard": 0.95
+  }
+}
