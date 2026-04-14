@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <!-- Gradient for the circle background -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#006D5B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#004D40;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Gradient for the hand -->
+    <linearGradient id="handGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FDF6E3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F5F5DC;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Gradient for the heart -->
+    <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#C9A227;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D4AF37;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="url(#bgGradient)" stroke="#C9A227" stroke-width="3"/>
+  
+  <!-- Batik-inspired decorative pattern (simplified) -->
+  <circle cx="100" cy="100" r="85" fill="none" stroke="#C9A227" stroke-width="1" opacity="0.3" stroke-dasharray="10,5"/>
+  
+  <!-- Hand (stop gesture) -->
+  <!-- Palm -->
+  <path d="M60 140 L60 80 Q60 60 80 60 L100 60 Q120 60 120 80 L120 100 Q120 110 110 110 L70 110 Q60 110 60 100 Z" 
+        fill="url(#handGradient)" stroke="#C9A227" stroke-width="2"/>
+  
+  <!-- Fingers -->
+  <rect x="65" y="45" width="12" height="40" rx="6" fill="url(#handGradient)" stroke="#C9A227" stroke-width="1.5"/>
+  <rect x="80" y="40" width="12" height="45" rx="6" fill="url(#handGradient)" stroke="#C9A227" stroke-width="1.5"/>
+  <rect x="95" y="42" width="12" height="43" rx="6" fill="url(#handGradient)" stroke="#C9A227" stroke-width="1.5"/>
+  <rect x="110" y="50" width="12" height="35" rx="6" fill="url(#handGradient)" stroke="#C9A227" stroke-width="1.5"/>
+  
+  <!-- Thumb -->
+  <ellipse cx="55" cy="85" rx="10" ry="15" fill="url(#handGradient)" stroke="#C9A227" stroke-width="1.5"/>
+  
+  <!-- Heart (care) positioned near wrist -->
+  <path d="M75 125 C75 115 85 115 90 120 C95 115 105 115 105 125 C105 135 90 145 90 145 C90 145 75 135 75 125" 
+        fill="url(#heartGradient)" stroke="#006D5B" stroke-width="1.5"/>
+  
+  <!-- Wrist/forearm -->
+  <rect x="55" y="130" width="30" height="40" rx="5" fill="url(#handGradient)" stroke="#C9A227" stroke-width="2"/>
+  
+  <!-- Decorative elements representing batik dots -->
+  <circle cx="140" cy="60" r="3" fill="#C9A227" opacity="0.6"/>
+  <circle cx="150" cy="80" r="2" fill="#C9A227" opacity="0.4"/>
+  <circle cx="145" cy="100" r="2.5" fill="#C9A227" opacity="0.5"/>
+  <circle cx="155" cy="120" r="2" fill="#C9A227" opacity="0.4"/>
+  <circle cx="140" cy="140" r="3" fill="#C9A227" opacity="0.6"/>
+</svg>

@@ -14,6 +14,43 @@
     "last_seal": "ISO8601"
   },
 
+  "wealth_basis": {
+    "epoch": "ISO8601",
+    "vector": {
+      "e_hat": 0.0,
+      "s_hat": 0.0,
+      "echo_hat": 0.0
+    },
+    "raw_signals": {
+      "e_physical": 0.0,
+      "e_financial": 0.0,
+      "e_cognitive": 0.0,
+      "e_social": 0.0,
+      "e_max_feasible": 1.0,
+      "s_state": 0.0,
+      "ds_operation": 0.0,
+      "echo_impact_series": [],
+      "psi_ctx": 0.0
+    },
+    "defects": {
+      "paradox": 0.0,
+      "scar": 0.0,
+      "shadow": 0.0
+    },
+    "capitalx_link": {
+      "delta_civ_contribution": 0.0,
+      "r_adj_modifier": 0.0,
+      "uncertainty_band": [0.03, 0.12]
+    },
+    "epistemic": "ESTIMATE",
+    "witness": {
+      "human": false,
+      "ai": true,
+      "earth": true
+    },
+    "verdict": "PENDING"
+  },
+
   "assets": [
     {
       "id": "uuid-v4",

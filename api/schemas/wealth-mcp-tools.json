@@ -1,0 +1,243 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wealth.arif-fazil.com/api/schemas/wealth-mcp-tools.json",
+  "title": "WEALTH MCP Tool Families Schema",
+  "description": "Orthogonal tool families for the WEALTH capital nerve: state, risk, price, flow, justice, control",
+  "definitions": {
+    "CommonRequestHeader": {
+      "type": "object",
+      "required": ["session_id", "epoch"],
+      "properties": {
+        "session_id": { "type": "string" },
+        "envelope_id": { "type": "string", "description": "W@W envelope binding this tool call to upstream authorities" },
+        "epoch": { "type": "string", "format": "date-time" },
+        "currency_base": { "type": "string", "default": "MYR" },
+        "locale": { "type": "string", "default": "ms-MY" }
+      }
+    },
+    "CommonResponseFooter": {
+      "type": "object",
+      "required": ["verdict", "epistemic"],
+      "properties": {
+        "verdict": { "type": "string", "enum": ["SEAL", "QUALIFY", "888-HOLD", "VOID"] },
+        "epistemic": { "type": "string", "enum": ["CLAIM", "PLAUSIBLE", "ESTIMATE", "HYPOTHESIS", "UNKNOWN"] },
+        "vault_log_entry": { "type": "object", "description": "Append-only VAULT999 fragment for this call" },
+        "witness": {
+          "type": "object",
+          "properties": { "human": { "type": "boolean" }, "ai": { "type": "boolean" }, "earth": { "type": "boolean" } }
+        }
+      }
+    },
+    "WealthBasisVector": {
+      "type": "object",
+      "properties": {
+        "e_hat": { "type": "number", "minimum": 0, "maximum": 1 },
+        "s_hat": { "type": "number", "minimum": 0, "maximum": 1 },
+        "echo_hat": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "DefectTensor": {
+      "type": "object",
+      "properties": {
+        "paradox": { "type": "number", "minimum": 0, "maximum": 1 },
+        "scar": { "type": "number", "minimum": 0, "maximum": 1 },
+        "shadow": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "tool_family": {
+      "type": "string",
+      "enum": ["wealth.state", "wealth.risk", "wealth.price", "wealth.flow", "wealth.justice", "wealth.control"]
+    },
+    "requests": {
+      "type": "object",
+      "properties": {
+        "wealth_state_market_snapshot": {
+          "type": "object",
+          "required": ["header", "jurisdiction", "asset_classes"],
+          "properties": {
+            "header": { "$ref": "#/definitions/CommonRequestHeader" },
+            "jurisdiction": { "type": "string", "description": "e.g. MY, US, ASEAN" },
+            "asset_classes": { "type": "array", "items": { "type": "string" } },
+            "tenor_months": { "type": "integer", "default": 120 }
+          }
+        },
+        "wealth_risk_capital_allocation": {
+          "type": "object",
+          "required": ["header", "portfolio", "confidence_level"],
+          "properties": {
+            "header": { "$ref": "#/definitions/CommonRequestHeader" },
+            "portfolio": { "type": "object", "description": "Project/region/counterparty buckets" },
+            "confidence_level": { "type": "number", "minimum": 0.9, "maximum": 0.9999 },
+            "maruah_drawdown_floor": { "type": "number", "default": 0.6 }
+          }
+        },
+        "wealth_price_capitalx": {
+          "type": "object",
+          "required": ["header", "base_rate", "signals"],
+          "properties": {
+            "header": { "$ref": "#/definitions/CommonRequestHeader" },
+            "base_rate": { "type": "number", "minimum": 0 },
+            "signals": {
+              "type": "object",
+              "required": ["dS", "peace2", "maruahScore", "trustIndex", "deltaCiv"],
+              "properties": {
+                "dS": { "type": "number" },
+                "peace2": { "type": "number" },
+                "maruahScore": { "type": "number", "minimum": 0, "maximum": 1 },
+                "trustIndex": { "type": "number", "minimum": 0, "maximum": 1 },
+                "deltaCiv": { "type": "number" }
+              }
+            },
+            "wealth_basis": { "$ref": "#/definitions/WealthBasisVector" },
+            "defects": { "$ref": "#/definitions/DefectTensor" }
+          }
+        },
+        "wealth_price_exergy_cost": {
+          "type": "object",
+          "required": ["header", "project_inputs"],
+          "properties": {
+            "header": { "$ref": "#/definitions/CommonRequestHeader" },
+            "project_inputs": {
+              "type": "object",
+              "properties": {
+                "energy_mj_per_unit": { "type": "number" },
+                "material_exergy_mj_per_unit": { "type": "number" },
+                "output_unit": { "type": "string" }
+              }
+            }
+          }
+        },
+        "wealth_flow_scenario_npv": {
+          "type": "object",
+          "required": ["header", "cashflows", "r_adj", "scenarios"],
+          "properties": {
+            "header": { "$ref": "#/definitions/CommonRequestHeader" },
+            "cashflows": { "type": "array", "items": { "type": "number" } },
+            "r_adj": { "type": "number" },
+            "scenarios": { "type": "array", "items": { "type": "object" } },
+            "geo_constraints": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "wealth_justice_maruah_score": {
+          "type": "object",
+          "required": ["header", "project_profile"],
+          "properties": {
+            "header": { "$ref": "#/definitions/CommonRequestHeader" },
+            "project_profile": {
+              "type": "object",
+              "properties": {
+                "displacement_risk": { "type": "number", "minimum": 0, "maximum": 1 },
+                "pollution_load": { "type": "number", "minimum": 0, "maximum": 1 },
+                "cultural_loss_risk": { "type": "number", "minimum": 0, "maximum": 1 },
+                "community_benefit_share": { "type": "number", "minimum": 0, "maximum": 1 }
+              }
+            }
+          }
+        },
+        "wealth_control_gate_888": {
+          "type": "object",
+          "required": ["header", "candidate"],
+          "properties": {
+            "header": { "$ref": "#/definitions/CommonRequestHeader" },
+            "candidate": {
+              "type": "object",
+              "properties": {
+                "maruah": { "type": "number" },
+                "r_adj": { "type": "number" },
+                "entropy_budget_remaining": { "type": "number" },
+                "reversible": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "type": "object",
+      "properties": {
+        "wealth_state_market_snapshot": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "rf_curve": { "type": "array", "items": { "type": "object" } },
+            "erp": { "type": "number" },
+            "credit_spreads": { "type": "object" },
+            "volatility_surface": { "type": "array", "items": { "type": "object" } },
+            "capital_temperature": { "type": "number", "description": "Composite entropy/risk proxy [ESTIMATE]" }
+          }
+        },
+        "wealth_risk_capital_allocation": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "economic_capital": { "type": "number" },
+            "risk_decomposition": { "type": "object" },
+            "risk_budgets": { "type": "array", "items": { "type": "object" } },
+            "liquidity_buffer": { "type": "number" }
+          }
+        },
+        "wealth_price_capitalx": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "r_adj": { "type": "number", "minimum": 0 },
+            "adjustments": {
+              "type": "object",
+              "properties": {
+                "entropy_penalty": { "type": "number" },
+                "peace_discount": { "type": "number" },
+                "maruah_discount": { "type": "number" },
+                "trust_discount": { "type": "number" },
+                "civ_discount": { "type": "number" }
+              }
+            },
+            "uncertainty_band": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } }
+          }
+        },
+        "wealth_price_exergy_cost": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "exergy_mj_per_unit": { "type": "number" },
+            "emergy_proxy": { "type": "number" },
+            "entropy_cost_per_unit": { "type": "number" }
+          }
+        },
+        "wealth_flow_scenario_npv": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "npv_distribution": { "type": "array", "items": { "type": "number" } },
+            "irr": { "type": "number" },
+            "payback_years": { "type": "number" },
+            "regime_impacts": { "type": "array", "items": { "type": "object" } }
+          }
+        },
+        "wealth_justice_maruah_score": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "maruah_score": { "type": "number", "minimum": 0, "maximum": 1 },
+            "maruah_band": { "type": "string", "enum": ["SOVEREIGN", "STABLE", "FLOOR", "AMBER", "RED"] },
+            "incidence_map": { "type": "object" },
+            "exclusion_flags": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "wealth_control_gate_888": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "hold_triggered": { "type": "boolean" },
+            "hold_reasons": { "type": "array", "items": { "type": "string" } },
+            "recommendation": { "type": "string", "enum": ["FUND", "DEFER", "RESTRUCTURE", "KILL"] },
+            "repricing_hints": { "type": "array", "items": { "type": "string" } },
+            "upstream_signal": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

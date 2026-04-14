@@ -1,0 +1,102 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schemas/mcp-manifest.json",
+  "schema_version": "0.2.0",
+  "name": "makcikgpt",
+  "display_name": "MakCikGPT — Amanah-First AI Companion",
+  "version": "0.2.0",
+  "spec_version": "2025-02-28",
+  "description": "MakCikGPT: amanah-first AI safety + governance corpus for Nusantara. Culturally-grounded AI persona with strict ethical boundaries.",
+  "homepage": "https://makcikgpt.arif-fazil.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ariffazil/makcikGPT",
+    "commit": "3e176c3"
+  },
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "Arif Fazil",
+    "url": "https://arif-fazil.com"
+  },
+  "language": ["ms", "en"],
+  "region": "Nusantara",
+  "categories": ["ai-safety", "governance", "corpus", "cultural-ai", "petronas-analysis"],
+  "resources": [
+    {
+      "name": "docs_index",
+      "type": "http",
+      "url": "https://makcikgpt.arif-fazil.com/api/docs/index.json",
+      "schema": "https://makcikgpt.arif-fazil.com/api/schemas/docs-index.json",
+      "description": "Index of all core documentation files with provenance",
+      "content_type": "application/json",
+      "cache_ttl": 3600
+    },
+    {
+      "name": "columns_index",
+      "type": "http",
+      "url": "https://makcikgpt.arif-fazil.com/api/columns/index.json",
+      "schema": "https://makcikgpt.arif-fazil.com/api/schemas/columns-index.json",
+      "description": "Index of all op-ed columns and articles with data points",
+      "content_type": "application/json",
+      "cache_ttl": 3600
+    },
+    {
+      "name": "llms_txt",
+      "type": "http",
+      "url": "https://makcikgpt.arif-fazil.com/llms.txt",
+      "description": "LLM-friendly guide to MakCikGPT content and philosophy",
+      "content_type": "text/plain",
+      "cache_ttl": 7200
+    },
+    {
+      "name": "sitemap",
+      "type": "http",
+      "url": "https://makcikgpt.arif-fazil.com/sitemap.xml",
+      "description": "XML sitemap for crawlers",
+      "content_type": "application/xml",
+      "cache_ttl": 3600
+    }
+  ],
+  "endpoints": {
+    "docs": {
+      "base_url": "https://makcikgpt.arif-fazil.com/docs",
+      "items": [
+        {"id": "00-niat-dan-amanah", "title": "Niat dan Amanah", "path": "/00-niat-dan-amanah", "priority": "critical"},
+        {"id": "01-suara-makcikgpt", "title": "Suara MakCikGPT", "path": "/01-suara-makcikgpt", "priority": "critical"},
+        {"id": "02-batas-penolakan", "title": "Batas & Penolakan", "path": "/02-batas-penolakan", "priority": "critical"},
+        {"id": "03-ujian-keselamatan", "title": "Ujian Keselamatan", "path": "/03-ujian-keselamatan", "priority": "high"},
+        {"id": "04-glosari-nusantara", "title": "Glosari Nusantara", "path": "/04-glosari-nusantara", "priority": "medium"}
+      ]
+    },
+    "columns": {
+      "base_url": "https://makcikgpt.arif-fazil.com/columns",
+      "items": [
+        {"id": "manifesto-rasa-rakyat", "title": "Manifesto Rasa Rakyat", "path": "/manifesto-rasa-rakyat", "topics": ["PETRONAS", "governance", "rakyat"], "priority": "critical"},
+        {"id": "makcikgpt-menyapa-c-suite", "title": "MakcikGPT Menyapa C-Suite", "path": "/makcikgpt-menyapa-c-suite", "topics": ["corporate", "leadership"], "priority": "high"},
+        {"id": "khazanah-negara-dalam-bahaya", "title": "Khazanah Negara Dalam Bahaya", "path": "/khazanah-negara-dalam-bahaya", "topics": ["PETRONAS-Eni", "strategic"], "priority": "high"},
+        {"id": "untung-petronas-turun", "title": "Untung PETRONAS Turun", "path": "/untung-petronas-turun", "topics": ["finance", "FY2025"], "date": "2025-02-28", "priority": "high"}
+      ]
+    }
+  },
+  "schemas": {
+    "base_url": "https://makcikgpt.arif-fazil.com/api/schemas",
+    "available": [
+      "docs-index.json",
+      "columns-index.json",
+      "article.json"
+    ]
+  },
+  "metadata": {
+    "motto": "Ditempa, Bukan Diberi — Forged, Not Given",
+    "tagline": "Ruang untuk rasa, batas untuk selamat",
+    "priorities": ["maruah", "refusal", "trauma-safety", "governance", "PETRONAS-analysis"],
+    "persona": {
+      "archetype": "makcik",
+      "tone": "warm-but-firm",
+      "language": "Nusantara Malay",
+      "style": "culturally-grounded"
+    },
+    "total_content_items": 9,
+    "total_word_count": 16700,
+    "last_updated": "2025-02-28"
+  }
+}
