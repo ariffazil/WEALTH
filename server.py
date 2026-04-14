@@ -5,11 +5,10 @@ from typing import Any, List, Optional
 from fastmcp import FastMCP
 
 # Initialize FastMCP server
-# The user's platform expects "mcp" as the instance name.
-mcp = FastMCP("WEALTH Sovereign Governance Host")
+# WEALTH = Valuation Kernel (NPV, IRR, Networth, Cashflow).
+mcp = FastMCP("WEALTH Valuation Kernel")
 
 # Paths
-# Since we are now at the root of the WEALTH directory:
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INVOKE_SCRIPT = os.path.join(BASE_DIR, "scripts", "invoke_tool.js")
 
@@ -28,117 +27,111 @@ def invoke_node_tool(tool_name: str, args: dict) -> Any:
     except json.JSONDecodeError:
         return {"error": True, "message": "Failed to decode JSON output from Node"}
 
-# --- Tool Definitions ---
+# --- Personal & Portfolio Valuation (wealth.personal.*) ---
 
-@mcp.tool()
-def wealth_check_floors(operation_type: str, reversible: bool = True, **kwargs) -> Any:
-    """Run WEALTH F1-F13 floor checks on a proposed operation."""
-    args = {"type": operation_type, "reversible": reversible, **kwargs}
-    return invoke_node_tool("check_floors", args)
-
-@mcp.tool()
-def wealth_seal_999(peace2: float = 1.0, confidence: float = 0.0, holds: List[str] = [], violations: List[str] = [], human_confirmed: bool = False) -> Any:
-    """Attempt a 999 SEAL on a decision state."""
-    args = {"peace2": peace2, "confidence": confidence, "holds": holds, "violations": violations, "human_confirmed": human_confirmed}
-    return invoke_node_tool("seal_999", args)
-
-@mcp.tool()
-def wealth_capitalx_score(base_rate: float, dS: float = 0, peace2: float = 1.0, maruahScore: float = 0.5, trustIndex: float = 0.5, deltaCiv: float = 0) -> Any:
-    """Calculate risk-adjusted cost of capital from constitutional signals."""
-    args = {"base_rate": base_rate, "dS": dS, "peace2": peace2, "maruahScore": maruahScore, "trustIndex": trustIndex, "deltaCiv": deltaCiv}
-    return invoke_node_tool("capitalx_score", args)
-
-@mcp.tool()
-def wealth_compute_networth(assets: List[dict] = [], liabilities: List[dict] = []) -> Any:
+@mcp.tool(name="wealth.personal.networth")
+def personal_networth(assets: List[dict] = [], liabilities: List[dict] = []) -> Any:
     """Compute net worth with epistemic degradation."""
     args = {"assets": assets, "liabilities": liabilities}
-    return invoke_node_tool("compute_networth", args)
+    return invoke_node_tool("personal.networth", args)
 
-@mcp.tool()
-def wealth_compute_cashflow(income: List[dict] = [], expenses: List[dict] = []) -> Any:
+@mcp.tool(name="wealth.personal.cashflow")
+def personal_cashflow(income: List[dict] = [], expenses: List[dict] = []) -> Any:
     """Compute monthly cashflow and runway."""
     args = {"income": income, "expenses": expenses}
-    return invoke_node_tool("compute_cashflow", args)
+    return invoke_node_tool("personal.cashflow", args)
 
-@mcp.tool()
-def wealth_compute_maruah(financial_integrity: float = 0.5, sovereignty: float = 0.5, debt_dignity: float = 0.5, amanah_index: float = 0.5, community_contribution: float = 0.0) -> Any:
-    """Compute the Maruah dignity/integrity score."""
-    args = {"financial_integrity": financial_integrity, "sovereignty": sovereignty, "debt_dignity": debt_dignity, "amanah_index": amanah_index, "community_contribution": community_contribution}
-    return invoke_node_tool("compute_maruah", args)
+@mcp.tool(name="wealth.personal.growth")
+def personal_growth(principal: float, rate: float, years: int, annual_contribution: float = 0) -> Any:
+    """Project compound growth with F7 humility bands."""
+    args = {"principal": principal, "rate": rate, "years": years, "annual_contribution": annual_contribution}
+    return invoke_node_tool("personal.growth", args)
 
-@mcp.tool()
-def civilizational_prosperity_index(gdp_per_capita_growth: Optional[float] = None, employment_quality: Optional[float] = None, energy_access: Optional[float] = None) -> Any:
-    """Compute the Global Prosperity Index (Civilizational Maruah)."""
-    args = {"gdp_per_capita_growth": gdp_per_capita_growth, "employment_quality": employment_quality, "energy_access": energy_access}
-    return invoke_node_tool("civilizational_prosperity", args)
+@mcp.tool(name="wealth.personal.runway")
+def personal_runway(current_savings: float, monthly_burn: float, monthly_income: float = 0) -> Any:
+    """Runway depletion estimate."""
+    args = {"current_savings": current_savings, "monthly_burn": monthly_burn, "monthly_income": monthly_income}
+    return invoke_node_tool("personal.runway", args)
 
-# --- Capital Budgeting & Project Analysis (F2 CLAIM) ---
+# --- Capital & Project Evaluation (wealth.capital.*) ---
 
-@mcp.tool()
+@mcp.tool(name="wealth.capital.score")
+def capital_score(base_rate: float, dS: float = 0, peace2: float = 1.0, maruahScore: float = 0.5, trustIndex: float = 0.5, deltaCiv: float = 0) -> Any:
+    """Calculate risk-adjusted cost of capital from signals."""
+    args = {"base_rate": base_rate, "dS": dS, "peace2": peace2, "maruahScore": maruahScore, "trustIndex": trustIndex, "deltaCiv": deltaCiv}
+    return invoke_node_tool("capital.score", args)
+
+@mcp.tool(name="wealth.capital.compare")
+def capital_compare(base_rate: float, wealth_signals: dict, extractive_signals: dict) -> Any:
+    """Compare risk-adjusted rates between WEALTH and extractive nodes."""
+    args = {"base_rate": base_rate, "wealth_signals": wealth_signals, "extractive_signals": extractive_signals}
+    return invoke_node_tool("capital.compare", args)
+
+@mcp.tool(name="wealth.capital.npv")
 def capital_npv(initial_investment: float, cash_flows: List[float], discount_rate: float) -> Any:
     """Compute Net Present Value (NPV). Absolute value creation indicator."""
     args = {"initial_investment": initial_investment, "cash_flows": cash_flows, "discount_rate": discount_rate}
-    return invoke_node_tool("capital_npv", args)
+    return invoke_node_tool("capital.npv", args)
 
-@mcp.tool()
+@mcp.tool(name="wealth.capital.irr")
 def capital_irr(initial_investment: float, cash_flows: List[float]) -> Any:
     """Compute Internal Rate of Return (IRR). Efficiency indicator."""
     args = {"initial_investment": initial_investment, "cash_flows": cash_flows}
-    return invoke_node_tool("capital_irr", args)
+    return invoke_node_tool("capital.irr", args)
 
-@mcp.tool()
-def capital_emv(scenarios: List[dict]) -> Any:
-    """Compute Expected Monetary Value (EMV). Probability-weighted risk adjustment."""
-    args = {"scenarios": scenarios}
-    return invoke_node_tool("capital_emv", args)
-
-@mcp.tool()
-def capital_pi(initial_investment: float, cash_flows: List[float], discount_rate: float) -> Any:
-    """Compute Profitability Index (PI). Efficiency indicator (PV inflows / PV outflows)."""
-    args = {"initial_investment": initial_investment, "cash_flows": cash_flows, "discount_rate": discount_rate}
-    return invoke_node_tool("capital_pi", args)
-
-@mcp.tool()
-def capital_payback(initial_investment: float, cash_flows: List[float], discounted: bool = False, discount_rate: float = 0) -> Any:
-    """Compute Payback Period (standard or discounted). Recovery speed indicator."""
-    args = {"initial_investment": initial_investment, "cash_flows": cash_flows, "discounted": discounted, "discount_rate": discount_rate}
-    return invoke_node_tool("capital_payback", args)
-
-@mcp.tool()
+@mcp.tool(name="wealth.capital.mirr")
 def capital_mirr(initial_investment: float, cash_flows: List[float], finance_rate: float, reinvestment_rate: float) -> Any:
-    """Compute Modified Internal Rate of Return (MIRR). Fixes IRR reinvestment flaws."""
+    """Compute Modified Internal Rate of Return (MIRR). Fixes IRR flaws."""
     args = {"initial_investment": initial_investment, "cash_flows": cash_flows, "finance_rate": finance_rate, "reinvestment_rate": reinvestment_rate}
-    return invoke_node_tool("capital_mirr", args)
+    return invoke_node_tool("capital.mirr", args)
 
-@mcp.tool()
+@mcp.tool(name="wealth.capital.emv")
+def capital_emv(scenarios: List[dict]) -> Any:
+    """Compute Expected Monetary Value (EMV). Probability-weighted adjustment."""
+    args = {"scenarios": scenarios}
+    return invoke_node_tool("capital.emv", args)
+
+@mcp.tool(name="wealth.capital.pi")
+def capital_pi(initial_investment: float, cash_flows: List[float], discount_rate: float) -> Any:
+    """Compute Profitability Index (PI). PV inflows / PV outflows."""
+    args = {"initial_investment": initial_investment, "cash_flows": cash_flows, "discount_rate": discount_rate}
+    return invoke_node_tool("capital.pi", args)
+
+@mcp.tool(name="wealth.capital.payback")
+def capital_payback(initial_investment: float, cash_flows: List[float], discounted: bool = False, discount_rate: float = 0) -> Any:
+    """Compute Payback Period (standard or discounted)."""
+    args = {"initial_investment": initial_investment, "cash_flows": cash_flows, "discounted": discounted, "discount_rate": discount_rate}
+    return invoke_node_tool("capital.payback", args)
+
+@mcp.tool(name="wealth.capital.roi")
 def capital_roi(initial_investment: float, cash_flows: List[float]) -> Any:
     """Compute Return on Investment (ROI). Basic gain-to-cost ratio."""
     args = {"initial_investment": initial_investment, "cash_flows": cash_flows}
-    return invoke_node_tool("capital_roi", args)
+    return invoke_node_tool("capital.roi", args)
 
-@mcp.tool()
+@mcp.tool(name="wealth.capital.eaa")
 def capital_eaa(npv: float, discount_rate: float, years: int) -> Any:
-    """Compute Equivalent Annual Annuity (EAA). For comparing projects with unequal lives."""
+    """Compute Equivalent Annual Annuity (EAA)."""
     args = {"npv": npv, "discount_rate": discount_rate, "years": years}
-    return invoke_node_tool("capital_eaa", args)
+    return invoke_node_tool("capital.eaa", args)
 
-@mcp.tool()
+@mcp.tool(name="wealth.capital.audit")
 def capital_audit(initial_investment: float, cash_flows: List[float]) -> Any:
-    """Audit project cash flows for non-normal patterns and potential IRR issues (F2 CLAIM)."""
+    """Audit project cash flows for non-normal patterns (multiple IRRs, etc)."""
     args = {"initial_investment": initial_investment, "cash_flows": cash_flows}
-    return invoke_node_tool("capital_audit", args)
+    return invoke_node_tool("capital.audit", args)
 
 # --- Resources ---
 
-@mcp.resource("wealth://governance/floors")
-def get_floors() -> str:
-    """F1-F13 floor definitions and hold types."""
-    floors_path = os.path.join(BASE_DIR, "host/kernel/floors.js")
-    try:
-        with open(floors_path, "r") as f:
-            return f.read()
-    except Exception as e:
-        return f"Error reading floors: {str(e)}"
+@mcp.resource("wealth://valuation/kernel")
+def valuation_kernel_metadata() -> str:
+    """Metadata about the WEALTH Valuation Kernel."""
+    return json.dumps({
+        "status": "ALIVE",
+        "domain": "finance.valuation",
+        "epistemic": "CLAIM",
+        "protocol": "FastMCP"
+    })
 
 if __name__ == "__main__":
     mcp.run()

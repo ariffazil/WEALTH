@@ -1,7 +1,7 @@
 {
-  "name": "wealth-os",
-  "version": "1.1.0",
-  "description": "WEALTH by arifOS — Distributed Governance Operating System for capital",
+  "name": "wealth-valuation-kernel",
+  "version": "1.2.0",
+  "description": "arifOS Sovereign Valuation Kernel — Physics-based Capital Allocation",
   "type": "module",
   "main": "src/index.js",
   "bin": {
