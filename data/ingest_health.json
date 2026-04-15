@@ -1,0 +1,42 @@
+{
+  "WorldBank": {
+    "flags": [
+      "STALE_OBSERVATION:SL.UEM.TOTL.ZS"
+    ],
+    "total_requests": 4,
+    "last_latency_ms": 606.1782836914062,
+    "field_completeness_rate": 0.79004329004329,
+    "latest_observation_time": "2025",
+    "cache_age_hours": 0.0,
+    "stale": true,
+    "last_success": "2026-04-15T22:50:15.477848Z",
+    "success_count": 4
+  },
+  "Ember": {
+    "flags": [
+      "MISSING_SERIES:generation:MYS",
+      "STALE_OBSERVATION:generation"
+    ],
+    "total_requests": 2,
+    "last_latency_ms": 10248.48985671997,
+    "field_completeness_rate": 0.0,
+    "latest_observation_time": null,
+    "cache_age_hours": Infinity,
+    "stale": true,
+    "last_success": "2026-04-15T22:50:35.933386Z",
+    "success_count": 2
+  },
+  "OWID": {
+    "flags": [
+      "STALE_OBSERVATION:carbon-intensity-electricity"
+    ],
+    "total_requests": 1,
+    "last_latency_ms": 0.0,
+    "field_completeness_rate": 0.8571428571428571,
+    "latest_observation_time": "2024",
+    "cache_age_hours": 2.6164805261111113,
+    "stale": true,
+    "last_success": "2026-04-15T22:50:35.934164Z",
+    "success_count": 1
+  }
+}
