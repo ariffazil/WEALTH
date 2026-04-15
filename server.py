@@ -1423,6 +1423,88 @@ def ingest_sources() -> Any:
     )
 
 
+@mcp.tool(name="wealth_ingest_health")
+def ingest_health(adapter: Optional[str] = None) -> Any:
+    """Return bus health metrics: latency, cache age, field completeness, stale flags. [Sense Dimension]"""
+    if not INGEST_AVAILABLE:
+        return create_envelope(
+            "wealth_ingest_health",
+            "Sense",
+            {},
+            {},
+            ["INGEST_LAYER_UNAVAILABLE"],
+            ["Ingest layer failed to initialize."],
+        )
+    registry = get_registry()
+    health = registry.health(adapter)
+    return create_envelope(
+        "wealth_ingest_health",
+        "Sense",
+        {"health": health},
+        {},
+        [],
+        ["Health tracks latency, success rate, cache age, and observation freshness."],
+    )
+
+
+@mcp.tool(name="wealth_ingest_vintage")
+def ingest_vintage(source: str, series_id: str, entity_code: str, vintage_date: str) -> Any:
+    """Fetch a specific vintage of a series (FRED/ALFRED). [Sense Dimension]"""
+    if not INGEST_AVAILABLE:
+        return create_envelope(
+            "wealth_ingest_vintage",
+            "Sense",
+            {"count": 0},
+            {},
+            ["INGEST_LAYER_UNAVAILABLE"],
+            ["Ingest layer failed to initialize."],
+        )
+    registry = get_registry()
+    try:
+        if source == "FRED":
+            result = registry.fetch(source, series_id, entity_code, use_cache=False, vintage_dates=[vintage_date], bus="archive")
+        else:
+            result = {
+                "records": [],
+                "flags": [f"VINTAGE_UNSUPPORTED:{source}"],
+                "count": 0,
+            }
+    except Exception as exc:
+        result = {"records": [], "flags": [f"VINTAGE_ERROR:{exc}"], "count": 0}
+    return create_envelope(
+        "wealth_ingest_vintage",
+        "Sense",
+        {"count": result["count"]},
+        {"records": result["records"][:50], "flags": result["flags"]},
+        result["flags"],
+        ["Vintages preserve truth as it was known at a specific date."],
+    )
+
+
+@mcp.tool(name="wealth_ingest_reconcile")
+def ingest_reconcile(entity_code: str) -> Any:
+    """Cross-source divergence detection for a geography. [Sense Dimension]"""
+    if not INGEST_AVAILABLE:
+        return create_envelope(
+            "wealth_ingest_reconcile",
+            "Sense",
+            {},
+            {},
+            ["INGEST_LAYER_UNAVAILABLE"],
+            ["Ingest layer failed to initialize."],
+        )
+    registry = get_registry()
+    result = registry.reconcile(entity_code)
+    return create_envelope(
+        "wealth_ingest_reconcile",
+        "Sense",
+        {"divergences": result["divergences"], "snapshot_coverage": result["snapshot_coverage"]},
+        {"flags": result["flags"]},
+        result["flags"],
+        ["Reconciliation surfaces contradictory signals across independent sources."],
+    )
+
+
 @mcp.tool(name="wealth_check_floors")
 def check_floors_tool(
     reversible: bool = True,

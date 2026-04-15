@@ -70,20 +70,23 @@ def fetch_series(
             value = float(val) if val not in (None, ".", "") else None
         except (ValueError, TypeError):
             value = None
+        vintage_date = obs.get("vintage_date")
+        realtime_start = obs.get("realtime_start")
         records.append(
             DataRecord(
                 source_system="FRED",
                 series_id=series_id,
                 entity_code=entity_code,
                 observation_time=obs["date"],
-                release_time=obs.get("realtime_start"),
+                release_time=realtime_start,
                 retrieval_time=retrieval,
                 value=value,
                 unit=unit,
                 frequency=freq or frequency,
-                revision_flag=False,
+                revision_flag=bool(vintage_date) and bool(realtime_start) and realtime_start != vintage_date,
+                vintage_id=vintage_date,
                 methodology_url=f"https://fred.stlouisfed.org/series/{series_id}",
-                metadata={"title": title, "vintage_date": obs.get("vintage_date")},
+                metadata={"title": title, "vintage_date": vintage_date, "realtime_end": obs.get("realtime_end")},
                 bus="daily" if freq in {"d", "w", "bw", "wef"} else "slow",
             )
         )

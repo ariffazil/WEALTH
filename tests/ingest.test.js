@@ -72,3 +72,52 @@ print(json.dumps({"count": r["primary_result"]["count"], "flags": r["secondary_m
   assert.strictEqual(out.count, 0);
   assert.ok(out.flags.some(f => f.includes("ADAPTER_NOT_FOUND")));
 });
+
+test("ingest_health tracks adapter metrics", () => {
+  const out = runPython(`
+import json, os
+health_path = "/root/WEALTH/data/ingest_health.json"
+if os.path.exists(health_path):
+    os.remove(health_path)
+from server import ingest_fetch, ingest_health
+# trigger a fetch to populate health
+r = ingest_fetch("WorldBank", "NY.GDP.MKTP.KD.ZG", "USA")
+h = ingest_health("WorldBank")
+health = h["primary_result"]["health"]
+print(json.dumps({"has_total": "total_requests" in health, "success": health.get("success_count", 0) >= 1}))
+`);
+  assert.strictEqual(out.has_total, true);
+  assert.strictEqual(out.success, true);
+});
+
+test("ingest_reconcile returns divergence analysis", () => {
+  const out = runPython(`
+import json
+from server import ingest_reconcile
+r = ingest_reconcile("MYS")
+print(json.dumps({"has_divergences": isinstance(r["primary_result"]["divergences"], list), "verdict": r["governance_verdict"]}))
+`);
+  assert.strictEqual(out.has_divergences, true);
+  assert.strictEqual(out.verdict, "SEAL");
+});
+
+test("DataRecord supports vintage_id for FRED", () => {
+  const out = runPython(`
+import json
+from host.ingest.schema import DataRecord
+r = DataRecord(
+    source_system="FRED",
+    series_id="GDPC1",
+    entity_code="USA",
+    observation_time="2023-01-01",
+    retrieval_time=DataRecord.now(),
+    vintage_id="2023-07-27",
+    revision_flag=True,
+    value=20000.0,
+    unit="Billions of Chained 2017 Dollars"
+)
+print(json.dumps({"vintage": r.vintage_id, "revision": r.revision_flag}))
+`);
+  assert.strictEqual(out.vintage, "2023-07-27");
+  assert.strictEqual(out.revision, true);
+});
