@@ -32,3 +32,12 @@ build/
 # Backup files
 *.bak
 *.backup
+
+# Ingest runtime cache
+data/ingest_cache/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+

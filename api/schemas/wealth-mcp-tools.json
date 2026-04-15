@@ -254,6 +254,28 @@
             "distribution": { "type": "string", "enum": ["lognormal", "normal", "triangular"], "default": "lognormal" },
             "scale_mode": { "$ref": "#/definitions/ScaleMode" }
           }
+        },
+        "wealth_ingest_fetch": {
+          "type": "object",
+          "required": ["source", "series_id", "entity_code"],
+          "properties": {
+            "source": { "type": "string", "enum": ["FRED", "WorldBank", "ECB", "Ember", "OWID"] },
+            "series_id": { "type": "string" },
+            "entity_code": { "type": "string" },
+            "use_cache": { "type": "boolean", "default": true }
+          }
+        },
+        "wealth_ingest_snapshot": {
+          "type": "object",
+          "required": ["entity_code"],
+          "properties": {
+            "entity_code": { "type": "string" },
+            "sources": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "wealth_ingest_sources": {
+          "type": "object",
+          "properties": {}
         }
       }
     },
@@ -500,6 +522,58 @@
                 "volatility_of_outcome": { "type": "number" },
                 "simulations": { "type": "integer" },
                 "distribution": { "type": "string" }
+              }
+            }
+          }
+        },
+        "wealth_ingest_fetch": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "count": { "type": "integer" },
+                "cached": { "type": "boolean" }
+              }
+            },
+            "secondary_metrics": {
+              "type": "object",
+              "properties": {
+                "records": { "type": "array", "items": { "type": "object" } },
+                "flags": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "wealth_ingest_snapshot": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "coverage": { "type": "integer" },
+                "entity_code": { "type": "string" }
+              }
+            },
+            "secondary_metrics": {
+              "type": "object",
+              "properties": {
+                "snapshot": { "type": "object" },
+                "flags": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "wealth_ingest_sources": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "sources": { "type": "array", "items": { "type": "string" } }
               }
             }
           }

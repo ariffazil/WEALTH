@@ -1243,6 +1243,90 @@ def monte_carlo_forecast(initial_commitment: float, mean_cash_flows: List[float]
     )
 
 
+# === INGESTION LAYER ===
+try:
+    from host.ingest.registry import get_registry
+    INGEST_AVAILABLE = True
+except Exception:
+    INGEST_AVAILABLE = False
+    def get_registry():  # type: ignore
+        return None
+
+
+@mcp.tool(name="wealth_ingest_fetch")
+def ingest_fetch(source: str, series_id: str, entity_code: str, use_cache: bool = True, **kwargs) -> Any:
+    """Fetch a live data series from an open public source. [Sense Dimension]"""
+    if not INGEST_AVAILABLE:
+        return create_envelope(
+            "wealth_ingest_fetch",
+            "Sense",
+            {"records": []},
+            {},
+            ["INGEST_LAYER_UNAVAILABLE"],
+            ["Ingest layer failed to initialize."],
+        )
+    registry = get_registry()
+    result = registry.fetch(source, series_id, entity_code, use_cache=use_cache, **kwargs)
+    flags = result.get("flags", [])
+    return create_envelope(
+        "wealth_ingest_fetch",
+        "Sense",
+        {"count": result["count"], "cached": result.get("cached", False)},
+        {"records": result["records"][:50], "flags": flags},
+        flags,
+        ["Live feeds carry source, timestamp, unit, and revision metadata."],
+    )
+
+
+@mcp.tool(name="wealth_ingest_snapshot")
+def ingest_snapshot(entity_code: str, sources: Optional[List[str]] = None) -> Any:
+    """Fetch a cross-source macro/energy/carbon snapshot for a geography. [Sense Dimension]"""
+    if not INGEST_AVAILABLE:
+        return create_envelope(
+            "wealth_ingest_snapshot",
+            "Sense",
+            {"coverage": 0},
+            {},
+            ["INGEST_LAYER_UNAVAILABLE"],
+            ["Ingest layer failed to initialize."],
+        )
+    registry = get_registry()
+    result = registry.snapshot(entity_code, sources=sources)
+    flags = result.get("flags", [])
+    return create_envelope(
+        "wealth_ingest_snapshot",
+        "Sense",
+        {"coverage": result["coverage"], "entity_code": entity_code},
+        {"snapshot": result["snapshot"], "flags": flags},
+        flags,
+        ["Snapshot assembles orthogonal reality anchors for a single geography."],
+    )
+
+
+@mcp.tool(name="wealth_ingest_sources")
+def ingest_sources() -> Any:
+    """List available data sources and their adapter status. [Sense Dimension]"""
+    if not INGEST_AVAILABLE:
+        return create_envelope(
+            "wealth_ingest_sources",
+            "Sense",
+            {"sources": []},
+            {},
+            ["INGEST_LAYER_UNAVAILABLE"],
+            ["Ingest layer failed to initialize."],
+        )
+    registry = get_registry()
+    sources = registry.available_sources()
+    return create_envelope(
+        "wealth_ingest_sources",
+        "Sense",
+        {"sources": sources},
+        {},
+        [],
+        ["Sources are ranked by sovereignty: central bank > multilateral > aggregator."],
+    )
+
+
 @mcp.tool(name="wealth_check_floors")
 def check_floors_tool(
     reversible: bool = True,
