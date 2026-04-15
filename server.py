@@ -37,6 +37,25 @@ try:
 except Exception:
     GOVERNANCE_AVAILABLE = False
 
+try:
+    from host.coordination.lp_allocator import allocate as lp_allocate
+    from host.coordination.cooperative import shapley_values, core_feasibility
+    from host.coordination.strategic import nash_approximation
+    from host.coordination.commons import commons_risk
+    COORDINATION_AVAILABLE = True
+except Exception:
+    COORDINATION_AVAILABLE = False
+    def lp_allocate(*_args, **_kwargs):  # type: ignore
+        return {"feasible": False, "flags": ["COORDINATION_UNAVAILABLE"]}
+    def shapley_values(*_args, **_kwargs):  # type: ignore
+        return {"shapley": {}, "total_value": 0.0, "flags": ["COORDINATION_UNAVAILABLE"]}
+    def core_feasibility(*_args, **_kwargs):  # type: ignore
+        return {"in_core": False, "blocking_coalitions": [], "flags": ["COORDINATION_UNAVAILABLE"]}
+    def nash_approximation(*_args, **_kwargs):  # type: ignore
+        return {"equilibrium": {}, "converged": False, "flags": ["COORDINATION_UNAVAILABLE"]}
+    def commons_risk(*_args, **_kwargs):  # type: ignore
+        return {"tragedy_risk": 1.0, "scarcity_index": {}, "flags": ["COORDINATION_UNAVAILABLE"]}
+
     def check_floors(*_args, **_kwargs):  # type: ignore
         return {"pass": True, "verdict": "SEAL", "violations": [], "holds": [], "warnings": []}
 
@@ -1159,34 +1178,40 @@ def civilization_stewardship(population: float, energy_budget_twh: float, carbon
 @mcp.tool(name="wealth_coordination_equilibrium")
 def coordination_equilibrium(agents: List[dict], shared_resources: dict, mechanism: str = "cooperative", scale_mode: str = "enterprise") -> Any:
     """Multi-agent resource coordination and equilibrium analysis. [Coordination Dimension]"""
-    total_claims = {res: 0.0 for res in shared_resources}
+    # Normalize agents to LP schema
+    lp_agents = []
     for agent in agents:
-        for res, claim in agent.get("resource_demand", {}).items():
-            total_claims[res] = total_claims.get(res, 0.0) + claim
+        lp_agents.append({
+            "name": agent.get("name", "unnamed"),
+            "utility": agent.get("utility", {res: 1.0 for res in shared_resources}),
+            "demand": agent.get("resource_demand", {}),
+        })
+
+    lp_result = lp_allocate(lp_agents, shared_resources)
+    commons = commons_risk(lp_agents, shared_resources)
+    tragedy_risk = commons["tragedy_risk"]
     conflicts = []
-    tragedy_risk = 0.0
-    for res, supply in shared_resources.items():
-        demand = total_claims.get(res, 0.0)
-        if demand > supply:
-            conflicts.append({"resource": res, "demand": round_value(demand, 2), "supply": round_value(supply, 2), "gap": round_value(demand - supply, 2)})
-            tragedy_risk += (demand - supply) / max(demand, 1)
-    tragedy_risk = min(1.0, tragedy_risk)
+    if "DEMAND_PARTIALLY_UNMET" in commons.get("flags", []):
+        for name, unmet in lp_result.get("unmet_demand", {}).items():
+            for res, gap in unmet.items():
+                conflicts.append({"agent": name, "resource": res, "gap": gap})
+
     cooperative_surplus = 0.0
     if mechanism == "cooperative":
         for agent in agents:
             cooperative_surplus += agent.get("cooperative_value", 0)
-    flags = []
-    if tragedy_risk > 0.5:
-        flags.append("TRAGEDY_OF_COMMONS")
-    if not conflicts:
+
+    flags = commons.get("flags", [])
+    if not conflicts and lp_result["feasible"]:
         flags.append("EQUILIBRIUM_FEASIBLE")
+
     return create_envelope(
         "wealth_coordination_equilibrium",
         "Coordination",
-        {"tragedy_risk": round_value(tragedy_risk, 4), "conflict_count": len(conflicts)},
-        {"conflicts": conflicts, "cooperative_surplus": round_value(cooperative_surplus, 2), "mechanism": mechanism},
+        {"tragedy_risk": round_value(tragedy_risk, 4), "conflict_count": len(conflicts), "total_welfare": lp_result.get("total_welfare", 0.0)},
+        {"conflicts": conflicts, "cooperative_surplus": round_value(cooperative_surplus, 2), "mechanism": mechanism, "shadow_prices": commons.get("shadow_prices", {})},
         flags,
-        ["Coordination layer detects commons overuse and incentivizes cooperation."],
+        ["Coordination layer uses LP shadow prices and scarcity metrics, not hand-wavy ratios."],
         scale_mode=scale_mode,
         governance_args={
             "reversible": True,
@@ -1195,6 +1220,77 @@ def coordination_equilibrium(agents: List[dict], shared_resources: dict, mechani
             "peace2": 1.0 - tragedy_risk,
             "maruah_score": 0.6,
             "dS": tragedy_risk,
+        },
+    )
+
+
+@mcp.tool(name="wealth_game_theory_solve")
+def game_theory_solve(
+    agents: List[dict],
+    resources: dict,
+    mechanism: str = "cooperative",
+    solve_equilibrium: bool = False,
+    scale_mode: str = "enterprise",
+) -> Any:
+    """Multi-agent allocation brain: LP welfare, Shapley/core, and Nash approximation. [Coordination Dimension]"""
+    lp_agents = []
+    for agent in agents:
+        lp_agents.append({
+            "name": agent.get("name", "unnamed"),
+            "utility": agent.get("utility", {res: 1.0 for res in resources}),
+            "demand": agent.get("resource_demand", {}),
+        })
+
+    lp_result = lp_allocate(lp_agents, resources)
+    commons = commons_risk(lp_agents, resources)
+    shapley = shapley_values(lp_agents, resources)
+    core = core_feasibility(lp_agents, resources, lp_result.get("allocations"))
+
+    equilibrium = {}
+    if solve_equilibrium:
+        eq = nash_approximation(lp_agents, resources)
+        equilibrium = {
+            "allocations": eq.get("equilibrium", {}),
+            "converged": eq.get("converged", False),
+            "iterations": eq.get("iterations", 0),
+        }
+
+    flags = []
+    if not lp_result["feasible"]:
+        flags.append("LP_INFEASIBLE")
+    if commons.get("tragedy_risk", 0.0) > 0.5:
+        flags.append("TRAGEDY_OF_COMMONS")
+    if not core.get("in_core", False):
+        flags.append("CORE_BLOCK_DETECTED")
+    if solve_equilibrium and not equilibrium.get("converged", False):
+        flags.append("NASH_NO_CONVERGENCE")
+
+    return create_envelope(
+        "wealth_game_theory_solve",
+        "Coordination",
+        {
+            "total_welfare": lp_result.get("total_welfare", 0.0),
+            "tragedy_risk": commons.get("tragedy_risk", 0.0),
+            "in_core": core.get("in_core", False),
+            "blocking_coalitions": core.get("blocking_coalitions", [])[:5],
+        },
+        {
+            "allocations": lp_result.get("allocations", {}),
+            "shadow_prices": commons.get("shadow_prices", {}),
+            "shapley": shapley.get("shapley", {}),
+            "scarcity_index": commons.get("scarcity_index", {}),
+            "equilibrium": equilibrium,
+        },
+        flags,
+        ["Game-theory solver replaces naive tragedy-risk with LP, core, and equilibrium logic."],
+        scale_mode=scale_mode,
+        governance_args={
+            "reversible": True,
+            "human_confirmed": False,
+            "epistemic": "ESTIMATE",
+            "peace2": 1.0 - commons.get("tragedy_risk", 0.0),
+            "maruah_score": 0.6,
+            "dS": commons.get("tragedy_risk", 0.0),
         },
     )
 

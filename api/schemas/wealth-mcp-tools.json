@@ -242,6 +242,17 @@
             "scale_mode": { "$ref": "#/definitions/ScaleMode" }
           }
         },
+        "wealth_game_theory_solve": {
+          "type": "object",
+          "required": ["agents", "resources"],
+          "properties": {
+            "agents": { "type": "array", "items": { "type": "object" } },
+            "resources": { "type": "object" },
+            "mechanism": { "type": "string", "enum": ["cooperative", "competitive", "mixed"], "default": "cooperative" },
+            "solve_equilibrium": { "type": "boolean", "default": false },
+            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+          }
+        }
         "wealth_monte_carlo_forecast": {
           "type": "object",
           "required": ["initial_commitment", "mean_cash_flows", "volatilities"],
@@ -490,7 +501,8 @@
               "type": "object",
               "properties": {
                 "tragedy_risk": { "type": "number" },
-                "conflict_count": { "type": "integer" }
+                "conflict_count": { "type": "integer" },
+                "total_welfare": { "type": "number" }
               }
             },
             "secondary_metrics": {
@@ -498,7 +510,33 @@
               "properties": {
                 "conflicts": { "type": "array", "items": { "type": "object" } },
                 "cooperative_surplus": { "type": "number" },
-                "mechanism": { "type": "string" }
+                "mechanism": { "type": "string" },
+                "shadow_prices": { "type": "object" }
+              }
+            }
+          }
+        },
+        "wealth_game_theory_solve": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "total_welfare": { "type": "number" },
+                "tragedy_risk": { "type": "number" },
+                "in_core": { "type": "boolean" },
+                "blocking_coalitions": { "type": "array", "items": { "type": "object" } }
+              }
+            },
+            "secondary_metrics": {
+              "type": "object",
+              "properties": {
+                "allocations": { "type": "object" },
+                "shadow_prices": { "type": "object" },
+                "shapley": { "type": "object" },
+                "scarcity_index": { "type": "object" },
+                "equilibrium": { "type": "object" }
               }
             }
           }
