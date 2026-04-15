@@ -287,6 +287,29 @@
         "wealth_ingest_sources": {
           "type": "object",
           "properties": {}
+        },
+        "wealth_ingest_health": {
+          "type": "object",
+          "properties": {
+            "adapter": { "type": "string" }
+          }
+        },
+        "wealth_ingest_vintage": {
+          "type": "object",
+          "required": ["source", "series_id", "entity_code", "vintage_date"],
+          "properties": {
+            "source": { "type": "string", "enum": ["FRED"] },
+            "series_id": { "type": "string" },
+            "entity_code": { "type": "string" },
+            "vintage_date": { "type": "string", "format": "date" }
+          }
+        },
+        "wealth_ingest_reconcile": {
+          "type": "object",
+          "required": ["entity_code"],
+          "properties": {
+            "entity_code": { "type": "string" }
+          }
         }
       }
     },
@@ -612,6 +635,56 @@
               "type": "object",
               "properties": {
                 "sources": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "wealth_ingest_health": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "health": { "type": "object" }
+              }
+            }
+          }
+        },
+        "wealth_ingest_vintage": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "count": { "type": "integer" }
+              }
+            },
+            "secondary_metrics": {
+              "type": "object",
+              "properties": {
+                "records": { "type": "array", "items": { "type": "object" } },
+                "flags": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "wealth_ingest_reconcile": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "divergences": { "type": "array", "items": { "type": "object" } },
+                "snapshot_coverage": { "type": "integer" }
+              }
+            },
+            "secondary_metrics": {
+              "type": "object",
+              "properties": {
+                "flags": { "type": "array", "items": { "type": "string" } }
               }
             }
           }
