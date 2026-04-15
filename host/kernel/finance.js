@@ -193,6 +193,96 @@ export function inferEpistemicFromFlags(flags = [], defaultEpistemic = "CLAIM") 
   return defaultEpistemic;
 }
 
+export function deriveAllocationSignal(flags = [], primary = {}, toolName = "", scaleMode = "enterprise") {
+  if (flags.some((flag) => INVALID_FLAGS.has(flag))) {
+    return "INSUFFICIENT_DATA";
+  }
+
+  const SCALE_DEFAULTS = {
+    personal: { discountRate: 0.03 },
+    household: { discountRate: 0.04 },
+    sme: { discountRate: 0.10 },
+    enterprise: { discountRate: 0.10 },
+    national: { discountRate: 0.02 },
+    crisis: { discountRate: Infinity },
+    civilization: { discountRate: 0.005 },
+    agentic: { discountRate: 0.15 },
+  };
+  const scale = SCALE_DEFAULTS[scaleMode] || SCALE_DEFAULTS.enterprise;
+
+  if (toolName === "npv" || toolName === "wealth_npv_reward") {
+    const npv = primary.npv;
+    if (npv === null || npv === undefined) return "INSUFFICIENT_DATA";
+    if (npv > 0) return "ACCEPT";
+    if (npv < 0) return "REJECT";
+    return "MARGINAL";
+  }
+
+  if (toolName === "pi" || toolName === "wealth_pi_efficiency") {
+    const pi = primary.pi;
+    if (pi === null || pi === undefined) return "INSUFFICIENT_DATA";
+    if (pi > 1) return "ACCEPT";
+    if (pi < 1) return "REJECT";
+    return "MARGINAL";
+  }
+
+  if (toolName === "irr" || toolName === "wealth_irr_yield") {
+    const irr = primary.irr;
+    if (irr === null || irr === undefined) return "INSUFFICIENT_DATA";
+    const hurdle = scale.discountRate === Infinity ? 0.10 : scale.discountRate;
+    if (irr > hurdle) return "ACCEPT";
+    if (irr < hurdle) return "REJECT";
+    return "MARGINAL";
+  }
+
+  if (toolName === "payback" || toolName === "wealth_payback_time") {
+    const payback = primary.payback_periods;
+    if (payback === null || payback === undefined) {
+      return flags.includes("NOT_RECOVERED") ? "REJECT" : "INSUFFICIENT_DATA";
+    }
+    return "ACCEPT";
+  }
+
+  if (toolName === "dscr" || toolName === "wealth_dscr_leverage") {
+    const dscr = primary.dscr;
+    if (dscr === null || dscr === undefined) return "INSUFFICIENT_DATA";
+    if (dscr >= 1.5) return "ACCEPT";
+    if (dscr >= 1.25) return "MARGINAL";
+    return "REJECT";
+  }
+
+  return "MARGINAL";
+}
+
+export function validateMeasurementInvariants(initialInvestment, cashFlows, discountRate, terminalValue = 0, measurementResults = {}) {
+  const flags = [];
+  const { npv, irr, pi, pv_inflows } = measurementResults;
+
+  const series = buildCashflowSeries(initialInvestment, cashFlows, terminalValue);
+  const signChanges = countSignChanges(series);
+
+  if (pi !== null && pi !== undefined && pv_inflows !== null && pv_inflows !== undefined) {
+    const expectedPi = pv_inflows / Math.abs(initialInvestment);
+    if (Math.abs(pi - expectedPi) > 0.001) {
+      flags.push("INVARIANT_VIOLATION");
+    }
+  }
+
+  if (npv !== null && npv !== undefined && pi !== null && pi !== undefined && signChanges <= 1) {
+    if ((npv > 0 && pi <= 1) || (npv < 0 && pi >= 1)) {
+      flags.push("INVARIANT_VIOLATION");
+    }
+  }
+
+  if (npv !== null && npv !== undefined && irr !== null && irr !== undefined && discountRate !== null && discountRate !== undefined && signChanges <= 1) {
+    if ((npv > 0 && irr <= discountRate) || (npv < 0 && irr >= discountRate)) {
+      flags.push("INVARIANT_VIOLATION");
+    }
+  }
+
+  return flags;
+}
+
 export function buildCashflowSeries(initialInvestment, cashFlows, terminalValue = 0) {
   const series = [-Math.abs(initialInvestment), ...cashFlows];
   if (terminalValue !== 0 && series.length > 1) {

@@ -3,8 +3,8 @@ import math
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-__version__ = "1.3.1"
-"""WEALTH v1.3.1 - native Python MCP surface for the hardened finance kernel."""
+__version__ = "1.4.0"
+"""WEALTH v1.4.0 - Universal Resource Allocation Intelligence (URAI) with Governance."""
 
 try:
     from fastmcp import FastMCP
@@ -28,6 +28,31 @@ except ImportError:
 
         def run(self):
             raise RuntimeError("fastmcp is not installed; import and call the WEALTH functions directly or install FastMCP to serve MCP.")
+
+try:
+    from host.governance.floors import check_floors, maruah_band
+    from host.governance.policy_engine import PolicyEngine
+    from host.governance.vault import append_vault999
+    GOVERNANCE_AVAILABLE = True
+except Exception:
+    GOVERNANCE_AVAILABLE = False
+
+    def check_floors(*_args, **_kwargs):  # type: ignore
+        return {"pass": True, "verdict": "SEAL", "violations": [], "holds": [], "warnings": []}
+
+    def maruah_band(score):  # type: ignore
+        return "SOVEREIGN" if score >= 0.85 else "STABLE" if score >= 0.70 else "FLOOR" if score >= 0.60 else "AMBER" if score >= 0.40 else "RED"
+
+    class PolicyEngine:  # type: ignore
+        def __init__(self, *_args, **_kwargs):
+            pass
+        def evaluate(self, *_args, **_kwargs):
+            return {"policy_pass": True, "flags": [], "details": {}, "constraints_applied": [], "scale_mode": "enterprise"}
+        def evaluate_envelope(self, *_args, **_kwargs):
+            return {"policy_pass": True, "flags": [], "details": {}, "constraints_applied": [], "scale_mode": "enterprise"}
+
+    def append_vault999(record, **_kwargs):  # type: ignore
+        return record
 
 mcp = FastMCP("WEALTH Valuation Kernel")
 
@@ -176,6 +201,141 @@ def confidence_from_verdict(verdict: str, flags: List[str]) -> str:
     return "HIGH"
 
 
+SCALE_DEFAULTS = {
+    "personal": {"discount_rate": 0.03, "horizon_years": 5, "objective": "maximize_lifetime_utility"},
+    "household": {"discount_rate": 0.04, "horizon_years": 10, "objective": "intergenerational_stability"},
+    "sme": {"discount_rate": 0.10, "horizon_years": 5, "objective": "survival_and_growth"},
+    "enterprise": {"discount_rate": 0.10, "horizon_years": 10, "objective": "shareholder_value"},
+    "national": {"discount_rate": 0.02, "horizon_years": 35, "objective": "gdp_plus_welfare"},
+    "crisis": {"discount_rate": float("inf"), "horizon_years": 0, "objective": "minimize_collapse_probability"},
+    "civilization": {"discount_rate": 0.005, "horizon_years": 300, "objective": "species_continuation"},
+    "agentic": {"discount_rate": 0.15, "horizon_years": 2, "objective": "capability_accumulation"},
+}
+
+CAPITAL_TERMINOLOGY = {
+    "financial": {"npv_label": "NPV", "irr_label": "IRR", "pi_label": "PI", "commitment_label": "initial_investment", "stream_label": "cash_flows", "value_label": "Net Present Value"},
+    "temporal": {"npv_label": "NTV", "irr_label": "ITR", "pi_label": "TI", "commitment_label": "initial_time_commitment", "stream_label": "time_streams", "value_label": "Net Temporal Value"},
+    "cognitive": {"npv_label": "NCV", "irr_label": "ICR", "pi_label": "CI", "commitment_label": "initial_attention_commitment", "stream_label": "attention_streams", "value_label": "Net Cognitive Value"},
+    "social": {"npv_label": "NSV", "irr_label": "ISR", "pi_label": "SI", "commitment_label": "initial_reputation_commitment", "stream_label": "reputation_streams", "value_label": "Net Social Value"},
+    "ecological": {"npv_label": "NEV", "irr_label": "IER", "pi_label": "EI", "commitment_label": "initial_resource_commitment", "stream_label": "resource_streams", "value_label": "Net Ecological Value"},
+    "strategic": {"npv_label": "NXV", "irr_label": "IXR", "pi_label": "XI", "commitment_label": "initial_option_commitment", "stream_label": "option_streams", "value_label": "Net Strategic Value"},
+    "thermodynamic": {"npv_label": "NΦV", "irr_label": "IΦR", "pi_label": "ΦI", "commitment_label": "initial_energy_commitment", "stream_label": "energy_streams", "value_label": "Net Thermodynamic Value"},
+}
+
+
+def get_scale_defaults(scale_mode: str) -> Dict[str, Any]:
+    return SCALE_DEFAULTS.get(scale_mode, SCALE_DEFAULTS["enterprise"])
+
+
+def get_capital_terminology(capital_type: str) -> Dict[str, str]:
+    return CAPITAL_TERMINOLOGY.get(capital_type, CAPITAL_TERMINOLOGY["financial"])
+
+
+def derive_allocation_signal(flags: List[str], primary: Dict[str, Any], tool: str, scale_mode: str = "enterprise") -> str:
+    if any(flag in INVALID_FLAGS for flag in flags):
+        return "INSUFFICIENT_DATA"
+
+    scale = get_scale_defaults(scale_mode)
+
+    if tool in {"wealth_npv_reward", "wealth_flow_scenario_npv"}:
+        npv = primary.get("npv")
+        if npv is None:
+            return "INSUFFICIENT_DATA"
+        if npv > 0:
+            return "ACCEPT"
+        if npv < 0:
+            return "REJECT"
+        return "MARGINAL"
+
+    if tool == "wealth_pi_efficiency":
+        pi = primary.get("pi")
+        if pi is None:
+            return "INSUFFICIENT_DATA"
+        if pi > 1:
+            return "ACCEPT"
+        if pi < 1:
+            return "REJECT"
+        return "MARGINAL"
+
+    if tool == "wealth_irr_yield":
+        irr = primary.get("irr")
+        if irr is None:
+            return "INSUFFICIENT_DATA"
+        hurdle = scale["discount_rate"] if scale["discount_rate"] != float("inf") else 0.10
+        if irr > hurdle:
+            return "ACCEPT"
+        if irr < hurdle:
+            return "REJECT"
+        return "MARGINAL"
+
+    if tool == "wealth_payback_time":
+        payback = primary.get("payback_periods")
+        if payback is None:
+            return "REJECT" if any(f == "NOT_RECOVERED" for f in flags) else "INSUFFICIENT_DATA"
+        return "ACCEPT"
+
+    if tool == "wealth_dscr_leverage":
+        dscr = primary.get("dscr")
+        if dscr is None:
+            return "INSUFFICIENT_DATA"
+        if dscr >= 1.5:
+            return "ACCEPT"
+        if dscr >= 1.25:
+            return "MARGINAL"
+        return "REJECT"
+
+    if tool == "wealth_growth_velocity":
+        runway = primary.get("runway_months")
+        if runway is not None and runway != math.inf and runway < 3:
+            return "REJECT"
+        return "ACCEPT"
+
+    if tool == "wealth_cashflow_flow":
+        net_monthly = primary.get("net_monthly")
+        if net_monthly is not None and net_monthly < 0:
+            runway = primary.get("runway_months")
+            if runway is not None and runway != math.inf and runway < 3:
+                return "REJECT"
+            return "MARGINAL"
+        return "ACCEPT"
+
+    return "MARGINAL"
+
+
+def measurement_validate_invariants(initial_investment: float, cash_flows: List[float], discount_rate: float, terminal_value: float = 0, measurement_results: Optional[Dict[str, Any]] = None) -> List[str]:
+    flags = []
+    if measurement_results is None:
+        return flags
+
+    npv = measurement_results.get("npv")
+    irr = measurement_results.get("irr")
+    pi = measurement_results.get("pi")
+    pv_inflows = measurement_results.get("pv_inflows")
+
+    series = build_cashflow_series(initial_investment, cash_flows, terminal_value)
+    sign_changes = count_sign_changes(series)
+
+    if pi is not None and pv_inflows is not None:
+        expected_pi = pv_inflows / abs(initial_investment)
+        if abs(pi - expected_pi) > 0.001:
+            flags.append("INVARIANT_VIOLATION")
+
+    if npv is not None and pi is not None and sign_changes <= 1:
+        if npv > 0 and pi <= 1:
+            flags.append("INVARIANT_VIOLATION")
+        if npv < 0 and pi >= 1:
+            flags.append("INVARIANT_VIOLATION")
+
+    if npv is not None and irr is not None and discount_rate is not None and sign_changes <= 1:
+        if (npv > 0 and irr <= discount_rate) or (npv < 0 and irr >= discount_rate):
+            flags.append("INVARIANT_VIOLATION")
+
+    return flags
+
+
+_policy_engine = PolicyEngine()
+
+
 def create_envelope(
     tool: str,
     dimension: str,
@@ -185,22 +345,75 @@ def create_envelope(
     assumptions: Optional[List[str]] = None,
     epistemic: str = "CLAIM",
     verdict: Optional[str] = None,
+    scale_mode: str = "enterprise",
+    governance_args: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     flags = flags or []
-    derived_verdict = verdict or derive_verdict(flags)
+    derived_governance = verdict or derive_verdict(flags)
+    derived_allocation = derive_allocation_signal(flags, primary, tool, scale_mode)
+    engine_status = "ERROR" if derived_governance == "VOID" else "WARNING" if derived_governance in ("QUALIFY", "888-HOLD") else "VALID"
     derived_epistemic = infer_epistemic(flags, epistemic)
-    return {
+
+    envelope = {
         "tool": tool,
         "dimension": dimension,
-        "verdict": derived_verdict,
+        "verdict": derived_governance,
+        "governance_verdict": derived_governance,
+        "allocation_signal": derived_allocation,
+        "engine_status": engine_status,
         "primary_result": primary,
         "secondary_metrics": secondary or {},
         "integrity_flags": flags,
-        "confidence": confidence_from_verdict(derived_verdict, flags),
+        "confidence": confidence_from_verdict(derived_governance, flags),
         "epistemic": derived_epistemic,
         "assumptions": assumptions or [],
         "epoch": datetime.utcnow().isoformat() + "Z",
     }
+
+    # === Constitutional Governance Layer ===
+    # Governance tools are exempt from recursive envelope governance so they can audit bad proposals
+    is_governance_tool = tool in {"wealth_check_floors", "wealth_policy_audit"}
+    if scale_mode in {"national", "crisis", "civilization", "agentic"} and not is_governance_tool:
+        gov_args = governance_args or {}
+        floor_result = check_floors({**gov_args, "epistemic": derived_epistemic, "scale_mode": scale_mode})
+
+        # Merge floor outcomes
+        if floor_result["verdict"] == "VOID":
+            envelope["governance_verdict"] = "VOID"
+            envelope["allocation_signal"] = "REJECT"
+            envelope["engine_status"] = "ERROR"
+        elif floor_result["verdict"] == "HOLD":
+            envelope["governance_verdict"] = "888-HOLD"
+            envelope["allocation_signal"] = "INSUFFICIENT_DATA"
+            envelope["engine_status"] = "WARNING"
+
+        envelope["floor_check"] = {
+            "verdict": floor_result["verdict"],
+            "violations": floor_result["violations"],
+            "holds": floor_result["holds"],
+            "warnings": floor_result["warnings"],
+        }
+
+        # Policy constraints (if audit data provided)
+        if gov_args:
+            policy_result = _policy_engine.evaluate(gov_args, scale_mode)
+            if not policy_result["policy_pass"]:
+                envelope["governance_verdict"] = "VOID"
+                envelope["allocation_signal"] = "REJECT"
+                envelope["engine_status"] = "ERROR"
+            envelope["policy_audit"] = policy_result
+
+        # Vault all high-scale decisions
+        append_vault999({
+            "tool": tool,
+            "scale_mode": scale_mode,
+            "allocation_signal": envelope["allocation_signal"],
+            "governance_verdict": envelope["governance_verdict"],
+            "floor_check": envelope.get("floor_check"),
+            "policy_audit": envelope.get("policy_audit"),
+        })
+
+    return envelope
 
 
 def measurement_npv(initial_investment: float, cash_flows: List[float], discount_rate: float, terminal_value: float = 0, period_unit: str = "annual", input_epistemic: str = "CLAIM") -> Dict[str, Any]:
@@ -528,7 +741,7 @@ def capitalx(base_rate: float, signals: Dict[str, float]) -> Dict[str, Any]:
 
 
 @mcp.tool(name="wealth_npv_reward")
-def npv_reward(initial_investment: float, cash_flows: List[float], discount_rate: float, terminal_value: float = 0, period_unit: str = "annual", input_epistemic: str = "CLAIM") -> Any:
+def npv_reward(initial_investment: float, cash_flows: List[float], discount_rate: float, terminal_value: float = 0, period_unit: str = "annual", input_epistemic: str = "CLAIM", scale_mode: str = "enterprise") -> Any:
     """Compute NPV, Terminal Value, and EAA. [Reward Dimension]"""
     measurement = measurement_npv(initial_investment, cash_flows, discount_rate, terminal_value, period_unit, input_epistemic)
     return create_envelope(
@@ -545,13 +758,16 @@ def npv_reward(initial_investment: float, cash_flows: List[float], discount_rate
         },
         measurement["flags"],
         measurement["assumptions"],
+        scale_mode=scale_mode,
     )
 
 
 @mcp.tool(name="wealth_irr_yield")
-def irr_yield(initial_investment: float, cash_flows: List[float], reinvestment_rate: float = 0.1, finance_rate: float = 0.1, period_unit: str = "annual") -> Any:
+def irr_yield(initial_investment: float, cash_flows: List[float], reinvestment_rate: float = 0.1, finance_rate: float = 0.1, period_unit: str = "annual", discount_rate: float = 0.1, scale_mode: str = "enterprise") -> Any:
     """Compute IRR and MIRR (Potential). [Energy Dimension]"""
     measurement = measurement_irr(initial_investment, cash_flows, finance_rate, reinvestment_rate, period_unit)
+    invariant_flags = measurement_validate_invariants(initial_investment, cash_flows, discount_rate, 0, {"npv": npv_from_series(build_cashflow_series(initial_investment, cash_flows), discount_rate), "irr": measurement["irr"]})
+    all_flags = list(dict.fromkeys([*measurement["flags"], *invariant_flags]))
     return create_envelope(
         "wealth_irr_yield",
         "Energy",
@@ -562,28 +778,32 @@ def irr_yield(initial_investment: float, cash_flows: List[float], reinvestment_r
             "period_count": measurement["period_count"],
             "period_unit": measurement["period_unit"],
         },
-        measurement["flags"],
+        all_flags,
         measurement["assumptions"],
+        scale_mode=scale_mode,
     )
 
 
 @mcp.tool(name="wealth_pi_efficiency")
-def pi_efficiency(initial_investment: float, cash_flows: List[float], discount_rate: float) -> Any:
+def pi_efficiency(initial_investment: float, cash_flows: List[float], discount_rate: float, terminal_value: float = 0, scale_mode: str = "enterprise") -> Any:
     """Compute Profitability Index (Concentration). [Energy Dimension]"""
-    measurement = measurement_pi(initial_investment, cash_flows, discount_rate)
+    measurement = measurement_pi(initial_investment, cash_flows, discount_rate, terminal_value)
+    invariant_flags = measurement_validate_invariants(initial_investment, cash_flows, discount_rate, terminal_value, {"pi": measurement["pi"], "pv_inflows": measurement["pv_inflows"]})
+    all_flags = list(dict.fromkeys([*measurement["flags"], *invariant_flags]))
     ranking_signal = "EFFICIENT" if measurement["pi"] is not None and measurement["pi"] >= 1 else "EXTRACTIVE"
     return create_envelope(
         "wealth_pi_efficiency",
         "Energy",
         {"pi": measurement["pi"]},
         {"ranking_signal": ranking_signal},
-        measurement["flags"],
+        all_flags,
         measurement["assumptions"],
+        scale_mode=scale_mode,
     )
 
 
 @mcp.tool(name="wealth_emv_risk")
-def emv_risk(scenarios: List[dict]) -> Any:
+def emv_risk(scenarios: List[dict], scale_mode: str = "enterprise") -> Any:
     """Compute Expected Monetary Value (Probability Density). [Entropy Dimension]"""
     measurement = measurement_emv(scenarios)
     return create_envelope(
@@ -601,30 +821,35 @@ def emv_risk(scenarios: List[dict]) -> Any:
         measurement["flags"],
         measurement["assumptions"],
         epistemic="ESTIMATE",
+        scale_mode=scale_mode,
     )
 
 
 @mcp.tool(name="wealth_audit_entropy")
-def audit_entropy(initial_investment: float, cash_flows: List[float], discount_rate: float = 0.1) -> Any:
+def audit_entropy(initial_investment: float, cash_flows: List[float], discount_rate: float = 0.1, scale_mode: str = "enterprise") -> Any:
     """Audit project cash flows for noise and multiple IRRs. [Entropy Dimension]"""
     irr_measure = measurement_irr(initial_investment, cash_flows, discount_rate, discount_rate)
+    npv_measure = measurement_npv(initial_investment, cash_flows, discount_rate)
+    invariant_flags = measurement_validate_invariants(initial_investment, cash_flows, discount_rate, 0, {"npv": npv_measure["npv"], "irr": irr_measure["irr"]})
+    all_flags = list(dict.fromkeys([*irr_measure["flags"], *invariant_flags]))
     sensitivity = []
     for multiplier in [0.8, 0.9, 1.0, 1.1, 1.2]:
-        npv_measure = measurement_npv(initial_investment, cash_flows, discount_rate * multiplier)
-        sensitivity.append({"multiplier": multiplier, "npv": npv_measure["npv"]})
+        sweep_npv = measurement_npv(initial_investment, cash_flows, discount_rate * multiplier)
+        sensitivity.append({"multiplier": multiplier, "npv": sweep_npv["npv"]})
     return create_envelope(
         "wealth_audit_entropy",
         "Entropy",
         {"sign_changes": irr_measure["sign_changes"]},
         {"sensitivity_sweep": sensitivity},
-        irr_measure["flags"],
+        all_flags,
         irr_measure["assumptions"],
         epistemic="ESTIMATE",
+        scale_mode=scale_mode,
     )
 
 
 @mcp.tool(name="wealth_dscr_leverage")
-def dscr_leverage(ebitda: Optional[float] = None, principal: float = 0, interest: float = 0, leases: float = 0, cfads: Optional[float] = None, debt_service: Optional[float] = None, period_unit: str = "annual", input_epistemic: str = "CLAIM") -> Any:
+def dscr_leverage(ebitda: Optional[float] = None, principal: float = 0, interest: float = 0, leases: float = 0, cfads: Optional[float] = None, debt_service: Optional[float] = None, period_unit: str = "annual", input_epistemic: str = "CLAIM", scale_mode: str = "enterprise") -> Any:
     """Compute Debt Service Coverage Ratio (Structural Load). [Survival Dimension]"""
     measurement = measurement_dscr(cfads, debt_service, ebitda, principal, interest, leases, period_unit, input_epistemic)
     return create_envelope(
@@ -634,11 +859,12 @@ def dscr_leverage(ebitda: Optional[float] = None, principal: float = 0, interest
         {"basis": measurement["basis"], "period_unit": measurement["period_unit"], "confidence_band": measurement["confidence_band"]},
         measurement["flags"],
         measurement["assumptions"],
+        scale_mode=scale_mode,
     )
 
 
 @mcp.tool(name="wealth_payback_time")
-def payback_time(initial_investment: float, cash_flows: List[float], discount_rate: float = 0, period_unit: str = "annual") -> Any:
+def payback_time(initial_investment: float, cash_flows: List[float], discount_rate: float = 0, period_unit: str = "annual", scale_mode: str = "enterprise") -> Any:
     """Compute Payback Period (Recovery Velocity). [Time Dimension]"""
     measurement = measurement_payback(initial_investment, cash_flows, discount_rate, period_unit)
     return create_envelope(
@@ -648,11 +874,12 @@ def payback_time(initial_investment: float, cash_flows: List[float], discount_ra
         {"period_unit": measurement["period_unit"], "discounted": measurement["discounted"]},
         measurement["flags"],
         measurement["assumptions"],
+        scale_mode=scale_mode,
     )
 
 
 @mcp.tool(name="wealth_growth_velocity")
-def growth_velocity(principal: float, rate: float, years: int, annual_contribution: float = 0, monthly_burn: float = 0) -> Any:
+def growth_velocity(principal: float, rate: float, years: int, annual_contribution: float = 0, monthly_burn: float = 0, scale_mode: str = "enterprise") -> Any:
     """Compute Compound Growth and Runway. [Velocity Dimension]"""
     total = principal
     for _ in range(years):
@@ -671,11 +898,12 @@ def growth_velocity(principal: float, rate: float, years: int, annual_contributi
         flags,
         ["Forward projections remain ESTIMATE by design."],
         epistemic="ESTIMATE",
+        scale_mode=scale_mode,
     )
 
 
 @mcp.tool(name="wealth_networth_state")
-def networth_state(assets: Optional[List[dict]] = None, liabilities: Optional[List[dict]] = None) -> Any:
+def networth_state(assets: Optional[List[dict]] = None, liabilities: Optional[List[dict]] = None, scale_mode: str = "enterprise") -> Any:
     """Compute portfolio balance sheet (Accumulated Mass). [Mass Dimension]"""
     assets = assets or []
     liabilities = liabilities or []
@@ -695,11 +923,12 @@ def networth_state(assets: Optional[List[dict]] = None, liabilities: Optional[Li
         [],
         [],
         epistemic=epistemic,
+        scale_mode=scale_mode,
     )
 
 
 @mcp.tool(name="wealth_cashflow_flow")
-def cashflow_flow(income: Optional[List[dict]] = None, expenses: Optional[List[dict]] = None, liquid_assets: float = 0) -> Any:
+def cashflow_flow(income: Optional[List[dict]] = None, expenses: Optional[List[dict]] = None, liquid_assets: float = 0, scale_mode: str = "enterprise") -> Any:
     """Compute metabolic liquidity (Flow Dimension). [Flow Dimension]"""
     income = [item for item in (income or []) if item.get("active", True)]
     expenses = [item for item in (expenses or []) if item.get("active", True)]
@@ -725,11 +954,12 @@ def cashflow_flow(income: Optional[List[dict]] = None, expenses: Optional[List[d
         flags,
         [],
         epistemic=epistemic,
+        scale_mode=scale_mode,
     )
 
 
 @mcp.tool(name="wealth_score_kernel")
-def score_kernel(base_rate: float, dS: float, peace2: float, maruahScore: float, trustIndex: float = 0.5, deltaCiv: float = 0.0, compare: bool = False, wealth_signals: Optional[dict] = None, extractive_signals: Optional[dict] = None) -> Any:
+def score_kernel(base_rate: float, dS: float, peace2: float, maruahScore: float, trustIndex: float = 0.5, deltaCiv: float = 0.0, compare: bool = False, wealth_signals: Optional[dict] = None, extractive_signals: Optional[dict] = None, scale_mode: str = "enterprise") -> Any:
     """Final Sovereign Allocation Verdict. [Allocation Dimension]"""
     wealth_payload = {"dS": dS, "peace2": peace2, "maruahScore": maruahScore, "trustIndex": trustIndex, "deltaCiv": deltaCiv}
     if wealth_signals:
@@ -758,6 +988,7 @@ def score_kernel(base_rate: float, dS: float, peace2: float, maruahScore: float,
             [*flags, *(wealth_result["integrity_flags"]), *(extractive_result["integrity_flags"])],
             ["CapitalX remains an estimate until delta_bps is proven."],
             epistemic="ESTIMATE",
+            scale_mode=scale_mode,
         )
 
     return create_envelope(
@@ -768,6 +999,318 @@ def score_kernel(base_rate: float, dS: float, peace2: float, maruahScore: float,
         [*flags, *(wealth_result["integrity_flags"])],
         wealth_result["assumptions"],
         epistemic="ESTIMATE",
+        scale_mode=scale_mode,
+    )
+
+
+@mcp.tool(name="wealth_personal_decision")
+def personal_decision(alternatives: List[dict], constraints: dict, values: Optional[dict] = None, scale_mode: str = "personal") -> Any:
+    """Rank personal alternatives under constraints. [Personal Dimension]"""
+    values = values or {}
+    ranked = []
+    flags = []
+    for alt in alternatives:
+        cost = alt.get("cost", 0)
+        time = alt.get("time_hours", 0)
+        utility = alt.get("expected_utility", 0)
+        weight_money = values.get("weight_money", 0.33)
+        weight_time = values.get("weight_time", 0.33)
+        weight_utility = values.get("weight_utility", 0.34)
+        budget = constraints.get("budget", math.inf)
+        time_budget = constraints.get("time_budget", math.inf)
+        score = weight_money * (-cost / max(budget, 1)) + weight_time * (-time / max(time_budget, 1)) + weight_utility * utility
+        feasible = cost <= budget and time <= time_budget
+        ranked.append({"name": alt.get("name"), "score": round_value(score, 6), "feasible": feasible})
+    ranked.sort(key=lambda x: x["score"], reverse=True)
+    if not any(r["feasible"] for r in ranked):
+        flags.append("NO_FEASIBLE_ALTERNATIVE")
+    return create_envelope(
+        "wealth_personal_decision",
+        "Personal",
+        {"ranked_alternatives": ranked},
+        {"constraint_summary": constraints},
+        flags,
+        ["Personal decisions trade money, time, and subjective utility."],
+        scale_mode=scale_mode,
+    )
+
+
+@mcp.tool(name="wealth_agent_budget")
+def agent_budget(compute_budget_usd: float, token_budget: float, time_deadline_hours: float, expected_value_of_information: float, actions: List[dict], scale_mode: str = "agentic") -> Any:
+    """Optimal action sequence for an AI agent under resource constraints. [Agentic Dimension]"""
+    feasible = []
+    for action in actions:
+        cost = action.get("compute_cost_usd", 0) + action.get("token_cost", 0) * 0.00001
+        time = action.get("time_hours", 0)
+        value = action.get("expected_value", 0)
+        if cost <= compute_budget_usd and time <= time_deadline_hours:
+            feasible.append({"name": action.get("name"), "cost": round_value(cost, 6), "value": value, "efficiency": round_value(value / max(cost, 1e-9), 6)})
+    feasible.sort(key=lambda x: x["efficiency"], reverse=True)
+    selected = []
+    remaining_budget = compute_budget_usd
+    remaining_time = time_deadline_hours
+    total_value = 0.0
+    for action in feasible:
+        if action["cost"] <= remaining_budget and action["cost"] * 0.00001 <= token_budget and action.get("time_hours", 0) <= remaining_time:
+            selected.append(action["name"])
+            remaining_budget -= action["cost"]
+            remaining_time -= action.get("time_hours", 0)
+            total_value += action["value"]
+    flags = []
+    if total_value < expected_value_of_information:
+        flags.append("VALUE_OF_INFORMATION_NEGATIVE")
+    return create_envelope(
+        "wealth_agent_budget",
+        "Agentic",
+        {"selected_actions": selected, "total_value": round_value(total_value, 6)},
+        {"remaining_budget": round_value(remaining_budget, 2), "remaining_time": round_value(remaining_time, 2)},
+        flags,
+        ["Agent budgets optimize value per unit of compute and latency."],
+        scale_mode=scale_mode,
+    )
+
+
+@mcp.tool(name="wealth_crisis_triage")
+def crisis_triage(resources: dict, demands: List[dict], recovery_horizon_days: float = 30, scale_mode: str = "crisis") -> Any:
+    """Survival-oriented resource triage. [Crisis Dimension]"""
+    total_supply = sum(v for v in resources.values() if math.isfinite(v))
+    total_demand = sum(d.get("amount", 0) for d in demands if math.isfinite(d.get("amount", 0)))
+    gap = total_demand - total_supply
+    sorted_demands = sorted(demands, key=lambda d: d.get("urgency", 1), reverse=True)
+    allocated = []
+    remaining = dict(resources)
+    for demand in sorted_demands:
+        name = demand.get("name")
+        amount = demand.get("amount", 0)
+        res_type = demand.get("resource_type", "general")
+        available = remaining.get(res_type, remaining.get("general", 0))
+        grant = min(amount, available)
+        remaining[res_type] = available - grant
+        if res_type != "general" and "general" in remaining:
+            remaining["general"] -= grant
+        allocated.append({"name": name, "granted": round_value(grant, 2), "shortfall": round_value(amount - grant, 2)})
+    survival_probability = max(0.0, min(1.0, total_supply / max(total_demand, 1e-9)))
+    flags = []
+    if survival_probability < 0.5:
+        flags.append("SURVIVAL_CRITICAL")
+    elif survival_probability < 0.8:
+        flags.append("SURVIVAL_AT_RISK")
+    return create_envelope(
+        "wealth_crisis_triage",
+        "Crisis",
+        {"survival_probability": round_value(survival_probability, 4), "resource_gap": round_value(gap, 2)},
+        {"triage_allocation": allocated, "recovery_horizon_days": recovery_horizon_days},
+        flags,
+        ["Crisis mode prioritizes survival probability over efficiency."],
+        scale_mode=scale_mode,
+        governance_args={
+            "reversible": False,
+            "human_confirmed": False,
+            "epistemic": "ESTIMATE",
+            "peace2": survival_probability,
+            "maruah_score": 0.6,
+            "runway_months": recovery_horizon_days / 30.0,
+        },
+    )
+
+
+@mcp.tool(name="wealth_civilization_stewardship")
+def civilization_stewardship(population: float, energy_budget_twh: float, carbon_budget_gt: float, tech_growth_rate: float, time_horizon_years: int = 100, scale_mode: str = "civilization") -> Any:
+    """Long-term civilization sustainability path. [Civilization Dimension]"""
+    flags = []
+    energy_per_capita = energy_budget_twh / max(population, 1)
+    carbon_intensity = carbon_budget_gt / max(energy_budget_twh, 1)
+    sustainable_growth = tech_growth_rate * (1 - carbon_intensity)
+    projected_pop = population * pow(1 + min(tech_growth_rate, 0.02), time_horizon_years / 100)
+    collapse_risk = max(0.0, min(1.0, (projected_pop * 10) / max(energy_budget_twh, 1)))
+    if collapse_risk > 0.5:
+        flags.append("CIVILIZATION_COLLAPSE_RISK_HIGH")
+    if carbon_intensity > 0.05:
+        flags.append("CARBON_BUDGET_EXHAUSTION")
+    sustainability_index = max(0.0, min(1.0, sustainable_growth / max(collapse_risk, 0.01)))
+    return create_envelope(
+        "wealth_civilization_stewardship",
+        "Civilization",
+        {
+            "sustainability_index": round_value(sustainability_index, 4),
+            "collapse_risk": round_value(collapse_risk, 4),
+            "sustainable_growth_rate": round_value(sustainable_growth, 6),
+        },
+        {
+            "energy_per_capita_twh": round_value(energy_per_capita, 6),
+            "projected_population_billions": round_value(projected_pop / 1e9, 4),
+            "time_horizon_years": time_horizon_years,
+        },
+        flags,
+        ["Civilization modeling uses long-horizon, low-discount assumptions."],
+        scale_mode=scale_mode,
+        governance_args={
+            "reversible": True,
+            "human_confirmed": False,
+            "epistemic": "ESTIMATE",
+            "peace2": 1.0 - collapse_risk,
+            "maruah_score": 0.5,
+            "carbon_intensity": carbon_intensity,
+            "social_stability_index": 1.0 - collapse_risk,
+        },
+    )
+
+
+@mcp.tool(name="wealth_coordination_equilibrium")
+def coordination_equilibrium(agents: List[dict], shared_resources: dict, mechanism: str = "cooperative", scale_mode: str = "enterprise") -> Any:
+    """Multi-agent resource coordination and equilibrium analysis. [Coordination Dimension]"""
+    total_claims = {res: 0.0 for res in shared_resources}
+    for agent in agents:
+        for res, claim in agent.get("resource_demand", {}).items():
+            total_claims[res] = total_claims.get(res, 0.0) + claim
+    conflicts = []
+    tragedy_risk = 0.0
+    for res, supply in shared_resources.items():
+        demand = total_claims.get(res, 0.0)
+        if demand > supply:
+            conflicts.append({"resource": res, "demand": round_value(demand, 2), "supply": round_value(supply, 2), "gap": round_value(demand - supply, 2)})
+            tragedy_risk += (demand - supply) / max(demand, 1)
+    tragedy_risk = min(1.0, tragedy_risk)
+    cooperative_surplus = 0.0
+    if mechanism == "cooperative":
+        for agent in agents:
+            cooperative_surplus += agent.get("cooperative_value", 0)
+    flags = []
+    if tragedy_risk > 0.5:
+        flags.append("TRAGEDY_OF_COMMONS")
+    if not conflicts:
+        flags.append("EQUILIBRIUM_FEASIBLE")
+    return create_envelope(
+        "wealth_coordination_equilibrium",
+        "Coordination",
+        {"tragedy_risk": round_value(tragedy_risk, 4), "conflict_count": len(conflicts)},
+        {"conflicts": conflicts, "cooperative_surplus": round_value(cooperative_surplus, 2), "mechanism": mechanism},
+        flags,
+        ["Coordination layer detects commons overuse and incentivizes cooperation."],
+        scale_mode=scale_mode,
+        governance_args={
+            "reversible": True,
+            "human_confirmed": False,
+            "epistemic": "ESTIMATE",
+            "peace2": 1.0 - tragedy_risk,
+            "maruah_score": 0.6,
+            "dS": tragedy_risk,
+        },
+    )
+
+
+@mcp.tool(name="wealth_monte_carlo_forecast")
+def monte_carlo_forecast(initial_commitment: float, mean_cash_flows: List[float], volatilities: List[float], discount_rate: float = 0.1, simulations: int = 10000, distribution: str = "lognormal", scale_mode: str = "enterprise") -> Any:
+    """Stochastic forecast with probability-weighted outcomes. [Risk Dimension]"""
+    import random
+    random.seed(42)
+    npvs = []
+    periods = len(mean_cash_flows)
+    for _ in range(simulations):
+        draws = []
+        for i, mean in enumerate(mean_cash_flows):
+            vol = volatilities[i] if i < len(volatilities) else volatilities[-1]
+            if distribution == "lognormal":
+                sigma = math.sqrt(math.log1p((vol / max(abs(mean), 1e-9)) ** 2))
+                mu = math.log(max(abs(mean), 1e-9)) - 0.5 * sigma ** 2
+                draw = random.lognormvariate(mu, sigma) * (1 if mean >= 0 else -1)
+            elif distribution == "triangular":
+                low = mean * (1 - vol)
+                high = mean * (1 + vol)
+                draw = random.triangular(low, high, mean)
+            else:
+                draw = random.gauss(mean, vol)
+            draws.append(draw)
+        npv = -abs(initial_commitment) + sum(draws[t] / pow(1 + discount_rate, t + 1) for t in range(periods))
+        npvs.append(npv)
+    npvs.sort()
+    positive_prob = sum(1 for n in npvs if n > 0) / len(npvs)
+    es_5 = npvs[int(len(npvs) * 0.05)] if npvs else 0
+    upside_95 = npvs[int(len(npvs) * 0.95)] if npvs else 0
+    mean_npv = sum(npvs) / len(npvs) if npvs else 0
+    variance_npv = sum((n - mean_npv) ** 2 for n in npvs) / len(npvs) if npvs else 0
+    flags = []
+    if positive_prob < 0.5:
+        flags.append("MAJORITY_DOWNSIDE")
+    return create_envelope(
+        "wealth_monte_carlo_forecast",
+        "Risk",
+        {"probability_positive_nrv": round_value(positive_prob, 4), "expected_shortfall_5pct": round_value(es_5, 2), "upside_potential_95pct": round_value(upside_95, 2)},
+        {"mean_npv": round_value(mean_npv, 2), "volatility_of_outcome": round_value(math.sqrt(variance_npv), 2), "simulations": simulations, "distribution": distribution},
+        flags,
+        ["Monte Carlo provides density estimates, not deterministic guarantees."],
+        scale_mode=scale_mode,
+    )
+
+
+@mcp.tool(name="wealth_check_floors")
+def check_floors_tool(
+    reversible: bool = True,
+    human_confirmed: bool = False,
+    epistemic: str = "ESTIMATE",
+    ai_is_deciding: bool = False,
+    floor_override: bool = False,
+    peace2: float = 1.0,
+    maruah_score: float = 0.5,
+    uncertainty_band: Optional[List[float]] = None,
+    operation_type: str = "PROJECTION",
+    scale_mode: str = "enterprise",
+    task_definition: str = "",
+    phantom_entries: bool = False,
+    critical: bool = False,
+    pin_verified: bool = False,
+) -> Any:
+    """Evaluate F1–F13 constitutional floors. [Governance Dimension]"""
+    result = check_floors({
+        "reversible": reversible,
+        "human_confirmed": human_confirmed,
+        "epistemic": epistemic,
+        "ai_is_deciding": ai_is_deciding,
+        "floor_override": floor_override,
+        "peace2": peace2,
+        "maruah_score": maruah_score,
+        "uncertainty_band": uncertainty_band,
+        "operation_type": operation_type,
+        "scale_mode": scale_mode,
+        "task_definition": task_definition,
+        "phantom_entries": phantom_entries,
+        "critical": critical,
+        "pin_verified": pin_verified,
+    })
+    gov_verdict = {"HOLD": "888-HOLD", "VOID": "VOID", "CAUTION": "QUALIFY", "SEAL": "SEAL"}.get(result["verdict"], "SEAL")
+    return create_envelope(
+        "wealth_check_floors",
+        "Governance",
+        {"pass": result["pass"], "verdict": result["verdict"]},
+        {
+            "violations": result["violations"],
+            "holds": result["holds"],
+            "warnings": result["warnings"],
+            "maruah_band": maruah_band(maruah_score),
+        },
+        [*result["violations"], *result["holds"]],
+        ["F1-F13 floors are hard constraints, not suggestions."],
+        epistemic=epistemic,
+        verdict=gov_verdict,
+        scale_mode=scale_mode,
+    )
+
+
+@mcp.tool(name="wealth_policy_audit")
+def policy_audit(proposal: dict, constraints: Optional[dict] = None, scale_mode: str = "enterprise") -> Any:
+    """Audit an allocation proposal against configurable policy constraints. [Governance Dimension]"""
+    engine = PolicyEngine(constraints)
+    result = engine.evaluate(proposal, scale_mode)
+    policy_verdict = "VOID" if not result["policy_pass"] else ("QUALIFY" if result["flags"] else "SEAL")
+    return create_envelope(
+        "wealth_policy_audit",
+        "Governance",
+        {"policy_pass": result["policy_pass"]},
+        {"flags": result["flags"], "details": result["details"], "constraints_applied": result["constraints_applied"]},
+        result["flags"],
+        ["Policy constraints encode constitutional economic boundaries."],
+        verdict=policy_verdict,
+        scale_mode=scale_mode,
     )
 
 

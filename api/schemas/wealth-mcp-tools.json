@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://wealth.arif-fazil.com/api/schemas/wealth-mcp-tools.json",
   "title": "WEALTH MCP Tool Families Schema",
-  "description": "Orthogonal tool families for the WEALTH capital nerve: state, risk, price, flow, justice, control",
+  "description": "Universal Resource Allocation Intelligence (URAI) — cross-scale capital nerve",
   "definitions": {
     "CommonRequestHeader": {
       "type": "object",
@@ -17,9 +17,12 @@
     },
     "CommonResponseFooter": {
       "type": "object",
-      "required": ["verdict", "epistemic"],
+      "required": ["verdict", "governance_verdict", "allocation_signal", "engine_status", "epistemic"],
       "properties": {
         "verdict": { "type": "string", "enum": ["SEAL", "QUALIFY", "888-HOLD", "VOID"] },
+        "governance_verdict": { "type": "string", "enum": ["SEAL", "QUALIFY", "888-HOLD", "VOID"] },
+        "allocation_signal": { "type": "string", "enum": ["ACCEPT", "REJECT", "MARGINAL", "INSUFFICIENT_DATA"] },
+        "engine_status": { "type": "string", "enum": ["VALID", "WARNING", "ERROR"] },
         "epistemic": { "type": "string", "enum": ["CLAIM", "PLAUSIBLE", "ESTIMATE", "HYPOTHESIS", "UNKNOWN"] },
         "vault_log_entry": { "type": "object", "description": "Append-only VAULT999 fragment for this call" },
         "witness": {
@@ -43,13 +46,23 @@
         "scar": { "type": "number", "minimum": 0, "maximum": 1 },
         "shadow": { "type": "number", "minimum": 0, "maximum": 1 }
       }
+    },
+    "ScaleMode": {
+      "type": "string",
+      "enum": ["personal", "household", "sme", "enterprise", "national", "crisis", "civilization", "agentic"],
+      "default": "enterprise"
+    },
+    "CapitalType": {
+      "type": "string",
+      "enum": ["financial", "temporal", "cognitive", "social", "ecological", "strategic", "thermodynamic"],
+      "default": "financial"
     }
   },
   "type": "object",
   "properties": {
     "tool_family": {
       "type": "string",
-      "enum": ["wealth.state", "wealth.risk", "wealth.price", "wealth.flow", "wealth.justice", "wealth.control"]
+      "enum": ["wealth.state", "wealth.risk", "wealth.price", "wealth.flow", "wealth.justice", "wealth.control", "wealth.personal", "wealth.agentic", "wealth.crisis", "wealth.civilization", "wealth.coordination"]
     },
     "requests": {
       "type": "object",
@@ -152,6 +165,95 @@
               }
             }
           }
+        },
+        "wealth_npv_reward": {
+          "type": "object",
+          "properties": {
+            "initial_investment": { "type": "number" },
+            "cash_flows": { "type": "array", "items": { "type": "number" } },
+            "discount_rate": { "type": "number" },
+            "terminal_value": { "type": "number", "default": 0 },
+            "period_unit": { "type": "string", "default": "annual" },
+            "input_epistemic": { "type": "string", "default": "CLAIM" },
+            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+          }
+        },
+        "wealth_pi_efficiency": {
+          "type": "object",
+          "properties": {
+            "initial_investment": { "type": "number" },
+            "cash_flows": { "type": "array", "items": { "type": "number" } },
+            "discount_rate": { "type": "number" },
+            "terminal_value": { "type": "number", "default": 0 },
+            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+          }
+        },
+        "wealth_personal_decision": {
+          "type": "object",
+          "required": ["alternatives", "constraints"],
+          "properties": {
+            "alternatives": { "type": "array", "items": { "type": "object" } },
+            "constraints": { "type": "object" },
+            "values": { "type": "object" },
+            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+          }
+        },
+        "wealth_agent_budget": {
+          "type": "object",
+          "required": ["compute_budget_usd", "token_budget", "time_deadline_hours", "expected_value_of_information", "actions"],
+          "properties": {
+            "compute_budget_usd": { "type": "number" },
+            "token_budget": { "type": "number" },
+            "time_deadline_hours": { "type": "number" },
+            "expected_value_of_information": { "type": "number" },
+            "actions": { "type": "array", "items": { "type": "object" } },
+            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+          }
+        },
+        "wealth_crisis_triage": {
+          "type": "object",
+          "required": ["resources", "demands"],
+          "properties": {
+            "resources": { "type": "object" },
+            "demands": { "type": "array", "items": { "type": "object" } },
+            "recovery_horizon_days": { "type": "number", "default": 30 },
+            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+          }
+        },
+        "wealth_civilization_stewardship": {
+          "type": "object",
+          "required": ["population", "energy_budget_twh", "carbon_budget_gt", "tech_growth_rate"],
+          "properties": {
+            "population": { "type": "number" },
+            "energy_budget_twh": { "type": "number" },
+            "carbon_budget_gt": { "type": "number" },
+            "tech_growth_rate": { "type": "number" },
+            "time_horizon_years": { "type": "integer", "default": 100 },
+            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+          }
+        },
+        "wealth_coordination_equilibrium": {
+          "type": "object",
+          "required": ["agents", "shared_resources"],
+          "properties": {
+            "agents": { "type": "array", "items": { "type": "object" } },
+            "shared_resources": { "type": "object" },
+            "mechanism": { "type": "string", "enum": ["cooperative", "competitive", "mixed"], "default": "cooperative" },
+            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+          }
+        },
+        "wealth_monte_carlo_forecast": {
+          "type": "object",
+          "required": ["initial_commitment", "mean_cash_flows", "volatilities"],
+          "properties": {
+            "initial_commitment": { "type": "number" },
+            "mean_cash_flows": { "type": "array", "items": { "type": "number" } },
+            "volatilities": { "type": "array", "items": { "type": "number" } },
+            "discount_rate": { "type": "number", "default": 0.1 },
+            "simulations": { "type": "integer", "default": 10000 },
+            "distribution": { "type": "string", "enum": ["lognormal", "normal", "triangular"], "default": "lognormal" },
+            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+          }
         }
       }
     },
@@ -235,6 +337,171 @@
             "recommendation": { "type": "string", "enum": ["FUND", "DEFER", "RESTRUCTURE", "KILL"] },
             "repricing_hints": { "type": "array", "items": { "type": "string" } },
             "upstream_signal": { "type": "string" }
+          }
+        },
+        "wealth_npv_reward": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "npv": { "type": "number" }
+              }
+            },
+            "secondary_metrics": {
+              "type": "object",
+              "properties": {
+                "eaa": { "type": "number" },
+                "pv_inflows": { "type": "number" },
+                "pv_outflows": { "type": "number" },
+                "period_count": { "type": "integer" },
+                "period_unit": { "type": "string" },
+                "confidence_band": { "type": "array", "items": { "type": "number" } }
+              }
+            }
+          }
+        },
+        "wealth_pi_efficiency": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "pi": { "type": "number" }
+              }
+            },
+            "secondary_metrics": {
+              "type": "object",
+              "properties": {
+                "ranking_signal": { "type": "string", "enum": ["EFFICIENT", "EXTRACTIVE"] }
+              }
+            }
+          }
+        },
+        "wealth_personal_decision": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "ranked_alternatives": { "type": "array", "items": { "type": "object" } }
+              }
+            },
+            "secondary_metrics": {
+              "type": "object",
+              "properties": {
+                "constraint_summary": { "type": "object" }
+              }
+            }
+          }
+        },
+        "wealth_agent_budget": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "selected_actions": { "type": "array", "items": { "type": "string" } },
+                "total_value": { "type": "number" }
+              }
+            },
+            "secondary_metrics": {
+              "type": "object",
+              "properties": {
+                "remaining_budget": { "type": "number" },
+                "remaining_time": { "type": "number" }
+              }
+            }
+          }
+        },
+        "wealth_crisis_triage": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "survival_probability": { "type": "number" },
+                "resource_gap": { "type": "number" }
+              }
+            },
+            "secondary_metrics": {
+              "type": "object",
+              "properties": {
+                "triage_allocation": { "type": "array", "items": { "type": "object" } },
+                "recovery_horizon_days": { "type": "number" }
+              }
+            }
+          }
+        },
+        "wealth_civilization_stewardship": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "sustainability_index": { "type": "number" },
+                "collapse_risk": { "type": "number" },
+                "sustainable_growth_rate": { "type": "number" }
+              }
+            },
+            "secondary_metrics": {
+              "type": "object",
+              "properties": {
+                "energy_per_capita_twh": { "type": "number" },
+                "projected_population_billions": { "type": "number" },
+                "time_horizon_years": { "type": "integer" }
+              }
+            }
+          }
+        },
+        "wealth_coordination_equilibrium": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "tragedy_risk": { "type": "number" },
+                "conflict_count": { "type": "integer" }
+              }
+            },
+            "secondary_metrics": {
+              "type": "object",
+              "properties": {
+                "conflicts": { "type": "array", "items": { "type": "object" } },
+                "cooperative_surplus": { "type": "number" },
+                "mechanism": { "type": "string" }
+              }
+            }
+          }
+        },
+        "wealth_monte_carlo_forecast": {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "properties": {
+            "primary_result": {
+              "type": "object",
+              "properties": {
+                "probability_positive_nrv": { "type": "number" },
+                "expected_shortfall_5pct": { "type": "number" },
+                "upside_potential_95pct": { "type": "number" }
+              }
+            },
+            "secondary_metrics": {
+              "type": "object",
+              "properties": {
+                "mean_npv": { "type": "number" },
+                "volatility_of_outcome": { "type": "number" },
+                "simulations": { "type": "integer" },
+                "distribution": { "type": "string" }
+              }
+            }
           }
         }
       }

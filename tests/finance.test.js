@@ -9,6 +9,8 @@ import {
   calculateNpvMeasurement,
   calculatePaybackMeasurement,
   calculateProfitabilityIndexMeasurement,
+  deriveAllocationSignal,
+  validateMeasurementInvariants,
 } from "../src/kernel/finance.js";
 import { calculateRiskAdjustedRate } from "../src/kernel/capitalx.js";
 
@@ -45,6 +47,24 @@ test("calculateProfitabilityIndexMeasurement preserves NPV ranking warning", () 
   });
 
   assert.ok(result.pi > 1);
+});
+
+test("calculateProfitabilityIndexMeasurement includes terminal_value and reconciles with NPV", () => {
+  const initial = 120000;
+  const cfs = [30000, 35000, 40000, 45000, 50000];
+  const r = 0.1;
+  const tv = 20000;
+
+  const npv = calculateNpvMeasurement({
+    initial_investment: initial, cash_flows: cfs, discount_rate: r, terminal_value: tv
+  });
+  const pi = calculateProfitabilityIndexMeasurement({
+    initial_investment: initial, cash_flows: cfs, discount_rate: r, terminal_value: tv
+  });
+
+  const expectedPi = npv.pv_inflows / Math.abs(initial);
+  assert.ok(Math.abs(pi.pi - expectedPi) < 1e-6,
+    `PI mismatch: ${pi.pi} vs expected ${expectedPi}`);
 });
 
 test("calculateEmvMeasurement rejects invalid probability mass", () => {
@@ -189,4 +209,77 @@ test("capitalx monotonicity keeps higher entropy from lowering price", () => {
   });
 
   assert.ok(highEntropy.r_adj >= lowEntropy.r_adj);
+});
+
+test("validateMeasurementInvariants catches PI mismatch", () => {
+  const flags = validateMeasurementInvariants(120000, [30000, 35000, 40000, 45000, 50000], 0.1, 20000, {
+    npv: 40451,
+    pi: 1.23, // wrong
+    pv_inflows: 160451,
+  });
+  assert.ok(flags.includes("INVARIANT_VIOLATION"));
+});
+
+test("validateMeasurementInvariants passes when PI is correct", () => {
+  const npv = calculateNpvMeasurement({
+    initial_investment: 120000, cash_flows: [30000, 35000, 40000, 45000, 50000], discount_rate: 0.1, terminal_value: 20000
+  });
+  const pi = calculateProfitabilityIndexMeasurement({
+    initial_investment: 120000, cash_flows: [30000, 35000, 40000, 45000, 50000], discount_rate: 0.1, terminal_value: 20000
+  });
+  const flags = validateMeasurementInvariants(120000, [30000, 35000, 40000, 45000, 50000], 0.1, 20000, {
+    npv: npv.npv,
+    pi: pi.pi,
+    pv_inflows: npv.pv_inflows,
+  });
+  assert.deepStrictEqual(flags, []);
+});
+
+test("deriveAllocationSignal returns REJECT for negative NPV", () => {
+  const signal = deriveAllocationSignal([], { npv: -31967 }, "wealth_npv_reward");
+  assert.strictEqual(signal, "REJECT");
+});
+
+test("deriveAllocationSignal returns ACCEPT for positive NPV", () => {
+  const signal = deriveAllocationSignal([], { npv: 40451 }, "wealth_npv_reward");
+  assert.strictEqual(signal, "ACCEPT");
+});
+
+test("deriveAllocationSignal returns REJECT for unrecovered payback", () => {
+  const signal = deriveAllocationSignal(["NOT_RECOVERED"], { payback_periods: null }, "wealth_payback_time");
+  assert.strictEqual(signal, "REJECT");
+});
+
+test("python server matches JS kernel on PI parity with terminal_value", () => {
+  const script = `
+import json
+from server import pi_efficiency, npv_reward
+npv = npv_reward(initial_investment=120000, cash_flows=[30000,35000,40000,45000,50000], discount_rate=0.1, terminal_value=20000)["primary_result"]["npv"]
+pi = pi_efficiency(initial_investment=120000, cash_flows=[30000,35000,40000,45000,50000], discount_rate=0.1, terminal_value=20000)["primary_result"]["pi"]
+expected = pi_efficiency(initial_investment=120000, cash_flows=[30000,35000,40000,45000,50000], discount_rate=0.1, terminal_value=20000)["allocation_signal"]
+print(json.dumps({"npv": npv, "pi": pi, "alloc": expected}))
+`;
+  const run = spawnSync("python", ["-c", script], {
+    cwd: "/root/WEALTH",
+    encoding: "utf8",
+  });
+  assert.equal(run.status, 0, run.stderr);
+  const actual = JSON.parse(run.stdout.trim());
+
+  const jsNpv = calculateNpvMeasurement({
+    initial_investment: 120000,
+    cash_flows: [30000, 35000, 40000, 45000, 50000],
+    discount_rate: 0.1,
+    terminal_value: 20000,
+  });
+  const jsPi = calculateProfitabilityIndexMeasurement({
+    initial_investment: 120000,
+    cash_flows: [30000, 35000, 40000, 45000, 50000],
+    discount_rate: 0.1,
+    terminal_value: 20000,
+  });
+
+  assert.ok(Math.abs(actual.npv - jsNpv.npv) < 1e-6);
+  assert.ok(Math.abs(actual.pi - jsPi.pi) < 1e-6);
+  assert.strictEqual(actual.alloc, "ACCEPT");
 });
