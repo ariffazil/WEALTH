@@ -1653,7 +1653,7 @@ def crisis_triage(
             "reversible": False,
             "human_confirmed": False,
             "epistemic": "ESTIMATE",
-            "peace2": survival_probability,
+            "peace2": 1.0,
             "maruah_score": 0.6,
             "runway_months": recovery_horizon_days / 30.0,
         },
@@ -1702,7 +1702,7 @@ def civilization_stewardship(
         ["Civilization modeling uses long-horizon, low-discount assumptions."],
         scale_mode=scale_mode,
         governance_args={
-            "reversible": True,
+            "reversible": False,
             "human_confirmed": False,
             "epistemic": "ESTIMATE",
             "peace2": 1.0 - collapse_risk,
