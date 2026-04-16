@@ -73,7 +73,10 @@ def _pg_connection():
     try:
         conn = psycopg.connect(url, autocommit=True, connect_timeout=5)
         return conn
-    except Exception:
+    except Exception as e:
+        import sys
+
+        sys.stderr.write(f"VAULT999_PG_CONNECT_FAILED:{type(e).__name__}:{e}\n")
         return None
 
 
@@ -110,9 +113,6 @@ def _safe_arg(arg: Any) -> Any:
 
 
 def _fallback_jsonl(payload: Dict[str, Any]) -> None:
-    path = os.path.join(os.getcwd(), "data", "vault999.jsonl")
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-
     def _sanitize(obj):
         if isinstance(obj, datetime):
             return obj.isoformat()
@@ -126,8 +126,16 @@ def _fallback_jsonl(payload: Dict[str, Any]) -> None:
             )
         return obj
 
-    with open(path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(_sanitize(payload)) + "\n")
+    import sys
+
+    entry = json.dumps(_sanitize(payload))
+    try:
+        path = os.path.join(os.getcwd(), "data", "vault999.jsonl")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(entry + "\n")
+    except Exception:
+        sys.stderr.write(f"VAULT999_FALLBACK:{entry}\n")
 
 
 def record_transaction(
