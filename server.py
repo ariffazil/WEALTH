@@ -2214,6 +2214,97 @@ def policy_audit(
     )
 
 
+@mcp.tool(name="wealth_record_transaction")
+def record_transaction_tool(
+    tx_type: str,
+    amount: float,
+    currency: str,
+    description: str,
+    quantity: Optional[float] = None,
+    price: Optional[float] = None,
+    fees: Optional[float] = None,
+    broker: Optional[str] = None,
+    asset_id: Optional[str] = None,
+    category: Optional[str] = None,
+    notes: Optional[str] = None,
+) -> Any:
+    """Record a financial transaction to VAULT999 arifos_vault.wealth.transactions. [Vault Dimension]"""
+    from host.governance.vault import record_transaction as _rt
+
+    result = _rt(
+        tx_type=tx_type,
+        amount=amount,
+        currency=currency,
+        description=description,
+        quantity=quantity,
+        price=price,
+        fees=fees,
+        broker=broker,
+        asset_id=asset_id,
+        category=category,
+        source_tool="wealth_record_transaction",
+        notes=notes,
+    )
+    verdict = "SEAL" if result.get("status") == "INSERTED" else "VOID"
+    return create_envelope(
+        "wealth_record_transaction",
+        "Vault",
+        {
+            "tx_id": result.get("tx_id"),
+            "status": result.get("status"),
+            "integrity": result.get("integrity"),
+        },
+        {"pg_error": result.get("pg_error")},
+        [],
+        ["Transaction recorded to VAULT999 — immutable, auditable."],
+        verdict=verdict,
+        scale_mode="enterprise",
+    )
+
+
+@mcp.tool(name="wealth_snapshot_portfolio")
+def snapshot_portfolio_tool(
+    tool_name: str,
+    arguments: Dict[str, Any],
+    result: Dict[str, Any],
+    scale_mode: str = "enterprise",
+    asset_id: Optional[str] = None,
+    nav_myr: Optional[float] = None,
+    quantity_held: Optional[float] = None,
+    price_close: Optional[float] = None,
+    currency: str = "MYR",
+) -> Any:
+    """Snapshot a tool computation result to VAULT999 arifos_vault.wealth.portfolio_snapshots. [Vault Dimension]"""
+    from host.governance.vault import snapshot_portfolio as _sp
+
+    snap = _sp(
+        tool_name=tool_name,
+        arguments=arguments,
+        result=result,
+        scale_mode=scale_mode,
+        asset_id=asset_id,
+        nav_myr=nav_myr,
+        quantity_held=quantity_held,
+        price_close=price_close,
+        currency=currency,
+    )
+    verdict = "SEAL" if snap.get("status") == "INSERTED" else "VOID"
+    return create_envelope(
+        "wealth_snapshot_portfolio",
+        "Vault",
+        {
+            "snapshot_id": snap.get("snapshot_id"),
+            "status": snap.get("status"),
+            "integrity": snap.get("integrity"),
+        },
+        {"pg_error": snap.get("pg_error")},
+        [],
+        ["Portfolio snapshot sealed to VAULT999."],
+        verdict=verdict,
+        scale_mode=scale_mode,
+    )
+
+
 @mcp.resource("wealth://doctrine/valuation")
 def get_valuation_doctrine() -> str:
     return json.dumps(
