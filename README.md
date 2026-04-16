@@ -64,4 +64,10 @@ WEALTH measures **capital physics**, not total reality:
 Anything without a source, unit, periodicity, transformation rule, or uncertainty band should be downgraded or refused rather than presented as a hard claim.
 
 ---
+
+### AAA Federation (SOT v2026-04-16)
+**WEALTH** acts as a Specialist Organ within the 9-Agent Federation. Economic/capital intents are classified and routed downstream to WEALTH by the **AAA-Agent (Federal Coordinator)** via `af-forge` execution adapters.
+
+---
 **999 SEAL ALIVE** — *Dimensional Integrity Sealed*
+
