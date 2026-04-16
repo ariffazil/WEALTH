@@ -3,8 +3,8 @@ import math
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-__version__ = "1.4.0"
-"""WEALTH v1.4.0 - Universal Resource Allocation Intelligence (URAI) with Governance."""
+__version__ = "1.5.0"
+"""WEALTH v1.5.0 - Universal Resource Allocation Intelligence (URAI) with Constitutional Governance."""
 
 try:
     from fastmcp import FastMCP
@@ -428,6 +428,18 @@ def derive_allocation_signal(
         return "INSUFFICIENT_DATA"
 
     scale = get_scale_defaults(scale_mode)
+
+    if tool in {"wealth_coordination_equilibrium", "wealth_game_theory_solve"}:
+        tragedy_risk = primary.get("tragedy_risk", 1.0)
+        if any(flag in INVALID_FLAGS for flag in flags):
+            return "INSUFFICIENT_DATA"
+        if primary.get("in_core") is False or any("BLOCK" in f for f in flags):
+            return "REJECT"
+        if tragedy_risk > 0.5:
+            return "REJECT"
+        if tragedy_risk > 0.3:
+            return "MARGINAL"
+        return "ACCEPT"
 
     if tool in {"wealth_npv_reward", "wealth_flow_scenario_npv"}:
         npv = primary.get("npv")
@@ -1429,11 +1441,11 @@ def cashflow_flow(
 @mcp.tool(name="wealth_score_kernel")
 def score_kernel(
     base_rate: float,
-    dS: float,
+    d_s: float,
     peace2: float,
-    maruahScore: float,
-    trustIndex: float = 0.5,
-    deltaCiv: float = 0.0,
+    maruah_score: float,
+    trust_index: float = 0.5,
+    delta_civ: float = 0.0,
     compare: bool = False,
     wealth_signals: Optional[dict] = None,
     extractive_signals: Optional[dict] = None,
@@ -1441,19 +1453,19 @@ def score_kernel(
 ) -> Any:
     """Final Sovereign Allocation Verdict. [Allocation Dimension]"""
     wealth_payload = {
-        "dS": dS,
+        "dS": d_s,
         "peace2": peace2,
-        "maruahScore": maruahScore,
-        "trustIndex": trustIndex,
-        "deltaCiv": deltaCiv,
+        "maruahScore": maruah_score,
+        "trustIndex": trust_index,
+        "deltaCiv": delta_civ,
     }
     if wealth_signals:
         wealth_payload.update(wealth_signals)
 
     flags: List[str] = []
-    if dS > 0.3:
+    if d_s > 0.3:
         flags.append("HIGH_ENTROPY_SIGNAL")
-    if maruahScore < 0.6:
+    if maruah_score < 0.6:
         flags.append("SOVEREIGN_DIGNITY_LOW")
 
     wealth_result = capitalx(base_rate, wealth_payload)
@@ -1916,6 +1928,11 @@ def monte_carlo_forecast(
         flags,
         ["Monte Carlo provides density estimates, not deterministic guarantees."],
         scale_mode=scale_mode,
+        governance_args={
+            "epistemic": "ESTIMATE",
+            "uncertainty_band": [round_value(es_5, 2), round_value(upside_95, 2)],
+            "scale_mode": scale_mode,
+        },
     )
 
 
