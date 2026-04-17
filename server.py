@@ -36,13 +36,17 @@ except ImportError:
 
 
 try:
-    from host.governance.floors import check_floors, maruah_band
-    from host.governance.policy_engine import PolicyEngine
-    from host.governance.vault import append_vault999
-
+    from arifosmcp.runtime.megaTools.tool_01_init_anchor import check_floors
+    from arifosmcp.runtime.vault_postgres import seal_to_vault as append_vault999
+    # Note: maruah_band logic is replicated locally if needed or imported if available
     GOVERNANCE_AVAILABLE = True
 except Exception:
-    GOVERNANCE_AVAILABLE = False
+    try:
+         from arifosmcp.runtime.tools import arifos_judge as check_floors
+         from arifosmcp.runtime.vault_postgres import seal_to_vault as append_vault999
+         GOVERNANCE_AVAILABLE = True
+    except Exception:
+         GOVERNANCE_AVAILABLE = False
 
 try:
     from host.coordination.lp_allocator import allocate as lp_allocate
@@ -506,6 +510,17 @@ def derive_allocation_signal(
             runway = primary.get("runway_months")
             if runway is not None and runway != math.inf and runway < 3:
                 return "REJECT"
+            return "MARGINAL"
+        return "ACCEPT"
+
+    if tool == "wealth_score_kernel":
+        r_adj = primary.get("r_adj", 0.1)
+        m_score = primary.get("maruahScore", 0.5)
+        if m_score < 0.6:
+            return "REJECT"
+        if r_adj > 0.15:
+            return "REJECT"  # High risk/extractive
+        if r_adj > 0.12 or m_score < 0.75:
             return "MARGINAL"
         return "ACCEPT"
 
@@ -2355,10 +2370,18 @@ async def wealth_init_tool(
     """
     import sys
     import uuid as _uuid
+    import os
 
-    ARIFOS_PATH = "/root/arifOS"
-    if ARIFOS_PATH not in sys.path:
-        sys.path.append(ARIFOS_PATH)
+    # Robust path resolution for arifOS root
+    possible_paths = [
+        "/root/arifOS",
+        "/root",
+        os.path.abspath(os.path.join(os.getcwd(), "..")),
+        os.getcwd()
+    ]
+    for p in possible_paths:
+        if p not in sys.path:
+            sys.path.append(p)
 
     sid = session_id or f"wealth-session-{_uuid.uuid4().hex[:12]}"
 
