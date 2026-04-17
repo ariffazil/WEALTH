@@ -2,7 +2,7 @@
 FROM python:3.11-slim-bookworm
 
 # Install Node.js (needed for WEALTH CLI logic)
-RUN apt-get update && apt-get install -y curl && \
+RUN apt-get update && apt-get install -y curl git && \
     curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -18,7 +18,8 @@ RUN npm ci --omit=dev
 
 # Copy pyproject.toml and install Python dependencies
 COPY pyproject.toml ./
-RUN uv sync --frozen --no-dev
+COPY uv.lock ./
+RUN uv sync --no-dev
 
 # Copy the rest of the application
 COPY . .
