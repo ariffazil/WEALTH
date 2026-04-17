@@ -1,6 +1,12 @@
 from typing import List, Optional
 from pydantic import BaseModel
 from fastmcp import FastMCP
+import sys
+import os
+
+# Add arifOS to path to import shared core
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../arifOS")))
+from core.shared.governed_tool import governed_tool
 
 mcp = FastMCP("WEALTH-Civilization")
 
@@ -58,7 +64,8 @@ class ProspectEconomics(BaseModel):
 # --- Domain: Thermodynamic Economics (Golden Path Demo) ---
 
 @mcp.tool()
-def wealth_evaluate_prospect(
+@governed_tool
+async def wealth_evaluate_prospect(
     prospect_id: str, 
     stoiip_bbl: float, 
     capex_estimate: float = 500_000_000.0, 
@@ -103,7 +110,8 @@ def wealth_evaluate_prospect(
 # --- Domain 1: Stock Market Intelligence (WEALTH-Markets) ---
 
 @mcp.tool()
-def markets_analyze_ticker(ticker: str, depth: str = "standard") -> MarketAnalysis:
+@governed_tool
+async def markets_analyze_ticker(ticker: str, depth: str = "standard") -> MarketAnalysis:
     """Analyze stock with F1-F13 governance."""
     return MarketAnalysis(
         ticker=ticker.upper(),
@@ -115,7 +123,8 @@ def markets_analyze_ticker(ticker: str, depth: str = "standard") -> MarketAnalys
     )
 
 @mcp.tool()
-def markets_portfolio_stress_test(
+@governed_tool
+async def markets_portfolio_stress_test(
     portfolio_id: str,
     holdings: List[str],
     scenarios: List[str]
@@ -132,7 +141,8 @@ def markets_portfolio_stress_test(
 # --- Domain 2: Energy Crisis Monitor (WEALTH-Energy) ---
 
 @mcp.tool()
-def energy_crisis_assess(region: str) -> CrisisAssessment:
+@governed_tool
+async def energy_crisis_assess(region: str) -> CrisisAssessment:
     """Assess energy crisis severity with F1-F13."""
     return CrisisAssessment(
         region=region.upper(),
@@ -145,7 +155,8 @@ def energy_crisis_assess(region: str) -> CrisisAssessment:
     )
 
 @mcp.tool()
-def energy_shortage_predict(
+@governed_tool
+async def energy_shortage_predict(
     region: str,
     horizon_days: int = 30
 ) -> ShortagePrediction:
@@ -160,7 +171,8 @@ def energy_shortage_predict(
 # --- Domain 3: Food Security Monitor (WEALTH-Food) ---
 
 @mcp.tool()
-def food_security_index(country: str) -> FoodSecurityIndex:
+@governed_tool
+async def food_security_index(country: str) -> FoodSecurityIndex:
     """Calculate food security with Maruah adaptation."""
     return FoodSecurityIndex(
         country=country.upper(),

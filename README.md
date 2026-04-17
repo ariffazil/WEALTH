@@ -82,4 +82,78 @@ python mcp/server.py
 - **WEALTH qualifies; arifOS judges.** WEALTH produces capital truth and policy evidence, while arifOS retains final constitutional permission.
 - **No black-box capital signals.** Pricing, entropy, and dignity signals must remain inspectable and tagged with epistemic humility where required.
 
+---
+
+## Epistemic Integrity Pipeline
+
+**Audit Reference:** Session 2026-04-18
+**Purpose:** Formalize probabilistic input schema, detect portfolio correlation risk, integrate EVOI calculations.
+
+### Overview
+
+WEALTH now requires **probabilistic inputs from GEOX**, not collapsed scalars. This preserves the posterior structure across the GEOX → WEALTH handoff — the entire epistemic content survives instead of being destroyed in transit.
+
+### Schema Validation (`host/epistemic/schema_validator.py`)
+
+WEALTH **rejects single-value volumetrics** from GEOX. Required input schema:
+
+```json
+{
+  "prospect_id": "string",
+  "stoiip": {"p10": float, "p50": float, "p90": float, "unit": "MMbbl"},
+  "pos": float,
+  "integrity_score": float,
+  "model_lineage_hash": "string",
+  "posterior_breadth": float
+}
+```
+
+**Refusal triggers:**
+- `integrity_score < 0.3` → `EPISTEMIC_HOLD`, do not pass to capital allocation
+- Scalar-only stoiip (e.g., `{"stoiip": 45.2}`) → REJECTED
+- Missing required fields → REJECTED
+
+### Portfolio Correlation Guard (`host/epistemic/correlation_guard.py`)
+
+Tracks `model_lineage_hash` across all prospects. If ≥3 prospects share the same lineage hash:
+
+```
+{"systemic_risk": true, "action": "HOLD — correlated model bias detected"}
+```
+
+This prevents the correlation catastrophe where one flawed AI interpretation influences 10 wells simultaneously.
+
+### EVOI Calculator (`host/epistemic/evoi.py`) — WIP
+
+```python
+compute_evoi(
+    prior_pos: float,
+    posterior_pos: float,
+    well_cost_musd: float,
+    p50_value_musd: float
+) -> {"evoi_musd": float, "drill_recommendation": str}
+```
+
+**EVOI = E[V | with_info] - E[V | without_info]**
+
+Before drilling, compute whether acquiring more seismic is worth it. Sometimes the best decision is: Do not drill. Acquire data.
+
+### Integrity Score Gating
+
+| Integrity Score | Classification | Action |
+|---------------|---------------|--------|
+| < 0.3 | **AUTO_HOLD** | Do NOT pass to capital allocation |
+| 0.3 – 0.6 | **PLAUSIBLE** | Pass with warning |
+| > 0.6 | **CLAIM** | Pass to capital allocation normally |
+
+### System-Level Coupling
+
+| Before Fix | After Fix |
+|-----------|-----------|
+| GEOX produces scalar → WEALTH receives scalar | GEOX produces posterior → WEALTH reasons over posterior |
+| Uncertainty destroyed at handoff | Uncertainty preserved end-to-end |
+| Portfolio bias undetected | Correlation guard flags systemic lineage risk |
+| No epistemic audit trail | model_lineage_hash + integrity_score on every output |
+| Single NPV to board | P10/P50/P90 + integrity score + correlation risk to board |
+
 *DITEMPA BUKAN DIBERI — 999 SEAL ALIVE*
