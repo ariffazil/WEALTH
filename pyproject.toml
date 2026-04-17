@@ -18,6 +18,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "supabase>=2.10.0",
     "fastmcp==2.12.3",
     "arifos @ git+https://github.com/ariffazil/arifOS.git",
 ]
