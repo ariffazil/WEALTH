@@ -7,6 +7,7 @@ Provides caching, health tracking, stale detection, and series metadata registry
 import inspect
 import json
 import os
+import tempfile
 import time
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
@@ -14,8 +15,26 @@ from typing import Any, Dict, List, Optional
 from host.ingest.schema import DataRecord, validate_record
 from host.ingest.health import get_tracker
 
-CACHE_DIR = os.environ.get("WEALTH_CACHE_DIR", os.path.join(os.getcwd(), "data", "ingest_cache"))
-os.makedirs(CACHE_DIR, exist_ok=True)
+
+def _resolve_cache_dir() -> str:
+    configured = os.environ.get(
+        "WEALTH_CACHE_DIR",
+        os.path.join(os.getcwd(), "data", "ingest_cache"),
+    )
+    try:
+        os.makedirs(configured, exist_ok=True)
+        probe = os.path.join(configured, ".write-test")
+        with open(probe, "w", encoding="utf-8") as handle:
+            handle.write("")
+        os.remove(probe)
+        return configured
+    except OSError:
+        fallback = os.path.join(tempfile.gettempdir(), "wealth", "ingest_cache")
+        os.makedirs(fallback, exist_ok=True)
+        return fallback
+
+
+CACHE_DIR = _resolve_cache_dir()
 
 BUS_TTL_HOURS = {
     "slow": 24 * 7,      # weekly refresh for macro
@@ -68,8 +87,11 @@ def save_cache(records: List[DataRecord]) -> None:
         return
     first = records[0]
     path = _cache_path(first.series_id, first.source_system, first.entity_code)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump([r.to_dict() for r in records], f, indent=2)
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump([r.to_dict() for r in records], f, indent=2)
+    except OSError:
+        return
 
 
 def _field_completeness(records: List[DataRecord]) -> float:

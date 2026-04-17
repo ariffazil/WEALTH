@@ -5,12 +5,30 @@ Tracks per-adapter latency, success rate, cache age, and field completeness.
 
 import json
 import os
+import tempfile
 import time
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-HEALTH_PATH = os.environ.get("WEALTH_HEALTH_PATH", os.path.join(os.getcwd(), "data", "ingest_health.json"))
+
+def _resolve_health_path() -> str:
+    configured = os.environ.get(
+        "WEALTH_HEALTH_PATH",
+        os.path.join(os.getcwd(), "data", "ingest_health.json"),
+    )
+    try:
+        os.makedirs(os.path.dirname(configured), exist_ok=True)
+        with open(configured, "a", encoding="utf-8"):
+            pass
+        return configured
+    except OSError:
+        fallback_dir = os.path.join(tempfile.gettempdir(), "wealth", "data")
+        os.makedirs(fallback_dir, exist_ok=True)
+        return os.path.join(fallback_dir, "ingest_health.json")
+
+
+HEALTH_PATH = _resolve_health_path()
 
 
 @dataclass
@@ -47,13 +65,19 @@ class HealthTracker:
             except Exception:
                 self._state = {}
         else:
-            os.makedirs(os.path.dirname(self.path), exist_ok=True)
+            try:
+                os.makedirs(os.path.dirname(self.path), exist_ok=True)
+            except OSError:
+                self._state = {}
             self._state = {}
 
     def _save(self):
-        os.makedirs(os.path.dirname(self.path), exist_ok=True)
-        with open(self.path, "w", encoding="utf-8") as f:
-            json.dump(self._state, f, indent=2)
+        try:
+            os.makedirs(os.path.dirname(self.path), exist_ok=True)
+            with open(self.path, "w", encoding="utf-8") as f:
+                json.dump(self._state, f, indent=2)
+        except OSError:
+            pass
 
     def record_attempt(
         self,
