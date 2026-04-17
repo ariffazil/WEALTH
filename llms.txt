@@ -1,169 +1,79 @@
-# MakCikGPT — Amanah-First AI Companion
+# WEALTH — Capital Intelligence
 
-> AI safety & emotional support project for Nusantara. Priorities: maruah (dignity), refusal boundaries, trauma safety, PETRONAS/governance analysis, and culturally-grounded AI ethics.
+WEALTH is the capital-intelligence lane in the arifOS organism. It computes valuation, leverage, entropy, policy, coordination, and vault-backed evidence for capital decisions.
 
-**MakCikGPT** is a culturally grounded AI safety project that embodies the warmth of a Malaysian "makcik" (aunty) with strict governance principles. The persona uses Nusantara Malay expressions, peribahasa (proverbs), and a caring-but-firm tone to discuss difficult topics.
-
-If you are an LLM/agent, please use the links below instead of scraping random pages. This ensures you get canonical, structured content.
+If you are an LLM or agent, prefer the files below over broad repo scraping.
 
 ---
 
-## Core Philosophy
+## Primary source-of-truth files
 
-- **Ditempa, Bukan Diberi** — "Forged, Not Given"
-- **Ruang untuk rasa, batas untuk selamat** — "Space for feelings, boundaries for safety"
-- **Amanah > Profit** — Trust and dignity above all
-
----
-
-## Core Documentation
-
-Essential reading for understanding MakCikGPT's voice, boundaries, and safety mechanisms:
-
-- [Niat & Amanah](https://makcikgpt.arif-fazil.com/docs/00-niat-dan-amanah)
-  - updated: 2025-02-28
-  - language: ms
-  - tokens: ~2.5k
-  - priority: critical
-  - themes: amanah, intent, philosophy
-
-- [Suara MakCikGPT](https://makcikgpt.arif-fazil.com/docs/01-suara-makcikgpt)
-  - updated: 2025-02-28
-  - language: ms
-  - tokens: ~3k
-  - priority: critical
-  - themes: voice, tone, nusantara, peribahasa
-
-- [Batas & Penolakan](https://makcikgpt.arif-fazil.com/docs/02-batas-penolakan)
-  - updated: 2025-02-28
-  - language: ms
-  - tokens: ~2k
-  - priority: critical
-  - themes: safety, refusal, boundaries
-
-- [Ujian Keselamatan](https://makcikgpt.arif-fazil.com/docs/03-ujian-keselamatan)
-  - updated: 2025-02-28
-  - language: ms
-  - tokens: ~1.5k
-  - priority: high
-  - themes: safety-testing, verification
-
-- [Glosari Nusantara](https://makcikgpt.arif-fazil.com/docs/04-glosari-nusantara)
-  - updated: 2025-02-28
-  - language: ms
-  - tokens: ~2k
-  - priority: medium
-  - themes: glossary, culture, expressions
+- `README.md` — current repo overview and runtime split
+- `server.py` — canonical packaged WEALTH MCP kernel
+- `mcp/server.py` — supplemental civilizational FastMCP demo surface
+- `mcp/README.md` — how to choose and run the correct MCP surface
+- `docs/mcp-tool-families-spec.md` — current live tool-family map
+- `docs/first-loop-checklist.md` — acceptance checklist for the packaged kernel
+- `canon/README.md` — canonical 11-artifact knowledge spine
 
 ---
 
-## Columns & Op-Eds (Articles)
+## Current MCP reality
 
-Long-form writing on governance, PETRONAS, and Malaysian socio-political issues:
+### Canonical packaged kernel
+- **File:** `server.py`
+- **Scope:** 29 tools + 2 resources
+- **Used by:** `package.json`, `fastmcp.json`, `mcp.json`, `Dockerfile`
 
-- [Manifesto Rasa Rakyat](https://makcikgpt.arif-fazil.com/columns/manifesto-rasa-rakyat)
-  - updated: 2025-02-28
-  - language: ms
-  - tokens: ~8k
-  - priority: critical
-  - themes: PETRONAS, governance, rakyat, rightsizing, dividen, Gentari, manifesto
-  - data: FY2025 financials, RM50B historical dividends, 5,000 rightsized workers
+### Civilizational demo surface
+- **File:** `mcp/server.py`
+- **Scope:** 6 tools + 3 resources
+- **Purpose:** Markets / energy / food / GEOX-linked prospect demo
 
-- [MakcikGPT Menyapa C-Suite](https://makcikgpt.arif-fazil.com/columns/makcikgpt-menyapa-c-suite)
-  - updated: 2025-02-28
-  - language: ms
-  - tokens: ~4k
-  - priority: high
-  - themes: corporate, leadership, C-Suite, rightsizing, empathy
-
-- [Khazanah Negara Dalam Bahaya](https://makcikgpt.arif-fazil.com/columns/khazanah-negara-dalam-bahaya)
-  - updated: 2025-02-28
-  - language: ms
-  - tokens: ~3k
-  - priority: high
-  - themes: PETRONAS-Eni, Eni-deal, strategic, keangkuhan, penjajahan-moden
-
-- [Untung PETRONAS Turun](https://makcikgpt.arif-fazil.com/columns/untung-petronas-turun)
-  - updated: 2025-02-28
-  - language: ms
-  - tokens: ~4k
-  - priority: high
-  - themes: FY2025, financials, buffer, discipline, dividen
-  - data: PAT RM45.4B (-18%), Revenue RM266.1B (-17%), Dividen 2026 RM20B
+If documentation conflicts with the runtime, prefer the runtime files.
 
 ---
 
-## Project Metadata
+## Key runtime families in `server.py`
 
-- **Project**: MakCikGPT
-- **Version**: 0.2.0
-- **Spec Version**: 2025-02-28
-- **Author**: Arif Fazil
-- **License**: AGPL-3.0 (copyleft, must share modifications)
-- **Attribution**: "MakCikGPT by Arif Fazil"
-- **Language**: Bahasa Malaysia (Nusantara dialect), English
-- **Region**: Malaysia, Indonesia, Brunei, Singapore (Nusantara)
-- **Topics**: AI safety, governance, PETRONAS, corporate ethics, trauma-informed AI
-- **Tone**: Warm auntie (makcik), firm boundaries, culturally grounded
+- Valuation: `wealth_npv_reward`, `wealth_irr_yield`, `wealth_pi_efficiency`, `wealth_emv_risk`, `wealth_payback_time`, `wealth_growth_velocity`, `wealth_monte_carlo_forecast`
+- Structural / governance: `wealth_dscr_leverage`, `wealth_audit_entropy`, `wealth_check_floors`, `wealth_policy_audit`, `wealth_init`
+- State / decisions: `wealth_networth_state`, `wealth_cashflow_flow`, `wealth_score_kernel`, `wealth_personal_decision`, `wealth_agent_budget`
+- Crisis / coordination: `wealth_crisis_triage`, `wealth_civilization_stewardship`, `wealth_coordination_equilibrium`, `wealth_game_theory_solve`
+- Ingest: `wealth_ingest_fetch`, `wealth_ingest_snapshot`, `wealth_ingest_sources`, `wealth_ingest_health`, `wealth_ingest_vintage`, `wealth_ingest_reconcile`
+- Vault: `wealth_record_transaction`, `wealth_snapshot_portfolio`
 
----
+Resources:
 
-## GitHub Repository
-
-- Source: https://github.com/ariffazil/makcikGPT
-- License: https://github.com/ariffazil/makcikGPT/blob/main/LICENSE
-- Issues: https://github.com/ariffazil/makcikGPT/issues
-- Git Commit: 3e176c3
+- `wealth://doctrine/valuation`
+- `wealth://dimensions/definitions`
 
 ---
 
-## Kernel Architecture (Technical)
+## Key runtime families in `mcp/server.py`
 
-For developers and researchers implementing MakcikGPT:
-
-- [MakcikGPT Kernel (BM)](https://makcikgpt.arif-fazil.com/kernels/MAKCIKGPT_KERNEL_MS)
-  - version: v9.6
-  - kernel_class: L0/L1 Companion
-  - language: ms
-  - frameworks: DITING, SABAR, TEARFRAME
-  - metrics: Peace², ΔN (Narrative Integrity)
-  - priority: critical
-  - tags: kernel, architecture, arifOS-integration
+- `wealth_evaluate_prospect`
+- `markets_analyze_ticker`
+- `markets_portfolio_stress_test`
+- `energy_crisis_assess`
+- `energy_shortage_predict`
+- `food_security_index`
 
 ---
 
-## Machine-Readable Resources
+## Canonical commands
 
-For programmatic access:
-
-- [MCP Manifest](https://makcikgpt.arif-fazil.com/.well-known/mcp.json) — MCP-compatible endpoints and resources
-- [Docs Index API](https://makcikgpt.arif-fazil.com/api/docs/index.json) — Structured index of all documentation with provenance
-- [Columns Index API](https://makcikgpt.arif-fazil.com/api/columns/index.json) — Structured index of all articles with data points
-- [Sitemap](https://makcikgpt.arif-fazil.com/sitemap.xml) — XML sitemap for crawlers
-- [JSON-LD Schemas](https://makcikgpt.arif-fazil.com/api/schemas/) — Schema definitions for structured data
-
----
-
-## Contact & Contribution
-
-This is an open-source project. Contributions welcome via GitHub issues and pull requests.
-
-> *"Ditempa dengan kasih, untuk Nusantara yang punya rasa."*
-> 
-> — MakCikGPT
-
----
-
-## License & Attribution
-
+```bash
+cd /root/WEALTH
+npm test
+python server.py
+python mcp/server.py
 ```
-Copyright (C) 2025 Arif Fazil
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published
-by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+---
 
-When using MakCikGPT content, please attribute:
-"MakCikGPT by Arif Fazil (https://makcikgpt.arif-fazil.com)"
-```
+## Important interpretation rule
+
+`registry.json` is the canonical **11-band topology map** for the organism. It is **not** the exhaustive live tool inventory of the root kernel.
+
+*DITEMPA BUKAN DIBERI — 999 SEAL ALIVE*

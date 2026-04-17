@@ -1,216 +1,136 @@
-# WEALTH MCP Tool Families — Operational Spec
+# WEALTH MCP Tool Families — Current Repo SOT
 
-> **Version:** v1.0.0-canonical  
-> **Status:** SEALED  
+> **Version:** v1.5.0  
+> **Status:** ACTIVE REPO STATE  
 > **Epistemic:** CLAIM  
 > **DITEMPA BUKAN DIBERI — 999 SEAL ALIVE**
 
 ---
 
-## 1. The Six Orthogonal Families
+## 1. Runtime split
 
-| Family | Core Question | Representative Tools |
+WEALTH currently exposes two MCP surfaces in-repo:
+
+| Surface | File | Purpose |
 |---|---|---|
-| **`wealth.state`** | “What is the capital climate?” | `wealth_state_market_snapshot` |
-| **`wealth.risk`** | “How much can we safely put at risk?” | `wealth_risk_capital_allocation` |
-| **`wealth.price`** | “What is the true (risk + entropy) discount rate?” | `wealth_price_capitalx`, `wealth_price_exergy_cost` |
-| **`wealth.flow`** | “How do cash and entropy evolve over time?” | `wealth_flow_scenario_npv` |
-| **`wealth.justice`** | “Who pays, and is that acceptable?” | `wealth_justice_maruah_score` |
-| **`wealth.control`** | “What do we fund, and what do we 888_HOLD?” | `wealth_control_gate_888` |
+| Canonical valuation kernel | `server.py` | Main packaged WEALTH runtime |
+| Civilizational demo surface | `mcp/server.py` | Secondary domain demo for markets / energy / food / prospect evaluation |
+
+The rest of this document treats `server.py` as the primary operational surface and `mcp/server.py` as a narrower extension.
 
 ---
 
-## 2. Design Principles
+## 2. Canonical kernel families (`server.py`)
 
-1. **Non-overlapping mandates:** Each tool family touches exactly one axis.
-2. **Envelope binding:** Every tool request carries `envelope_id`, linking it to the `PERMITTED`/`FEASIBLE` upstream seals from arifOS/GEOX.
-3. **Thermodynamic grounding:** Pricing tools must expose entropy penalties and exergy costs, not hide them in a black-box rate.
-4. **Justice as hard constraint:** `M < 0.4` produces `VOID` or `888_HOLD`, not just a footnote.
-5. **VAULT999 traceability:** Every response carries a `vault_log_entry` fragment for immutable append-only logging.
+### 2.1 Valuation and reward
+Tools:
+- `wealth_npv_reward`
+- `wealth_irr_yield`
+- `wealth_pi_efficiency`
+- `wealth_emv_risk`
+- `wealth_payback_time`
+- `wealth_growth_velocity`
+- `wealth_monte_carlo_forecast`
 
----
+Core question: **What is the reward profile once time, uncertainty, and compounding are made explicit?**
 
-## 3. Tool Specifications
+### 2.2 Structural load and survival
+Tools:
+- `wealth_dscr_leverage`
+- `wealth_audit_entropy`
 
-### 3.1 `wealth_state_market_snapshot`
-**Purpose:** Establish baseline capital temperature and entropy level.
+Core question: **Can the structure survive its own financing and cashflow noise?**
 
-**Inputs:**
-- `jurisdiction` (e.g. `MY`, `US`, `ASEAN`)
-- `asset_classes` (array of strings)
-- `tenor_months` (default 120)
+### 2.3 State and portfolio metabolism
+Tools:
+- `wealth_networth_state`
+- `wealth_cashflow_flow`
+- `wealth_score_kernel`
+- `wealth_personal_decision`
+- `wealth_agent_budget`
 
-**Outputs:**
-- `rf_curve` — risk-free term structure
-- `erp` — equity risk premium
-- `credit_spreads` — by rating bucket
-- `volatility_surface` — entropy/vol proxy
-- `capital_temperature` — composite risk/entropy proxy [ESTIMATE]
+Core question: **What is the current financial state, and which choice is most defensible under constraints?**
 
----
+### 2.4 Crisis, civilization, and coordination
+Tools:
+- `wealth_crisis_triage`
+- `wealth_civilization_stewardship`
+- `wealth_coordination_equilibrium`
+- `wealth_game_theory_solve`
 
-### 3.2 `wealth_risk_capital_allocation`
-**Purpose:** Turn GEOX feasibility into safe capital deployment limits.
+Core question: **How should capital be allocated when many actors, survival constraints, or long-horizon stewardship pressures interact?**
 
-**Inputs:**
-- `portfolio` — bucket definitions (project/region/counterparty)
-- `confidence_level` — e.g. 0.995 for tail risk
-- `maruah_drawdown_floor` — default 0.6
+### 2.5 Sense / ingest
+Tools:
+- `wealth_ingest_fetch`
+- `wealth_ingest_snapshot`
+- `wealth_ingest_sources`
+- `wealth_ingest_health`
+- `wealth_ingest_vintage`
+- `wealth_ingest_reconcile`
 
-**Outputs:**
-- `economic_capital` — aggregate risk capital required
-- `risk_decomposition` — factor/geo/scenario attribution
-- `risk_budgets` — per-bucket limits
-- `liquidity_buffer` — solvency margin
+Core question: **What live or cached external signals are available, and how trustworthy are they right now?**
 
-**Governance:** If any bucket breaches `maruah_drawdown_floor`, flag for `wealth_control_gate_888`.
+### 2.6 Governance and vault
+Tools:
+- `wealth_check_floors`
+- `wealth_policy_audit`
+- `wealth_record_transaction`
+- `wealth_snapshot_portfolio`
+- `wealth_init`
 
----
+Resources:
+- `wealth://doctrine/valuation`
+- `wealth://dimensions/definitions`
 
-### 3.3 `wealth_price_capitalx`
-**Purpose:** Compute the constitutional risk-adjusted cost of capital.
-
-**Inputs:**
-- `base_rate` — nominal risk-free starting point
-- `signals` — `{ dS, peace2, maruahScore, trustIndex, deltaCiv }`
-- `wealth_basis` — optional `W⃗ = (Ê, Ŝ, Eχ̂)`
-- `defects` — optional `{ paradox, scar, shadow }`
-
-**Outputs:**
-- `r_adj` — clamped ≥ 0
-- `adjustments` — full breakdown of penalties/discounts
-- `uncertainty_band` — F7 humility band
-
-**Formula (existing):**
-```
-r_adj = base_rate
-        + max(0, dS × 0.5)
-        − min(0.02, max(0, (peace2 − 1.0) × 0.05))
-        − min(0.03, max(0, (maruahScore − 0.5) × 0.06))
-        − min(0.02, max(0, (trustIndex − 0.5) × 0.04))
-        − min(0.02, max(0, deltaCiv × 0.10))
-```
-
-If `wealth_basis` and `defects` are provided, `deltaCiv` is promoted via the basis formula:
-```
-deltaCiv = α·log(1 + Ê) + β·(1 − Ŝ) + γ·Eχ̂ − δ·P − ε·Σ − ζ·Sh
-```
+Core question: **Is the allocation constitutionally acceptable, and how is the evidence anchored?**
 
 ---
 
-### 3.4 `wealth_price_exergy_cost`
-**Purpose:** Estimate thermodynamic (energy + material) cost per unit of output.
+## 3. Civilizational demo family (`mcp/server.py`)
 
-**Inputs:**
-- `energy_mj_per_unit`
-- `material_exergy_mj_per_unit`
-- `output_unit`
+This secondary server currently carries six domain-facing demo tools:
 
-**Outputs:**
-- `exergy_mj_per_unit`
-- `emergy_proxy` — aggregated resource memory [ESTIMATE]
-- `entropy_cost_per_unit` — irreversible loss proxy [ESTIMATE]
+| Domain | Tools |
+|---|---|
+| Prospect economics | `wealth_evaluate_prospect` |
+| Markets | `markets_analyze_ticker`, `markets_portfolio_stress_test` |
+| Energy | `energy_crisis_assess`, `energy_shortage_predict` |
+| Food | `food_security_index` |
 
-**Use:** Feed into `wealth_flow_scenario_npv` as a shadow cost, or into `capitalx` as an additional penalty when shadow is high.
+Resources:
 
----
+- `market://{ticker}/fundamentals`
+- `energy://{region}/realtime-mix`
+- `food://global/prices`
 
-### 3.5 `wealth_flow_scenario_npv`
-**Purpose:** Project cashflows and entropy evolution under regimes.
-
-**Inputs:**
-- `cashflows` — base case array
-- `r_adj` — from `wealth_price_capitalx`
-- `scenarios` — policy/shock/regime definitions
-- `geo_constraints` — GEOX feasibility flags
-
-**Outputs:**
-- `npv_distribution` — per-scenario NPVs
-- `irr` — internal rate of return using `r_adj`
-- `payback_years`
-- `regime_impacts` — carbon price, subsidy removal, etc.
-
-**Governance:** Any scenario with ` Peace² < 1.0` or `ΔS > 0` without 888_HOLD is downgraded to `VOID`.
+This surface is **real**, but it is **not** the packaged kernel used by `npm run mcp`.
 
 ---
 
-### 3.6 `wealth_justice_maruah_score`
-**Purpose:** Measure dignity/integrity impact and distributional fairness.
+## 4. Canonical 11-band map vs live runtime
 
-**Inputs:**
-- `project_profile` — `{ displacement_risk, pollution_load, cultural_loss_risk, community_benefit_share }`
+`registry.json` still expresses the **canonical 11-band organism lattice**. That file is a conceptual lane map, not a complete live tool inventory.
 
-**Outputs:**
-- `maruah_score` — [0,1]
-- `maruah_band` — `SOVEREIGN` / `STABLE` / `FLOOR` / `AMBER` / `RED`
-- `incidence_map` — who bears cost / receives benefit
-- `exclusion_flags` — auto-flagged categories (ecocide, dignity-burning)
+Therefore:
 
-**Governance:** `RED` band triggers mandatory `888_HOLD` for any capital access.
+- `registry.json` = canonical 11-band map
+- `server.py` = packaged runtime truth
+- `mcp/server.py` = secondary civilizational demo truth
+
+If those ever conflict, prefer the runtime files.
 
 ---
 
-### 3.7 `wealth_control_gate_888`
-**Purpose:** Final routing gate before capital execution.
-
-**Inputs:**
-- `candidate` — `{ maruah, r_adj, entropy_budget_remaining, reversible }`
-
-**Outputs:**
-- `hold_triggered` — boolean
-- `hold_reasons` — array of strings
-- `recommendation` — `FUND` / `DEFER` / `RESTRUCTURE` / `KILL`
-- `repricing_hints` — actionable strings (e.g. "reduce exergy cost by 12%")
-- `upstream_signal` — telemetry back to arifOS/GEOX
-
-**Trigger conditions:**
-- `maruah < 0.4` → `888-HOLD`
-- `reversible === false && human_confirmed === false` → `888-HOLD`
-- `entropy_budget_remaining < 0` → `VOID`
-- `r_adj` above policy corridor → `DEFER` or `RESTRUCTURE`
-
----
-
-## 4. Integration with W@W Envelope
-
-Every tool request must include:
-```json
-{
-  "header": {
-    "session_id": "...",
-    "envelope_id": "...",
-    "epoch": "2026-04-14T..."
-  }
-}
-```
-
-The `envelope_id` binds the tool call to the monotone-narrowing constraint chain defined in `waw-envelope.json`. If the envelope is missing, `F3` (Input Clarity) fails and the tool returns `SABAR`.
-
----
-
-## 5. Telemetry & VAULT999
-
-Every response footer includes:
-- `verdict` — `SEAL`, `QUALIFY`, `888-HOLD`, `VOID`
-- `epistemic` — `CLAIM`, `PLAUSIBLE`, `ESTIMATE`, `HYPOTHESIS`, `UNKNOWN`
-- `vault_log_entry` — fragment for immutable logging
-- `witness` — `{ human, ai, earth }`
-
-This satisfies `F2` (truth tagging), `F7` (humility bands), `F9` (anti-hantu transparency), and `F13` (sovereign witness).
-
----
-
-## 6. Failure Modes
+## 5. Failure modes
 
 | Failure | Symptom | Mitigation |
 |---|---|---|
-| **Missing envelope** | Tool called without `envelope_id` | F3 SABAR; require upstream authority binding |
-| **Rate inversion** | `r_adj` decreases while `dS` or shadow increases | F12 hard block; reject output; log anomaly |
-| **Justice bypass** | `maruah_score` omitted in capital access flow | F6 VOID; block funding until score computed |
-| **Black-box pricing** | `adjustments` object missing or incomplete | F2 warning; downgrade epistemic to UNKNOWN |
-| **Stale snapshot** | `wealth_state_market_snapshot` older than 24h | Recompute; reject stale prices for sealed ops |
-| **Orphan control** | `wealth_control_gate_888` run before pricing/justice tools | Require prerequisite seals in `upstream_seals` |
+| Wrong server assumption | Operators wire `mcp/server.py` thinking it is the packaged kernel | Use `server.py` for packaged/runtime integrations |
+| Stale family docs | Docs describe dotted namespaces not implemented in code | Derive tool families from actual `@mcp.tool` surfaces |
+| Canon/runtime confusion | `registry.json` count differs from `server.py` tool count | Treat registry as canonical topology, not exhaustive runtime inventory |
+| Demo promoted as kernel | Civilizational surface treated as full production valuation engine | Label `mcp/server.py` explicitly as supplemental |
 
 ---
 
-*Spec v1.0.0 | SEALED as WEALTH MCP canon | 999 SEAL ALIVE*
+*Spec v1.5.0 | Repo SOT aligned*

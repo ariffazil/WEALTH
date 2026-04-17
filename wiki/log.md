@@ -4,6 +4,13 @@
 
 ---
 
+## [2026-04-17] docs | Repo SOT alignment for MCP surfaces
+- Clarified that `server.py` is the canonical packaged WEALTH MCP kernel.
+- Clarified that `mcp/server.py` is a secondary civilizational FastMCP demo surface, not the main packaged runtime.
+- Updated repo-facing docs to reflect the live split between the valuation kernel and civilizational domain tools.
+- Added explicit documentation for the current civilizational prospect tool: `wealth_evaluate_prospect`.
+- Replaced stale references to an old `mcp/server.js` packaging story in the active docs.
+
 ## [2026-04-14] civilization | Civilizational-Level MCP Apps Architecture forged
 - Expanded WEALTH from personal finance to civilizational-level intelligence.
 - Implemented `domains/` structure for Markets, Energy, Food, Water, Climate, and Supply Chains.

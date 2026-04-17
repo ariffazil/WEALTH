@@ -1,91 +1,64 @@
 ---
 title: WEALTH MCP Server Packaging
-date: 2026-04-13
-tags: [mcp, server, integration, capitalx, packaging]
+date: 2026-04-17
+tags: [mcp, server, integration, packaging, wealth]
 ---
 
 # WEALTH MCP Server Packaging
 
-> The bridge from framework node to capital-aware ecosystem.
+The current repo state exposes **two Python MCP servers**, with one canonical packaged kernel and one supplemental domain demo.
 
----
+## Packaged truth surface
 
-## Why MCP?
+- **File:** `server.py`
+- **Role:** Main WEALTH valuation kernel
+- **Used by:** `package.json`, `fastmcp.json`, `mcp.json`, `Dockerfile`
+- **Current size:** 29 tools + 2 resources
 
-Phase A doctrine: **one human gets cheaper capital because of WEALTH.**
+Representative capabilities:
 
-For that to happen, external systems — lenders, insurance bots, AI agents — must be able to query WEALTH primitives directly. MCP is the standard interface for local AI brains.
+- Valuation math: NPV, IRR, PI, EMV, payback, Monte Carlo
+- Financial state: net worth, cashflow, personal decisioning, agent budgets
+- Governance: entropy audit, floor checks, policy audit, init
+- Persistence: vault-backed transaction and portfolio snapshot recording
 
-## What Was Built
+## Supplemental demo surface
 
-- **`mcp/server.js`** — stdio MCP server exposing 9 tools and 3 resources
-- **`mcp/README.md`** — Integration guide for Claude Desktop, Cursor, OpenCode, etc.
-- **`package.json`** — Added `@modelcontextprotocol/sdk` and `zod` dependencies
+- **File:** `mcp/server.py`
+- **Role:** Civilizational markets / energy / food / prospect demo
+- **Current size:** 6 tools + 3 resources
 
-## Tools Exposed
+Current tools:
 
-| Tool | Purpose |
-|------|---------|
-| `wealth_check_floors` | Run F1-F13 floor checks on a proposed operation |
-| `wealth_seal_999` | Attempt 999 SEAL on a decision state |
-| `wealth_capitalx_score` | Calculate risk-adjusted cost of capital |
-| `wealth_capitalx_compare` | Compare virtuous vs extractive capital rates |
-| `wealth_compute_networth` | Compute net worth with epistemic tags |
-| `wealth_compute_cashflow` | Compute monthly cashflow and runway |
-| `wealth_compute_maruah` | Compute Maruah dignity score |
-| `wealth_project_growth` | Compound growth with F7 humility bands |
-| `wealth_project_runway` | Runway depletion estimate |
+- `wealth_evaluate_prospect`
+- `markets_analyze_ticker`
+- `markets_portfolio_stress_test`
+- `energy_crisis_assess`
+- `energy_shortage_predict`
+- `food_security_index`
 
-## Resources Exposed
+## Operational rule
 
-| Resource | Purpose |
-|----------|---------|
-| `wealth://governance/floors` | F1-F13 definitions and hold types |
-| `wealth://governance/epistemic` | Epistemic tag enum |
-| `wealth://sample/state` | Demo financial state |
+If another system needs the **real packaged WEALTH runtime**, wire **`server.py`**.
 
-## Safety Design
+If another system needs the **civilizational demo surface**, wire **`mcp/server.py`**.
 
-All tools enforce WEALTH governance natively:
-- Irreversible actions trigger 888 HOLD
-- Missing uncertainty bands fail F7
-- AI-deciding operations fail F10
-- Floor overrides fail F12
+## Why this matters
 
-## Integration Path
+Older repo notes described:
 
-This MCP server can be consumed by:
-- **Lender underwriting bots** querying `capitalx_score`
-- **Insurance models** checking `wealth_compute_maruah` and `wealth_check_floors`
-- **Personal finance agents** (Claude, Codex, Gemini) calling net worth, cashflow, and runway tools
-- **Treasury dashboards** requesting 999 SEAL on institutional decisions
+- a Node `mcp/server.js` surface that is no longer the source of truth, or
+- only the smaller civilizational FastMCP file without mentioning the main valuation kernel.
 
-## Running It
+The current repo SOT is the split above.
+
+## Run commands
 
 ```bash
 cd /root/WEALTH
-npm run mcp
+python server.py
+python mcp/server.py
 ```
-
-Or via Claude Desktop config:
-```json
-{
-  "mcpServers": {
-    "wealth": {
-      "command": "node",
-      "args": ["/root/WEALTH/mcp/server.js"]
-    }
-  }
-}
-```
-
-## Validation
-
-The server initializes successfully and responds to MCP `initialize` requests with correct capabilities.
-
-## Relation to Civilizational Scale
-
-This MCP surface is the **foundation** for all civilizational MCP apps proposed in the architecture deck. Without this callable layer, `WEALTH-Markets`, `WEALTH-Energy`, and `WEALTH-Food` have no governance kernel to query.
 
 ---
-*999 SEAL ALIVE*
+*Repo SOT update | 999 SEAL ALIVE*
