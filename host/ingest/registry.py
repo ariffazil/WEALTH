@@ -4,6 +4,7 @@ Handles 4 buses: slow, daily, fast, archive.
 Provides caching, health tracking, stale detection, and series metadata registry.
 """
 
+import inspect
 import json
 import os
 import time
@@ -198,15 +199,39 @@ class IngestRegistry:
         start = time.time()
         try:
             if source == "FRED":
-                records = adapter.fetch_series(series_id, entity_code, **kwargs)
+                records = self._call_adapter(
+                    adapter.fetch_series,
+                    series_id,
+                    entity_code,
+                    **kwargs,
+                )
             elif source == "WorldBank":
-                records = adapter.fetch_indicator(series_id, entity_code, **kwargs)
+                records = self._call_adapter(
+                    adapter.fetch_indicator,
+                    series_id,
+                    entity_code,
+                    **kwargs,
+                )
             elif source == "ECB":
-                records = adapter.fetch_series(series_id, entity_code=entity_code, **kwargs)
+                records = self._call_adapter(
+                    adapter.fetch_series,
+                    series_id,
+                    entity_code=entity_code,
+                    **kwargs,
+                )
             elif source == "Ember":
-                records = adapter.fetch_electricity_data(entity_code=entity_code, **kwargs)
+                records = self._call_adapter(
+                    adapter.fetch_electricity_data,
+                    entity_code=entity_code,
+                    **kwargs,
+                )
             elif source == "OWID":
-                records = adapter.fetch_series(series_id, entity_code=entity_code)
+                records = self._call_adapter(
+                    adapter.fetch_series,
+                    series_id,
+                    entity_code=entity_code,
+                    **kwargs,
+                )
             else:
                 records = []
         except Exception as exc:
@@ -266,6 +291,16 @@ class IngestRegistry:
             "latency_ms": latency_ms,
             "cache_age_hours": cache_age,
         }
+
+    @staticmethod
+    def _call_adapter(fetcher: Any, *args, **kwargs):
+        signature = inspect.signature(fetcher)
+        accepted_kwargs = {
+            key: value
+            for key, value in kwargs.items()
+            if key in signature.parameters
+        }
+        return fetcher(*args, **accepted_kwargs)
 
     def snapshot(self, entity_code: str, sources: Optional[List[str]] = None) -> Dict[str, Any]:
         """Fetch a cross-source snapshot for a given geography."""
