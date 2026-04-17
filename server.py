@@ -1470,8 +1470,53 @@ def score_kernel(
     wealth_signals: Optional[dict] = None,
     extractive_signals: Optional[dict] = None,
     scale_mode: str = "enterprise",
+    task_definition: str = "",
+    irreversible: bool = False,
 ) -> Any:
-    """Final Sovereign Allocation Verdict. [Allocation Dimension]"""
+    """Final Sovereign Allocation Verdict. [Allocation Dimension]
+
+    REPAIRED: arifos-judge-repair-001
+    Floor check (F1-F13) is now mandatory before returning any verdict.
+    If floors fail, allocation verdict is overridden to HOLD/VOID.
+    """
+    if not GOVERNANCE_AVAILABLE:
+        pass
+    else:
+        floor_result = check_floors(
+            {
+                "reversible": not irreversible,
+                "human_confirmed": False,
+                "epistemic": "ESTIMATE",
+                "ai_is_deciding": True,
+                "floor_override": False,
+                "peace2": peace2,
+                "maruah_score": maruah_score,
+                "uncertainty_band": None,
+                "operation_type": "ALLOCATION",
+                "scale_mode": scale_mode,
+                "task_definition": task_definition,
+                "phantom_entries": False,
+                "critical": irreversible,
+                "pin_verified": False,
+            }
+        )
+        if floor_result["verdict"] in ("HOLD", "VOID"):
+            gov_verdict = "888-HOLD" if floor_result["verdict"] == "HOLD" else "VOID"
+            return create_envelope(
+                "wealth_score_kernel",
+                "Allocation",
+                {"blocked_by_floors": True, "verdict_override": floor_result["verdict"]},
+                {
+                    "floor_violations": floor_result["violations"],
+                    "floor_holds": floor_result["holds"],
+                },
+                [*floor_result["violations"], *floor_result["holds"]],
+                ["Allocation blocked by constitutional floor check."],
+                epistemic="ESTIMATE",
+                verdict=gov_verdict,
+                scale_mode=scale_mode,
+            )
+
     wealth_payload = {
         "dS": d_s,
         "peace2": peace2,
