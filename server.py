@@ -2341,5 +2341,59 @@ def get_dimensional_definitions() -> str:
     )
 
 
+@mcp.tool(name="wealth_init")
+async def wealth_init_tool(
+    session_id: Optional[str] = None,
+    actor_id: str = "wealth-agent",
+    intent: Optional[str] = None,
+) -> Any:
+    """
+    Open a WEALTH governance session — writes a 000_INIT event to VAULT999.
+    Call this at the start of any WEALTH analysis session to anchor identity
+    and connect to the canonical Merkle chain (prev_hash = last vault_seals root).
+    Returns session_id and chain position for subsequent wealth_snapshot_portfolio seals.
+    """
+    import sys
+    import uuid as _uuid
+
+    ARIFOS_PATH = "/root/arifOS"
+    if ARIFOS_PATH not in sys.path:
+        sys.path.append(ARIFOS_PATH)
+
+    sid = session_id or f"wealth-session-{_uuid.uuid4().hex[:12]}"
+
+    try:
+        from arifosmcp.runtime.vault_postgres import seal_to_vault
+
+        res = await seal_to_vault(
+            event_type="WEALTH_SESSION_INIT",
+            session_id=sid,
+            actor_id=actor_id,
+            stage="000_INIT",
+            verdict="ACTIVE",
+            payload={"intent": intent or "economic-analysis", "source": "WEALTH-MCP"},
+            risk_tier="low",
+        )
+
+        return create_envelope(
+            "wealth_init",
+            "Vault",
+            {
+                "session_id": sid,
+                "stage": "000_INIT",
+                "chain_hash": res.chain_hash if hasattr(res, "chain_hash") else "",
+                "vault_id": res.ledger_id if hasattr(res, "ledger_id") else "",
+            },
+            {},
+            [],
+            ["WEALTH session anchored to VAULT999 chain. Ready for analysis."],
+            verdict="SEAL",
+        )
+    except Exception as e:
+        return create_envelope(
+            "wealth_init", "Vault", {}, {"error": str(e)}, [], ["Vault anchor failed."], verdict="VOID"
+        )
+
+
 if __name__ == "__main__":
     mcp.run()
