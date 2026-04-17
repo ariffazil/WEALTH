@@ -1,103 +1,76 @@
-# First Governed Loop — Acceptance Test Checklist
+# First Governed Loop — Current Acceptance Checklist
 
-> **Target:** One sovereign loan decision, end-to-end, from state → control → VAULT999.  
-> **Epistemic:** ESTIMATE  
-> **Status:** Phase A Exit Gate  
+> **Target:** One end-to-end WEALTH decision using the current packaged kernel (`server.py`).  
+> **Epistemic:** CLAIM for structure, ESTIMATE for thresholds  
+> **Status:** Phase A runtime checklist  
 > **DITEMPA BUKAN DIBERI — 999 SEAL ALIVE**
 
 ---
 
-## Pre-Flight
+## Pre-flight
 
-- [ ] `node --version` ≥ 22
-- [ ] `WEALTH/data/vault999.jsonl` exists and is append-only
-- [ ] `WEALTH/scripts/run-first-loop.js` is present and executable
-- [ ] No missing `host/kernel/*.js` files block imports (use inline stubs if necessary)
-
----
-
-## Step-by-Step Verification
-
-### 1. State — Market Snapshot
-- [ ] Tool `wealth.state.marketsnapshot` returns `rf_curve`, `erp`, `capital_temperature`
-- [ ] All outputs tagged `ESTIMATE`
-- [ ] Request includes `envelope_id`
-
-### 2. Risk — Capital Allocation
-- [ ] Tool `wealth.risk.capitalallocation` returns `economic_capital`, `risk_budgets`, `liquidity_buffer`
-- [ ] No bucket breaches `maruah_drawdown_floor` (default 0.6)
-- [ ] If breach detected, chain routes to `wealth.control.gate888` before pricing
-
-### 3. Price — Exergy Cost
-- [ ] Tool `wealth.price.exergycost` returns `exergy_mj_per_unit`, `entropy_cost_per_unit`
-- [ ] Values are non-negative and finite
-
-### 4. Justice — Maruah Score
-- [ ] Tool `wealth.justice.maruahscore` returns `maruah_score` ∈ [0,1]
-- [ ] `maruah_band` is one of: `SOVEREIGN`, `STABLE`, `FLOOR`, `AMBER`, `RED`
-- [ ] `incidence_map` identifies who bears cost / receives benefit
-
-### 5. Price — capitalx
-- [ ] Tool `wealth.price.capitalx` returns `r_adj` ≥ 0
-- [ ] `adjustments` object contains full breakdown: `entropy_penalty`, `peace_discount`, `maruah_discount`, `trust_discount`, `civ_discount`
-- [ ] `uncertainty_band` array has exactly 2 elements
-- [ ] If `wealth_basis` + `defects` provided, `deltaCiv` is promoted via basis formula
-- [ ] Monotonicity check: if `dS` or `shadow` increased, `r_adj` did not decrease
-
-### 6. Flow — Scenario NPV
-- [ ] Tool `wealth.flow.scenarionpv` returns `npv_distribution`, `irr`, `payback_years`
-- [ ] Discounting uses `r_adj` from step 5, not naive WACC
-- [ ] Any scenario with `Peace² < 1.0` or `ΔS > 0` (unheld) is downgraded to `VOID`
-
-### 7. Control — Gate 888
-- [ ] Tool `wealth.control.gate888` returns `hold_triggered`, `recommendation`, `repricing_hints`
-- [ ] Trigger conditions evaluated:
-  - [ ] `maruah < 0.4` → `888-HOLD`
-  - [ ] `reversible === false && !human_confirmed` → `888-HOLD`
-  - [ ] `entropy_budget_remaining < 0` → `VOID`
-- [ ] `upstream_signal` string is present for telemetry back to arifOS/GEOX
-
-### 8. Seal — VAULT999
-- [ ] Final VAULT999 entry appended to `data/vault999.jsonl`
-- [ ] Entry contains:
-  - [ ] `event` type (e.g. `SOVEREIGN_LOAN_DECISION`)
-  - [ ] `envelope_id`
-  - [ ] `verdict` (`SEALED`, `888-HOLD`, or `VOID`)
-  - [ ] `witness`: `{ human, ai, earth }`
-  - [ ] `telemetry` block with `dS`, `peace2`, `r_adj`, `maruah`, `delta_bps`
-  - [ ] `integrity_hash` (SHA-256 prefix)
-  - [ ] `epoch` (ISO8601, non-decreasing)
+- [ ] `python server.py` starts cleanly
+- [ ] `WEALTH/data/vault999.jsonl` exists and remains append-only
+- [ ] `npm test` passes
+- [ ] No missing imports block `host/` runtime modules
 
 ---
 
-## Failure-Mode Acceptance
+## Step-by-step verification
 
-| Failure | Expected Behavior | Pass/Fail |
+### 1. Anchor session
+- [ ] `wealth_init` returns a session anchor, runtime posture, or equivalent initialization payload
+- [ ] Session metadata is explicit before downstream valuation work
+
+### 2. Sense external state
+- [ ] `wealth_ingest_sources` lists available source adapters
+- [ ] `wealth_ingest_snapshot` or `wealth_ingest_fetch` returns a usable signal set for the target jurisdiction / series
+- [ ] If source quality is weak, `wealth_ingest_health` or `wealth_ingest_reconcile` surfaces that weakness instead of hiding it
+
+### 3. Establish baseline position
+- [ ] `wealth_networth_state` returns a coherent balance-sheet view
+- [ ] `wealth_cashflow_flow` returns coherent liquidity / runway state
+
+### 4. Price the opportunity
+- [ ] `wealth_npv_reward` returns NPV-style reward outputs
+- [ ] `wealth_emv_risk` returns probability-weighted expected value
+- [ ] `wealth_dscr_leverage` returns debt service coverage with clear flags where leverage is unsafe
+- [ ] `wealth_payback_time` or `wealth_growth_velocity` can be used where temporal recovery matters
+
+### 5. Audit entropy and governance
+- [ ] `wealth_audit_entropy` surfaces non-normal flows, multiple-IRR risk, or other instability
+- [ ] `wealth_check_floors` evaluates F1-F13 constraints on the candidate decision
+- [ ] `wealth_policy_audit` applies explicit policy constraints without silent override
+
+### 6. Form decision
+- [ ] `wealth_score_kernel` returns a final WEALTH-side allocation verdict
+- [ ] If multiple candidate actions exist, `wealth_personal_decision` or `wealth_agent_budget` ranks them coherently under constraints
+
+### 7. Persist evidence
+- [ ] `wealth_record_transaction` can append a transaction-style evidence record to VAULT999
+- [ ] `wealth_snapshot_portfolio` can persist a snapshot of the evaluated result
+
+---
+
+## Failure-mode acceptance
+
+| Failure | Expected behavior | Pass / Fail |
 |---|---|---|
-| Missing `envelope_id` | F3 SABAR returned; tool refuses execution | |
-| Rate inversion (`r_adj` drops while `dS` rises) | F12 hard block; output rejected; anomaly logged | |
-| Justice bypass (maruah omitted) | F6 VOID; capital flow blocked | |
-| Black-box pricing (missing `adjustments`) | Epistemic forced to `UNKNOWN`; warning issued | |
-| Orphan control (gate888 before price/justice) | Rejected; prerequisite seals required | |
+| Weak or stale external data | Ingest layer exposes health / reconciliation warnings | |
+| Multiple IRR / unstable series | `wealth_audit_entropy` flags instability instead of pretending certainty | |
+| Unsafe leverage | `wealth_dscr_leverage` escalates via flags / hold posture | |
+| Policy breach | `wealth_policy_audit` or `wealth_check_floors` blocks or downgrades decision | |
+| Missing evidence persistence | Transaction / snapshot tools refuse to imply durable recording | |
 
 ---
 
-## Delta-bps Capture (for Δbps_proven path)
+## Sign-off
 
-- [ ] Classical `r` computed and recorded
-- [ ] `wealth.price.capitalx` `r_adj` computed and recorded
-- [ ] `delta_bps` = `(r_classical - r_adj) * 10,000` is stored in VAULT999
-- [ ] Decision rationale from `gate888` is stored alongside
+Once the steps above pass on the **current** packaged kernel:
 
----
-
-## Sign-Off
-
-Once all boxes are checked and VAULT999 contains at least one clean `SEALED` sovereign loan record:
-
-**Phase A Framework:** ✅ Validated  
-**Next move:** Select first *real* transaction for Δbps_proven.
+**Phase A runtime loop:** validated against repo SOT  
+**Next move:** prove `Δbps_proven > 0` with a real capital decision
 
 ---
 
-*Checklist v1.0.0 | 999 SEAL ALIVE*
+*Checklist v1.5.0 | Repo SOT aligned*

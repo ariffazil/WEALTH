@@ -44,17 +44,67 @@ class FoodSecurityIndex(BaseModel):
     stability: float
     index_score: float
 
+class ProspectEconomics(BaseModel):
+    prospect_id: str
+    stoiip_bbl: float
+    development_capex: float
+    operating_opex: float
+    oil_price_assumption: float
+    npv_10: float
+    emv: float
+    paradox_score: float
+    verdict: str
+
+# --- Domain: Thermodynamic Economics (Golden Path Demo) ---
+
+@mcp.tool()
+def wealth_evaluate_prospect(
+    prospect_id: str, 
+    stoiip_bbl: float, 
+    capex_estimate: float = 500_000_000.0, 
+    opex_per_bbl: float = 15.0, 
+    oil_price: float = 75.0,
+    geological_chance_of_success: float = 0.3
+) -> ProspectEconomics:
+    """
+    Evaluate prospect economics (NPV/EMV) from GEOX volumetrics.
+    Applies the WEALTH schema to calculate the Paradox and Echo of the investment.
+    """
+    # Assume a 35% recovery factor for the Energy Capacity (STOIIP)
+    recoverable_reserves = stoiip_bbl * 0.35 
+    gross_revenue = recoverable_reserves * oil_price
+    total_opex = recoverable_reserves * opex_per_bbl
+    net_cash_flow = gross_revenue - capex_estimate - total_opex
+    
+    # Simplified NPV10 (assuming flat production curve)
+    npv_10 = net_cash_flow * 0.614 # Rough discount factor for 10% over 10 yrs
+    
+    # Expected Monetary Value (EMV)
+    emv = (npv_10 * geological_chance_of_success) - (capex_estimate * (1 - geological_chance_of_success))
+    
+    # Paradox score: High short-term money but massive capital risk
+    paradox_score = 0.8 if (emv < 0 or capex_estimate > 1_000_000_000) else 0.2
+    
+    # WEALTH does not Seal; it only qualifies. arifOS holds the final Seal.
+    verdict = "QUALIFY" if emv > 0 and paradox_score < 0.5 else "888-HOLD"
+    
+    return ProspectEconomics(
+        prospect_id=prospect_id,
+        stoiip_bbl=stoiip_bbl,
+        development_capex=capex_estimate,
+        operating_opex=total_opex,
+        oil_price_assumption=oil_price,
+        npv_10=npv_10,
+        emv=emv,
+        paradox_score=paradox_score,
+        verdict=verdict
+    )
+
 # --- Domain 1: Stock Market Intelligence (WEALTH-Markets) ---
 
 @mcp.tool()
 def markets_analyze_ticker(ticker: str, depth: str = "standard") -> MarketAnalysis:
-    """
-    Analyze stock with F1-F13 governance.
-    
-    F2: Confidence band declared (0.03-0.15)
-    F7: Humility band on projections
-    F9: Anti-hantu (no phantom valuations)
-    """
+    """Analyze stock with F1-F13 governance."""
     return MarketAnalysis(
         ticker=ticker.upper(),
         sentiment=0.5,
@@ -70,14 +120,7 @@ def markets_portfolio_stress_test(
     holdings: List[str],
     scenarios: List[str]
 ) -> StressTestResult:
-    """
-    Run 888 HOLD-aware stress tests.
-    
-    Triggers 888 HOLD if:
-    - Max drawdown > -20%
-    - Correlation breakdown detected
-    - Liquidity crisis scenario
-    """
+    """Run 888 HOLD-aware stress tests."""
     return StressTestResult(
         portfolio_id=portfolio_id,
         max_drawdown=-0.05,
@@ -90,15 +133,7 @@ def markets_portfolio_stress_test(
 
 @mcp.tool()
 def energy_crisis_assess(region: str) -> CrisisAssessment:
-    """
-    Assess energy crisis severity with F1-F13.
-    
-    Maruah Score adapted for regions:
-    - energy_sovereignty: Domestic production ratio
-    - grid_integrity: Infrastructure reliability
-    - price_dignity: Affordability for poorest 20%
-    - transition_amanah: Renewable commitment integrity
-    """
+    """Assess energy crisis severity with F1-F13."""
     return CrisisAssessment(
         region=region.upper(),
         energy_sovereignty=0.8,
@@ -114,12 +149,7 @@ def energy_shortage_predict(
     region: str,
     horizon_days: int = 30
 ) -> ShortagePrediction:
-    """
-    Predict energy shortages with humility bands.
-    
-    F7: Uncertainty declared on all projections
-    F9: No phantom capacity claims
-    """
+    """Predict energy shortages with humility bands."""
     return ShortagePrediction(
         region=region.upper(),
         shortage_probability=0.1,
@@ -131,15 +161,7 @@ def energy_shortage_predict(
 
 @mcp.tool()
 def food_security_index(country: str) -> FoodSecurityIndex:
-    """
-    Calculate food security with Maruah adaptation.
-    
-    Dimensions:
-    - availability: Production + imports - exports
-    - access: Price/income ratio for staple foods
-    - utilization: Nutrition quality index
-    - stability: Supply variance over 5 years
-    """
+    """Calculate food security with Maruah adaptation."""
     return FoodSecurityIndex(
         country=country.upper(),
         availability=0.8,

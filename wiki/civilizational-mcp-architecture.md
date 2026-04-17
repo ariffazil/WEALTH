@@ -1,61 +1,67 @@
 ---
 title: Civilizational MCP Architecture
-date: 2026-04-14
-tags: [architecture, civilization, mcp, arifos]
+date: 2026-04-17
+tags: [architecture, civilization, mcp, wealth]
 ---
 
 # Civilizational MCP Architecture
 
-WEALTH is evolving from a personal financial intelligence OS into a **Civilizational-Level MCP Apps Architecture**. This transformation scales constitutional governance (F1-F13) from individual net worth to global prosperity monitoring.
+WEALTH now has a **dual-surface MCP story**:
 
-## 1. Domains of Intelligence
+1. **`server.py`** is the canonical packaged valuation kernel.
+2. **`mcp/server.py`** is a narrower civilizational domain demo layered beside it.
 
-The architecture is partitioned into critical civilizational domains:
+The civilizational surface does **not** replace the valuation kernel; it supplements it.
 
-| Domain | Focus | Key Tools |
-|--------|-------|-----------|
-| **Markets** | Financial market stability | `analyze_ticker`, `stress_test`, `bubble_detect` |
-| **Energy** | Global energy security | `crisis_assess`, `shortage_predict`, `transition_audit` |
-| **Food** | Early warning systems | `security_index`, `early_warning`, `supply_trace` |
-| **Water** | Freshwater security | `water_stress_index`, `conflict_risk_assessment` |
-| **Climate** | Finance & integrity | `finance_gap_analysis`, `carbon_market_integrity` |
-| **Chains** | Supply chain resilience | `vulnerability_assessment`, `bottleneck_detection` |
+## 1. Domain lanes currently exposed
 
-## 2. Civilizational Engine
+| Lane | Tools |
+|---|---|
+| Prospect economics | `wealth_evaluate_prospect` |
+| Markets | `markets_analyze_ticker`, `markets_portfolio_stress_test` |
+| Energy | `energy_crisis_assess`, `energy_shortage_predict` |
+| Food | `food_security_index` |
 
-Three core components drive the civilizational intelligence layer:
+Resources:
 
-### Civilizational Prosperity Index (CPI)
-Extension of the **Maruah Score** to a planetary scale. It measures economic, energy, food, water, and governance stability.
-- **Floor**: 0.6 (Minimum civilizational dignity)
-- **888-HOLD**: Triggers if global prosperity falls below the floor.
+- `market://{ticker}/fundamentals`
+- `energy://{region}/realtime-mix`
+- `food://global/prices`
 
-### Planetary Boundary Monitor
-Tracks civilizational stability against defined planetary limits (CO2, biodiversity, freshwater).
-- **F9 Anti-Hantu**: No phantom sustainability claims.
-- **F2 Truth Band**: 99% verified truth for environmental status.
+## 2. Relationship to the canonical kernel
 
-### Cascade Detector
-Detects systemic risks across interconnected domains.
-- **F5 Peace²**: Ensures stability in complex global systems.
-- **Synergy Check**: Identifies if risks in multiple domains combine to create critical failure.
+The root `server.py` still owns the main WEALTH operational surface:
 
-## 3. Governance Integration (F1-F13)
+- valuation math
+- leverage and entropy auditing
+- personal and agent budgeting
+- crisis and civilization scoring
+- ingest / reconciliation
+- policy / floor checks
+- vault persistence
 
-The civilizational layer inherits and expands the 13 constitutional floors:
+That means the architectural stack is:
 
-| Floor | Personal WEALTH | Civilizational WEALTH |
-|-------|-----------------|-----------------------|
-| **F2 Truth** | 99% accuracy | Verified global statistics |
-| **F7 Humility** | Uncertainty in growth | Model uncertainty declared |
-| **F9 Anti-Hantu** | No phantom cashflow | No phantom statistics |
-| **F13 Sovereign** | Human veto | Popular sovereignty |
+```text
+arifOS constitutional judgment
+        ^
+        |
+ WEALTH server.py  (packaged capital kernel)
+        +
+ WEALTH mcp/server.py (civilizational demo lanes)
+```
 
-## 4. MCP Infrastructure
+## 3. Design boundary
 
-- **FastMCP Server**: `mcp/server.py` implements the tools and resources using Python.
-- **App Manifests**: Domain-specific apps (`wealth-markets`, `wealth-energy`, `wealth-food`) define capabilities and governance rules.
-- **Data Integration**: Federated access to Yahoo Finance, World Bank, FAO, IEA, and satellite data.
+- Use **`server.py`** when you need the main WEALTH capital engine.
+- Use **`mcp/server.py`** when you need the demo domain-oriented civilizational tools.
+- If both are present, the packaged kernel remains authoritative.
+
+## 4. Why the split is healthy
+
+- The root kernel can keep growing as the durable valuation runtime.
+- The civilizational surface can evolve faster without pretending to be the whole WEALTH system.
+- GEOX-linked prospect economics can live in the demo lane while still feeding broader capital evaluation flows.
 
 ---
-*DITEMPA BUKAN DIBERI — WEALTH Civilization ALIVE*
+*Repo SOT aligned | 999 SEAL ALIVE*

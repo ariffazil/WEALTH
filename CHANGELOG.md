@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.5.0 - 2026-04-17
+
+- Aligned the active documentation set to the current repo source of truth.
+- Clarified that the canonical packaged MCP kernel is `server.py`, while `mcp/server.py` is a secondary civilizational FastMCP surface.
+- Documented the live kernel families, current tool counts, and the split between the canonical 11-band map and the larger runtime superset.
+- Added `wealth_evaluate_prospect` to the civilizational demo MCP surface and documented it alongside the existing markets / energy / food tools.
+- Replaced stale active-doc references to the retired `mcp/server.js` packaging story.
+
 ## v1.3.1 - 2026-04-14
 
 - Hardened the WEALTH finance kernel with deterministic measurement code for NPV, EAA, IRR, MIRR, PI, EMV, payback, discounted payback, and DSCR.
