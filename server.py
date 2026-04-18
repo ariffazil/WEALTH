@@ -42,11 +42,16 @@ try:
     GOVERNANCE_AVAILABLE = True
 except Exception:
     try:
-         from arifosmcp.runtime.tools import arifos_judge as check_floors
-         from arifosmcp.runtime.vault_postgres import seal_to_vault as append_vault999
-         GOVERNANCE_AVAILABLE = True
+        from arifosmcp.runtime.tools import arifos_judge as check_floors
+        from arifosmcp.runtime.vault_postgres import seal_to_vault as append_vault999
+        GOVERNANCE_AVAILABLE = True
     except Exception:
-         GOVERNANCE_AVAILABLE = False
+        GOVERNANCE_AVAILABLE = False
+        try:
+            from host.governance.vault_supabase import append_vault999
+            GOVERNANCE_AVAILABLE = True
+        except Exception:
+            pass
 
 try:
     from host.coordination.lp_allocator import allocate as lp_allocate
@@ -2414,7 +2419,13 @@ async def wealth_init_tool(
         )
     except Exception as e:
         return create_envelope(
-            "wealth_init", "Vault", {}, {"error": str(e)}, [], ["Vault anchor failed."], verdict="VOID"
+            "wealth_init",
+            "Vault",
+            {},
+            {"error": str(e)},
+            [],
+            ["Vault anchor failed."],
+            verdict="VOID",
         )
 
 

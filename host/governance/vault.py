@@ -21,6 +21,14 @@ except Exception:
     psycopg = None
     PSYCHOPG_AVAILABLE = False
 
+try:
+    from .vault_supabase import append_vault999 as _vault_append
+
+    SUPABASE_VAULT = True
+except Exception:
+    _vault_append = None
+    SUPABASE_VAULT = False
+
 DEFAULT_VAULT_PATH = os.path.join(os.getcwd(), "data", "vault999.jsonl")
 INTEGRITY_SALT = "WEALTH-VAULT999-2026"
 
@@ -358,7 +366,16 @@ def append_vault999(
     Legacy VAULT999 append — auto-snapshots to portfolio_snapshots on scale_mode
     triggers (national/civilization/agentic/crisis), and records as transaction
     if the governance verdict is SEAL and scale is high.
+
+    Tries psycopg (native Postgres) first, falls back to Supabase REST API,
+    then falls back to no-op with jsonl dump.
     """
+    if SUPABASE_VAULT and _vault_append is not None:
+        try:
+            return _vault_append(record, path)
+        except Exception:
+            pass
+
     tool = record.get("tool", "unknown")
     scale_mode = record.get("scale_mode", "enterprise")
     verdict = record.get("governance_verdict", record.get("verdict", "SEAL"))
