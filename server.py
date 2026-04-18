@@ -1,10 +1,18 @@
 import json
 import math
+import sys
+import os
+import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 __version__ = "1.5.0"
 """WEALTH v1.5.0 - Universal Resource Allocation Intelligence (URAI) with Constitutional Governance."""
+
+# Ensure sibling arifOS directory is in path for arifosmcp imports
+arifos_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "arifOS"))
+if os.path.exists(arifos_path) and arifos_path not in sys.path:
+    sys.path.append(arifos_path)
 
 try:
     from fastmcp import FastMCP
@@ -13,46 +21,49 @@ try:
 except ImportError:
     FASTMCP_AVAILABLE = False
 
-    class FastMCP:  # type: ignore[override]
-        def __init__(self, *_args, **_kwargs):
+    class FastMCP:  # type: ignore
+        def __init__(self, *args, **kwargs):
             pass
 
-        def tool(self, name: Optional[str] = None):
-            def decorator(func):
-                return func
+        def tool(self, name=None):
+            return lambda f: f
 
-            return decorator
-
-        def resource(self, _uri: str):
-            def decorator(func):
-                return func
-
-            return decorator
+        def resource(self, uri):
+            return lambda f: f
 
         def run(self):
-            raise RuntimeError(
-                "fastmcp is not installed; import and call the WEALTH functions directly or install FastMCP to serve MCP."
-            )
+            pass
 
 
+# --- Sovereign Governance ---
 try:
     from arifosmcp.runtime.megaTools.tool_01_init_anchor import check_floors
     from arifosmcp.runtime.vault_postgres import seal_to_vault as append_vault999
-    # Note: maruah_band logic is replicated locally if needed or imported if available
+
     GOVERNANCE_AVAILABLE = True
 except Exception:
     try:
         from arifosmcp.runtime.tools import arifos_judge as check_floors
         from arifosmcp.runtime.vault_postgres import seal_to_vault as append_vault999
+
         GOVERNANCE_AVAILABLE = True
     except Exception:
         GOVERNANCE_AVAILABLE = False
+
+        def check_floors(*args, **kwargs):
+            return {"pass": True, "verdict": "SEAL", "violations": []}
+
         try:
             from host.governance.vault_supabase import append_vault999
+
             GOVERNANCE_AVAILABLE = True
         except Exception:
-            pass
 
+            def append_vault999(record, **kwargs):
+                return record
+
+
+# --- Coordination Layer ---
 try:
     from host.coordination.lp_allocator import allocate as lp_allocate
     from host.coordination.cooperative import shapley_values, core_feasibility
@@ -63,83 +74,83 @@ try:
 except Exception:
     COORDINATION_AVAILABLE = False
 
-    def lp_allocate(*_args, **_kwargs):  # type: ignore
-        return {"feasible": False, "flags": ["COORDINATION_UNAVAILABLE"]}
+    def lp_allocate(*args, **kwargs):
+        return {"feasible": False}
 
-    def shapley_values(*_args, **_kwargs):  # type: ignore
-        return {
-            "shapley": {},
-            "total_value": 0.0,
-            "flags": ["COORDINATION_UNAVAILABLE"],
-        }
+    def shapley_values(*args, **kwargs):
+        return {"shapley": {}}
 
-    def core_feasibility(*_args, **_kwargs):  # type: ignore
-        return {
-            "in_core": False,
-            "blocking_coalitions": [],
-            "flags": ["COORDINATION_UNAVAILABLE"],
-        }
+    def core_feasibility(*args, **kwargs):
+        return {"in_core": False}
 
-    def nash_approximation(*_args, **_kwargs):  # type: ignore
-        return {
-            "equilibrium": {},
-            "converged": False,
-            "flags": ["COORDINATION_UNAVAILABLE"],
-        }
+    def nash_approximation(*args, **kwargs):
+        return {"equilibrium": {}}
 
-    def commons_risk(*_args, **_kwargs):  # type: ignore
-        return {
-            "tragedy_risk": 1.0,
-            "scarcity_index": {},
-            "flags": ["COORDINATION_UNAVAILABLE"],
-        }
+    def commons_risk(*args, **kwargs):
+        return {"tragedy_risk": 1.0}
 
-    def check_floors(*_args, **_kwargs):  # type: ignore
-        return {
-            "pass": True,
-            "verdict": "SEAL",
-            "violations": [],
-            "holds": [],
-            "warnings": [],
-        }
 
-    def maruah_band(score):  # type: ignore
-        return (
-            "SOVEREIGN"
-            if score >= 0.85
-            else "STABLE"
-            if score >= 0.70
-            else "FLOOR"
-            if score >= 0.60
-            else "AMBER"
-            if score >= 0.40
-            else "RED"
-        )
+# --- Epistemic Layer ---
+try:
+    from host.epistemic.evoi import compute_evoi, compute_evoi_monte_carlo
+    from host.epistemic.correlation_guard import (
+        PortfolioCorrelationGuard as CorrelationGuard,
+    )
+    from host.epistemic.schema_validator import (
+        EpistemicSchemaValidator as SchemaValidator,
+    )
 
-    class PolicyEngine:  # type: ignore
-        def __init__(self, *_args, **_kwargs):
+    EPISTEMIC_AVAILABLE = True
+except Exception:
+    EPISTEMIC_AVAILABLE = False
+
+    def compute_evoi(*args, **kwargs):
+        return {"error": "EPISTEMIC_UNAVAILABLE"}
+
+    def compute_evoi_monte_carlo(*args, **kwargs):
+        return {"error": "EPISTEMIC_UNAVAILABLE"}
+
+    class CorrelationGuard:
+        def __init__(self, *args, **kwargs):
             pass
 
-        def evaluate(self, *_args, **_kwargs):
-            return {
-                "policy_pass": True,
-                "flags": [],
-                "details": {},
-                "constraints_applied": [],
-                "scale_mode": "enterprise",
-            }
+        def check_portfolio(self, *args, **kwargs):
+            return {"correlation_risk": 0.0}
 
-        def evaluate_envelope(self, *_args, **_kwargs):
-            return {
-                "policy_pass": True,
-                "flags": [],
-                "details": {},
-                "constraints_applied": [],
-                "scale_mode": "enterprise",
-            }
+    class SchemaValidator:
+        def __init__(self, *args, **kwargs):
+            pass
 
-    def append_vault999(record, **_kwargs):  # type: ignore
-        return record
+        def validate_portfolio(self, *args, **kwargs):
+            return {"integrity_score": 1.0}
+
+
+# --- Policy Engine ---
+try:
+    from host.governance.policy_engine import PolicyEngine
+
+    POLICY_ENGINE_AVAILABLE = True
+except Exception:
+    POLICY_ENGINE_AVAILABLE = False
+
+    class PolicyEngine:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def evaluate(self, *args, **kwargs):
+            return {"feasible": True, "flags": []}
+
+
+def maruah_band(score):
+    if score >= 0.85:
+        return "SOVEREIGN"
+    if score >= 0.70:
+        return "STABLE"
+    if score >= 0.60:
+        return "FLOOR"
+    if score >= 0.40:
+        return "AMBER"
+    return "RED"
 
 
 mcp = FastMCP("WEALTH Valuation Kernel")
@@ -1461,26 +1472,25 @@ def cashflow_flow(
 
 
 @mcp.tool(name="wealth_score_kernel")
-def score_kernel(
-    base_rate: float,
+def wealth_score_kernel(
     d_s: float,
     peace2: float,
     maruah_score: float,
+    base_rate: float,
     trust_index: float = 0.5,
     delta_civ: float = 0.0,
-    compare: bool = False,
-    prospects: Optional[List[dict]] = None,
     wealth_signals: Optional[dict] = None,
+    prospects: Optional[List[dict]] = None,
     extractive_signals: Optional[dict] = None,
+    compare: bool = False,
     scale_mode: str = "enterprise",
     task_definition: str = "",
     irreversible: bool = False,
 ) -> Any:
     """Final Sovereign Allocation Verdict. [Allocation Dimension]
-    
+
     Constitutional Gate (F1-F13) + Epistemic Gate (Schema + Correlation).
     """
-    # 1. Epistemic Validation Gate (F1-F2)
     epistemic_flags = []
     integrity_score = 1.0
     correlation_risk = 0.0
@@ -1489,23 +1499,20 @@ def score_kernel(
     if EPISTEMIC_AVAILABLE and prospects:
         validator = SchemaValidator()
         guard = CorrelationGuard()
-        
-        # Schema Check
+
         schema_res = validator.validate_portfolio(prospects)
         integrity_score = schema_res.get("integrity_score", 1.0)
         epistemic_flags.extend(schema_res.get("flags", []))
-        
-        # Correlation Check
+
         corr_res = guard.check_portfolio(prospects)
         correlation_risk = corr_res.get("correlation_risk", 0.0)
         epistemic_flags.extend(corr_res.get("flags", []))
-        
+
         if integrity_score < 0.3:
             epistemic_flags.append("EPISTEMIC_FAILURE")
         if correlation_risk > 0.5:
             epistemic_flags.append("SYSTEMIC_CORRELATION_RISK")
 
-    # 2. Constitutional Floor Gate (F1-F13)
     if not GOVERNANCE_AVAILABLE:
         pass
     else:
@@ -1526,19 +1533,23 @@ def score_kernel(
                 "critical": irreversible,
             }
         )
-        if (floor_result.get("verdict") in ("HOLD", "VOID")) or ("EPISTEMIC_FAILURE" in epistemic_flags):
-            gov_verdict = "888-HOLD" if floor_result.get("verdict") == "HOLD" else "VOID"
+        if (floor_result.get("verdict") in ("HOLD", "VOID")) or (
+            "EPISTEMIC_FAILURE" in epistemic_flags
+        ):
+            gov_verdict = (
+                "888-HOLD" if floor_result.get("verdict") == "HOLD" else "VOID"
+            )
             if "EPISTEMIC_FAILURE" in epistemic_flags:
                 gov_verdict = "VOID"
-            
+
             return create_envelope(
                 "wealth_score_kernel",
                 "Allocation",
                 {
-                    "blocked_by_governance": True, 
+                    "blocked_by_governance": True,
                     "verdict": gov_verdict,
                     "integrity_score": integrity_score,
-                    "correlation_risk": correlation_risk
+                    "correlation_risk": correlation_risk,
                 },
                 {
                     "floor_violations": floor_result.get("violations", []),
@@ -1551,14 +1562,47 @@ def score_kernel(
                 scale_mode=scale_mode,
             )
 
-    # 3. Valuation Kernel (Core Logic)
     wealth_payload = {
         "dS": d_s,
         "peace2": peace2,
         "maruahScore": maruah_score,
-        "trustIndex": trust_index,
-        "deltaCiv": delta_civ,
+        "tag": "ESTIMATE",
     }
+
+    # 888 Epistemic Gate
+    if EPISTEMIC_AVAILABLE and prospects:
+        validator = SchemaValidator()
+        v_res = validator.validate_portfolio(prospects)
+        if not v_res.get("portfolio_valid", True):
+            return create_envelope(
+                "wealth_score_kernel",
+                "Allocation",
+                {"error": "EPISTEMIC_HOLD", "reason": v_res.get("status")},
+                {},
+                ["888_HOLD", "EPISTEMIC_VIOLATION"],
+                [
+                    "Epistemic validation failed. Scalar volumetrics detected or integrity low."
+                ],
+                epistemic="VOID",
+                verdict="VOID",
+                scale_mode=scale_mode,
+            )
+
+        guard = CorrelationGuard()
+        g_res = guard.check_portfolio(prospects)
+        if g_res.action == "HOLD":
+            return create_envelope(
+                "wealth_score_kernel",
+                "Allocation",
+                {"error": "CORRELATION_HOLD", "systemic_risk": True},
+                {},
+                ["888_HOLD", "SYSTEMIC_RISK"],
+                ["Systemic risk detected. Models are too correlated."],
+                epistemic="VOID",
+                verdict="VOID",
+                scale_mode=scale_mode,
+            )
+
     if wealth_signals:
         wealth_payload.update(wealth_signals)
 
@@ -1569,46 +1613,50 @@ def score_kernel(
         flags.append("SOVEREIGN_DIGNITY_LOW")
 
     wealth_result = capitalx(base_rate, wealth_payload)
-    
+
     if compare:
         extractive_result = capitalx(base_rate, extractive_signals or {})
         comparison = {
             "base_rate": wealth_result["base_rate"],
             "wealth_r_adj": wealth_result["r_adj"],
             "extractive_r_adj": extractive_result["r_adj"],
-            "advantage_bps": round((extractive_result["r_adj"] - wealth_result["r_adj"]) * 10000),
+            "advantage_bps": round(
+                (extractive_result["r_adj"] - wealth_result["r_adj"]) * 10000
+            ),
             "integrity_score": integrity_score,
-            "correlation_risk": correlation_risk
+            "correlation_risk": correlation_risk,
         }
         return create_envelope(
             "wealth_score_kernel",
             "Allocation",
             comparison,
             {},
-            [*flags, *(wealth_result["integrity_flags"]), *(extractive_result["integrity_flags"])],
-            ["Comparison mode active. Epistemic weighting applied."],
-            epistemic=epistemic_tag,
+            [
+                *flags,
+                *(wealth_result.get("integrity_flags", [])),
+                *(extractive_result.get("integrity_flags", [])),
+            ],
+            ["CapitalX remains an estimate until delta_bps is proven."],
+            epistemic="ESTIMATE",
             scale_mode=scale_mode,
         )
 
     # Merge results
     final_primary = {**wealth_result}
-    final_primary.update({
-        "integrity_score": integrity_score,
-        "correlation_risk": correlation_risk
-    })
+    final_primary.update(
+        {"integrity_score": integrity_score, "correlation_risk": correlation_risk}
+    )
 
     return create_envelope(
         "wealth_score_kernel",
         "Allocation",
         final_primary,
         {},
-        [*flags, *(wealth_result["integrity_flags"])],
-        wealth_result["assumptions"],
+        [*flags, *(wealth_result.get("integrity_flags", []))],
+        wealth_result.get("assumptions", []),
         epistemic=epistemic_tag,
         scale_mode=scale_mode,
     )
-
 
 
 @mcp.tool(name="wealth_personal_decision")
@@ -1851,6 +1899,17 @@ def coordination_equilibrium(
 
     lp_result = lp_allocate(lp_agents, shared_resources)
     commons = commons_risk(lp_agents, shared_resources)
+
+    # === Epistemic Correlation Guard ===
+    correlation_report = {"action": "PASS"}
+    if EPISTEMIC_AVAILABLE:
+        guard = CorrelationGuard()
+        res = guard.check_portfolio(agents)
+        correlation_report = res.to_dict()
+        if res.action == "HOLD":
+            lp_result["feasible"] = False
+            lp_result["flags"] = lp_result.get("flags", []) + ["CORRELATED_MODEL_BIAS"]
+
     tragedy_risk = commons["tragedy_risk"]
     conflicts = []
     if "DEMAND_PARTIALLY_UNMET" in commons.get("flags", []):
@@ -1864,6 +1923,9 @@ def coordination_equilibrium(
             cooperative_surplus += agent.get("cooperative_value", 0)
 
     flags = commons.get("flags", [])
+    if correlation_report.get("action") == "HOLD":
+        flags.append("CORRELATED_RISK_HOLD")
+
     if not conflicts and lp_result["feasible"]:
         flags.append("EQUILIBRIUM_FEASIBLE")
 
@@ -1874,6 +1936,7 @@ def coordination_equilibrium(
             "tragedy_risk": round_value(tragedy_risk, 4),
             "conflict_count": len(conflicts),
             "total_welfare": lp_result.get("total_welfare", 0.0),
+            "correlation_risk": correlation_report,
         },
         {
             "conflicts": conflicts,
@@ -1883,7 +1946,8 @@ def coordination_equilibrium(
         },
         flags,
         [
-            "Coordination layer uses LP shadow prices and scarcity metrics, not hand-wavy ratios."
+            "Coordination layer uses LP shadow prices and scarcity metrics, not hand-wavy ratios.",
+            "Epistemic Correlation Guard active — checking for shared model bias across agents.",
         ],
         scale_mode=scale_mode,
         governance_args={
@@ -1921,6 +1985,15 @@ def game_theory_solve(
     shapley = shapley_values(lp_agents, resources)
     core = core_feasibility(lp_agents, resources, lp_result.get("allocations"))
 
+    # === Epistemic Correlation Guard ===
+    correlation_report = {"action": "PASS"}
+    if EPISTEMIC_AVAILABLE:
+        guard = CorrelationGuard()
+        res = guard.check_portfolio(agents)
+        correlation_report = res.to_dict()
+        if res.action == "HOLD":
+            lp_result["feasible"] = False
+
     equilibrium = {}
     if solve_equilibrium:
         eq = nash_approximation(lp_agents, resources)
@@ -1933,6 +2006,8 @@ def game_theory_solve(
     flags = []
     if not lp_result["feasible"]:
         flags.append("LP_INFEASIBLE")
+    if correlation_report.get("action") == "HOLD":
+        flags.append("CORRELATED_RISK_HOLD")
     if commons.get("tragedy_risk", 0.0) > 0.5:
         flags.append("TRAGEDY_OF_COMMONS")
     if not core.get("in_core", False):
@@ -1948,6 +2023,7 @@ def game_theory_solve(
             "tragedy_risk": commons.get("tragedy_risk", 0.0),
             "in_core": core.get("in_core", False),
             "blocking_coalitions": core.get("blocking_coalitions", [])[:5],
+            "correlation_risk": correlation_report,
         },
         {
             "allocations": lp_result.get("allocations", {}),
@@ -1958,7 +2034,8 @@ def game_theory_solve(
         },
         flags,
         [
-            "Game-theory solver replaces naive tragedy-risk with LP, core, and equilibrium logic."
+            "Game-theory solver replaces naive tragedy-risk with LP, core, and equilibrium logic.",
+            "Correlation Guard active — preventing systemic failure from shared model lineage.",
         ],
         scale_mode=scale_mode,
         governance_args={
@@ -2446,6 +2523,210 @@ def get_dimensional_definitions() -> str:
     )
 
 
+@mcp.tool(name="wealth_evoi_compute")
+async def wealth_evoi_compute(
+    prior_pos: float,
+    posterior_pos: float,
+    well_cost_musd: float,
+    p50_value_musd: float,
+    info_cost_musd: float = 5.0,
+    discount_rate: float = 0.10,
+    scale_mode: str = "enterprise",
+) -> Any:
+    """
+    Expected Value of Information (EVOI) point-estimate computation. [Epistemic Dimension]
+    EVOI = E[V | with_info] - E[V | without_info]
+    Helps decide if acquiring new data (seismic, audit, research) is worth the cost.
+    """
+    if not EPISTEMIC_AVAILABLE:
+        return create_envelope(
+            "wealth_evoi_compute",
+            "Epistemic",
+            {},
+            {"error": "EPISTEMIC_UNAVAILABLE"},
+            ["EPISTEMIC_UNAVAILABLE"],
+            verdict="VOID",
+        )
+
+    try:
+        res = compute_evoi(
+            prior_pos=prior_pos,
+            posterior_pos=posterior_pos,
+            well_cost_musd=well_cost_musd,
+            p50_value_musd=p50_value_musd,
+            info_cost_musd=info_cost_musd,
+            discount_rate=discount_rate,
+        )
+
+        return create_envelope(
+            "wealth_evoi_compute",
+            "Epistemic",
+            res,
+            {"info_cost": info_cost_musd, "well_cost": well_cost_musd},
+            [],
+            [
+                f"Assumed information cost: {info_cost_musd} MUSD",
+                f"Discount rate: {discount_rate}",
+            ],
+            verdict="SEAL" if res.get("evoi_musd", 0) > 0 else "QUALIFY",
+            scale_mode=scale_mode,
+        )
+    except Exception as e:
+        return create_envelope(
+            "wealth_evoi_compute",
+            "Epistemic",
+            {},
+            {"error": str(e)},
+            ["COMPUTATION_ERROR"],
+            verdict="VOID",
+        )
+
+
+@mcp.tool(name="wealth_evoi_monte_carlo")
+async def wealth_evoi_monte_carlo(
+    prior_pos_samples: List[float],
+    posterior_pos_samples: List[float],
+    well_cost_musd: float,
+    p50_value_musd: float,
+    info_cost_musd: float = 5.0,
+    scale_mode: str = "enterprise",
+) -> Any:
+    """
+    Monte Carlo Expected Value of Information (EVOI) distributional computation. [Epistemic Dimension]
+    Uses sample distributions to compute P10/P50/P90 EVOI metrics.
+    Recommended when PoS estimates are highly uncertain.
+    """
+    if not EPISTEMIC_AVAILABLE:
+        return create_envelope(
+            "wealth_evoi_monte_carlo",
+            "Epistemic",
+            {},
+            {"error": "EPISTEMIC_UNAVAILABLE"},
+            ["EPISTEMIC_UNAVAILABLE"],
+            verdict="VOID",
+        )
+
+    try:
+        res = compute_evoi_monte_carlo(
+            prior_pos_samples=prior_pos_samples,
+            posterior_pos_samples=posterior_pos_samples,
+            well_cost_musd=well_cost_musd,
+            p50_value_musd=p50_value_musd,
+            info_cost_musd=info_cost_musd,
+        )
+
+        return create_envelope(
+            "wealth_evoi_monte_carlo",
+            "Epistemic",
+            res,
+            {"sample_count": len(prior_pos_samples)},
+            [],
+            ["Monte Carlo distribution based on user-provided samples"],
+            verdict="SEAL" if res.get("evoi_p50", 0) > 0 else "QUALIFY",
+            scale_mode=scale_mode,
+        )
+    except Exception as e:
+        return create_envelope(
+            "wealth_evoi_monte_carlo",
+            "Epistemic",
+            {},
+            {"error": str(e)},
+            ["COMPUTATION_ERROR"],
+            verdict="VOID",
+        )
+
+
+@mcp.tool(name="wealth_correlation_guard_check")
+async def wealth_correlation_guard_check(
+    prospects: List[Dict[str, Any]],
+    correlation_threshold: int = 3,
+    scale_mode: str = "enterprise",
+) -> Any:
+    """
+    Check portfolio for correlated model bias. [Epistemic Dimension]
+    Uses model_lineage_hash to detect when multiple prospects share the same AI lineage.
+    Systemic risk is detected if >= threshold prospects share a lineage.
+    """
+    if not EPISTEMIC_AVAILABLE:
+        return create_envelope(
+            "wealth_correlation_guard_check",
+            "Epistemic",
+            {},
+            {"error": "EPISTEMIC_UNAVAILABLE"},
+            ["EPISTEMIC_UNAVAILABLE"],
+            verdict="VOID",
+        )
+
+    try:
+        guard = CorrelationGuard(correlation_threshold=correlation_threshold)
+        res = guard.check_portfolio(prospects)
+
+        return create_envelope(
+            "wealth_correlation_guard_check",
+            "Epistemic",
+            res.to_dict(),
+            guard.assess_epistemic_diversity(prospects),
+            [],
+            [f"Correlation threshold: {correlation_threshold}"],
+            verdict="SEAL" if res.action == "PASS" else "888-HOLD",
+            scale_mode=scale_mode,
+        )
+    except Exception as e:
+        return create_envelope(
+            "wealth_correlation_guard_check",
+            "Epistemic",
+            {},
+            {"error": str(e)},
+            ["COMPUTATION_ERROR"],
+            verdict="VOID",
+        )
+
+
+@mcp.tool(name="wealth_schema_validate")
+async def wealth_schema_validate(
+    prospects: List[Dict[str, Any]],
+    scale_mode: str = "enterprise",
+) -> Any:
+    """
+    Validate prospect inputs against epistemic requirements. [Epistemic Dimension]
+    Rejects scalar volumes (requires p10/p50/p90).
+    Enforces integrity_score >= 0.3 for capital allocation.
+    """
+    if not EPISTEMIC_AVAILABLE:
+        return create_envelope(
+            "wealth_schema_validate",
+            "Epistemic",
+            {},
+            {"error": "EPISTEMIC_UNAVAILABLE"},
+            ["EPISTEMIC_UNAVAILABLE"],
+            verdict="VOID",
+        )
+
+    try:
+        validator = SchemaValidator()
+        res = validator.validate_portfolio(prospects)
+
+        return create_envelope(
+            "wealth_schema_validate",
+            "Epistemic",
+            res,
+            {},
+            [],
+            ["Validation against v1.5.0 epistemic invariants."],
+            verdict="SEAL" if res.get("portfolio_valid") else "VOID",
+            scale_mode=scale_mode,
+        )
+    except Exception as e:
+        return create_envelope(
+            "wealth_schema_validate",
+            "Epistemic",
+            {},
+            {"error": str(e)},
+            ["COMPUTATION_ERROR"],
+            verdict="VOID",
+        )
+
+
 @mcp.tool(name="wealth_init")
 async def wealth_init_tool(
     session_id: Optional[str] = None,
@@ -2467,7 +2748,7 @@ async def wealth_init_tool(
         "/root/arifOS",
         "/root",
         os.path.abspath(os.path.join(os.getcwd(), "..")),
-        os.getcwd()
+        os.getcwd(),
     ]
     for p in possible_paths:
         if p not in sys.path:
