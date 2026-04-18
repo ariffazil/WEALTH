@@ -804,7 +804,9 @@ def measurement_irr(
     if sign_changes > 1:
         flags.extend(["NON_NORMAL_FLOWS", "MULTIPLE_IRR_POSSIBLE"])
 
-    npv_fn = lambda rate: npv_from_series(series, rate)
+    def npv_fn(rate):
+        return npv_from_series(series, rate)
+
     brackets = bracket_roots(npv_fn)
     roots = {
         round_value(bisect_root(npv_fn, lower, upper), 10) for lower, upper in brackets
@@ -1467,6 +1469,7 @@ def score_kernel(
     trust_index: float = 0.5,
     delta_civ: float = 0.0,
     compare: bool = False,
+    prospects: Optional[List[dict]] = None,
     wealth_signals: Optional[dict] = None,
     extractive_signals: Optional[dict] = None,
     scale_mode: str = "enterprise",
@@ -1474,11 +1477,35 @@ def score_kernel(
     irreversible: bool = False,
 ) -> Any:
     """Final Sovereign Allocation Verdict. [Allocation Dimension]
-
-    REPAIRED: arifos-judge-repair-001
-    Floor check (F1-F13) is now mandatory before returning any verdict.
-    If floors fail, allocation verdict is overridden to HOLD/VOID.
+    
+    Constitutional Gate (F1-F13) + Epistemic Gate (Schema + Correlation).
     """
+    # 1. Epistemic Validation Gate (F1-F2)
+    epistemic_flags = []
+    integrity_score = 1.0
+    correlation_risk = 0.0
+    epistemic_tag = "ESTIMATE"
+
+    if EPISTEMIC_AVAILABLE and prospects:
+        validator = SchemaValidator()
+        guard = CorrelationGuard()
+        
+        # Schema Check
+        schema_res = validator.validate_portfolio(prospects)
+        integrity_score = schema_res.get("integrity_score", 1.0)
+        epistemic_flags.extend(schema_res.get("flags", []))
+        
+        # Correlation Check
+        corr_res = guard.check_portfolio(prospects)
+        correlation_risk = corr_res.get("correlation_risk", 0.0)
+        epistemic_flags.extend(corr_res.get("flags", []))
+        
+        if integrity_score < 0.3:
+            epistemic_flags.append("EPISTEMIC_FAILURE")
+        if correlation_risk > 0.5:
+            epistemic_flags.append("SYSTEMIC_CORRELATION_RISK")
+
+    # 2. Constitutional Floor Gate (F1-F13)
     if not GOVERNANCE_AVAILABLE:
         pass
     else:
@@ -1486,37 +1513,45 @@ def score_kernel(
             {
                 "reversible": not irreversible,
                 "human_confirmed": False,
-                "epistemic": "ESTIMATE",
+                "epistemic": epistemic_tag,
                 "ai_is_deciding": True,
                 "floor_override": False,
                 "peace2": peace2,
                 "maruah_score": maruah_score,
-                "uncertainty_band": None,
+                "integrity_score": integrity_score,
+                "correlation_risk": correlation_risk,
                 "operation_type": "ALLOCATION",
                 "scale_mode": scale_mode,
                 "task_definition": task_definition,
-                "phantom_entries": False,
                 "critical": irreversible,
-                "pin_verified": False,
             }
         )
-        if floor_result["verdict"] in ("HOLD", "VOID"):
-            gov_verdict = "888-HOLD" if floor_result["verdict"] == "HOLD" else "VOID"
+        if (floor_result.get("verdict") in ("HOLD", "VOID")) or ("EPISTEMIC_FAILURE" in epistemic_flags):
+            gov_verdict = "888-HOLD" if floor_result.get("verdict") == "HOLD" else "VOID"
+            if "EPISTEMIC_FAILURE" in epistemic_flags:
+                gov_verdict = "VOID"
+            
             return create_envelope(
                 "wealth_score_kernel",
                 "Allocation",
-                {"blocked_by_floors": True, "verdict_override": floor_result["verdict"]},
                 {
-                    "floor_violations": floor_result["violations"],
-                    "floor_holds": floor_result["holds"],
+                    "blocked_by_governance": True, 
+                    "verdict": gov_verdict,
+                    "integrity_score": integrity_score,
+                    "correlation_risk": correlation_risk
                 },
-                [*floor_result["violations"], *floor_result["holds"]],
-                ["Allocation blocked by constitutional floor check."],
-                epistemic="ESTIMATE",
+                {
+                    "floor_violations": floor_result.get("violations", []),
+                    "epistemic_violations": epistemic_flags,
+                },
+                [*floor_result.get("violations", []), *epistemic_flags],
+                ["Allocation blocked by constitutional or epistemic gate."],
+                epistemic=epistemic_tag,
                 verdict=gov_verdict,
                 scale_mode=scale_mode,
             )
 
+    # 3. Valuation Kernel (Core Logic)
     wealth_payload = {
         "dS": d_s,
         "peace2": peace2,
@@ -1527,48 +1562,53 @@ def score_kernel(
     if wealth_signals:
         wealth_payload.update(wealth_signals)
 
-    flags: List[str] = []
+    flags: List[str] = [*epistemic_flags]
     if d_s > 0.3:
         flags.append("HIGH_ENTROPY_SIGNAL")
     if maruah_score < 0.6:
         flags.append("SOVEREIGN_DIGNITY_LOW")
 
     wealth_result = capitalx(base_rate, wealth_payload)
+    
     if compare:
         extractive_result = capitalx(base_rate, extractive_signals or {})
         comparison = {
             "base_rate": wealth_result["base_rate"],
             "wealth_r_adj": wealth_result["r_adj"],
             "extractive_r_adj": extractive_result["r_adj"],
-            "advantage_bps": round(
-                (extractive_result["r_adj"] - wealth_result["r_adj"]) * 10000
-            ),
+            "advantage_bps": round((extractive_result["r_adj"] - wealth_result["r_adj"]) * 10000),
+            "integrity_score": integrity_score,
+            "correlation_risk": correlation_risk
         }
         return create_envelope(
             "wealth_score_kernel",
             "Allocation",
             comparison,
             {},
-            [
-                *flags,
-                *(wealth_result["integrity_flags"]),
-                *(extractive_result["integrity_flags"]),
-            ],
-            ["CapitalX remains an estimate until delta_bps is proven."],
-            epistemic="ESTIMATE",
+            [*flags, *(wealth_result["integrity_flags"]), *(extractive_result["integrity_flags"])],
+            ["Comparison mode active. Epistemic weighting applied."],
+            epistemic=epistemic_tag,
             scale_mode=scale_mode,
         )
+
+    # Merge results
+    final_primary = {**wealth_result}
+    final_primary.update({
+        "integrity_score": integrity_score,
+        "correlation_risk": correlation_risk
+    })
 
     return create_envelope(
         "wealth_score_kernel",
         "Allocation",
-        wealth_result,
+        final_primary,
         {},
         [*flags, *(wealth_result["integrity_flags"])],
         wealth_result["assumptions"],
-        epistemic="ESTIMATE",
+        epistemic=epistemic_tag,
         scale_mode=scale_mode,
     )
+
 
 
 @mcp.tool(name="wealth_personal_decision")
