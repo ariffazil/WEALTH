@@ -823,10 +823,18 @@ def create_envelope(
             if viol not in flags:
                 flags.append(viol)
 
+    # Three-verdict semantics (Fix #2 — Sin of Headline Metric Seduction):
+    #   verdict           = allocation_signal   → ACCEPT/REJECT/MARGINAL/INSUFFICIENT_DATA
+    #                       The DECISION signal. What a decision-maker reads first.
+    #   governance_verdict = SEAL/VOID/HOLD/QUALIFY
+    #                       Was the computation constitutionally valid? SEAL ≠ investment approved.
+    #   engine_status      = VALID/WARNING/ERROR
+    #                       Did the math pipeline run cleanly?
+    # A project can be SEAL (computation valid) + REJECT (don't fund it). These must never collapse.
     envelope = {
         "tool": tool,
         "dimension": dimension,
-        "verdict": derived_governance,
+        "verdict": derived_allocation,
         "governance_verdict": derived_governance,
         "allocation_signal": derived_allocation,
         "engine_status": engine_status,
