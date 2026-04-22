@@ -1,13 +1,17 @@
+import hashlib
+import inspect
 import json
 import math
-import sys
 import os
+import sys
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-__version__ = "1.5.0"
-"""WEALTH v1.5.0 - Universal Resource Allocation Intelligence (URAI) with Constitutional Governance."""
+__version__ = "1.6.0"
+"""WEALTH v1.6.0 - Hardened Harness Architecture with Cumulative Stress Rule."""
+
+LAST_RECEIPT_HASH = "0" * 64
 
 # Ensure sibling arifOS directory is in path for arifosmcp imports
 arifos_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "arifOS"))
@@ -51,7 +55,7 @@ except Exception:
         GOVERNANCE_AVAILABLE = False
 
         def check_floors(*args, **kwargs):
-            return {"pass": True, "verdict": "SEAL", "violations": []}
+            return {"pass": True, "verdict": "SEAL", "violations": [], "holds": [], "warnings": []}
 
         try:
             from host.governance.vault_supabase import append_vault999
@@ -139,6 +143,188 @@ except Exception:
 
         def evaluate(self, *args, **kwargs):
             return {"feasible": True, "flags": []}
+
+
+# --- Harness Architecture (9-Harness Constraint) ---
+try:
+    from host.governance.harness_alarm import HarnessAlarmSystem
+except Exception:
+    class HarnessAlarmSystem:
+        def trigger(self, *args, **kwargs):
+            return {"status": "ALARM_UNAVAILABLE"}
+
+
+class HarnessEngine:
+    """9-Harness Constraint Architecture for WEALTH."""
+
+    _LINEAGE_HASH = None
+    _DOCTRINE_HASH = None
+
+    @classmethod
+    def get_doctrine_hash(cls) -> str:
+        """Compute hash of the WEALTH_HARNESS.md file."""
+        if cls._DOCTRINE_HASH is None:
+            try:
+                # Resolve path relative to this file
+                base_dir = os.path.dirname(__file__)
+                path = os.path.join(base_dir, "canon", "WEALTH_HARNESS.md")
+                if os.path.exists(path):
+                    with open(path, "r", encoding="utf-8") as f:
+                        cls._DOCTRINE_HASH = hashlib.sha256(f.read().encode()).hexdigest()
+                else:
+                    cls._DOCTRINE_HASH = "MISSING_DOCTRINE_FILE"
+            except Exception:
+                cls._DOCTRINE_HASH = "UNKNOWN_DOCTRINE"
+        return cls._DOCTRINE_HASH
+
+    @classmethod
+    def get_lineage_hash(cls) -> str:
+        """Compute the lineage hash of the HarnessEngine source code."""
+        if cls._LINEAGE_HASH is None:
+            try:
+                # Use absolute source to handle dynamic imports/changes
+                source = inspect.getsource(cls)
+                cls._LINEAGE_HASH = hashlib.sha256(source.encode()).hexdigest()
+            except Exception:
+                cls._LINEAGE_HASH = "UNKNOWN_LINEAGE"
+        return cls._LINEAGE_HASH
+
+    HARNESS_NAMES = [
+        "Identity",
+        "Reality",
+        "Epistemic",
+        "Entropy",
+        "Survival",
+        "Constitutional",
+        "Efficiency",
+        "Coordination",
+        "Civilization",
+    ]
+
+    TOOL_TO_HARNESS = {
+        "wealth_init": "Identity",
+        "wealth_record_transaction": "Identity",
+        "wealth_snapshot_portfolio": "Identity",
+        "wealth_ingest_fetch": "Reality",
+        "wealth_ingest_snapshot": "Reality",
+        "wealth_ingest_reconcile": "Reality",
+        "wealth_ingest_vintage": "Reality",
+        "wealth_ingest_health": "Reality",
+        "wealth_ingest_sources": "Reality",
+        "wealth_schema_validate": "Epistemic",
+        "wealth_correlation_guard_check": "Epistemic",
+        "wealth_evoi_compute": "Epistemic",
+        "wealth_evoi_monte_carlo": "Epistemic",
+        "wealth_monte_carlo_forecast": "Entropy",
+        "wealth_emv_risk": "Entropy",
+        "wealth_audit_entropy": "Entropy",
+        "wealth_dscr_leverage": "Survival",
+        "wealth_cashflow_flow": "Survival",
+        "wealth_networth_state": "Survival",
+        "wealth_growth_velocity": "Survival",
+        "wealth_crisis_triage": "Survival",
+        "wealth_check_floors": "Constitutional",
+        "wealth_policy_audit": "Constitutional",
+        "wealth_score_kernel": "Constitutional",
+        "wealth_npv_reward": "Efficiency",
+        "wealth_irr_yield": "Efficiency",
+        "wealth_pi_efficiency": "Efficiency",
+        "wealth_payback_time": "Efficiency",
+        "wealth_coordination_equilibrium": "Coordination",
+        "wealth_game_theory_solve": "Coordination",
+        "wealth_personal_decision": "Coordination",
+        "custom_civilization_stewardship": "Civilization",
+        "wealth_agent_budget": "Civilization",
+    }
+
+    def __init__(self):
+        self.alarm_system = HarnessAlarmSystem()
+
+    def audit(self, tool_name: str, primary: Dict[str, Any], flags: List[str], parent_hash: str = "") -> Dict[str, Any]:
+        """Audit the current tool call against the 9-harness constraints."""
+        harness_status = {name: {"stress": 0.0, "status": "SECURE"} for name in self.HARNESS_NAMES}
+        violations = []
+        
+        # 0. Global Doctrine Seal
+        d_hash = self.get_doctrine_hash()
+        violations = []
+
+        # 1. Identity Check
+        if "UNAUTHENTICATED" in flags or "UNANCHORED" in flags:
+            harness_status["Identity"].update({"stress": 1.0, "status": "SNAPPED"})
+            violations.append("IDENTITY_HARNESS_FAILURE")
+        elif parent_hash and len(parent_hash) != 64:
+            harness_status["Identity"].update({"stress": 1.0, "status": "SNAPPED"})
+            violations.append("IDENTITY_CHAIN_VIOLATION")
+
+        # 2. Reality Check
+        if any(f in flags for f in ["INVALID_DATA_SOURCE", "STALE_DATA", "SOURCE_DIVERGENCE"]):
+            harness_status["Reality"].update({"stress": 1.0, "status": "SNAPPED"})
+            violations.append("REALITY_HARNESS_FAILURE")
+
+        # 3. Epistemic Check
+        if "EPISTEMIC_FAILURE" in flags or "LOW_INTEGRITY" in flags:
+            harness_status["Epistemic"].update({"stress": 1.0, "status": "SNAPPED"})
+            violations.append("EPISTEMIC_HARNESS_FAILURE")
+        elif "SYSTEMIC_CORRELATION_RISK" in flags:
+            harness_status["Epistemic"].update({"stress": 0.8, "status": "STRESSED"})
+
+        # 4. Entropy Check
+        if "HIGH_ENTROPY_SIGNAL" in flags or "MULTIPLE_IRR_POSSIBLE" in flags:
+            harness_status["Entropy"].update({"stress": 0.8, "status": "STRESSED"})
+
+        # 5. Survival Check (Structural Load)
+        if any(f in flags for f in ["LEVERAGE_DEFAULT", "RUNWAY_CRITICAL", "CASHFLOW_NEGATIVE"]):
+            harness_status["Survival"].update({"stress": 1.0, "status": "SNAPPED"})
+            violations.append("SURVIVAL_HARNESS_FAILURE")
+
+        # 6. Constitutional Check
+        if any(f.startswith("FLOOR_") for f in flags) or "SOVEREIGN_DIGNITY_LOW" in flags:
+            harness_status["Constitutional"].update({"stress": 1.0, "status": "SNAPPED"})
+            violations.append("CONSTITUTIONAL_HARNESS_FAILURE")
+
+        # 7. Efficiency Check
+        if tool_name == "wealth_pi_efficiency" and primary.get("pi", 1.0) < 1.0:
+            harness_status["Efficiency"].update({"stress": 0.9, "status": "STRESSED"})
+        if "NOT_RECOVERED" in flags:
+            harness_status["Efficiency"].update({"stress": 1.0, "status": "SNAPPED"})
+
+        # 8. Coordination Check
+        if "TRAGEDY_RISK_HIGH" in flags or "CORE_INFEASIBLE" in flags:
+            harness_status["Coordination"].update({"stress": 1.0, "status": "SNAPPED"})
+            violations.append("COORDINATION_HARNESS_FAILURE")
+
+        # 9. Civilization Check (Quantified Triggers)
+        carbon = primary.get("carbon_intensity", 0.0)
+        collapse = primary.get("collapse_risk", 0.0)
+        growth = primary.get("sustainable_growth_rate", 1.0)
+        
+        if carbon > 0.04 or collapse > 0.3 or growth < 0:
+            harness_status["Civilization"].update({
+                "stress": 1.0, 
+                "status": "SNAPPED",
+                "detail": f"C:{carbon:.3f} | R:{collapse:.3f} | G:{growth:.3f}"
+            })
+            violations.append("CIVILIZATION_HARNESS_FAILURE")
+
+        # Systemic Accumulator Rule (Cumulative Stress)
+        systemic_stress = sum(h["stress"] for h in harness_status.values())
+        if systemic_stress > 2.0:
+            violations.append("SYSTEMIC_INSTABILITY_FAILURE")
+
+        overall_verdict = "PASS"
+        if any(h["status"] == "SNAPPED" for h in harness_status.values()) or systemic_stress > 2.0:
+            overall_verdict = "FAIL"
+            self.alarm_system.trigger(tool_name, "Systemic", {"violations": violations, "systemic_stress": systemic_stress})
+
+        return {
+            "verdict": overall_verdict,
+            "harness_status": harness_status,
+            "violations": violations,
+            "systemic_stress": round(systemic_stress, 4),
+            "harness_lineage_hash": self.get_lineage_hash(),
+            "doctrine_hash": self.get_doctrine_hash(),
+        }
 
 
 def maruah_band(score):
@@ -304,10 +490,11 @@ def weakest_epistemic(items: List[dict], default_tag: str = "CLAIM") -> str:
     return EPISTEMIC_ORDER[weakest_index]
 
 
-def derive_verdict(flags: List[str], default_verdict: str = "SEAL") -> str:
+def derive_verdict(flags: List[str], default_verdict: str = "SEAL", high_stress: bool = False) -> str:
     if any(flag in INVALID_FLAGS for flag in flags):
         return "VOID"
-    if any(flag in HOLD_FLAGS for flag in flags):
+    if high_stress or any(flag in HOLD_FLAGS for flag in flags):
+        # High stress or critical holds force a non-APPROVE state
         return "888-HOLD"
     if any(flag in QUALIFY_FLAGS for flag in flags):
         return "QUALIFY"
@@ -599,18 +786,42 @@ def create_envelope(
     verdict: Optional[str] = None,
     scale_mode: str = "enterprise",
     governance_args: Optional[Dict[str, Any]] = None,
+    parent_hash: Optional[str] = None,
 ) -> Dict[str, Any]:
+    global LAST_RECEIPT_HASH
     flags = flags or []
-    derived_governance = verdict or derive_verdict(flags)
+    
+    # 1. Harness Audit with Chaining
+    final_parent_hash = parent_hash or LAST_RECEIPT_HASH
+    engine = HarnessEngine()
+    audit_res = engine.audit(tool, primary, flags, final_parent_hash)
+    
+    systemic_stress = audit_res.get("systemic_stress", 0.0)
+    # Stress (0.7-0.9) or systemic instability forces 888-HOLD/QUALIFY
+    is_high_stress = systemic_stress > 1.5 or any(h["stress"] >= 0.7 for h in audit_res["harness_status"].values())
+    
+    derived_governance = verdict or derive_verdict(flags, high_stress=is_high_stress)
     derived_allocation = derive_allocation_signal(flags, primary, tool, scale_mode)
+    
+    if is_high_stress and derived_allocation == "ACCEPT":
+        derived_allocation = "MARGINAL" # Force downgraded allocation on high stress
+
     engine_status = (
         "ERROR"
-        if derived_governance == "VOID"
+        if derived_governance == "VOID" or audit_res["verdict"] == "FAIL"
         else "WARNING"
-        if derived_governance in ("QUALIFY", "888-HOLD")
+        if derived_governance in ("QUALIFY", "888-HOLD") or is_high_stress
         else "VALID"
     )
     derived_epistemic = infer_epistemic(flags, epistemic)
+    
+    if audit_res["verdict"] == "FAIL":
+        derived_governance = "VOID"
+        derived_allocation = "REJECT"
+        engine_status = "ERROR"
+        for viol in audit_res["violations"]:
+            if viol not in flags:
+                flags.append(viol)
 
     envelope = {
         "tool": tool,
@@ -624,9 +835,17 @@ def create_envelope(
         "integrity_flags": flags,
         "confidence": confidence_from_verdict(derived_governance, flags),
         "epistemic": derived_epistemic,
+        "harness_audit": audit_res,
         "assumptions": assumptions or [],
         "epoch": datetime.utcnow().isoformat() + "Z",
     }
+    
+    # 4. Update Global Identity Chain
+    # Hash the envelope to create the next receipt
+    receipt_blob = json.dumps(envelope, sort_keys=True, separators=(",", ":"), default=str)
+    receipt_hash = hashlib.sha256(receipt_blob.encode()).hexdigest()
+    envelope["receipt_hash"] = receipt_hash
+    LAST_RECEIPT_HASH = receipt_hash
 
     # === Constitutional Governance Layer ===
     # Governance tools are exempt from recursive envelope governance so they can audit bad proposals
@@ -651,10 +870,10 @@ def create_envelope(
             envelope["engine_status"] = "WARNING"
 
         envelope["floor_check"] = {
-            "verdict": floor_result["verdict"],
-            "violations": floor_result["violations"],
-            "holds": floor_result["holds"],
-            "warnings": floor_result["warnings"],
+            "verdict": floor_result.get("verdict", "SEAL"),
+            "violations": floor_result.get("violations", []),
+            "holds": floor_result.get("holds", []),
+            "warnings": floor_result.get("warnings", []),
         }
 
         # Policy constraints (if audit data provided)
@@ -1512,6 +1731,31 @@ def wealth_score_kernel(
             epistemic_flags.append("EPISTEMIC_FAILURE")
         if correlation_risk > 0.5:
             epistemic_flags.append("SYSTEMIC_CORRELATION_RISK")
+
+    # --- 888 Harness Gate ---
+    h_engine = HarnessEngine()
+    pre_audit = h_engine.audit(
+        "wealth_score_kernel",
+        {"maruahScore": maruah_score, "base_rate": base_rate},
+        epistemic_flags
+    )
+    if pre_audit["verdict"] == "FAIL":
+        return create_envelope(
+            "wealth_score_kernel",
+            "Allocation",
+            {
+                "blocked_by_harness": True,
+                "harness_verdict": "FAIL",
+                "integrity_score": integrity_score,
+                "correlation_risk": correlation_risk,
+            },
+            {"harness_detail": pre_audit},
+            [*epistemic_flags, *pre_audit["violations"]],
+            ["Allocation blocked by harness-snap (Constraint Violation)."],
+            epistemic="VOID",
+            verdict="VOID",
+            scale_mode=scale_mode,
+        )
 
     if not GOVERNANCE_AVAILABLE:
         pass

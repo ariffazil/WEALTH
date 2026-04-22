@@ -33,8 +33,10 @@ build/
 *.bak
 *.backup
 
-# Ingest runtime cache
+# Ingest runtime cache and live ledger data
 data/ingest_cache/
+data/ingest_health.json
+data/vault999.jsonl
 
 # Python
 __pycache__/
