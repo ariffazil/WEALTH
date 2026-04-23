@@ -6,12 +6,13 @@
 >
 > INVARIANT: Descriptive memory of repo state.
 > This file NEVER modifies Law. It only reports and compresses observed reality.
+> Law lives in: arifOS `000/000_CONSTITUTION.md`. Template: https://gist.github.com/ariffazil/81314f6cda1ea898f9feb88ce8f8959b
 
 
 ## 0. IDENTITY & MOUNT POINT
 
 - REPO_NAME: WEALTH
-- CONTAINER_ID: 2026-04-23
+- CONTAINER_ID: 2026-04-24
 - DOMAIN_ROLE: Capital Intelligence Engine — constitutional capital allocation layer for arifOS federation
 - STABILITY_CLASS: RAPID-ITERATE
 
