@@ -1,0 +1,73 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schemas/mcp-manifest.json",
+  "schema_version": "0.2.0",
+  "name": "wealth",
+  "display_name": "WEALTH — Capital Intelligence",
+  "version": "1.5.0",
+  "spec_version": "2026-04-17",
+  "description": "WEALTH is the capital-intelligence lane in the arifOS organism. This repository contains the canonical packaged valuation kernel in server.py and a secondary civilizational FastMCP demo surface in mcp/server.py.",
+  "homepage": "https://github.com/ariffazil/WEALTH",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ariffazil/WEALTH"
+  },
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "Arif Fazil",
+    "url": "https://arif-fazil.com"
+  },
+  "language": [
+    "en"
+  ],
+  "categories": [
+    "finance",
+    "mcp",
+    "governance",
+    "capital-allocation",
+    "arifos"
+  ],
+  "resources": [
+    {
+      "name": "repo_readme",
+      "type": "file",
+      "path": "README.md",
+      "description": "Repository overview and current runtime source of truth",
+      "content_type": "text/markdown"
+    },
+    {
+      "name": "mcp_readme",
+      "type": "file",
+      "path": "mcp/README.md",
+      "description": "Runtime split and launch instructions for the two MCP surfaces",
+      "content_type": "text/markdown"
+    },
+    {
+      "name": "valuation_doctrine",
+      "type": "mcp-resource",
+      "uri": "wealth://doctrine/valuation",
+      "description": "Canonical valuation doctrine exposed by the packaged WEALTH kernel"
+    },
+    {
+      "name": "dimensions_definitions",
+      "type": "mcp-resource",
+      "uri": "wealth://dimensions/definitions",
+      "description": "Dimension definitions exposed by the packaged WEALTH kernel"
+    }
+  ],
+  "metadata": {
+    "organism_role": "Capital intelligence lane",
+    "canonical_entrypoint": "server.py",
+    "civilizational_entrypoint": "mcp/server.py",
+    "runtime_surfaces": {
+      "canonical_kernel": {
+        "tools": 29,
+        "resources": 2
+      },
+      "civilizational_demo": {
+        "tools": 6,
+        "resources": 3
+      }
+    },
+    "last_updated": "2026-04-17"
+  }
+}
