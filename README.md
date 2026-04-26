@@ -52,16 +52,23 @@ WEALTH operates across **11 capital scales** and **7 capital types**:
 | `wealth.personal` | personal_decision, agent_budget | Personal capital decisions |
 | `wealth.agentic` | wealth_score_kernel, wealth_evoi_compute | Agent-level capital intelligence |
 
-### MCP Server Tool Inventory (11 Exposed Tools)
+### MCP Server Tool Inventory (39 Exposed Tools)
 
-**From `server.py`:**
-- `wealth_evoi_compute` — Expected Value of Information
-- `wealth_evoi_monte_carlo` — Monte Carlo EVOI simulation
-- `wealth_correlation_guard_check` — Portfolio correlation risk guard
-- `wealth_schema_validate` — Schema validation for capital envelopes
-- `wealth_init_tool` — Session initialization
+**From `server.py` (33 tools):**
+- `wealth_npv_reward`, `wealth_irr_yield`, `wealth_pi_efficiency`, `wealth_emv_risk`, `wealth_audit_entropy` — Capital risk evaluation
+- `wealth_dscr_leverage`, `wealth_payback_time`, `wealth_growth_velocity` — Price signals
+- `wealth_networth_state`, `wealth_cashflow_flow` — Balance sheet & flow
+- `wealth_score_kernel`, `wealth_evoi_compute`, `wealth_evoi_monte_carlo` — Agent-level intelligence
+- `wealth_correlation_guard_check`, `wealth_schema_validate` — Epistemic guard & validation
+- `wealth_personal_decision`, `wealth_agent_budget` — Personal capital
+- `wealth_crisis_triage`, `wealth_civilization_stewardship` — Crisis & civilization response
+- `wealth_coordination_equilibrium`, `wealth_game_theory_solve` — Multi-agent coordination
+- `wealth_monte_carlo_forecast`, `wealth_ingest_fetch`, `wealth_ingest_snapshot`, `wealth_ingest_sources`, `wealth_ingest_health`, `wealth_ingest_vintage`, `wealth_ingest_reconcile` — Forecasting & ingestion
+- `wealth_check_floors`, `wealth_policy_audit` — Constitutional enforcement
+- `wealth_record_transaction`, `wealth_snapshot_portfolio` — Vault operations
+- `wealth_init` — Session initialization
 
-**From `mcp/server.py` (Civilizational Demo):**
+**From `mcp/server.py` (6 tools):**
 - `wealth_evaluate_prospect` — GEOX prospect economics → WEALTH valuation
 - `markets_analyze_ticker` — Market fundamentals analysis
 - `markets_portfolio_stress_test` — Portfolio stress testing
@@ -115,8 +122,17 @@ Tracks `model_lineage_hash` across all prospects. If ≥3 prospects share the sa
 
 ## Quick Start
 
+### Public Surface
+
+| Endpoint | Transport | Purpose |
+|---|---|---|
+| `/` | HTTP | Static human landing page |
+| `/health` | HTTP | JSON health & status |
+| `/mcp` | streamable-http | Public MCP endpoint (default) |
+| `/sse` | SSE | Optional — set `MCP_TRANSPORT=sse` to enable |
+
 ```bash
-# Local MCP server
+# Local MCP server (streamable-http default)
 python server.py
 
 # Civilizational demo server
@@ -124,6 +140,12 @@ python mcp/server.py
 
 # Health check
 curl http://localhost:8000/health
+
+# MCP initialize (streamable-http)
+curl -X POST http://localhost:8000/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test"}}}'
 
 # Run tests
 npm test
