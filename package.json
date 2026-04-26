@@ -12,8 +12,8 @@
     "check": "node cli.js check",
     "seal": "node cli.js seal",
     "test": "node --test tests/*.test.js",
-    "mcp": "python server.py",
-    "fastmcp": "python server.py"
+    "mcp": "python internal/monolith.py",
+    "fastmcp": "python internal/monolith.py"
   },
   "engines": {
     "node": ">=22.0.0"

@@ -35,7 +35,8 @@ WEALTH operates across **11 capital scales** and **7 capital types**:
 
 | Surface | File | Tools | Purpose |
 |---|---|---|---|
-| **Canonical kernel** | `server.py` | 33 async tools + 57 sync functions | Core valuation, risk, crisis, coordination |
+| **Canonical kernel** | `internal/monolith.py` | 33 async tools + 57 sync functions | Core valuation, risk, crisis, coordination |
+| **Boot wrapper** | `server.py` | Thin compat wrapper | Points to canonical kernel |
 | **Civilizational demo** | `mcp/server.py` | 6 tools | Markets, energy, food security domains |
 
 ### Core Tool Families (from `api/schemas/wealth-mcp-tools.json`)
@@ -54,7 +55,7 @@ WEALTH operates across **11 capital scales** and **7 capital types**:
 
 ### MCP Server Tool Inventory (39 Exposed Tools)
 
-**From `server.py` (33 tools):**
+**From `internal/monolith.py` (33 tools):**
 - `wealth_npv_reward`, `wealth_irr_yield`, `wealth_pi_efficiency`, `wealth_emv_risk`, `wealth_audit_entropy` — Capital risk evaluation
 - `wealth_dscr_leverage`, `wealth_payback_time`, `wealth_growth_velocity` — Price signals
 - `wealth_networth_state`, `wealth_cashflow_flow` — Balance sheet & flow
@@ -133,7 +134,9 @@ Tracks `model_lineage_hash` across all prospects. If ≥3 prospects share the sa
 
 ```bash
 # Local MCP server (streamable-http default)
-python server.py
+python internal/monolith.py
+# Or use the backward-compat wrapper:
+# python server.py
 
 # Civilizational demo server
 python mcp/server.py
@@ -179,7 +182,8 @@ npm test
 
 ```
 WEALTH/
-├── server.py              ← Canonical MCP kernel (33 exposed tools)
+├── internal/monolith.py   ← Canonical MCP kernel (33 exposed tools)
+├── server.py              ← Backward-compat wrapper (points to canonical)
 ├── mcp/server.py         ← Civilizational demo surface (6 tools)
 ├── host/
 │   └── governance/        ← Floor enforcement, vault, policy engine

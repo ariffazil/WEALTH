@@ -8,7 +8,7 @@ import os
 import tempfile
 import time
 from dataclasses import dataclass, field, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 
@@ -92,7 +92,7 @@ class HealthTracker:
         flags: Optional[List[str]] = None,
         error_message: Optional[str] = None,
     ):
-        now = datetime.utcnow().isoformat() + "Z"
+        now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         state = self._state.setdefault(adapter, {})
         state["total_requests"] = state.get("total_requests", 0) + 1
         state["last_latency_ms"] = latency_ms
