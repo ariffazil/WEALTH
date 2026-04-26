@@ -4,7 +4,8 @@
 ## Configuration
 - **Canonical Git Source:** `/root/WEALTH` (Branch: `main`)
 - **Deployment Mirror:** `/opt/arifos/src/wealth`
-- **Runtime Entrypoint:** `server.py`
+- **Runtime Entrypoint:** `internal/monolith.py` (AGENTS.md Tier A canonical)
+- **Backward-Compat Wrapper:** `server.py`
 - **Supplemental Surface:** `mcp/server.py`
 
 ## Public Surface

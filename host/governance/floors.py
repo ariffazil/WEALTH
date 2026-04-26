@@ -4,7 +4,7 @@ Ported from embedded JS theory (host/kernel/floors.js, canon/GOVERNANCE.md)
 """
 
 from typing import Any, Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 FLOORS = {
     "F1": "Amanah — reversible or explicitly irreversible",
@@ -107,7 +107,7 @@ def check_floors(args: Dict[str, Any]) -> Dict[str, Any]:
         "holds": holds,
         "warnings": warnings,
         "epistemic": epistemic,
-        "vault_log_entry": {"tool": "wealth_check_floors", "epoch": datetime.utcnow().isoformat() + "Z"},
+        "vault_log_entry": {"tool": "wealth_check_floors", "epoch": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")},
         "witness": {"human": human_confirmed, "ai": True, "earth": True},
     }
 

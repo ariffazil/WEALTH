@@ -5,7 +5,7 @@ import math
 import os
 import sys
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 __version__ = "1.6.0"
@@ -65,6 +65,23 @@ except Exception:
 
             def append_vault999(record, **kwargs):
                 return record
+
+
+def _vault_append(record, **kwargs):
+    """Bridge sync/async vault append safely."""
+    import asyncio
+
+    result = append_vault999(record, **kwargs)
+    if inspect.isawaitable(result):
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+        if loop is None:
+            return asyncio.run(result)
+        # Inside async context: fire-and-forget with task
+        asyncio.create_task(result)
+    return result
 
 
 # --- Coordination Layer ---
@@ -233,7 +250,7 @@ class HarnessEngine:
         "wealth_coordination_equilibrium": "Coordination",
         "wealth_game_theory_solve": "Coordination",
         "wealth_personal_decision": "Coordination",
-        "custom_civilization_stewardship": "Civilization",
+        "wealth_civilization_stewardship": "Civilization",
         "wealth_agent_budget": "Civilization",
     }
 
@@ -648,7 +665,7 @@ def derive_allocation_signal(
             return "MARGINAL"
         return "ACCEPT"
 
-    if tool in {"wealth_npv_reward", "wealth_flow_scenario_npv"}:
+    if tool == "wealth_npv_reward":
         npv = primary.get("npv")
         if npv is None:
             return "INSUFFICIENT_DATA"
@@ -845,7 +862,7 @@ def create_envelope(
         "epistemic": derived_epistemic,
         "harness_audit": audit_res,
         "assumptions": assumptions or [],
-        "epoch": datetime.utcnow().isoformat() + "Z",
+        "epoch": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
     
     # 4. Update Global Identity Chain
@@ -894,7 +911,7 @@ def create_envelope(
             envelope["policy_audit"] = policy_result
 
         # Vault all high-scale decisions
-        append_vault999(
+        _vault_append(
             {
                 "tool": tool,
                 "scale_mode": scale_mode,

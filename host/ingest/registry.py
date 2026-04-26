@@ -9,7 +9,7 @@ import json
 import os
 import tempfile
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from host.ingest.schema import DataRecord, validate_record
@@ -61,16 +61,16 @@ def _cache_path(series_id: str, source: str, entity_code: str) -> str:
 def _is_fresh(path: str, bus: str) -> bool:
     if not os.path.exists(path):
         return False
-    mtime = datetime.fromtimestamp(os.path.getmtime(path))
+    mtime = datetime.fromtimestamp(os.path.getmtime(path), tz=timezone.utc)
     ttl = timedelta(hours=BUS_TTL_HOURS.get(bus, 24))
-    return datetime.utcnow() - mtime < ttl
+    return datetime.now(timezone.utc) - mtime < ttl
 
 
 def _cache_age_hours(path: str) -> float:
     if not os.path.exists(path):
         return float("inf")
-    mtime = datetime.fromtimestamp(os.path.getmtime(path))
-    return (datetime.utcnow() - mtime).total_seconds() / 3600.0
+    mtime = datetime.fromtimestamp(os.path.getmtime(path), tz=timezone.utc)
+    return (datetime.now(timezone.utc) - mtime).total_seconds() / 3600.0
 
 
 def load_cache(series_id: str, source: str, entity_code: str, bus: str) -> Optional[List[DataRecord]]:
@@ -124,7 +124,7 @@ def _is_observation_stale(observation_time: Optional[str], frequency: Optional[s
     except Exception:
         return True
     threshold_days = OBSERVATION_FRESHNESS_DAYS.get(frequency or "annual", 730)
-    return (datetime.utcnow() - obs.replace(tzinfo=None)) > timedelta(days=threshold_days)
+    return (datetime.now(timezone.utc) - obs) > timedelta(days=threshold_days)
 
 
 class IngestRegistry:

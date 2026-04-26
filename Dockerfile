@@ -34,4 +34,6 @@ EXPOSE 8000
 
 # Default command: Run the FastMCP server
 # Use --transport sse if deploying to cloud, or keep default for stdio
-ENTRYPOINT ["python", "server.py"]
+# Canonical implementation is internal/monolith.py (AGENTS.md Tier A).
+# server.py is a thin backward-compat wrapper.
+ENTRYPOINT ["python", "internal/monolith.py"]

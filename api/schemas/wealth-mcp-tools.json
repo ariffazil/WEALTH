@@ -123,17 +123,6 @@
             }
           }
         },
-        "wealth_flow_scenario_npv": {
-          "type": "object",
-          "required": ["header", "cashflows", "r_adj", "scenarios"],
-          "properties": {
-            "header": { "$ref": "#/definitions/CommonRequestHeader" },
-            "cashflows": { "type": "array", "items": { "type": "number" } },
-            "r_adj": { "type": "number" },
-            "scenarios": { "type": "array", "items": { "type": "object" } },
-            "geo_constraints": { "type": "array", "items": { "type": "string" } }
-          }
-        },
         "wealth_justice_maruah_score": {
           "type": "object",
           "required": ["header", "project_profile"],
@@ -362,16 +351,6 @@
             "exergy_mj_per_unit": { "type": "number" },
             "emergy_proxy": { "type": "number" },
             "entropy_cost_per_unit": { "type": "number" }
-          }
-        },
-        "wealth_flow_scenario_npv": {
-          "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
-          "properties": {
-            "npv_distribution": { "type": "array", "items": { "type": "number" } },
-            "irr": { "type": "number" },
-            "payback_years": { "type": "number" },
-            "regime_impacts": { "type": "array", "items": { "type": "object" } }
           }
         },
         "wealth_justice_maruah_score": {

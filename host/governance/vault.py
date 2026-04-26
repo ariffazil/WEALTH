@@ -16,10 +16,10 @@ from contextlib import contextmanager
 try:
     import psycopg
 
-    PSYCHOPG_AVAILABLE = True
+    PSYCOPG_AVAILABLE = True
 except Exception:
     psycopg = None
-    PSYCHOPG_AVAILABLE = False
+    PSYCOPG_AVAILABLE = False
 
 try:
     from .vault_supabase import append_vault999 as _vault_append
@@ -73,7 +73,7 @@ def _ensure_tables(cur) -> None:
 
 
 def _pg_connection():
-    if not PSYCHOPG_AVAILABLE:
+    if not PSYCOPG_AVAILABLE:
         import sys
 
         sys.stderr.write(f"VAULT999_PG: psycopg not available\n")
@@ -83,17 +83,6 @@ def _pg_connection():
         import sys
 
         sys.stderr.write(f"VAULT999_PG: DATABASE_URL not set in env\n")
-        return None
-    try:
-        conn = psycopg.connect(url, autocommit=True, connect_timeout=5)
-        return conn
-    except Exception as e:
-        import sys
-
-        sys.stderr.write(f"VAULT999_PG_CONNECT_FAILED:{type(e).__name__}:{e}\n")
-        return None
-    url = os.environ.get("DATABASE_URL")
-    if not url:
         return None
     try:
         conn = psycopg.connect(url, autocommit=True, connect_timeout=5)

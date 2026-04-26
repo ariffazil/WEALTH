@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any
 
 class HarnessAlarmSystem:
@@ -22,7 +22,7 @@ class HarnessAlarmSystem:
     def trigger(self, tool_name: str, harness_name: str, detail: Dict[str, Any]) -> Dict[str, Any]:
         """Trigger an alarm for a harness snap."""
         event = {
-            "epoch": datetime.utcnow().isoformat() + "Z",
+            "epoch": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "level": "CRITICAL",
             "category": "HARNESS_BREACH",
             "harness": harness_name,

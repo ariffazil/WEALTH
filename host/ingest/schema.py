@@ -3,7 +3,7 @@ Ingest schema — every datum is an observation with provenance, timing, and unc
 """
 
 from dataclasses import dataclass, field, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 
@@ -30,7 +30,7 @@ class DataRecord:
 
     @staticmethod
     def now() -> str:
-        return datetime.utcnow().isoformat() + "Z"
+        return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def validate_record(r: DataRecord) -> List[str]:

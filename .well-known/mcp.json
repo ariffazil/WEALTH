@@ -56,7 +56,8 @@
   ],
   "metadata": {
     "organism_role": "Capital intelligence lane",
-    "canonical_entrypoint": "server.py",
+    "canonical_entrypoint": "internal/monolith.py",
+    "backward_compat_entrypoint": "server.py",
     "civilizational_entrypoint": "mcp/server.py",
     "runtime_surfaces": {
       "canonical_kernel": {
