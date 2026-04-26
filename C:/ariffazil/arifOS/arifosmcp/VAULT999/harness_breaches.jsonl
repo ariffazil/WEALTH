@@ -1,0 +1,1 @@
+{"epoch": "2026-04-26T05:56:48.843109Z", "level": "CRITICAL", "category": "HARNESS_BREACH", "harness": "Systemic", "tool": "wealth_civilization_stewardship", "detail": {"violations": ["CIVILIZATION_HARNESS_FAILURE"], "systemic_stress": 1.0}, "message": "CRITICAL: Systemic Harness SNAPPED in wealth_civilization_stewardship."}

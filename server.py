@@ -3046,19 +3046,16 @@ async def wealth_init_tool(
             verdict="VOID",
         )
 
-
 @mcp.custom_route("/health", methods=["GET"])
 async def health_check(request):
     from starlette.responses import JSONResponse
     return JSONResponse({
-        "ok": True,
-        "service": "wealth",
-        "version": __version__,
-        "transport": os.environ.get("MCP_TRANSPORT", "streamable-http")
+        "ok": True, 
+        "service": "wealth", 
+        "transport": "streamable-http", 
+        "version": __version__
     })
 
-
 if __name__ == "__main__":
-    transport = os.environ.get("MCP_TRANSPORT", "streamable-http")
-    port = int(os.environ.get("MCP_PORT", "8000"))
-    mcp.run(transport=transport, host="0.0.0.0", port=port)
+    # We use streamable-http to unlock the /mcp POST endpoint
+    mcp.run(transport="streamable-http", host="0.0.0.0", port=8000)
