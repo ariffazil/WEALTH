@@ -35,7 +35,7 @@ WEALTH operates across **11 capital scales** and **7 capital types**:
 
 | Surface | File | Tools | Purpose |
 |---|---|---|---|
-| **Canonical kernel** | `server.py` | 5 async tools + 57 sync functions | Core valuation, risk, crisis, coordination |
+| **Canonical kernel** | `server.py` | 33 async tools + 57 sync functions | Core valuation, risk, crisis, coordination |
 | **Civilizational demo** | `mcp/server.py` | 6 tools | Markets, energy, food security domains |
 
 ### Core Tool Families (from `api/schemas/wealth-mcp-tools.json`)
@@ -123,7 +123,7 @@ python server.py
 python mcp/server.py
 
 # Health check
-curl http://localhost:8080/health
+curl http://localhost:8000/health
 
 # Run tests
 npm test
@@ -157,7 +157,7 @@ npm test
 
 ```
 WEALTH/
-├── server.py              ← Canonical MCP kernel (11 exposed tools)
+├── server.py              ← Canonical MCP kernel (33 exposed tools)
 ├── mcp/server.py         ← Civilizational demo surface (6 tools)
 ├── host/
 │   └── governance/        ← Floor enforcement, vault, policy engine
