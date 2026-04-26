@@ -3,7 +3,7 @@
   "schema_version": "0.2.0",
   "name": "wealth",
   "display_name": "WEALTH — Capital Intelligence",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "spec_version": "2026-04-17",
   "description": "WEALTH is the capital-intelligence lane in the arifOS organism. This repository contains the canonical packaged valuation kernel in server.py and a secondary civilizational FastMCP demo surface in mcp/server.py.",
   "homepage": "https://github.com/ariffazil/WEALTH",

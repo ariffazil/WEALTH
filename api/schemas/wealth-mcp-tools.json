@@ -252,7 +252,7 @@
             "solve_equilibrium": { "type": "boolean", "default": false },
             "scale_mode": { "$ref": "#/definitions/ScaleMode" }
           }
-        }
+        },
         "wealth_monte_carlo_forecast": {
           "type": "object",
           "required": ["initial_commitment", "mean_cash_flows", "volatilities"],
