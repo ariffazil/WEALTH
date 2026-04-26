@@ -1,5 +1,5 @@
 # WEALTH Organ — Source of Truth
-**Status:** Canonical Realignment Complete
+**Status:** MCP Live — Public streamable-http endpoint active
 
 ## Configuration
 - **Canonical Git Source:** `/root/WEALTH` (Branch: `main`)
@@ -7,13 +7,22 @@
 - **Runtime Entrypoint:** `server.py`
 - **Supplemental Surface:** `mcp/server.py`
 
-## Exposure Status
-- **Public Status:** Static Site + SSE only.
-- **MCP Endpoint:** `/mcp` is routed at Caddy but upstream returns 404. It remains **UNSEALED**.
+## Public Surface
+- `/` — Static human landing page
+- `/health` — JSON health & status endpoint
+- `/mcp` — Live MCP streamable-http endpoint (default transport)
+- `/sse` — Optional SSE transport; enable via `MCP_TRANSPORT=sse`
+
+## MCP Endpoint
+- **URL:** `https://wealth.arif-fazil.com/mcp`
+- **Transport:** streamable-http (FastMCP 3.2.0)
+- **Status:** **SEALED** — returns real MCP JSON-RPC responses
+- **Caddy Route:** `reverse_proxy /mcp* wealth-organ:8000`
 
 ## Operational Doctrine
 - All long-term source changes MUST be committed to `/root/WEALTH`.
 - `/opt/arifos/src/wealth` serves as the active build context and deployment target.
+- Default transport is `streamable-http`; SSE is compatibility-only.
 
 ## Branch Policy
 - **Canonical Branch:** `main`
