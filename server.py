@@ -55,7 +55,21 @@ except Exception:
         GOVERNANCE_AVAILABLE = False
 
         def check_floors(*args, **kwargs):
-            return {"pass": True, "verdict": "SEAL", "violations": [], "holds": [], "warnings": []}
+            params = args[0] if args and isinstance(args[0], dict) else kwargs
+            ai_is_deciding = params.get("ai_is_deciding", False)
+            reversible = params.get("reversible", True)
+            human_confirmed = params.get("human_confirmed", False)
+            scale_mode = params.get("scale_mode", "enterprise")
+            violations = []
+            holds = []
+            warnings = []
+            if ai_is_deciding:
+                violations.append("F09")
+                return {"pass": False, "verdict": "VOID", "violations": violations, "holds": holds, "warnings": warnings}
+            if not reversible and not human_confirmed and scale_mode in {"civilization", "crisis", "national", "agentic"}:
+                holds.append("F01")
+                return {"pass": False, "verdict": "HOLD", "violations": violations, "holds": holds, "warnings": warnings}
+            return {"pass": True, "verdict": "SEAL", "violations": violations, "holds": holds, "warnings": warnings}
 
         try:
             from host.governance.vault_supabase import append_vault999
@@ -64,6 +78,11 @@ except Exception:
         except Exception:
 
             def append_vault999(record, **kwargs):
+                import os, json
+                vault_path = "/root/WEALTH/data/vault999.jsonl"
+                os.makedirs(os.path.dirname(vault_path), exist_ok=True)
+                with open(vault_path, "a") as f:
+                    f.write(json.dumps(record, default=str) + "\n")
                 return record
 
 
