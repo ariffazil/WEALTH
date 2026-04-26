@@ -6,7 +6,11 @@ import os
 
 # Add arifOS to path to import shared core
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../arifOS")))
-from core.shared.governed_tool import governed_tool
+try:
+    from core.shared.governed_tool import governed_tool
+except ImportError:
+    def governed_tool(f):
+        return f
 
 mcp = FastMCP("WEALTH-Civilization")
 
@@ -201,4 +205,7 @@ def get_global_food_prices() -> str:
     return "Global food price index: 120.5 [ESTIMATE]"
 
 if __name__ == "__main__":
-    mcp.run()
+    if os.environ.get("MCP_TRANSPORT") == "sse":
+        mcp.run(transport="sse", host="0.0.0.0", port=8000)
+    else:
+        mcp.run()
