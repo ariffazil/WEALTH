@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from datetime import datetime
 from typing import Dict, Any
 
@@ -31,7 +32,7 @@ class HarnessAlarmSystem:
         }
 
         # For real-time terminal monitor (simulated)
-        print(f"!!! [HARNESS_ALARM] {event['message']} !!!")
+        print(f"!!! [HARNESS_ALARM] {event['message']} !!!", file=sys.stderr)
 
         try:
             with open(self.vault_path, "a") as f:

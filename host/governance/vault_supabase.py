@@ -334,6 +334,14 @@ def append_vault999(
         )
         entry["transaction_result"] = tx_result
 
+    # Always mirror to local append-only ledger
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, default=str) + "\n")
+    except Exception:
+        pass
+
     return entry
 
 
