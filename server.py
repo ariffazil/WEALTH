@@ -3047,5 +3047,18 @@ async def wealth_init_tool(
         )
 
 
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request):
+    from starlette.responses import JSONResponse
+    return JSONResponse({
+        "ok": True,
+        "service": "wealth",
+        "version": __version__,
+        "transport": os.environ.get("MCP_TRANSPORT", "streamable-http")
+    })
+
+
 if __name__ == "__main__":
-    mcp.run(transport="sse", host="0.0.0.0", port=8000)
+    transport = os.environ.get("MCP_TRANSPORT", "streamable-http")
+    port = int(os.environ.get("MCP_PORT", "8000"))
+    mcp.run(transport=transport, host="0.0.0.0", port=port)
