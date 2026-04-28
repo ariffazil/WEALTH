@@ -1,6 +1,6 @@
 [project]
 name = "wealth-valuation-kernel"
-version = "2026.04.28"
+version = "2026.04.29"
 description = "WEALTH Sovereign Valuation Kernel — Universal Resource Allocation Intelligence (URAI) with constitutional governance for arifOS"
 readme = "README.md"
 requires-python = ">=3.12"
