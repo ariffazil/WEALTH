@@ -11,6 +11,17 @@ tags: [index, meta, wealth, arifos]
 
 ---
 
+## Sovereign Pipeline (v2 Architecture)
+
+| Family | Stage | Meaning |
+| :--- | :--- | :--- |
+| **SENSE** | 100 | Reality ingestion & observation layer. |
+| **MIND** | 200 | Epistemic modeling & uncertainty analysis. |
+| **SURVIVAL** | 300 | Solvency, metabolic triage & crisis response. |
+| **REASON** | 400 | Capital discipline, efficiency & optimization. |
+| **JUDGE** | 888 | Constitutional arbitration & final gating. |
+| **VAULT** | 999 | Immutable anchoring & cryptographic seal. |
+
 ## Meta / Knowledge Architecture
 
 | Page | Summary |
@@ -79,4 +90,4 @@ tags: [index, meta, wealth, arifos]
 
 ---
 
-*Last updated: 2026-04-14 | Total pages: 27*
+### System Status
