@@ -1,6 +1,6 @@
 [project]
 name = "wealth-valuation-kernel"
-version = "1.6.0"
+version = "2026.04.28"
 description = "WEALTH Sovereign Valuation Kernel — Universal Resource Allocation Intelligence (URAI) with constitutional governance for arifOS"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -19,5 +19,5 @@ classifiers = [
 
 dependencies = [
     "supabase>=2.10.0",
-    "fastmcp>=3.2.0",
+    "fastmcp>=3.2.4",
 ]

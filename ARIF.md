@@ -12,7 +12,7 @@
 ## 0. IDENTITY & MOUNT POINT
 
 - REPO_NAME: WEALTH
-- CONTAINER_ID: 2026-04-24
+- CONTAINER_ID: 2026-04-28
 - DOMAIN_ROLE: Capital Intelligence Engine — constitutional capital allocation layer for arifOS federation
 - STABILITY_CLASS: RAPID-ITERATE
 

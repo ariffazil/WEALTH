@@ -1,6 +1,6 @@
 {
   "name": "wealth-valuation-kernel",
-  "version": "1.6.0",
+  "version": "2026.04.28",
   "description": "arifOS Sovereign Valuation Kernel — Physics-based Capital Allocation",
   "type": "module",
   "main": "src/index.js",
