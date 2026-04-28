@@ -13,8 +13,13 @@ __version__ = "2026.04.29"
 
 LAST_RECEIPT_HASH = "0" * 64
 
-# Ensure sibling arifOS directory is in path for arifosmcp imports
-arifos_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "arifOS"))
+# Ensure sibling arifOS and host directories are in path
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if base_dir not in sys.path:
+    sys.path.append(base_dir)
+
+# Legacy arifOS path support
+arifos_path = os.path.join(base_dir, "arifOS")
 if os.path.exists(arifos_path) and arifos_path not in sys.path:
     sys.path.append(arifos_path)
 
