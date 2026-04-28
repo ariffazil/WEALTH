@@ -955,30 +955,70 @@ def create_envelope(
     if tool in engine.V2_CANONICAL_MAP:
         alias_of = engine.V2_CANONICAL_MAP[tool]
         
+    # Failure Doctrine Classification
+    failure_flags = [f for f in flags if any(err in f for f in ["ERROR", "UNAVAILABLE", "INVALID", "STALE", "FAILURE"])]
+    status = "PASS"
+    next_safe_action = "Consult arifOS 888_JUDGE"
+
+    if failure_flags or audit_res["verdict"] == "FAIL":
+        status = "VOID" if any("INVALID" in f or "SCHEMA" in f for f in failure_flags) else "HOLD"
+        next_safe_action = "Repair missing layer or verify inputs."
+    elif derived_governance == "VOID":
+        status = "VOID"
+        next_safe_action = "Policy engine rejection. Do not allocate."
+    elif derived_governance in ("888-HOLD", "SABAR"):
+        status = "HOLD"
+        next_safe_action = "Awaiting human confirmation via arifOS 888_JUDGE."
+    elif derived_governance == "QUALIFY" or is_high_stress:
+        status = "CAUTION"
+        next_safe_action = "Proceed with manual verification."
+
+    mode_map = {"PASS": "full", "CAUTION": "structured", "HOLD": "draft_only", "VOID": "pause"}
+        
     envelope = {
-        "tool": tool,
-        "display_name": meta.get("display", tool),
-        "family": meta.get("family", dimension.upper()),
-        "pipeline_stage": meta.get("stage", "UNKNOWN"),
-        "sovereign": meta.get("sovereign", True),
-        "namespace": {
-            "invoked_as": tool,
-            "canonical_handler": alias_of or tool,
-            "version": "v2-alias-layer"
+        "mcp": "WEALTH",
+        "task": tool,
+        "status": status,
+        "domain_verdict": derived_governance,
+        "confidence": "LOW" if failure_flags or is_high_stress else "HIGH",
+        "epistemic": {
+            "class": derived_epistemic,
+            "integrity_score": round(1.0 - (systemic_stress / 10.0), 2) if not failure_flags else 0.1,
         },
-        "dimension": dimension,
-        "verdict": derived_allocation,
-        "governance_verdict": derived_governance,
-        "allocation_signal": derived_allocation,
-        "engine_status": engine_status,
-        "primary_result": primary,
-        "secondary_metrics": secondary or {},
-        "integrity_flags": flags,
-        "confidence": confidence_from_verdict(derived_governance, flags),
-        "epistemic": derived_epistemic,
-        "harness_audit": audit_res,
+        "authority": {
+            "level": "domain_expert",
+            "boundary": "Economic thermodynamics and capital allocation.",
+        },
+        "readiness": {
+            "human": "UNKNOWN",
+            "machine": "HEALTHY" if status == "PASS" else "DEGRADED",
+        },
+        "risk": {
+            "level": "GREEN" if status == "PASS" else "RED" if status == "VOID" else "AMBER",
+            "economic": "LOW" if derived_allocation == "ACCEPT" else "HIGH",
+            "constitutional": "LOW",
+            "coupled": "UNKNOWN",
+        },
+        "execution": {
+            "recommended_mode": mode_map.get(status, "pause"),
+            "human_confirmation_required": status != "PASS" or dimension == "Allocation",
+            "next_safe_action": next_safe_action,
+        },
+        "primary_metrics": primary,
+        "secondary_metrics": {
+            "display_name": meta.get("display", tool),
+            "family": meta.get("family", dimension.upper()),
+            "allocation_signal": derived_allocation,
+            "engine_status": engine_status,
+            "harness_audit": audit_res,
+            "secondary_metrics_raw": secondary or {},
+        },
         "assumptions": assumptions or [],
+        "failure_flags": failure_flags,
+        "reversibility": "REVERSIBLE" if "read" in tool or "check" in tool else "UNKNOWN",
+        "final_authority": "Arif",
         "epoch": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "w0": "OPERATOR_VETO_INTACT / HIERARCHY_INVARIANT",
     }
     if "dual_domain" in meta:
         envelope["dual_domain"] = meta["dual_domain"]
@@ -3003,19 +3043,35 @@ def get_epistemic_matrix() -> str:
 
 @mcp.tool(name="wealth_evoi_compute")
 async def wealth_evoi_compute(
-    prior_pos: float,
-    posterior_pos: float,
     well_cost_musd: float,
     p50_value_musd: float,
+    prior_pos: float | None = None,
+    posterior_pos: float | None = None,
+    prospect_metrics: dict | None = None,
     info_cost_musd: float = 5.0,
     discount_rate: float = 0.10,
     scale_mode: str = "enterprise",
 ) -> Any:
     """
     Expected Value of Information (EVOI) point-estimate computation. [Epistemic Dimension]
+    Ingests GEOX prospect_metrics or raw prior/posterior probabilities.
     EVOI = E[V | with_info] - E[V | without_info]
-    Helps decide if acquiring new data (seismic, audit, research) is worth the cost.
     """
+    # Metric Handoff (GEOX -> WEALTH)
+    if prospect_metrics:
+        final_prior = prospect_metrics.get("composite_pos", prior_pos)
+        final_posterior = posterior_pos or min(1.0, final_prior * 1.25) if final_prior else posterior_pos
+    else:
+        final_prior = prior_pos
+        final_posterior = posterior_pos
+
+    if final_prior is None or final_posterior is None:
+         return create_envelope(
+            "wealth_evoi_compute", "Epistemic", {}, 
+            {"error": "Missing prior_pos or posterior_pos"}, 
+            ["EPISTEMIC_UNAVAILABLE"], verdict="VOID"
+        )
+
     if not EPISTEMIC_AVAILABLE:
         return create_envelope(
             "wealth_evoi_compute",
@@ -3027,9 +3083,10 @@ async def wealth_evoi_compute(
         )
 
     try:
+        from host.epistemic.evoi import compute_evoi
         res = compute_evoi(
-            prior_pos=prior_pos,
-            posterior_pos=posterior_pos,
+            prior_pos=final_prior,
+            posterior_pos=final_posterior,
             well_cost_musd=well_cost_musd,
             p50_value_musd=p50_value_musd,
             info_cost_musd=info_cost_musd,
@@ -3043,8 +3100,9 @@ async def wealth_evoi_compute(
             {"info_cost": info_cost_musd, "well_cost": well_cost_musd},
             [],
             [
-                f"Assumed information cost: {info_cost_musd} MUSD",
-                f"Discount rate: {discount_rate}",
+                f"Prior PoS: {final_prior:.2f}",
+                f"Posterior PoS: {final_posterior:.2f}",
+                f"Information cost: {info_cost_musd} MUSD",
             ],
             verdict="SEAL" if res.get("evoi_musd", 0) > 0 else "QUALIFY",
             scale_mode=scale_mode,
