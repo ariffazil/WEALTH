@@ -4,7 +4,7 @@
 > **DITEMPA BUKAN DIBERI — Forged, Not Given**
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue)](./LICENSE)
-[![WEALTH](https://img.shields.io/badge/WEALTH-v2026.04.28-FFFFFF?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSI4IiBmaWxsPSIjMzMzIi8+PHBhdGggZD0iTTEzLjUsNy41aC0zbC0yLjUsMi41TDkuNSwxMyIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiLz48L3N2Zz4=)](https://github.com/ariffazil/wealth)
+[![WEALTH](https://img.shields.io/badge/WEALTH-v2026.04.29-FFFFFF?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSI4IiBmaWxsPSIjMzMzIi8+PHBhdGggZD0iTTEzLjUsNy41aC0zbC0yLjUsMi41TDkuNSwxMyIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiLz48L3N2Zz4=)](https://github.com/ariffazil/wealth)
 [![arifOS](https://img.shields.io/badge/arifOS-Governed-FF6B00?style=flat-square)](https://github.com/ariffazil/arifOS)
 
 ---
@@ -38,36 +38,31 @@ WEALTH operates across **11 capital scales** and **7 capital types**:
 | **Boot wrapper** | `server.py` | Thin compat wrapper | Points to canonical kernel |
 | **Civilizational demo** | `mcp/server.py` | 6 tools | Markets, energy, food security domains |
 
-### Core Tool Families (from `api/schemas/wealth-mcp-tools.json`)
+### Sovereign Pipeline Families (v2 Canonical)
 
-| Family | Tools | Purpose |
-| :--- | :--- | :--- |
-| `wealth.state` | `networth_state`, `cashflow_flow` | Personal/enterprise balance sheet |
-| `wealth.risk` | `npv_reward`, `irr_yield`, `pi_efficiency`, `emv_risk`, `audit_entropy` | Capital risk evaluation |
-| `wealth.price` | `capitalx`, `dscr_leverage`, `growth_velocity` | Price signals across scales |
-| `wealth.flow` | `monte_carlo_forecast`, `ingest_*` | Cashflow projection and ingestion |
-| `wealth.crisis` | `crisis_triage`, `civilization_stewardship` | Crisis-mode capital response |
-| `wealth.coordination` | `coordination_equilibrium`, `game_theory_solve` | Multi-agent coordination |
-| `wealth.control` | `check_floors_tool`, `policy_audit` | Constitutional floor enforcement |
-| `wealth.personal` | `personal_decision`, `agent_budget` | Personal capital decisions |
-| `wealth.agentic` | `wealth_score_kernel`, `wealth_evoi_compute` | Agent-level capital intelligence |
+| Family | Stage | Purpose | Primary Tools |
+| :--- | :--- | :--- | :--- |
+| **SENSE** | 100 | Reality ingestion & observation | `wealth_sense_fetch`, `wealth_sense_snapshot` |
+| **MIND** | 200 | Epistemic modeling & Monte Carlo | `wealth_mind_forecast`, `wealth_mind_evoi` |
+| **SURVIVAL** | 300 | Solvency & metabolic triage | `wealth_survival_dscr`, `wealth_survival_flow` |
+| **REASON** | 400 | Capital discipline & optimization | `wealth_reason_npv`, `wealth_reason_irr` |
+| **JUDGE** | 888 | Constitutional gating & audit | `wealth_judge_floors`, `wealth_judge_policy` |
+| **VAULT** | 999 | Immutable anchoring & ledger | `wealth_vault_init`, `wealth_vault_seal` |
 
 ### MCP Server Tool Inventory (39 Exposed Tools)
 
 **From `internal/monolith.py` (33 tools):**
 
-- `wealth_npv_reward`, `wealth_irr_yield`, `wealth_pi_efficiency`, `wealth_emv_risk`, `wealth_audit_entropy` — Capital risk evaluation
-- `wealth_dscr_leverage`, `wealth_payback_time`, `wealth_growth_velocity` — Price signals
-- `wealth_networth_state`, `wealth_cashflow_flow` — Balance sheet & flow
-- `wealth_score_kernel`, `wealth_evoi_compute`, `wealth_evoi_monte_carlo` — Agent-level intelligence
-- `wealth_correlation_guard_check`, `wealth_schema_validate` — Epistemic guard & validation
-- `wealth_personal_decision`, `wealth_agent_budget` — Personal capital
-- `wealth_crisis_triage`, `wealth_civilization_stewardship` — Crisis & civilization response
-- `wealth_coordination_equilibrium`, `wealth_game_theory_solve` — Multi-agent coordination
-- `wealth_monte_carlo_forecast`, `wealth_ingest_fetch`, `wealth_ingest_snapshot`, `wealth_ingest_sources`, `wealth_ingest_health`, `wealth_ingest_vintage`, `wealth_ingest_reconcile` — Forecasting & ingestion
-- `wealth_check_floors`, `wealth_policy_audit` — Constitutional enforcement
-- `wealth_record_transaction`, `wealth_snapshot_portfolio` — Vault operations
-- `wealth_init` — Session initialization
+All tools follow the `wealth_[family]_[subject]` grammar. Legacy v1 names are supported via an Alias Layer.
+
+- **REASON (Efficiency):** `wealth_reason_npv`, `wealth_reason_irr`, `wealth_reason_pi`, `wealth_reason_payback`
+- **MIND (Risk/Model):** `wealth_mind_forecast`, `wealth_mind_risk`, `wealth_mind_entropy`, `wealth_mind_evoi`, `wealth_mind_monte_carlo`, `wealth_mind_correlation`, `wealth_mind_validate`
+- **SURVIVAL (Solvency):** `wealth_survival_dscr`, `wealth_survival_flow`, `wealth_survival_networth`, `wealth_survival_growth`, `wealth_survival_triage`
+- **SENSE (Reality):** `wealth_sense_fetch`, `wealth_sense_snapshot`, `wealth_sense_sources`, `wealth_sense_health`, `wealth_sense_vintage`, `wealth_sense_reconcile`
+- **JUDGE (Governance):** `wealth_judge_floors`, `wealth_judge_policy`, `wealth_judge_score`
+- **VAULT (Ledger):** `wealth_vault_init`, `wealth_vault_record`, `wealth_vault_snapshot`
+- **SURVIVAL (Civ):** `wealth_survival_stewardship`, `wealth_reason_agent_budget`, `wealth_reason_personal_decision`
+- **COORDINATION:** `wealth_coordination_equilibrium`, `wealth_coordination_game_solve`
 
 **From `mcp/server.py` (6 tools):**
 

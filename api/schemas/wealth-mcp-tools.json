@@ -62,13 +62,17 @@
   "properties": {
     "tool_family": {
       "type": "string",
-      "enum": ["wealth.state", "wealth.risk", "wealth.price", "wealth.flow", "wealth.justice", "wealth.control", "wealth.personal", "wealth.agentic", "wealth.crisis", "wealth.civilization", "wealth.coordination"]
+      "enum": ["VAULT", "SENSE", "MIND", "HEART", "REASON", "JUDGE"]
     },
     "requests": {
       "type": "object",
       "properties": {
-        "wealth_state_market_snapshot": {
+        "wealth_sense_snapshot": {
           "type": "object",
+          "alias_of": "wealth_state_market_snapshot",
+          "family": "SENSE",
+          "pipeline_stage": "100-SENSE",
+          "sovereign": true,
           "required": ["header", "jurisdiction", "asset_classes"],
           "properties": {
             "header": { "$ref": "#/definitions/CommonRequestHeader" },
@@ -77,8 +81,25 @@
             "tenor_months": { "type": "integer", "default": 120 }
           }
         },
+        "wealth_state_market_snapshot": {
+          "type": "object",
+          "family": "SENSE",
+          "pipeline_stage": "100-SENSE",
+          "deprecated": true,
+          "sunset_version": "v3.0",
+          "required": ["header", "jurisdiction", "asset_classes"],
+          "properties": {
+            "header": { "$ref": "#/definitions/CommonRequestHeader" },
+            "jurisdiction": { "type": "string" },
+            "asset_classes": { "type": "array", "items": { "type": "string" } }
+          }
+        },
         "wealth_risk_capital_allocation": {
           "type": "object",
+          "display_name": "wealth_risk_allocation",
+          "family": "MIND",
+          "pipeline_stage": "200-MIND",
+          "sovereign": true,
           "required": ["header", "portfolio", "confidence_level"],
           "properties": {
             "header": { "$ref": "#/definitions/CommonRequestHeader" },
@@ -87,26 +108,117 @@
             "maruah_drawdown_floor": { "type": "number", "default": 0.6 }
           }
         },
-        "wealth_price_capitalx": {
+        "wealth_mind_emv": {
           "type": "object",
-          "required": ["header", "base_rate", "signals"],
+          "alias_of": "wealth_emv_risk",
+          "family": "MIND",
+          "pipeline_stage": "200-MIND",
+          "sovereign": true,
+          "required": ["header", "prospects"],
           "properties": {
             "header": { "$ref": "#/definitions/CommonRequestHeader" },
-            "base_rate": { "type": "number", "minimum": 0 },
-            "signals": {
-              "type": "object",
-              "required": ["dS", "peace2", "maruahScore", "trustIndex", "deltaCiv"],
-              "properties": {
-                "dS": { "type": "number" },
-                "peace2": { "type": "number" },
-                "maruahScore": { "type": "number", "minimum": 0, "maximum": 1 },
-                "trustIndex": { "type": "number", "minimum": 0, "maximum": 1 },
-                "deltaCiv": { "type": "number" }
-              }
-            },
-            "wealth_basis": { "$ref": "#/definitions/WealthBasisVector" },
-            "defects": { "$ref": "#/definitions/DefectTensor" }
+            "prospects": { "type": "array", "items": { "type": "object" } },
+            "risk_free_rate": { "type": "number", "default": 0.04 }
           }
+        },
+        "wealth_emv_risk": {
+          "type": "object",
+          "family": "MIND",
+          "pipeline_stage": "200-MIND",
+          "deprecated": true,
+          "sunset_version": "v3.0",
+          "properties": {
+            "prospects": { "type": "array", "items": { "type": "object" } }
+          }
+        },
+        "wealth_mind_monte_carlo": {
+          "type": "object",
+          "alias_of": "wealth_monte_carlo_forecast",
+          "family": "MIND",
+          "pipeline_stage": "200-MIND",
+          "sovereign": true,
+          "required": ["initial_commitment", "mean_cash_flows", "volatilities"],
+          "properties": {
+            "initial_commitment": { "type": "number" },
+            "mean_cash_flows": { "type": "array", "items": { "type": "number" } },
+            "volatilities": { "type": "array", "items": { "type": "number" } },
+            "discount_rate": { "type": "number", "default": 0.1 },
+            "simulations": { "type": "integer", "default": 10000 },
+            "distribution": { "type": "string", "enum": ["lognormal", "normal", "triangular"], "default": "lognormal" },
+            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+          }
+        },
+        "wealth_monte_carlo_forecast": {
+          "type": "object",
+          "family": "MIND",
+          "pipeline_stage": "200-MIND",
+          "deprecated": true,
+          "sunset_version": "v3.0",
+          "properties": {
+            "initial_commitment": { "type": "number" }
+          }
+        },
+        "wealth_mind_correlation": {
+          "type": "object",
+          "alias_of": "wealth_correlation_guard_check",
+          "family": "MIND",
+          "pipeline_stage": "200-MIND",
+          "sovereign": true,
+          "properties": {
+            "portfolio": { "type": "array", "items": { "type": "object" } },
+            "threshold": { "type": "number", "default": 0.7 }
+          }
+        },
+        "wealth_correlation_guard_check": {
+          "type": "object",
+          "family": "MIND",
+          "pipeline_stage": "200-MIND",
+          "deprecated": true,
+          "sunset_version": "v3.0"
+        },
+        "wealth_survival_triage": {
+          "type": "object",
+          "alias_of": "wealth_crisis_triage",
+          "family": "SURVIVAL",
+          "pipeline_stage": "300-HEART",
+          "sovereign": true,
+          "required": ["resources", "demands"],
+          "properties": {
+            "resources": { "type": "object" },
+            "demands": { "type": "array", "items": { "type": "object" } },
+            "recovery_horizon_days": { "type": "number", "default": 30 },
+            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+          }
+        },
+        "wealth_crisis_triage": {
+          "type": "object",
+          "family": "SURVIVAL",
+          "pipeline_stage": "300-HEART",
+          "deprecated": true,
+          "sunset_version": "v3.0"
+        },
+        "wealth_survival_civilization": {
+          "type": "object",
+          "alias_of": "wealth_civilization_stewardship",
+          "family": "SURVIVAL",
+          "pipeline_stage": "300-HEART",
+          "sovereign": true,
+          "required": ["population", "energy_budget_twh", "carbon_budget_gt", "tech_growth_rate"],
+          "properties": {
+            "population": { "type": "number" },
+            "energy_budget_twh": { "type": "number" },
+            "carbon_budget_gt": { "type": "number" },
+            "tech_growth_rate": { "type": "number" },
+            "time_horizon_years": { "type": "integer", "default": 100 },
+            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+          }
+        },
+        "wealth_civilization_stewardship": {
+          "type": "object",
+          "family": "SURVIVAL",
+          "pipeline_stage": "300-HEART",
+          "deprecated": true,
+          "sunset_version": "v3.0"
         },
         "wealth_price_exergy_cost": {
           "type": "object",
@@ -155,8 +267,12 @@
             }
           }
         },
-        "wealth_npv_reward": {
+        "wealth_reason_npv": {
           "type": "object",
+          "alias_of": "wealth_npv_reward",
+          "family": "REASON",
+          "pipeline_stage": "400-REASON",
+          "sovereign": true,
           "properties": {
             "initial_investment": { "type": "number" },
             "cash_flows": { "type": "array", "items": { "type": "number" } },
@@ -167,8 +283,24 @@
             "scale_mode": { "$ref": "#/definitions/ScaleMode" }
           }
         },
-        "wealth_pi_efficiency": {
+        "wealth_npv_reward": {
           "type": "object",
+          "family": "REASON",
+          "pipeline_stage": "400-REASON",
+          "deprecated": true,
+          "sunset_version": "v3.0",
+          "properties": {
+            "initial_investment": { "type": "number" },
+            "cash_flows": { "type": "array", "items": { "type": "number" } },
+            "discount_rate": { "type": "number" }
+          }
+        },
+        "wealth_reason_pi": {
+          "type": "object",
+          "alias_of": "wealth_pi_efficiency",
+          "family": "REASON",
+          "pipeline_stage": "400-REASON",
+          "sovereign": true,
           "properties": {
             "initial_investment": { "type": "number" },
             "cash_flows": { "type": "array", "items": { "type": "number" } },
@@ -177,18 +309,19 @@
             "scale_mode": { "$ref": "#/definitions/ScaleMode" }
           }
         },
-        "wealth_personal_decision": {
+        "wealth_pi_efficiency": {
           "type": "object",
-          "required": ["alternatives", "constraints"],
-          "properties": {
-            "alternatives": { "type": "array", "items": { "type": "object" } },
-            "constraints": { "type": "object" },
-            "values": { "type": "object" },
-            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
-          }
+          "family": "REASON",
+          "pipeline_stage": "400-REASON",
+          "deprecated": true,
+          "sunset_version": "v3.0"
         },
-        "wealth_agent_budget": {
+        "wealth_reason_agent": {
           "type": "object",
+          "alias_of": "wealth_agent_budget",
+          "family": "REASON",
+          "pipeline_stage": "400-REASON",
+          "sovereign": true,
           "required": ["compute_budget_usd", "token_budget", "time_deadline_hours", "expected_value_of_information", "actions"],
           "properties": {
             "compute_budget_usd": { "type": "number" },
@@ -199,8 +332,19 @@
             "scale_mode": { "$ref": "#/definitions/ScaleMode" }
           }
         },
+        "wealth_agent_budget": {
+          "type": "object",
+          "family": "REASON",
+          "pipeline_stage": "400-REASON",
+          "deprecated": true,
+          "sunset_version": "v3.0"
+        },
         "wealth_crisis_triage": {
           "type": "object",
+          "display_name": "wealth_crisis_triage",
+          "family": "HEART",
+          "pipeline_stage": "300-HEART",
+          "sovereign": true,
           "required": ["resources", "demands"],
           "properties": {
             "resources": { "type": "object" },
@@ -211,6 +355,10 @@
         },
         "wealth_civilization_stewardship": {
           "type": "object",
+          "display_name": "wealth_stewardship_civ",
+          "family": "HEART",
+          "pipeline_stage": "300-HEART",
+          "sovereign": true,
           "required": ["population", "energy_budget_twh", "carbon_budget_gt", "tech_growth_rate"],
           "properties": {
             "population": { "type": "number" },
@@ -223,6 +371,10 @@
         },
         "wealth_coordination_equilibrium": {
           "type": "object",
+          "display_name": "wealth_coord_equilibrium",
+          "family": "REASON",
+          "pipeline_stage": "400-REASON",
+          "sovereign": true,
           "required": ["agents", "shared_resources"],
           "properties": {
             "agents": { "type": "array", "items": { "type": "object" } },
@@ -233,6 +385,10 @@
         },
         "wealth_game_theory_solve": {
           "type": "object",
+          "display_name": "wealth_coord_game_theory",
+          "family": "REASON",
+          "pipeline_stage": "400-REASON",
+          "sovereign": true,
           "required": ["agents", "resources"],
           "properties": {
             "agents": { "type": "array", "items": { "type": "object" } },
@@ -244,6 +400,10 @@
         },
         "wealth_monte_carlo_forecast": {
           "type": "object",
+          "display_name": "wealth_risk_monte_carlo",
+          "family": "MIND",
+          "pipeline_stage": "200-MIND",
+          "sovereign": true,
           "required": ["initial_commitment", "mean_cash_flows", "volatilities"],
           "properties": {
             "initial_commitment": { "type": "number" },
@@ -295,9 +455,35 @@
         },
         "wealth_ingest_reconcile": {
           "type": "object",
+          "display_name": "wealth_ingest_reconcile",
+          "family": "SENSE",
+          "pipeline_stage": "100-SENSE",
+          "sovereign": true,
           "required": ["entity_code"],
           "properties": {
             "entity_code": { "type": "string" }
+          }
+        },
+        "wealth_judge_kernel": {
+          "type": "object",
+          "alias_of": "wealth_score_kernel",
+          "family": "JUDGE",
+          "pipeline_stage": "888-JUDGE",
+          "primary_entrypoint": true,
+          "sovereign": true,
+          "properties": {
+            "proposal_id": { "type": "string" },
+            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+          }
+        },
+        "wealth_score_kernel": {
+          "type": "object",
+          "family": "JUDGE",
+          "pipeline_stage": "888-JUDGE",
+          "deprecated": true,
+          "sunset_version": "v3.0",
+          "properties": {
+            "proposal_id": { "type": "string" }
           }
         }
       }
