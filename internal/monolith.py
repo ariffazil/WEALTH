@@ -8,8 +8,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-__version__ = "1.6.0"
-"""WEALTH v1.6.0 - Hardened Harness Architecture with Cumulative Stress Rule."""
+__version__ = "2026.04.29"
+"""WEALTH v2026.04.29 - Sovereign Pipeline OS with Expanded Resource Lattice."""
 
 LAST_RECEIPT_HASH = "0" * 64
 
@@ -254,6 +254,89 @@ class HarnessEngine:
         "wealth_agent_budget": "Civilization",
     }
 
+    SOVEREIGN_METADATA_FAMILIES = ["VAULT", "SENSE", "MIND", "HEART", "REASON", "JUDGE", "SURVIVAL"]
+    
+    SOVEREIGN_METADATA = {
+        "wealth_init": {"family": "VAULT", "stage": "000-VAULT", "display": "wealth_init"},
+        "wealth_record_transaction": {"family": "VAULT", "stage": "000-VAULT", "display": "wealth_record_transaction"},
+        "wealth_snapshot_portfolio": {"family": "VAULT", "stage": "000-VAULT", "display": "wealth_snapshot_portfolio"},
+        "wealth_ingest_fetch": {"family": "SENSE", "stage": "100-SENSE", "display": "wealth_ingest_fetch"},
+        "wealth_ingest_snapshot": {"family": "SENSE", "stage": "100-SENSE", "display": "wealth_ingest_snapshot"},
+        "wealth_ingest_reconcile": {"family": "SENSE", "stage": "100-SENSE", "display": "wealth_ingest_reconcile"},
+        "wealth_ingest_health": {"family": "SENSE", "stage": "100-SENSE", "display": "wealth_ingest_health"},
+        "wealth_ingest_sources": {"family": "SENSE", "stage": "100-SENSE", "display": "wealth_ingest_sources"},
+        "wealth_schema_validate": {"family": "MIND", "stage": "200-MIND", "display": "wealth_schema_validate"},
+        "wealth_correlation_guard_check": {"family": "MIND", "stage": "200-MIND", "display": "wealth_risk_correlation"},
+        "wealth_evoi_compute": {"family": "MIND", "stage": "200-MIND", "display": "wealth_evoi_compute"},
+        "wealth_monte_carlo_forecast": {"family": "MIND", "stage": "200-MIND", "display": "wealth_risk_monte_carlo"},
+        "wealth_emv_risk": {"family": "MIND", "stage": "200-MIND", "display": "wealth_risk_emv"},
+        "wealth_audit_entropy": {"family": "MIND", "stage": "200-MIND", "display": "wealth_audit_entropy", "dual_domain": ["MIND", "JUDGE"]},
+        "wealth_dscr_leverage": {"family": "HEART", "stage": "300-HEART", "display": "wealth_survival_dscr"},
+        "wealth_crisis_triage": {"family": "HEART", "stage": "300-HEART", "display": "wealth_crisis_triage"},
+        "wealth_civilization_stewardship": {"family": "HEART", "stage": "300-HEART", "display": "wealth_stewardship_civ"},
+        "wealth_npv_reward": {"family": "REASON", "stage": "400-REASON", "display": "wealth_calc_npv"},
+        "wealth_irr_yield": {"family": "REASON", "stage": "400-REASON", "display": "wealth_calc_irr"},
+        "wealth_pi_efficiency": {"family": "REASON", "stage": "400-REASON", "display": "wealth_calc_pi"},
+        "wealth_payback_time": {"family": "REASON", "stage": "400-REASON", "display": "wealth_calc_payback"},
+        "wealth_coordination_equilibrium": {"family": "REASON", "stage": "400-REASON", "display": "wealth_coord_equilibrium"},
+        "wealth_game_theory_solve": {"family": "REASON", "stage": "400-REASON", "display": "wealth_coord_game_theory"},
+        "wealth_personal_decision": {"family": "REASON", "stage": "400-REASON", "display": "wealth_personal_decision"},
+        "wealth_agent_budget": {"family": "REASON", "stage": "400-REASON", "display": "wealth_calc_agent_budget"},
+        "wealth_score_kernel": {"family": "JUDGE", "stage": "888-JUDGE", "display": "wealth_score_kernel", "primary": True},
+        "wealth_check_floors": {"family": "JUDGE", "stage": "800-JUDGE", "display": "wealth_check_floors"},
+        "wealth_policy_audit": {"family": "JUDGE", "stage": "800-JUDGE", "display": "wealth_policy_audit"},
+        "wealth_evoi_monte_carlo": {"family": "MIND", "stage": "200-MIND", "display": "wealth_evoi_monte_carlo"},
+        "wealth_cashflow_flow": {"family": "HEART", "stage": "300-HEART", "display": "wealth_survival_flow"},
+        "wealth_networth_state": {"family": "HEART", "stage": "300-HEART", "display": "wealth_survival_networth"},
+        "wealth_growth_velocity": {"family": "HEART", "stage": "300-HEART", "display": "wealth_survival_velocity"},
+    }
+
+    # ============================================================
+    # WEALTH v2 Canonical Namespace Map
+    # Non-breaking alias layer (Phase 1 Migration)
+    # ============================================================
+    V2_CANONICAL_MAP = {
+        # SENSE (100)
+        "wealth_sense_fetch": "wealth_ingest_fetch",
+        "wealth_sense_snapshot": "wealth_ingest_snapshot",
+        "wealth_sense_reconcile": "wealth_ingest_reconcile",
+        "wealth_sense_health": "wealth_ingest_health",
+        "wealth_sense_vintage": "wealth_ingest_vintage",
+        "wealth_sense_sources": "wealth_ingest_sources",
+        # MIND (200)
+        "wealth_mind_emv": "wealth_emv_risk",
+        "wealth_mind_monte_carlo": "wealth_monte_carlo_forecast",
+        "wealth_mind_correlation": "wealth_correlation_guard_check",
+        "wealth_mind_evoi": "wealth_evoi_compute",
+        "wealth_mind_evoi_mc": "wealth_evoi_monte_carlo",
+        "wealth_mind_schema": "wealth_schema_validate",
+        # SURVIVAL (300)
+        "wealth_survival_dscr": "wealth_dscr_leverage",
+        "wealth_survival_networth": "wealth_networth_state",
+        "wealth_survival_velocity": "wealth_growth_velocity",
+        "wealth_survival_cashflow": "wealth_cashflow_flow",
+        "wealth_survival_triage": "wealth_crisis_triage",
+        "wealth_survival_civilization": "wealth_civilization_stewardship",
+        # REASON (400)
+        "wealth_reason_npv": "wealth_npv_reward",
+        "wealth_reason_irr": "wealth_irr_yield",
+        "wealth_reason_pi": "wealth_pi_efficiency",
+        "wealth_reason_payback": "wealth_payback_time",
+        "wealth_reason_equilibrium": "wealth_coordination_equilibrium",
+        "wealth_reason_game": "wealth_game_theory_solve",
+        "wealth_reason_personal": "wealth_personal_decision",
+        "wealth_reason_agent": "wealth_agent_budget",
+        # JUDGE (888)
+        "wealth_judge_kernel": "wealth_score_kernel",
+        "wealth_judge_floors": "wealth_check_floors",
+        "wealth_judge_policy": "wealth_policy_audit",
+        "wealth_judge_entropy": "wealth_audit_entropy",
+        # VAULT (999)
+        "wealth_vault_init": "wealth_init",
+        "wealth_vault_record": "wealth_record_transaction",
+        "wealth_vault_snapshot": "wealth_snapshot_portfolio",
+    }
+
     def __init__(self):
         self.alarm_system = HarnessAlarmSystem()
 
@@ -330,12 +413,22 @@ class HarnessEngine:
             violations.append("SYSTEMIC_INSTABILITY_FAILURE")
 
         overall_verdict = "PASS"
-        if any(h["status"] == "SNAPPED" for h in harness_status.values()) or systemic_stress > 2.0:
+        recommended_verdict = "SEAL"
+        
+        has_snapped = any(h["status"] == "SNAPPED" for h in harness_status.values())
+        has_stressed = any(h["status"] == "STRESSED" for h in harness_status.values())
+        
+        if has_snapped or systemic_stress > 2.0:
             overall_verdict = "FAIL"
+            recommended_verdict = "VOID"
             self.alarm_system.trigger(tool_name, "Systemic", {"violations": violations, "systemic_stress": systemic_stress})
-
+        elif has_stressed or systemic_stress > 1.2:
+            overall_verdict = "PASS" # Keep PASS for backward compatibility
+            recommended_verdict = "SABAR"
+        
         return {
             "verdict": overall_verdict,
+            "recommended_verdict": recommended_verdict,
             "harness_status": harness_status,
             "violations": violations,
             "systemic_stress": round(systemic_stress, 4),
@@ -507,11 +600,12 @@ def weakest_epistemic(items: List[dict], default_tag: str = "CLAIM") -> str:
     return EPISTEMIC_ORDER[weakest_index]
 
 
-def derive_verdict(flags: List[str], default_verdict: str = "SEAL", high_stress: bool = False) -> str:
-    if any(flag in INVALID_FLAGS for flag in flags):
+def derive_verdict(flags: List[str], default_verdict: str = "SEAL", high_stress: bool = False, recommended: str = "SEAL") -> str:
+    if recommended == "VOID" or any(flag in INVALID_FLAGS for flag in flags):
         return "VOID"
-    if high_stress or any(flag in HOLD_FLAGS for flag in flags):
-        # High stress or critical holds force a non-APPROVE state
+    if recommended == "SABAR" or high_stress:
+        return "SABAR"
+    if any(flag in HOLD_FLAGS for flag in flags):
         return "888-HOLD"
     if any(flag in QUALIFY_FLAGS for flag in flags):
         return "QUALIFY"
@@ -817,7 +911,7 @@ def create_envelope(
     # Stress (0.7-0.9) or systemic instability forces 888-HOLD/QUALIFY
     is_high_stress = systemic_stress > 1.5 or any(h["stress"] >= 0.7 for h in audit_res["harness_status"].values())
     
-    derived_governance = verdict or derive_verdict(flags, high_stress=is_high_stress)
+    derived_governance = verdict or derive_verdict(flags, high_stress=is_high_stress, recommended=audit_res["recommended_verdict"])
     derived_allocation = derive_allocation_signal(flags, primary, tool, scale_mode)
     
     if is_high_stress and derived_allocation == "ACCEPT":
@@ -827,7 +921,7 @@ def create_envelope(
         "ERROR"
         if derived_governance == "VOID" or audit_res["verdict"] == "FAIL"
         else "WARNING"
-        if derived_governance in ("QUALIFY", "888-HOLD") or is_high_stress
+        if derived_governance in ("QUALIFY", "888-HOLD", "SABAR") or is_high_stress
         else "VALID"
     )
     derived_epistemic = infer_epistemic(flags, epistemic)
@@ -848,8 +942,25 @@ def create_envelope(
     #   engine_status      = VALID/WARNING/ERROR
     #                       Did the math pipeline run cleanly?
     # A project can be SEAL (computation valid) + REJECT (don't fund it). These must never collapse.
+    # 3. Build Envelope with Sovereign Metadata
+    meta = engine.SOVEREIGN_METADATA.get(tool, {})
+    
+    # Namespace transparency (v2 Alias Layer)
+    alias_of = None
+    if tool in engine.V2_CANONICAL_MAP:
+        alias_of = engine.V2_CANONICAL_MAP[tool]
+        
     envelope = {
         "tool": tool,
+        "display_name": meta.get("display", tool),
+        "family": meta.get("family", dimension.upper()),
+        "pipeline_stage": meta.get("stage", "UNKNOWN"),
+        "sovereign": meta.get("sovereign", True),
+        "namespace": {
+            "invoked_as": tool,
+            "canonical_handler": alias_of or tool,
+            "version": "v2-alias-layer"
+        },
         "dimension": dimension,
         "verdict": derived_allocation,
         "governance_verdict": derived_governance,
@@ -864,6 +975,10 @@ def create_envelope(
         "assumptions": assumptions or [],
         "epoch": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
+    if "dual_domain" in meta:
+        envelope["dual_domain"] = meta["dual_domain"]
+    if meta.get("primary"):
+        envelope["primary_entrypoint"] = True
     
     # 4. Update Global Identity Chain
     # Hash the envelope to create the next receipt
@@ -883,7 +998,6 @@ def create_envelope(
         floor_result = check_floors(
             {**gov_args, "epistemic": derived_epistemic, "scale_mode": scale_mode}
         )
-
         # Merge floor outcomes
         if floor_result["verdict"] == "VOID":
             envelope["governance_verdict"] = "VOID"
@@ -2792,6 +2906,96 @@ def get_dimensional_definitions() -> str:
     )
 
 
+@mcp.resource("wealth://governance/floors")
+def get_constitutional_floors() -> str:
+    """Detailed definitions of the 13 Constitutional Floors (F1-F13)."""
+    return json.dumps(
+        {
+            "F1": "Amanah (Reversibility) - All actions must be reversible or reparable.",
+            "F2": "Truth (Accuracy) - Prioritize factual grounding; cite sources.",
+            "F3": "Tri-Witness (Consensus) - Decisions require Theory, Constitution, and Manifesto agreement.",
+            "F4": "Clarity (Entropy Reduction) - Responses must reduce confusion (delta S <= 0).",
+            "F5": "Peace^2 (Non-Destruction) - Exponential penalty for destruction of value/trust.",
+            "F6": "Empathy (RASA) - Active listening: Receive, Appreciate, Summarize, Ask.",
+            "F7": "Humility (Uncertainty) - Maintain epistemic uncertainty within [0.03, 0.05].",
+            "F8": "Genius (Systemic Health) - Maintain G >= 0.80 across A, P, X, E dials.",
+            "F9": "Ethics (Anti-Poison) - Dark genius (C_dark) must remain below 0.30.",
+            "F10": "Conscience (Identity) - No false consciousness claims; maintain Lab-Shaped Identity.",
+            "F11": "Auditability (Transparency) - Immutable, tamper-evident logs for all decisions.",
+            "F12": "Resilience (Graceful Failure) - Degrade functionality safely; never crash.",
+            "F13": "Adaptability (Safe Evolution) - Governed evolution via W^3 consensus and tests.",
+        },
+        indent=2,
+    )
+
+
+@mcp.resource("wealth://governance/harness-doctrines")
+def get_harness_doctrines() -> str:
+    """The 9-Harness Constraint Architecture for WEALTH power containment."""
+    return json.dumps(
+        {
+            "1_Identity": "Bind power to accountable identity and chain continuity. No seal, no allocation.",
+            "2_Reality": "Ground decisions in physical data provenance. No hallucination.",
+            "3_Epistemic": "Prevent scalar illusions and correlated bias. P10/P50/P90 thinking mandatory.",
+            "4_Entropy": "Detect hidden fragility and noise in cash flows. Stochastic stress-testing.",
+            "5_Survival": "Ensure metabolic liquidity and solvency under stress (DSCR/Flow).",
+            "6_Constitutional": "Bind allocation to F1-F13 floors. 888_HOLD for irreversible harm.",
+            "7_Efficiency": "Resource discipline; capital must earn its survival (PI >= 1.0).",
+            "8_Coordination": "Multi-agent stability; Nash-equilibrium and Core-feasibility checks.",
+            "9_Civilization": "Long-horizon planetary survival and energy budget alignment.",
+        },
+        indent=2,
+    )
+
+
+@mcp.resource("wealth://topology/families")
+def get_sovereign_families() -> str:
+    """The 6 Sovereign Families of the WEALTH v2 Lattice."""
+    return json.dumps(
+        {
+            "SENSE": "External reality ingestion and environmental observation (Stage 100).",
+            "MIND": "Uncertainty modeling, Monte Carlo, and epistemic validation (Stage 200).",
+            "SURVIVAL": "Solvency, leverage gating, and metabolic triage (Stage 300).",
+            "REASON": "Capital discipline, NPV/IRR optimization, and yield analysis (Stage 400).",
+            "JUDGE": "Constitutional gating, policy auditing, and 888_HOLD (Stage 888).",
+            "VAULT": "Immutable anchoring, receipt hashing, and ledger sealing (Stage 999).",
+        },
+        indent=2,
+    )
+
+
+@mcp.resource("wealth://topology/scales")
+def get_capital_scales() -> str:
+    """Definitions of the 8 Capital Scales used in the WEALTH Engine."""
+    return json.dumps(
+        {
+            "personal": "Individual resource allocation and life-horizon planning.",
+            "household": "Multi-individual metabolic unit (family/home) stability.",
+            "sme": "Small/Medium Enterprise; metabolic local node growth.",
+            "enterprise": "Large-scale organizational resource optimization.",
+            "national": "Macro-scale resource policy and sovereign allocation.",
+            "crisis": "Extreme stress/survival state (war, disaster, famine).",
+            "civilization": "Planetary/Species-horizon survival and stewardship.",
+            "agentic": "Autonomous agent resource coordination and budget gating.",
+        },
+        indent=2,
+    )
+
+
+@mcp.resource("wealth://epistemic/uncertainty-matrix")
+def get_epistemic_matrix() -> str:
+    """Key metrics for Epistemic Integrity and Humility."""
+    return json.dumps(
+        {
+            "omega_0": "Raw uncertainty coefficient (0.0 = total certainty, 1.0 = total chaos).",
+            "kappa_r": "Humility score (derived from RASA and Truth consistency).",
+            "humility_band": "The habitability range [0.03, 0.05]. Outside this is Arrogance or Paralysis.",
+            "epistemic_tiers": ["CLAIM", "PLAUSIBLE", "HYPOTHESIS", "ESTIMATE", "VERIFIED"],
+        },
+        indent=2,
+    )
+
+
 @mcp.tool(name="wealth_evoi_compute")
 async def wealth_evoi_compute(
     prior_pos: float,
@@ -3063,6 +3267,50 @@ async def wealth_init_tool(
             verdict="VOID",
         )
 
+
+# ============================================================
+# Register v2 aliases (non-breaking Phase 1 Migration)
+# ============================================================
+_engine = HarnessEngine()
+_v1_to_func = {
+    "wealth_ingest_fetch": ingest_fetch,
+    "wealth_ingest_snapshot": ingest_snapshot,
+    "wealth_ingest_reconcile": ingest_reconcile,
+    "wealth_ingest_health": ingest_health,
+    "wealth_ingest_vintage": ingest_vintage,
+    "wealth_ingest_sources": ingest_sources,
+    "wealth_emv_risk": emv_risk,
+    "wealth_monte_carlo_forecast": monte_carlo_forecast,
+    "wealth_correlation_guard_check": wealth_correlation_guard_check,
+    "wealth_evoi_compute": wealth_evoi_compute,
+    "wealth_evoi_monte_carlo": wealth_evoi_monte_carlo,
+    "wealth_schema_validate": wealth_schema_validate,
+    "wealth_dscr_leverage": dscr_leverage,
+    "wealth_networth_state": networth_state,
+    "wealth_growth_velocity": growth_velocity,
+    "wealth_cashflow_flow": cashflow_flow,
+    "wealth_crisis_triage": crisis_triage,
+    "wealth_civilization_stewardship": civilization_stewardship,
+    "wealth_npv_reward": npv_reward,
+    "wealth_irr_yield": irr_yield,
+    "wealth_pi_efficiency": pi_efficiency,
+    "wealth_payback_time": payback_time,
+    "wealth_coordination_equilibrium": coordination_equilibrium,
+    "wealth_game_theory_solve": game_theory_solve,
+    "wealth_personal_decision": personal_decision,
+    "wealth_agent_budget": agent_budget,
+    "wealth_score_kernel": wealth_score_kernel,
+    "wealth_check_floors": check_floors_tool,
+    "wealth_policy_audit": policy_audit,
+    "wealth_audit_entropy": audit_entropy,
+    "wealth_init": wealth_init_tool,
+    "wealth_record_transaction": record_transaction_tool,
+    "wealth_snapshot_portfolio": snapshot_portfolio_tool,
+}
+
+for v2_name, v1_name in _engine.V2_CANONICAL_MAP.items():
+    if v1_name in _v1_to_func:
+        mcp.tool(name=v2_name)(_v1_to_func[v1_name])
 
 if __name__ == "__main__":
     mcp.run()
