@@ -413,12 +413,22 @@ class HarnessEngine:
             violations.append("SYSTEMIC_INSTABILITY_FAILURE")
 
         overall_verdict = "PASS"
-        if any(h["status"] == "SNAPPED" for h in harness_status.values()) or systemic_stress > 2.0:
+        recommended_verdict = "SEAL"
+        
+        has_snapped = any(h["status"] == "SNAPPED" for h in harness_status.values())
+        has_stressed = any(h["status"] == "STRESSED" for h in harness_status.values())
+        
+        if has_snapped or systemic_stress > 2.0:
             overall_verdict = "FAIL"
+            recommended_verdict = "VOID"
             self.alarm_system.trigger(tool_name, "Systemic", {"violations": violations, "systemic_stress": systemic_stress})
-
+        elif has_stressed or systemic_stress > 1.2:
+            overall_verdict = "PASS" # Keep PASS for backward compatibility
+            recommended_verdict = "SABAR"
+        
         return {
             "verdict": overall_verdict,
+            "recommended_verdict": recommended_verdict,
             "harness_status": harness_status,
             "violations": violations,
             "systemic_stress": round(systemic_stress, 4),
@@ -590,11 +600,12 @@ def weakest_epistemic(items: List[dict], default_tag: str = "CLAIM") -> str:
     return EPISTEMIC_ORDER[weakest_index]
 
 
-def derive_verdict(flags: List[str], default_verdict: str = "SEAL", high_stress: bool = False) -> str:
-    if any(flag in INVALID_FLAGS for flag in flags):
+def derive_verdict(flags: List[str], default_verdict: str = "SEAL", high_stress: bool = False, recommended: str = "SEAL") -> str:
+    if recommended == "VOID" or any(flag in INVALID_FLAGS for flag in flags):
         return "VOID"
-    if high_stress or any(flag in HOLD_FLAGS for flag in flags):
-        # High stress or critical holds force a non-APPROVE state
+    if recommended == "SABAR" or high_stress:
+        return "SABAR"
+    if any(flag in HOLD_FLAGS for flag in flags):
         return "888-HOLD"
     if any(flag in QUALIFY_FLAGS for flag in flags):
         return "QUALIFY"
@@ -900,7 +911,7 @@ def create_envelope(
     # Stress (0.7-0.9) or systemic instability forces 888-HOLD/QUALIFY
     is_high_stress = systemic_stress > 1.5 or any(h["stress"] >= 0.7 for h in audit_res["harness_status"].values())
     
-    derived_governance = verdict or derive_verdict(flags, high_stress=is_high_stress)
+    derived_governance = verdict or derive_verdict(flags, high_stress=is_high_stress, recommended=audit_res["recommended_verdict"])
     derived_allocation = derive_allocation_signal(flags, primary, tool, scale_mode)
     
     if is_high_stress and derived_allocation == "ACCEPT":
@@ -910,7 +921,7 @@ def create_envelope(
         "ERROR"
         if derived_governance == "VOID" or audit_res["verdict"] == "FAIL"
         else "WARNING"
-        if derived_governance in ("QUALIFY", "888-HOLD") or is_high_stress
+        if derived_governance in ("QUALIFY", "888-HOLD", "SABAR") or is_high_stress
         else "VALID"
     )
     derived_epistemic = infer_epistemic(flags, epistemic)
