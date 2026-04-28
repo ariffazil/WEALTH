@@ -3313,4 +3313,5 @@ for v2_name, v1_name in _engine.V2_CANONICAL_MAP.items():
         mcp.tool(name=v2_name)(_v1_to_func[v1_name])
 
 if __name__ == "__main__":
-    mcp.run()
+    # Hardened for production container deployments
+    mcp.run(transport="http", host="0.0.0.0", port=8000, path="/mcp", show_banner=False, log_level="info")
