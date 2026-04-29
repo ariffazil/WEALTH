@@ -9,6 +9,12 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+# Ensure sibling directories are in path BEFORE importing internal modules
+# This is needed because running 'python internal/monolith.py' doesn't add /app to sys.path
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if base_dir not in sys.path:
+    sys.path.append(base_dir)
+
 try:
     from internal.invariants import get_g_score
 
@@ -36,11 +42,6 @@ __version__ = "2026.04.29"
 """WEALTH v2026.04.29 - Sovereign Pipeline OS with Expanded Resource Lattice."""
 
 LAST_RECEIPT_HASH = "0" * 64
-
-# Ensure sibling arifOS and host directories are in path
-base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if base_dir not in sys.path:
-    sys.path.append(base_dir)
 
 # Legacy arifOS path support
 arifos_path = os.path.join(base_dir, "arifOS")
