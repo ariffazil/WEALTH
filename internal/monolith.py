@@ -1018,6 +1018,8 @@ def create_envelope(
     g_score_params = {**primary, "violations": flags, "scale_mode": scale_mode}
     if secondary:
         g_score_params.update(secondary)
+    if governance_args:
+        g_score_params.update(governance_args)
     
     g_data = get_g_score(g_score_params)
         

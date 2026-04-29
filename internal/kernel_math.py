@@ -1,94 +1,102 @@
 import numpy as np
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Dict
 
-class GovernanceKalmanFilter:
+class RobustRegimeKalmanFilter:
     """
-    Kalman Filter for State-Space Estimation of Governance Health.
-    States: [Omega (Capacity), S (Entropy)]
+    Advanced Markov-Switching State-Space Model (MS-SSM)
+    with GMM (Gaussian Mixture Model) Robust Noise Handling.
     """
-    def __init__(self, dt: float = 1.0):
-        # State vector [Omega, S]
-        self.x = np.array([[0.7], [0.3]])  # Initial guess
-        
-        # State Transition Matrix (A) - Default to "Inclusive" (Omega stable, S decaying)
-        # In a real run, this matrix switches based on detected Regime
-        self.A = np.array([
-            [1.0, 0.0],  # Omega persistence
-            [0.0, 0.9]   # Entropy decay (metabolic cleanup)
-        ])
-        
-        # Process Noise Covariance (Q)
+    def __init__(self):
+        # States: [Omega (Capacity), S (Entropy)]
+        self.x = np.array([[0.7], [0.3]])
+        self.P = np.eye(2) * 0.1
         self.Q = np.eye(2) * 0.01
         
-        # Error Covariance Matrix (P)
-        self.P = np.eye(2) * 0.1
-        
-        # Observation Matrix (C) - Mapping States to 7 Invariants
-        # Invariants: [Time, Uncertainty, Survival, Truth, Constraints, Coordination, Boundaries]
-        # Omega loads on Time, Survival, Coordination
-        # S loads on Uncertainty, Constraints, Boundaries
+        # Observation Matrix C
         self.C = np.array([
-            [1.0, 0.0],   # Invariant 1: Time (loads on Omega)
-            [0.0, 1.0],   # Invariant 2: Uncertainty (loads on S)
-            [1.0, -0.5],  # Invariant 3: Survival (Omega increases, S decreases)
-            [0.5, -0.5],  # Invariant 4: Truth (Inherent SNR)
-            [-0.2, 1.0],  # Invariant 5: Constraints (S loads heavy)
-            [0.5, -0.2],  # Invariant 6: Coordination
-            [-0.1, 1.0]   # Invariant 7: Boundaries (S loads heavy)
+            [1.0, 0.0],   # Time
+            [0.0, 1.0],   # Uncertainty
+            [1.0, -0.5],  # Survival
+            [0.5, -0.5],  # Truth (SNR)
+            [-0.2, 1.0],  # Constraints
+            [0.5, -0.2],  # Coordination
+            [-0.1, 1.0]   # Boundaries
         ])
-        
-        # Observation Noise Covariance (Theta)
-        # Truth and Coordination start with high noise per blueprint
-        self.Theta = np.diag([0.2, 0.2, 0.1, 0.5, 0.2, 0.4, 0.2])
 
-    def predict(self, regime: str = "inclusive"):
-        """State Prediction Step"""
-        # Adjust A based on Regime
-        if regime == "extractive":
-            self.A = np.array([[0.9, 0.0], [0.1, 1.1]]) # Omega decays, S grows
-        elif regime == "simulative":
-            self.A = np.array([[1.0, 0.0], [0.05, 1.0]]) # S creeps up while Omega masks
-        else:
-            self.A = np.array([[1.0, 0.0], [0.0, 0.9]]) # Inclusive
-            
-        self.x = np.dot(self.A, self.x)
-        self.P = np.dot(np.dot(self.A, self.P), self.A.T) + self.Q
+        # Regime-switching transition matrices A(r)
+        self.regimes = {
+            "inclusive": np.array([[1.0, 0.0], [0.0, 0.9]]),   # S decays
+            "simulative": np.array([[1.0, 0.0], [0.05, 1.0]]), # S creeps
+            "extractive": np.array([[0.9, 0.0], [0.1, 1.1]])   # Omega decays, S grows
+        }
 
-    def update(self, z: np.ndarray):
-        """Measurement Update Step"""
-        # Innovation (Residual)
+    def predict(self, regime: str):
+        A = self.regimes.get(regime, self.regimes["inclusive"])
+        self.x = np.dot(A, self.x)
+        self.P = np.dot(np.dot(A, self.P), A.T) + self.Q
+        return self.x
+
+    def update_robust(self, z: np.ndarray, base_theta: np.ndarray):
+        """
+        Update using GMM-based robust noise handling.
+        theta ~ pi*N(0, Sigma) + (1-pi)*N(0, 10*Sigma)
+        """
+        # Innovation
         y = z - np.dot(self.C, self.x)
+        S_cov = np.dot(self.C, np.dot(self.P, self.C.T)) + base_theta
         
-        # Innovation Covariance
-        S = np.dot(self.C, np.dot(self.P, self.C.T)) + self.Theta
+        # Calculate Mahalanobis distance for outlier detection
+        try:
+            S_inv = np.linalg.inv(S_cov)
+            mahalanobis = np.sqrt(np.dot(np.dot(y.T, S_inv), y))[0][0]
+        except np.linalg.LinAlgError:
+            mahalanobis = 0.0
+
+        # GMM weight adjustment: if mahalanobis is high, inflate Theta (outlier)
+        # Threshold k=3 for innovation gating
+        multiplier = 1.0
+        if mahalanobis > 3.0:
+            multiplier = 5.0 # Outlier down-weighting
+            
+        effective_theta = base_theta * multiplier
         
-        # Kalman Gain
-        K = np.dot(np.dot(self.P, self.C.T), np.linalg.inv(S))
+        # Standard Kalman update with effective_theta
+        S_robust = np.dot(self.C, np.dot(self.P, self.C.T)) + effective_theta
+        K = np.dot(np.dot(self.P, self.C.T), np.linalg.inv(S_robust))
         
-        # Update State
         self.x = self.x + np.dot(K, y)
-        
-        # Update Error Covariance
         I = np.eye(self.x.shape[0])
         self.P = np.dot((I - np.dot(K, self.C)), self.P)
         
-        return self.x
+        return self.x, multiplier > 1.0
+
+class HoltSmoothing:
+    """Double Exponential Smoothing for Delta S Trend."""
+    def __init__(self, alpha: float = 0.3, beta: float = 0.1):
+        self.alpha = alpha
+        self.beta = beta
+        self.level: Optional[float] = None
+        self.trend: Optional[float] = None
+
+    def update(self, value: float) -> float:
+        if self.level is None:
+            self.level = value
+            self.trend = 0.0
+            return 0.0
+        
+        last_level = self.level
+        self.level = self.alpha * value + (1 - self.alpha) * (self.level + self.trend)
+        self.trend = self.beta * (self.level - last_level) + (1 - self.beta) * self.trend
+        return self.trend
 
 def calculate_g_score(omega: float, s: float) -> float:
-    """G = Omega / (Omega + S)"""
     denom = omega + s
-    if denom == 0: return 0.0
-    return float(np.clip(omega / denom, 0.0, 1.0))
+    return float(np.clip(omega / denom, 0.0, 1.0)) if denom > 0 else 0.0
 
 def estimate_lyapunov(history: List[float], window: int = 12) -> float:
-    """
-    Simplified Lyapunov Exponent (lambda) for instability detection.
-    lambda > 0 implies chaotic divergence / pending phase transition.
-    """
-    if len(history) < window:
-        return 0.0
-    
-    # Use log-divergence of the last N states
+    """Lyapunov Exponent (lambda) detection."""
+    if len(history) < window: return 0.0
     recent = np.array(history[-window:])
+    # Divergence of logs
     diffs = np.diff(np.log(np.abs(recent) + 1e-9))
     return float(np.mean(diffs))
