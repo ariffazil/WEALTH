@@ -246,11 +246,15 @@ class HarnessEngine:
         """Compute hash of the WEALTH_HARNESS.md file."""
         if cls._DOCTRINE_HASH is None:
             try:
-                # Resolve path relative to this file
                 base_dir = os.path.dirname(__file__)
-                path = os.path.join(base_dir, "canon", "WEALTH_HARNESS.md")
-                if os.path.exists(path):
-                    with open(path, "r", encoding="utf-8") as f:
+                base_name = os.path.basename(base_dir)
+                if base_name == "internal":
+                    harness_path = os.path.join(base_dir, "..", "canon", "WEALTH_HARNESS.md")
+                else:
+                    harness_path = os.path.join(base_dir, "canon", "WEALTH_HARNESS.md")
+                harness_path = os.path.normpath(harness_path)
+                if os.path.exists(harness_path):
+                    with open(harness_path, "r", encoding="utf-8") as f:
                         cls._DOCTRINE_HASH = hashlib.sha256(f.read().encode()).hexdigest()
                 else:
                     cls._DOCTRINE_HASH = "MISSING_DOCTRINE_FILE"
@@ -383,6 +387,7 @@ class HarnessEngine:
         "wealth_survival_civilization": "wealth_civilization_stewardship",
         # REASON (400)
         "wealth_reason_npv": "wealth_npv_reward",
+        "wealth_npv_reward": "wealth_npv_reward",
         "wealth_reason_irr": "wealth_irr_yield",
         "wealth_reason_pi": "wealth_pi_efficiency",
         "wealth_reason_payback": "wealth_payback_time",
@@ -3374,9 +3379,16 @@ async def wealth_init_tool(
 
     sid = session_id or f"wealth-session-{_uuid.uuid4().hex[:12]}"
 
+    # Try arifOS vault first, fall back to file-based anchor
+    import hashlib
+    import json as _json
+
+    vault_ok = False
+    chain_hash = ""
+    ledger_id = ""
+
     try:
         from arifosmcp.runtime.vault_postgres import seal_to_vault
-
         res = await seal_to_vault(
             event_type="WEALTH_SESSION_INIT",
             session_id=sid,
@@ -3386,29 +3398,59 @@ async def wealth_init_tool(
             payload={"intent": intent or "economic-analysis", "source": "WEALTH-MCP"},
             risk_tier="low",
         )
+        chain_hash = getattr(res, "chain_hash", "")
+        ledger_id = getattr(res, "ledger_id", "")
+        vault_ok = True
+    except Exception:
+        # Fallback: write to local JSONL vault
+        try:
+            vault_dir = "/app/data"
+            os.makedirs(vault_dir, exist_ok=True)
+            vault_path = os.path.join(vault_dir, "vault999.jsonl")
+            entry = {
+                "event_type": "WEALTH_SESSION_INIT",
+                "session_id": sid,
+                "actor_id": actor_id,
+                "stage": "000_INIT",
+                "verdict": "ACTIVE",
+                "payload": {"intent": intent or "economic-analysis", "source": "WEALTH-MCP"},
+                "risk_tier": "low",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+            entry["_hash"] = hashlib.sha256(
+                _json.dumps(entry, sort_keys=True).encode()
+            ).hexdigest()
+            with open(vault_path, "a") as f:
+                f.write(_json.dumps(entry) + "\n")
+            chain_hash = entry["_hash"]
+            ledger_id = f"local-vault-{sid}"
+            vault_ok = True
+        except Exception:
+            pass
 
+    if vault_ok:
         return create_envelope(
             "wealth_init",
             "Vault",
             {
                 "session_id": sid,
                 "stage": "000_INIT",
-                "chain_hash": res.chain_hash if hasattr(res, "chain_hash") else "",
-                "vault_id": res.ledger_id if hasattr(res, "ledger_id") else "",
+                "chain_hash": chain_hash,
+                "vault_id": ledger_id,
             },
             {},
             [],
             ["WEALTH session anchored to VAULT999 chain. Ready for analysis."],
             verdict="SEAL",
         )
-    except Exception as e:
+    else:
         return create_envelope(
             "wealth_init",
             "Vault",
             {},
-            {"error": str(e)},
+            {"error": "Vault unavailable: arifOS not installed and local write failed"},
             [],
-            ["Vault anchor failed."],
+            ["Vault anchor failed — arifOS not mounted in this container"],
             verdict="VOID",
         )
 
@@ -3515,7 +3557,13 @@ def wealth_present_expect(
     scale_mode: str = "enterprise",
 ) -> Any:
     """Probability-Weighted Expectation (Present) — EMV. [Expect Dimension]"""
-    return _normalize_primitive_envelope(emv_risk(scenarios, scale_mode), "wealth_present_expect")
+    normalized = []
+    for s in scenarios:
+        normalized.append({
+            "probability": s.get("probability", s.get("prob", 0)),
+            "outcome": s.get("outcome", s.get("return", s.get("cash_flow", 0))),
+        })
+    return _normalize_primitive_envelope(emv_risk(normalized, scale_mode), "wealth_present_expect")
 
 
 @mcp.tool()
@@ -3914,5 +3962,45 @@ def wealth_future_steward(
     )
 
 if __name__ == "__main__":
-    # Hardened for production container deployments
+    # Register v2 legacy aliases (non-breaking Phase 1 Migration)
+    engine = HarnessEngine()
+    _v1_funcs = {
+        "wealth_ingest_fetch": ingest_fetch,
+        "wealth_ingest_snapshot": ingest_snapshot,
+        "wealth_ingest_reconcile": ingest_reconcile,
+        "wealth_ingest_health": ingest_health,
+        "wealth_ingest_vintage": ingest_vintage,
+        "wealth_ingest_sources": ingest_sources,
+        "wealth_emv_risk": emv_risk,
+        "wealth_monte_carlo_forecast": monte_carlo_forecast,
+        "wealth_correlation_guard_check": wealth_correlation_guard_check,
+        "wealth_evoi_compute": wealth_evoi_compute,
+        "wealth_evoi_monte_carlo": wealth_evoi_monte_carlo,
+        "wealth_schema_validate": wealth_schema_validate,
+        "wealth_dscr_leverage": dscr_leverage,
+        "wealth_networth_state": networth_state,
+        "wealth_growth_velocity": growth_velocity,
+        "wealth_cashflow_flow": cashflow_flow,
+        "wealth_crisis_triage": crisis_triage,
+        "wealth_civilization_stewardship": civilization_stewardship,
+        "wealth_npv_reward": npv_reward,
+        "wealth_irr_yield": irr_yield,
+        "wealth_pi_efficiency": pi_efficiency,
+        "wealth_payback_time": payback_time,
+        "wealth_coordination_equilibrium": coordination_equilibrium,
+        "wealth_game_theory_solve": game_theory_solve,
+        "wealth_personal_decision": personal_decision,
+        "wealth_agent_budget": agent_budget,
+        "wealth_score_kernel": wealth_score_kernel,
+        "wealth_check_floors": check_floors_tool,
+        "wealth_policy_audit": policy_audit,
+        "wealth_audit_entropy": audit_entropy,
+        "wealth_init": wealth_init_tool,
+        "wealth_record_transaction": record_transaction_tool,
+        "wealth_snapshot_portfolio": snapshot_portfolio_tool,
+    }
+    for v2_name, v1_name in engine.V2_CANONICAL_MAP.items():
+        if v1_name in _v1_funcs:
+            mcp.tool(name=v2_name)(_v1_funcs[v1_name])
+
     mcp.run(transport="http", host="0.0.0.0", port=8000, path="/mcp", show_banner=False, log_level="info")
