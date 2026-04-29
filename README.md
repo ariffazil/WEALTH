@@ -38,6 +38,8 @@ WEALTH operates across **11 capital scales** and **7 capital types**:
 | **Boot wrapper** | `server.py` | Thin compat wrapper | Points to canonical kernel |
 | **Civilizational demo** | `mcp/server.py` | 6 tools | Markets, energy, food security domains |
 
+**Packaging rule:** `internal/monolith.py` is the canonical kernel, `server.py` exists to preserve external boot paths, and `mcp/server.py` is a separate cross-domain demo surface.
+
 ### Sovereign Pipeline Families (v2 Canonical)
 
 | Family | Stage | Purpose | Primary Tools |
@@ -140,8 +142,9 @@ Tracks `model_lineage_hash` across all prospects. If ≥3 prospects share the sa
 ```bash
 # Local MCP server (streamable-http default)
 python internal/monolith.py
+
 # Or use the backward-compat wrapper:
-# python server.py
+python server.py
 
 # Civilizational demo server
 python mcp/server.py
@@ -155,7 +158,10 @@ curl -X POST http://localhost:8000/mcp \
   -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test"}}}'
 
-# Run tests
+# Run Python regression tests
+pytest tests/ -q
+
+# Run Node tests (if present)
 npm test
 ```
 
@@ -200,7 +206,7 @@ WEALTH/
 ├── capitalx/              ← CapitalX pricing engine design
 ├── domains/               ← Market, energy, food domain adapters
 ├── wiki/                  ← Architecture documentation
-└── tests/                 ← Node test suite
+└── tests/                 ← Python and Node-adjacent regression coverage
 ```
 
 ---

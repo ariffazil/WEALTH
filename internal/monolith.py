@@ -9,7 +9,28 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from .invariants import get_g_score
+try:
+    from .invariants import get_g_score
+
+    G_SCORE_AVAILABLE = True
+    G_SCORE_IMPORT_ERROR = None
+except Exception as exc:
+    G_SCORE_AVAILABLE = False
+    G_SCORE_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
+
+    def get_g_score(params: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "g_score": 0.0,
+            "delta_s": 0.0,
+            "lyapunov_lambda": 0.0,
+            "omega_capacity": 0.0,
+            "entropy_s": 1.0,
+            "verdict": "UNAVAILABLE",
+            "regime": "unavailable",
+            "is_outlier": False,
+            "boundary_stress": params.get("resource_utilization", 0.8),
+            "engine_error": G_SCORE_IMPORT_ERROR,
+        }
 
 __version__ = "2026.04.29"
 """WEALTH v2026.04.29 - Sovereign Pipeline OS with Expanded Resource Lattice."""
@@ -1022,6 +1043,17 @@ def create_envelope(
         g_score_params.update(governance_args)
     
     g_data = get_g_score(g_score_params)
+    if g_data.get("engine_error"):
+        failure_flag = "G_SCORE_ENGINE_UNAVAILABLE"
+        if failure_flag not in flags:
+            flags.append(failure_flag)
+        if failure_flag not in failure_flags:
+            failure_flags.append(failure_flag)
+        if status == "PASS":
+            status = "HOLD"
+            next_safe_action = "Restore WEALTH thermodynamic dependencies before allocation."
+        if engine_status == "VALID":
+            engine_status = "WARNING"
         
     envelope = {
         "mcp": "WEALTH",

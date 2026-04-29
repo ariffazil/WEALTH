@@ -4,14 +4,14 @@
   "name": "wealth",
   "display_name": "WEALTH — Capital Intelligence",
   "version": "1.6.0",
-  "spec_version": "2026-04-17",
-  "description": "WEALTH is the capital-intelligence lane in the arifOS organism. This repository contains the canonical packaged valuation kernel in server.py and a secondary civilizational FastMCP demo surface in mcp/server.py.",
-  "homepage": "https://github.com/ariffazil/WEALTH",
+  "spec_version": "2026-04-29",
+  "description": "WEALTH is the constitutional capital allocation layer in the arifOS organism. This repository exposes the canonical valuation kernel in internal/monolith.py through the compatibility wrapper server.py, plus a secondary civilizational demo surface in mcp/server.py.",
+  "homepage": "https://github.com/ariffazil/wealth",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ariffazil/WEALTH"
+    "url": "https://github.com/ariffazil/wealth"
   },
-  "license": "AGPL-3.0",
+  "license": "Apache-2.0",
   "author": {
     "name": "Arif Fazil",
     "url": "https://arif-fazil.com"
@@ -69,6 +69,6 @@
         "resources": 3
       }
     },
-    "last_updated": "2026-04-17"
+    "last_updated": "2026-04-29"
   }
 }

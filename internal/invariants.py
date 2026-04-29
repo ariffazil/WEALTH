@@ -5,8 +5,9 @@ Chronological Truth: 2026.04.29
 Finalized G-Score Instrumentation (v1.0 Blueprint).
 """
 
+from typing import Any, Dict, List, Tuple
+
 import numpy as np
-from typing import Dict, Any, List, Optional
 from .kernel_math import RobustRegimeKalmanFilter, calculate_g_score, estimate_lyapunov, HoltSmoothing
 
 class GScoreEngine:
