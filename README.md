@@ -49,22 +49,31 @@ WEALTH operates across **11 capital scales** and **7 capital types**:
 | **JUDGE** | 888 | Constitutional gating & audit | `wealth_judge_floors`, `wealth_judge_policy` |
 | **VAULT** | 999 | Immutable anchoring & ledger | `wealth_vault_init`, `wealth_vault_seal` |
 
-### MCP Server Tool Inventory (39 Exposed Tools)
+### MCP Server Tool Inventory (13 Sovereign Primitives + 66 Legacy Aliases)
 
-**From `internal/monolith.py` (33 tools):**
+**V3 Canonical Primitives (`wealth_<verb>_<noun>`):**
 
-All tools follow the `wealth_[family]_[subject]` grammar. Legacy v1 names are supported via an Alias Layer.
+These 13 tools subsume all 66 legacy endpoints. Each accepts a `mode` parameter to dispatch to the specific sub-operation.
 
-- **REASON (Efficiency):** `wealth_reason_npv`, `wealth_reason_irr`, `wealth_reason_pi`, `wealth_reason_payback`
-- **MIND (Risk/Model):** `wealth_mind_forecast`, `wealth_mind_risk`, `wealth_mind_entropy`, `wealth_mind_evoi`, `wealth_mind_monte_carlo`, `wealth_mind_correlation`, `wealth_mind_validate`
-- **SURVIVAL (Solvency):** `wealth_survival_dscr`, `wealth_survival_flow`, `wealth_survival_networth`, `wealth_survival_growth`, `wealth_survival_triage`
-- **SENSE (Reality):** `wealth_sense_fetch`, `wealth_sense_snapshot`, `wealth_sense_sources`, `wealth_sense_health`, `wealth_sense_vintage`, `wealth_sense_reconcile`
-- **JUDGE (Governance):** `wealth_judge_floors`, `wealth_judge_policy`, `wealth_judge_score`
-- **VAULT (Ledger):** `wealth_vault_init`, `wealth_vault_record`, `wealth_vault_snapshot`
-- **SURVIVAL (Civ):** `wealth_survival_stewardship`, `wealth_reason_agent_budget`, `wealth_reason_personal_decision`
-- **COORDINATION:** `wealth_coordination_equilibrium`, `wealth_coordination_game_solve`
+| Primitive | Modes | Dimension | Temporal Axis |
+| :--- | :--- | :--- | :--- |
+| `wealth_future_value` | `npv`, `irr`, `pi`, `payback` | Time-Discounted Projection | **Future** |
+| `wealth_present_expect` | — | Probability-Weighted Expectation (EMV) | **Present** |
+| `wealth_future_simulate` | — | Stochastic Projection (Monte Carlo) | **Future** |
+| `wealth_info_value` | `evoi`, `evoi_mc` | Expected Value of Information | **Future** |
+| `wealth_truth_validate` | `schema`, `correlation`, `entropy` | Epistemic Integrity | **Present** |
+| `wealth_survival_liquidity` | `cashflow`, `velocity`, `triage` | Survival Liquidity | **Present** |
+| `wealth_survival_leverage` | `dscr`, `networth` | Structural Load + Balance Sheet | **Present** |
+| `wealth_rule_enforce` | `floors`, `policy` | Governance Constraint (F1–F13) | **Present** |
+| `wealth_allocate_optimize` | `kernel`, `personal`, `agent` | Capital Allocation Brain | **Future** |
+| `wealth_game_coordinate` | `equilibrium`, `game` | Multi-Agent Dynamics | **Future** |
+| `wealth_sense_ingest` | `fetch`, `snapshot`, `sources`, `health`, `vintage`, `reconcile` | Reality Intake | **Cross-temporal** |
+| `wealth_past_record` | `init`, `transaction`, `portfolio` | Memory & Audit Trail | **Past** |
+| `wealth_future_steward` | — | Long-Horizon Planetary Boundaries | **Future** |
 
-**From `mcp/server.py` (6 tools):**
+**Legacy v1/v2 aliases (66 names)** are preserved for backward compatibility and map to the same underlying functions.
+
+**From `mcp/server.py` (6 cross-domain tools):**
 
 - `wealth_evaluate_prospect` — GEOX prospect economics → WEALTH valuation
 - `markets_analyze_ticker` — Market fundamentals analysis
@@ -178,7 +187,7 @@ npm test
 
 ```text
 WEALTH/
-├── internal/monolith.py   ← Canonical MCP kernel (33 exposed tools)
+├── internal/monolith.py   ← Canonical MCP kernel (13 primitives + 66 legacy aliases)
 ├── server.py              ← Backward-compat wrapper (points to canonical)
 ├── mcp/server.py          ← Civilizational demo surface (6 tools)
 ├── host/

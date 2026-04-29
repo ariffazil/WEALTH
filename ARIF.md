@@ -37,7 +37,7 @@
 - TIMESTAMP: 2026-04-23 15:30 UTC+8
 - CLERK_ID: arifOS_bot / HUMAN-ARIF
 - SEAL_SUMMARY:
-  - WEALTH README built from scratch: 11 exposed MCP tools, 62 internal functions, 8 tool families
+  - WEALTH README built from scratch: 13 sovereign primitives, 66 legacy aliases, 62 internal functions, 8 tool families
   - License confirmed Apache 2.0 (commit c69d433)
   - arifOS AGPL confirmed correct — WEALTH Apache 2.0 intentional (commercial capital layer)
   - makcik2 tools NOT pushed — local workspace had server.py with 3051 lines but makcik2 tools were in a blocked local state
