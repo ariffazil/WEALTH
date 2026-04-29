@@ -25,9 +25,6 @@ RUN UV_SKIP_WHEEL_FILENAME_CHECK=1 uv sync --no-dev
 # Copy the rest of the application
 COPY . .
 
-# Install starlette + uvicorn into the venv using uvx
-RUN /uvx pip install --python /app/.venv/bin/python "starlette>=0.40.0" "uvicorn[standard]>=0.30.0"
-
 # Set environment variables
 ENV PATH="/app/.venv/bin:$PATH"
 ENV NODE_ENV=production
