@@ -34,7 +34,7 @@ WEALTH operates across **11 capital scales** and **7 capital types**:
 
 | Surface | File | Tools | Purpose |
 | :--- | :--- | :--- | :--- |
-| **Canonical kernel** | `internal/monolith.py` | 33 async tools + 57 sync functions | Core valuation, risk, crisis, coordination |
+| **Canonical kernel** | `internal/monolith.py` | 13 canonical MCP tools | Core valuation, risk, crisis, coordination |
 | **Boot wrapper** | `server.py` | Thin compat wrapper | Points to canonical kernel |
 | **Civilizational demo** | `mcp/server.py` | 6 tools | Markets, energy, food security domains |
 
@@ -45,17 +45,17 @@ WEALTH operates across **11 capital scales** and **7 capital types**:
 | Family | Stage | Purpose | Primary Tools |
 | :--- | :--- | :--- | :--- |
 | **SENSE** | 100 | Reality ingestion & observation | `wealth_sense_fetch`, `wealth_sense_snapshot` |
-| **MIND** | 200 | Epistemic modeling & Monte Carlo | `wealth_mind_forecast`, `wealth_mind_evoi` |
-| **SURVIVAL** | 300 | Solvency & metabolic triage | `wealth_survival_dscr`, `wealth_survival_flow` |
-| **REASON** | 400 | Capital discipline & optimization | `wealth_reason_npv`, `wealth_reason_irr` |
-| **JUDGE** | 888 | Constitutional gating & audit | `wealth_judge_floors`, `wealth_judge_policy` |
-| **VAULT** | 999 | Immutable anchoring & ledger | `wealth_vault_init`, `wealth_vault_seal` |
+| **MIND** | 200 | Epistemic modeling & Monte Carlo | `wealth_present_expect`, `wealth_future_simulate`, `wealth_info_value`, `wealth_truth_validate` |
+| **SURVIVAL** | 300 | Solvency, leverage, stewardship | `wealth_survival_liquidity`, `wealth_survival_leverage`, `wealth_future_steward` |
+| **REASON** | 400 | Capital discipline & optimization | `wealth_future_value`, `wealth_allocate_optimize`, `wealth_game_coordinate` |
+| **JUDGE** | 888 | Constitutional gating & audit | `wealth_rule_enforce` |
+| **VAULT** | 999 | Immutable anchoring & ledger | `wealth_past_record` |
 
-### MCP Server Tool Inventory (13 Sovereign Primitives + 66 Legacy Aliases)
+### MCP Server Tool Inventory (13 Sovereign Primitives)
 
 **V3 Canonical Primitives (`wealth_<verb>_<noun>`):**
 
-These 13 tools subsume all 66 legacy endpoints. Each accepts a `mode` parameter to dispatch to the specific sub-operation.
+These 13 tools are the only public MCP tools exposed by the canonical WEALTH kernel. Mode-bearing primitives dispatch sub-operations internally.
 
 | Primitive | Modes | Dimension | Temporal Axis |
 | :--- | :--- | :--- | :--- |
@@ -72,8 +72,6 @@ These 13 tools subsume all 66 legacy endpoints. Each accepts a `mode` parameter 
 | `wealth_sense_ingest` | `fetch`, `snapshot`, `sources`, `health`, `vintage`, `reconcile` | Reality Intake | **Cross-temporal** |
 | `wealth_past_record` | `init`, `transaction`, `portfolio` | Memory & Audit Trail | **Past** |
 | `wealth_future_steward` | — | Long-Horizon Planetary Boundaries | **Future** |
-
-**Legacy v1/v2 aliases (66 names)** are preserved for backward compatibility and map to the same underlying functions.
 
 **From `mcp/server.py` (6 cross-domain tools):**
 
@@ -193,7 +191,7 @@ npm test
 
 ```text
 WEALTH/
-├── internal/monolith.py   ← Canonical MCP kernel (13 primitives + 66 legacy aliases)
+├── internal/monolith.py   ← Canonical MCP kernel (13 public primitives)
 ├── server.py              ← Backward-compat wrapper (points to canonical)
 ├── mcp/server.py          ← Civilizational demo surface (6 tools)
 ├── host/

@@ -61,8 +61,8 @@
     "civilizational_entrypoint": "mcp/server.py",
     "runtime_surfaces": {
       "canonical_kernel": {
-        "tools": 33,
-        "resources": 2
+        "tools": 13,
+        "resources": 7
       },
       "civilizational_demo": {
         "tools": 6,

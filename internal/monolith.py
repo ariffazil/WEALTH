@@ -1092,7 +1092,7 @@ def create_envelope(
             "next_safe_action": next_safe_action,
         },
         "primary_metrics": primary,
-        # V1/V2 compatibility aliases. Keep these while legacy aliases remain public.
+        # Historical namespace map for interpreting older receipts and migration-era records.
         "primary_result": primary,
         "governance_verdict": derived_governance,
         "allocation_signal": derived_allocation,
@@ -3430,8 +3430,44 @@ async def wealth_init_tool(
 
 
 # ============================================================
-# V3 Sovereign Primitives (13 tools subsume 66 endpoints)
+# V3 Sovereign Primitives (13 public MCP tools)
 # ============================================================
+
+CANONICAL_TOOL_METADATA = {
+    "wealth_future_value": {"family": "REASON", "stage": "400-REASON", "display": "wealth_future_value"},
+    "wealth_present_expect": {"family": "MIND", "stage": "200-MIND", "display": "wealth_present_expect"},
+    "wealth_future_simulate": {"family": "MIND", "stage": "200-MIND", "display": "wealth_future_simulate"},
+    "wealth_info_value": {"family": "MIND", "stage": "200-MIND", "display": "wealth_info_value"},
+    "wealth_truth_validate": {"family": "MIND", "stage": "200-MIND", "display": "wealth_truth_validate"},
+    "wealth_survival_liquidity": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_survival_liquidity"},
+    "wealth_survival_leverage": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_survival_leverage"},
+    "wealth_rule_enforce": {"family": "JUDGE", "stage": "888-JUDGE", "display": "wealth_rule_enforce"},
+    "wealth_allocate_optimize": {"family": "REASON", "stage": "400-REASON", "display": "wealth_allocate_optimize"},
+    "wealth_game_coordinate": {"family": "REASON", "stage": "400-REASON", "display": "wealth_game_coordinate"},
+    "wealth_sense_ingest": {"family": "SENSE", "stage": "100-SENSE", "display": "wealth_sense_ingest"},
+    "wealth_past_record": {"family": "VAULT", "stage": "999-VAULT", "display": "wealth_past_record"},
+    "wealth_future_steward": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_future_steward"},
+}
+
+
+def _normalize_primitive_envelope(result: Any, canonical_tool: str) -> Any:
+    """Rewrite internal helper labels to the public 13-tool canonical surface."""
+    if not isinstance(result, dict):
+        return result
+
+    metadata = CANONICAL_TOOL_METADATA.get(canonical_tool)
+    if metadata is None:
+        return result
+
+    result["task"] = canonical_tool
+    result["canonical_tool"] = canonical_tool
+
+    secondary_metrics = result.get("secondary_metrics")
+    if isinstance(secondary_metrics, dict):
+        secondary_metrics["display_name"] = metadata["display"]
+        secondary_metrics["family"] = metadata["family"]
+
+    return result
 
 @mcp.tool()
 def wealth_future_value(
@@ -3449,15 +3485,16 @@ def wealth_future_value(
     """Time-Discounted Projection Engine — NPV, IRR, PI, Payback. [Value Dimension]"""
     cash_flows = cash_flows or []
     if mode == "npv":
-        return npv_reward(initial_investment, cash_flows, discount_rate, terminal_value, period_unit, input_epistemic, scale_mode)
+        result = npv_reward(initial_investment, cash_flows, discount_rate, terminal_value, period_unit, input_epistemic, scale_mode)
     elif mode == "irr":
-        return irr_yield(initial_investment, cash_flows, reinvestment_rate, finance_rate, period_unit, discount_rate, scale_mode)
+        result = irr_yield(initial_investment, cash_flows, reinvestment_rate, finance_rate, period_unit, discount_rate, scale_mode)
     elif mode == "pi":
-        return pi_efficiency(initial_investment, cash_flows, discount_rate, terminal_value, scale_mode)
+        result = pi_efficiency(initial_investment, cash_flows, discount_rate, terminal_value, scale_mode)
     elif mode == "payback":
-        return payback_time(initial_investment, cash_flows, discount_rate, period_unit, scale_mode)
+        result = payback_time(initial_investment, cash_flows, discount_rate, period_unit, scale_mode)
     else:
         raise ValueError(f"Unknown mode: {mode}")
+    return _normalize_primitive_envelope(result, "wealth_future_value")
 
 
 @mcp.tool()
@@ -3466,7 +3503,7 @@ def wealth_present_expect(
     scale_mode: str = "enterprise",
 ) -> Any:
     """Probability-Weighted Expectation (Present) — EMV. [Expect Dimension]"""
-    return emv_risk(scenarios, scale_mode)
+    return _normalize_primitive_envelope(emv_risk(scenarios, scale_mode), "wealth_present_expect")
 
 
 @mcp.tool()
@@ -3480,7 +3517,18 @@ def wealth_future_simulate(
     scale_mode: str = "enterprise",
 ) -> Any:
     """Stochastic Projection Engine (Future) — Monte Carlo. [Simulate Dimension]"""
-    return monte_carlo_forecast(initial_commitment, mean_cash_flows, volatilities, discount_rate, simulations, distribution, scale_mode)
+    return _normalize_primitive_envelope(
+        monte_carlo_forecast(
+            initial_commitment,
+            mean_cash_flows,
+            volatilities,
+            discount_rate,
+            simulations,
+            distribution,
+            scale_mode,
+        ),
+        "wealth_future_simulate",
+    )
 
 
 @mcp.tool()
@@ -3503,13 +3551,14 @@ def wealth_survival_liquidity(
     resources = resources or {}
     demands = demands or []
     if mode == "cashflow":
-        return cashflow_flow(income, expenses, liquid_assets, scale_mode)
+        result = cashflow_flow(income, expenses, liquid_assets, scale_mode)
     elif mode == "velocity":
-        return growth_velocity(principal, rate, years, annual_contribution, monthly_burn, scale_mode)
+        result = growth_velocity(principal, rate, years, annual_contribution, monthly_burn, scale_mode)
     elif mode == "triage":
-        return crisis_triage(resources, demands, recovery_horizon_days, scale_mode)
+        result = crisis_triage(resources, demands, recovery_horizon_days, scale_mode)
     else:
         raise ValueError(f"Unknown mode: {mode}")
+    return _normalize_primitive_envelope(result, "wealth_survival_liquidity")
 
 
 @mcp.tool()
@@ -3529,11 +3578,12 @@ def wealth_survival_leverage(
 ) -> Any:
     """Structural Load — DSCR + Balance Sheet. [Leverage Dimension]"""
     if mode == "dscr":
-        return dscr_leverage(ebitda, principal, interest, leases, cfads, debt_service, period_unit, input_epistemic, scale_mode)
+        result = dscr_leverage(ebitda, principal, interest, leases, cfads, debt_service, period_unit, input_epistemic, scale_mode)
     elif mode == "networth":
-        return networth_state(assets, liabilities, scale_mode)
+        result = networth_state(assets, liabilities, scale_mode)
     else:
         raise ValueError(f"Unknown mode: {mode}")
+    return _normalize_primitive_envelope(result, "wealth_survival_leverage")
 
 
 
@@ -3553,11 +3603,28 @@ async def wealth_info_value(
 ) -> Any:
     """Expected Value of Information — EVOI point-estimate and Monte Carlo. [Info Dimension]"""
     if mode == "evoi":
-        return await wealth_evoi_compute(well_cost_musd, p50_value_musd, prior_pos, posterior_pos, prospect_metrics, info_cost_musd, discount_rate, scale_mode)
+        result = await wealth_evoi_compute(
+            well_cost_musd,
+            p50_value_musd,
+            prior_pos,
+            posterior_pos,
+            prospect_metrics,
+            info_cost_musd,
+            discount_rate,
+            scale_mode,
+        )
     elif mode == "evoi_mc":
-        return await wealth_evoi_monte_carlo(prior_pos_samples or [], posterior_pos_samples or [], well_cost_musd, p50_value_musd, info_cost_musd, scale_mode)
+        result = await wealth_evoi_monte_carlo(
+            prior_pos_samples or [],
+            posterior_pos_samples or [],
+            well_cost_musd,
+            p50_value_musd,
+            info_cost_musd,
+            scale_mode,
+        )
     else:
         raise ValueError(f"Unknown mode: {mode}")
+    return _normalize_primitive_envelope(result, "wealth_info_value")
 
 
 @mcp.tool()
@@ -3573,13 +3640,14 @@ async def wealth_truth_validate(
     """Epistemic Integrity — Schema, Correlation, Entropy. [Truth Dimension]"""
     cash_flows = cash_flows or []
     if mode == "schema":
-        return await wealth_schema_validate(prospects or [], scale_mode)
+        result = await wealth_schema_validate(prospects or [], scale_mode)
     elif mode == "correlation":
-        return await wealth_correlation_guard_check(prospects or [], correlation_threshold, scale_mode)
+        result = await wealth_correlation_guard_check(prospects or [], correlation_threshold, scale_mode)
     elif mode == "entropy":
-        return audit_entropy(initial_investment, cash_flows, discount_rate, scale_mode)
+        result = audit_entropy(initial_investment, cash_flows, discount_rate, scale_mode)
     else:
         raise ValueError(f"Unknown mode: {mode}")
+    return _normalize_primitive_envelope(result, "wealth_truth_validate")
 
 
 @mcp.tool()
@@ -3606,11 +3674,27 @@ def wealth_rule_enforce(
     proposal = proposal or {}
     constraints = constraints or {}
     if mode == "floors":
-        return check_floors_tool(reversible, human_confirmed, epistemic, ai_is_deciding, floor_override, peace2, maruah_score, uncertainty_band, operation_type, scale_mode, task_definition, phantom_entries, critical, pin_verified)
+        result = check_floors_tool(
+            reversible,
+            human_confirmed,
+            epistemic,
+            ai_is_deciding,
+            floor_override,
+            peace2,
+            maruah_score,
+            uncertainty_band,
+            operation_type,
+            scale_mode,
+            task_definition,
+            phantom_entries,
+            critical,
+            pin_verified,
+        )
     elif mode == "policy":
-        return policy_audit(proposal, constraints, scale_mode)
+        result = policy_audit(proposal, constraints, scale_mode)
     else:
         raise ValueError(f"Unknown mode: {mode}")
+    return _normalize_primitive_envelope(result, "wealth_rule_enforce")
 
 
 @mcp.tool()
@@ -3640,13 +3724,35 @@ def wealth_allocate_optimize(
 ) -> Any:
     """Capital Allocation Brain — Kernel, Personal, Agent. [Allocate Dimension]"""
     if mode == "kernel":
-        return wealth_score_kernel(d_s, peace2, maruah_score, base_rate, trust_index, delta_civ, wealth_signals, prospects, extractive_signals, compare, scale_mode, task_definition, irreversible)
+        result = wealth_score_kernel(
+            d_s,
+            peace2,
+            maruah_score,
+            base_rate,
+            trust_index,
+            delta_civ,
+            wealth_signals,
+            prospects,
+            extractive_signals,
+            compare,
+            scale_mode,
+            task_definition,
+            irreversible,
+        )
     elif mode == "personal":
-        return personal_decision(alternatives or [], constraints or {}, values, scale_mode)
+        result = personal_decision(alternatives or [], constraints or {}, values, scale_mode)
     elif mode == "agent":
-        return agent_budget(compute_budget_usd, token_budget, time_deadline_hours, expected_value_of_information, actions or [], scale_mode)
+        result = agent_budget(
+            compute_budget_usd,
+            token_budget,
+            time_deadline_hours,
+            expected_value_of_information,
+            actions or [],
+            scale_mode,
+        )
     else:
         raise ValueError(f"Unknown mode: {mode}")
+    return _normalize_primitive_envelope(result, "wealth_allocate_optimize")
 
 
 @mcp.tool()
@@ -3664,11 +3770,12 @@ def wealth_game_coordinate(
     shared_resources = shared_resources or {}
     resources = resources or {}
     if mode == "equilibrium":
-        return coordination_equilibrium(agents, shared_resources, mechanism, scale_mode)
+        result = coordination_equilibrium(agents, shared_resources, mechanism, scale_mode)
     elif mode == "game":
-        return game_theory_solve(agents, resources, mechanism, solve_equilibrium, scale_mode)
+        result = game_theory_solve(agents, resources, mechanism, solve_equilibrium, scale_mode)
     else:
         raise ValueError(f"Unknown mode: {mode}")
+    return _normalize_primitive_envelope(result, "wealth_game_coordinate")
 
 
 @mcp.tool()
@@ -3685,19 +3792,20 @@ def wealth_sense_ingest(
 ) -> Any:
     """Reality Intake — Fetch, Snapshot, Sources, Health, Vintage, Reconcile. [Sense Dimension]"""
     if mode == "fetch":
-        return ingest_fetch(source, series_id, entity_code, use_cache, bus)
+        result = ingest_fetch(source, series_id, entity_code, use_cache, bus)
     elif mode == "snapshot":
-        return ingest_snapshot(entity_code, sources)
+        result = ingest_snapshot(entity_code, sources)
     elif mode == "sources":
-        return ingest_sources()
+        result = ingest_sources()
     elif mode == "health":
-        return ingest_health(adapter)
+        result = ingest_health(adapter)
     elif mode == "vintage":
-        return ingest_vintage(source, series_id, entity_code, vintage_date)
+        result = ingest_vintage(source, series_id, entity_code, vintage_date)
     elif mode == "reconcile":
-        return ingest_reconcile(entity_code)
+        result = ingest_reconcile(entity_code)
     else:
         raise ValueError(f"Unknown mode: {mode}")
+    return _normalize_primitive_envelope(result, "wealth_sense_ingest")
 
 
 @mcp.tool()
@@ -3727,13 +3835,36 @@ async def wealth_past_record(
 ) -> Any:
     """Vault + Merkle Anchoring (Past) — Vault Init, Record, Snapshot. [Record Dimension]"""
     if mode == "init":
-        return await wealth_init_tool(session_id, actor_id, intent)
+        result = await wealth_init_tool(session_id, actor_id, intent)
     elif mode == "transaction":
-        return record_transaction_tool(tx_type, amount, currency, description, quantity, price, fees, broker, asset_id, category, notes)
+        result = record_transaction_tool(
+            tx_type,
+            amount,
+            currency,
+            description,
+            quantity,
+            price,
+            fees,
+            broker,
+            asset_id,
+            category,
+            notes,
+        )
     elif mode == "portfolio":
-        return snapshot_portfolio_tool(tool_name, arguments or {}, result or {}, scale_mode, asset_id, nav_myr, quantity_held, price_close, currency)
+        result = snapshot_portfolio_tool(
+            tool_name,
+            arguments or {},
+            result or {},
+            scale_mode,
+            asset_id,
+            nav_myr,
+            quantity_held,
+            price_close,
+            currency,
+        )
     else:
         raise ValueError(f"Unknown mode: {mode}")
+    return _normalize_primitive_envelope(result, "wealth_past_record")
 
 
 
@@ -3746,136 +3877,16 @@ def wealth_future_steward(
     scale_mode: str = "civilization",
 ) -> Any:
     """Long-Horizon Planetary Boundaries — Civilization Continuity. [Steward Dimension]"""
-    return civilization_stewardship(carbon_budget_gtc, energy_mix, population_projection, horizon_years, scale_mode)
-
-# ============================================================
-# V3 Backward-Compatibility Alias Layer (66 legacy names → 13 primitives)
-# ============================================================
-import functools
-import inspect
-
-
-def _build_alias(primitive, mode: str, name: str):
-    """Build a backward-compatible alias with forged signature and injected mode default."""
-    sig = inspect.signature(primitive)
-    params = list(sig.parameters.values())
-    new_params = []
-    for p in params:
-        if p.name == "mode":
-            new_params.append(p.replace(default=mode))
-        else:
-            new_params.append(p)
-    new_sig = sig.replace(parameters=new_params)
-
-    if asyncio.iscoroutinefunction(primitive):
-        @functools.wraps(primitive)
-        async def _wrapper(*args, **kwargs):
-            return await primitive(*args, **kwargs)
-    else:
-        @functools.wraps(primitive)
-        def _wrapper(*args, **kwargs):
-            return primitive(*args, **kwargs)
-
-    _wrapper.__signature__ = new_sig
-    _wrapper.__name__ = name
-    _wrapper.__annotations__ = getattr(primitive, "__annotations__", {})
-    return _wrapper
-
-
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY
-# All legacy names route through V3 sovereign primitives for doctrinal alignment.
-
-# wealth_future_value aliases (8)
-mcp.tool(name="wealth_npv_reward")(_build_alias(wealth_future_value, "npv", "wealth_npv_reward"))
-mcp.tool(name="wealth_reason_npv")(_build_alias(wealth_future_value, "npv", "wealth_reason_npv"))
-mcp.tool(name="wealth_irr_yield")(_build_alias(wealth_future_value, "irr", "wealth_irr_yield"))
-mcp.tool(name="wealth_reason_irr")(_build_alias(wealth_future_value, "irr", "wealth_reason_irr"))
-mcp.tool(name="wealth_pi_efficiency")(_build_alias(wealth_future_value, "pi", "wealth_pi_efficiency"))
-mcp.tool(name="wealth_reason_pi")(_build_alias(wealth_future_value, "pi", "wealth_reason_pi"))
-mcp.tool(name="wealth_payback_time")(_build_alias(wealth_future_value, "payback", "wealth_payback_time"))
-mcp.tool(name="wealth_reason_payback")(_build_alias(wealth_future_value, "payback", "wealth_reason_payback"))
-
-# wealth_present_expect aliases (2)
-mcp.tool(name="wealth_emv_risk")(wealth_present_expect)
-mcp.tool(name="wealth_mind_emv")(wealth_present_expect)
-
-# wealth_future_simulate aliases (2)
-mcp.tool(name="wealth_monte_carlo_forecast")(wealth_future_simulate)
-mcp.tool(name="wealth_mind_monte_carlo")(wealth_future_simulate)
-
-# wealth_info_value aliases (4)
-mcp.tool(name="wealth_evoi_compute")(_build_alias(wealth_info_value, "evoi", "wealth_evoi_compute"))
-mcp.tool(name="wealth_mind_evoi")(_build_alias(wealth_info_value, "evoi", "wealth_mind_evoi"))
-mcp.tool(name="wealth_evoi_monte_carlo")(_build_alias(wealth_info_value, "evoi_mc", "wealth_evoi_monte_carlo"))
-mcp.tool(name="wealth_mind_evoi_mc")(_build_alias(wealth_info_value, "evoi_mc", "wealth_mind_evoi_mc"))
-
-# wealth_truth_validate aliases (6)
-mcp.tool(name="wealth_schema_validate")(_build_alias(wealth_truth_validate, "schema", "wealth_schema_validate"))
-mcp.tool(name="wealth_mind_schema")(_build_alias(wealth_truth_validate, "schema", "wealth_mind_schema"))
-mcp.tool(name="wealth_correlation_guard_check")(_build_alias(wealth_truth_validate, "correlation", "wealth_correlation_guard_check"))
-mcp.tool(name="wealth_mind_correlation")(_build_alias(wealth_truth_validate, "correlation", "wealth_mind_correlation"))
-mcp.tool(name="wealth_audit_entropy")(_build_alias(wealth_truth_validate, "entropy", "wealth_audit_entropy"))
-mcp.tool(name="wealth_judge_entropy")(_build_alias(wealth_truth_validate, "entropy", "wealth_judge_entropy"))
-
-# wealth_survival_liquidity aliases (6)
-mcp.tool(name="wealth_cashflow_flow")(_build_alias(wealth_survival_liquidity, "cashflow", "wealth_cashflow_flow"))
-mcp.tool(name="wealth_survival_cashflow")(_build_alias(wealth_survival_liquidity, "cashflow", "wealth_survival_cashflow"))
-mcp.tool(name="wealth_growth_velocity")(_build_alias(wealth_survival_liquidity, "velocity", "wealth_growth_velocity"))
-mcp.tool(name="wealth_survival_velocity")(_build_alias(wealth_survival_liquidity, "velocity", "wealth_survival_velocity"))
-mcp.tool(name="wealth_crisis_triage")(_build_alias(wealth_survival_liquidity, "triage", "wealth_crisis_triage"))
-mcp.tool(name="wealth_survival_triage")(_build_alias(wealth_survival_liquidity, "triage", "wealth_survival_triage"))
-
-# wealth_survival_leverage aliases (4)
-mcp.tool(name="wealth_dscr_leverage")(_build_alias(wealth_survival_leverage, "dscr", "wealth_dscr_leverage"))
-mcp.tool(name="wealth_survival_dscr")(_build_alias(wealth_survival_leverage, "dscr", "wealth_survival_dscr"))
-mcp.tool(name="wealth_networth_state")(_build_alias(wealth_survival_leverage, "networth", "wealth_networth_state"))
-mcp.tool(name="wealth_survival_networth")(_build_alias(wealth_survival_leverage, "networth", "wealth_survival_networth"))
-
-# wealth_rule_enforce aliases (4)
-mcp.tool(name="wealth_check_floors")(_build_alias(wealth_rule_enforce, "floors", "wealth_check_floors"))
-mcp.tool(name="wealth_judge_floors")(_build_alias(wealth_rule_enforce, "floors", "wealth_judge_floors"))
-mcp.tool(name="wealth_policy_audit")(_build_alias(wealth_rule_enforce, "policy", "wealth_policy_audit"))
-mcp.tool(name="wealth_judge_policy")(_build_alias(wealth_rule_enforce, "policy", "wealth_judge_policy"))
-
-# wealth_allocate_optimize aliases (6)
-mcp.tool(name="wealth_score_kernel")(_build_alias(wealth_allocate_optimize, "kernel", "wealth_score_kernel"))
-mcp.tool(name="wealth_judge_kernel")(_build_alias(wealth_allocate_optimize, "kernel", "wealth_judge_kernel"))
-mcp.tool(name="wealth_personal_decision")(_build_alias(wealth_allocate_optimize, "personal", "wealth_personal_decision"))
-mcp.tool(name="wealth_reason_personal")(_build_alias(wealth_allocate_optimize, "personal", "wealth_reason_personal"))
-mcp.tool(name="wealth_agent_budget")(_build_alias(wealth_allocate_optimize, "agent", "wealth_agent_budget"))
-mcp.tool(name="wealth_reason_agent")(_build_alias(wealth_allocate_optimize, "agent", "wealth_reason_agent"))
-
-# wealth_game_coordinate aliases (4)
-mcp.tool(name="wealth_coordination_equilibrium")(_build_alias(wealth_game_coordinate, "equilibrium", "wealth_coordination_equilibrium"))
-mcp.tool(name="wealth_reason_equilibrium")(_build_alias(wealth_game_coordinate, "equilibrium", "wealth_reason_equilibrium"))
-mcp.tool(name="wealth_game_theory_solve")(_build_alias(wealth_game_coordinate, "game", "wealth_game_theory_solve"))
-mcp.tool(name="wealth_reason_game")(_build_alias(wealth_game_coordinate, "game", "wealth_reason_game"))
-
-# wealth_sense_ingest aliases (12)
-mcp.tool(name="wealth_ingest_fetch")(_build_alias(wealth_sense_ingest, "fetch", "wealth_ingest_fetch"))
-mcp.tool(name="wealth_sense_fetch")(_build_alias(wealth_sense_ingest, "fetch", "wealth_sense_fetch"))
-mcp.tool(name="wealth_ingest_snapshot")(_build_alias(wealth_sense_ingest, "snapshot", "wealth_ingest_snapshot"))
-mcp.tool(name="wealth_sense_snapshot")(_build_alias(wealth_sense_ingest, "snapshot", "wealth_sense_snapshot"))
-mcp.tool(name="wealth_ingest_sources")(_build_alias(wealth_sense_ingest, "sources", "wealth_ingest_sources"))
-mcp.tool(name="wealth_sense_sources")(_build_alias(wealth_sense_ingest, "sources", "wealth_sense_sources"))
-mcp.tool(name="wealth_ingest_health")(_build_alias(wealth_sense_ingest, "health", "wealth_ingest_health"))
-mcp.tool(name="wealth_sense_health")(_build_alias(wealth_sense_ingest, "health", "wealth_sense_health"))
-mcp.tool(name="wealth_ingest_vintage")(_build_alias(wealth_sense_ingest, "vintage", "wealth_ingest_vintage"))
-mcp.tool(name="wealth_sense_vintage")(_build_alias(wealth_sense_ingest, "vintage", "wealth_sense_vintage"))
-mcp.tool(name="wealth_ingest_reconcile")(_build_alias(wealth_sense_ingest, "reconcile", "wealth_ingest_reconcile"))
-mcp.tool(name="wealth_sense_reconcile")(_build_alias(wealth_sense_ingest, "reconcile", "wealth_sense_reconcile"))
-
-# wealth_past_record aliases (6)
-mcp.tool(name="wealth_init")(_build_alias(wealth_past_record, "init", "wealth_init"))
-mcp.tool(name="wealth_vault_init")(_build_alias(wealth_past_record, "init", "wealth_vault_init"))
-mcp.tool(name="wealth_record_transaction")(_build_alias(wealth_past_record, "transaction", "wealth_record_transaction"))
-mcp.tool(name="wealth_vault_record")(_build_alias(wealth_past_record, "transaction", "wealth_vault_record"))
-mcp.tool(name="wealth_snapshot_portfolio")(_build_alias(wealth_past_record, "portfolio", "wealth_snapshot_portfolio"))
-mcp.tool(name="wealth_vault_snapshot")(_build_alias(wealth_past_record, "portfolio", "wealth_vault_snapshot"))
-
-# wealth_future_steward aliases (2)
-mcp.tool(name="wealth_civilization_stewardship")(wealth_future_steward)
-mcp.tool(name="wealth_survival_civilization")(wealth_future_steward)
+    return _normalize_primitive_envelope(
+        civilization_stewardship(
+            carbon_budget_gtc,
+            energy_mix,
+            population_projection,
+            horizon_years,
+            scale_mode,
+        ),
+        "wealth_future_steward",
+    )
 
 if __name__ == "__main__":
     # Hardened for production container deployments

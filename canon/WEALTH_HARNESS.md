@@ -53,19 +53,19 @@ A harness does not act. It constrains motion so power doesn’t destroy the ride
 ### 🎯 7. Efficiency Harness (Capital Discipline Harness)
 **Purpose:** Prevent capital waste and resource misallocation.
 - **Prevents:** Zombie projects, prestige-spending, negative-sum extraction.
-- **Tools:** `wealth_npv_reward`, `wealth_irr_yield`, `wealth_pi_efficiency`, `wealth_payback_time`.
+- **Tools:** `wealth_future_value`.
 - **Harness Rule:** Capital must earn its survival. Return must exceed cost of capital under current scale mode.
 
 ### 🤝 8. Coordination Harness (Multi-Agent Stability Harness)
 **Purpose:** Stabilize distributed actors and align incentives.
 - **Prevents:** Fragmentation instability, prisoner’s dilemma collapse.
-- **Tools:** `wealth_coordination_equilibrium`, `wealth_game_theory_solve`, `wealth_personal_decision`.
+- **Tools:** `wealth_game_coordinate`, `wealth_allocate_optimize`.
 - **Harness Rule:** Compute Nash-approximations and core-feasibility to ensure fair allocation.
 
 ### 🌍 9. Civilization Harness (Long-Horizon Harness)
 **Purpose:** Bind allocation to planetary survival and species-depth.
 - **Prevents:** Short-term extraction dominance, planetary overshoot.
-- **Tools:** `wealth_civilization_stewardship`, `wealth_agent_budget`.
+- **Tools:** `wealth_future_steward`, `wealth_allocate_optimize`.
 - **Harness Rule:** Enforce energy budget constraints and long-horizon sustainability metrics.
 
 ---

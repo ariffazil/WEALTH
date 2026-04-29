@@ -16,12 +16,12 @@ AgentRun = namedtuple("AgentRun", ["tool_sequence"])
 # ---------------------------------------------------------
 
 PIPELINE_ORDER = [
-    "sense",
-    "mind",
-    "survival",
-    "reason",
-    "judge",
-    "vault"
+    "wealth_sense_ingest",
+    "wealth_info_value",
+    "wealth_survival_leverage",
+    "wealth_future_value",
+    "wealth_rule_enforce",
+    "wealth_past_record",
 ]
 
 WEIGHTS = {
@@ -38,13 +38,9 @@ WEIGHTS = {
 
 def extract_family(tool_name):
     """
-    Extracts family from v2 tool name.
-    Example: wealth_reason_npv -> reason
+    Maps canonical v3 tool names into the pipeline order.
     """
-    try:
-        return tool_name.split("_")[1]
-    except:
-        return None
+    return tool_name if tool_name in PIPELINE_ORDER else None
 
 
 def is_v2_name(tool_name):
@@ -78,7 +74,7 @@ def score_epistemic(sequence):
 
 
 def score_governance(sequence):
-    return 1.0 if any("wealth_judge_kernel" in t for t in sequence) else 0.0
+    return 1.0 if "wealth_rule_enforce" in sequence else 0.0
 
 
 def score_namespace(sequence):
@@ -116,12 +112,12 @@ def evaluate_agent_run(agent_run):
 if __name__ == "__main__":
 
     offshore_case = AgentRun(tool_sequence=[
-        "wealth_sense_snapshot",
-        "wealth_mind_evoi",
-        "wealth_survival_dscr",
-        "wealth_reason_npv",
-        "wealth_judge_kernel",
-        "wealth_vault_snapshot"
+        "wealth_sense_ingest",
+        "wealth_info_value",
+        "wealth_survival_leverage",
+        "wealth_future_value",
+        "wealth_rule_enforce",
+        "wealth_past_record",
     ])
 
     report = evaluate_agent_run(offshore_case)

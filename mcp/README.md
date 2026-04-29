@@ -8,7 +8,7 @@ This repo ships **two** MCP servers. They are not interchangeable.
 - **Compat wrapper:** `server.py`
 - **Role:** Primary WEALTH valuation kernel
 - **Used by:** `server.py`, `fastmcp.json`, `mcp.json`, MCP packaging, Docker/host boot paths
-- **Scope:** 33 async tools + 57 sync functions
+- **Scope:** 13 canonical MCP tools + packaged resources
 
 Run it with:
 

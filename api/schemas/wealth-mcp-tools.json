@@ -1,60 +1,177 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://wealth.arif-fazil.com/api/schemas/wealth-mcp-tools.json",
-  "title": "WEALTH MCP Tool Families Schema",
-  "description": "Universal Resource Allocation Intelligence (URAI) — cross-scale capital nerve",
+  "title": "WEALTH Canonical MCP Tool Schema",
+  "description": "13-tool canonical WEALTH MCP surface with legacy aliases merged into mode-bearing sovereign primitives.",
   "definitions": {
     "CommonRequestHeader": {
       "type": "object",
-      "required": ["session_id", "epoch"],
+      "required": [
+        "session_id",
+        "epoch"
+      ],
       "properties": {
-        "session_id": { "type": "string" },
-        "envelope_id": { "type": "string", "description": "W@W envelope binding this tool call to upstream authorities" },
-        "epoch": { "type": "string", "format": "date-time" },
-        "currency_base": { "type": "string", "default": "MYR" },
-        "locale": { "type": "string", "default": "ms-MY" }
+        "session_id": {
+          "type": "string"
+        },
+        "envelope_id": {
+          "type": "string",
+          "description": "W@W envelope binding this tool call to upstream authorities"
+        },
+        "epoch": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "currency_base": {
+          "type": "string",
+          "default": "MYR"
+        },
+        "locale": {
+          "type": "string",
+          "default": "ms-MY"
+        }
       }
     },
     "CommonResponseFooter": {
       "type": "object",
-      "required": ["verdict", "governance_verdict", "allocation_signal", "engine_status", "epistemic"],
+      "required": [
+        "verdict",
+        "governance_verdict",
+        "allocation_signal",
+        "engine_status",
+        "epistemic"
+      ],
       "properties": {
-        "verdict": { "type": "string", "enum": ["SEAL", "QUALIFY", "888-HOLD", "VOID"] },
-        "governance_verdict": { "type": "string", "enum": ["SEAL", "QUALIFY", "888-HOLD", "VOID"] },
-        "allocation_signal": { "type": "string", "enum": ["ACCEPT", "REJECT", "MARGINAL", "INSUFFICIENT_DATA"] },
-        "engine_status": { "type": "string", "enum": ["VALID", "WARNING", "ERROR"] },
-        "epistemic": { "type": "string", "enum": ["CLAIM", "PLAUSIBLE", "ESTIMATE", "HYPOTHESIS", "UNKNOWN"] },
-        "vault_log_entry": { "type": "object", "description": "Append-only VAULT999 fragment for this call" },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "SEAL",
+            "QUALIFY",
+            "888-HOLD",
+            "VOID"
+          ]
+        },
+        "governance_verdict": {
+          "type": "string",
+          "enum": [
+            "SEAL",
+            "QUALIFY",
+            "888-HOLD",
+            "VOID"
+          ]
+        },
+        "allocation_signal": {
+          "type": "string",
+          "enum": [
+            "ACCEPT",
+            "REJECT",
+            "MARGINAL",
+            "INSUFFICIENT_DATA"
+          ]
+        },
+        "engine_status": {
+          "type": "string",
+          "enum": [
+            "VALID",
+            "WARNING",
+            "ERROR"
+          ]
+        },
+        "epistemic": {
+          "type": "string",
+          "enum": [
+            "CLAIM",
+            "PLAUSIBLE",
+            "ESTIMATE",
+            "HYPOTHESIS",
+            "UNKNOWN"
+          ]
+        },
+        "vault_log_entry": {
+          "type": "object",
+          "description": "Append-only VAULT999 fragment for this call"
+        },
         "witness": {
           "type": "object",
-          "properties": { "human": { "type": "boolean" }, "ai": { "type": "boolean" }, "earth": { "type": "boolean" } }
+          "properties": {
+            "human": {
+              "type": "boolean"
+            },
+            "ai": {
+              "type": "boolean"
+            },
+            "earth": {
+              "type": "boolean"
+            }
+          }
         }
       }
     },
     "WealthBasisVector": {
       "type": "object",
       "properties": {
-        "e_hat": { "type": "number", "minimum": 0, "maximum": 1 },
-        "s_hat": { "type": "number", "minimum": 0, "maximum": 1 },
-        "echo_hat": { "type": "number", "minimum": 0, "maximum": 1 }
+        "e_hat": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "s_hat": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "echo_hat": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
       }
     },
     "DefectTensor": {
       "type": "object",
       "properties": {
-        "paradox": { "type": "number", "minimum": 0, "maximum": 1 },
-        "scar": { "type": "number", "minimum": 0, "maximum": 1 },
-        "shadow": { "type": "number", "minimum": 0, "maximum": 1 }
+        "paradox": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "scar": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "shadow": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
       }
     },
     "ScaleMode": {
       "type": "string",
-      "enum": ["personal", "household", "sme", "enterprise", "national", "crisis", "civilization", "agentic"],
+      "enum": [
+        "personal",
+        "household",
+        "sme",
+        "enterprise",
+        "national",
+        "crisis",
+        "civilization",
+        "agentic"
+      ],
       "default": "enterprise"
     },
     "CapitalType": {
       "type": "string",
-      "enum": ["financial", "temporal", "cognitive", "social", "ecological", "strategic", "thermodynamic"],
+      "enum": [
+        "financial",
+        "temporal",
+        "cognitive",
+        "social",
+        "ecological",
+        "strategic",
+        "thermodynamic"
+      ],
       "default": "financial"
     }
   },
@@ -62,428 +179,1131 @@
   "properties": {
     "tool_family": {
       "type": "string",
-      "enum": ["VAULT", "SENSE", "MIND", "HEART", "REASON", "JUDGE"]
+      "enum": [
+        "VAULT",
+        "SENSE",
+        "MIND",
+        "SURVIVAL",
+        "REASON",
+        "JUDGE"
+      ]
     },
     "requests": {
       "type": "object",
       "properties": {
-        "wealth_sense_snapshot": {
+        "wealth_future_value": {
           "type": "object",
-          "alias_of": "wealth_state_market_snapshot",
-          "family": "SENSE",
-          "pipeline_stage": "100-SENSE",
-          "sovereign": true,
-          "required": ["header", "jurisdiction", "asset_classes"],
+          "family": "REASON",
+          "pipeline_stage": "400-REASON",
+          "description": "Time-Discounted Projection Engine \u2014 NPV, IRR, PI, Payback. [Value Dimension]",
+          "additionalProperties": false,
           "properties": {
-            "header": { "$ref": "#/definitions/CommonRequestHeader" },
-            "jurisdiction": { "type": "string", "description": "e.g. MY, US, ASEAN" },
-            "asset_classes": { "type": "array", "items": { "type": "string" } },
-            "tenor_months": { "type": "integer", "default": 120 }
-          }
-        },
-        "wealth_state_market_snapshot": {
-          "type": "object",
-          "family": "SENSE",
-          "pipeline_stage": "100-SENSE",
-          "deprecated": true,
-          "sunset_version": "v3.0",
-          "required": ["header", "jurisdiction", "asset_classes"],
-          "properties": {
-            "header": { "$ref": "#/definitions/CommonRequestHeader" },
-            "jurisdiction": { "type": "string" },
-            "asset_classes": { "type": "array", "items": { "type": "string" } }
-          }
-        },
-        "wealth_risk_capital_allocation": {
-          "type": "object",
-          "display_name": "wealth_risk_allocation",
-          "family": "MIND",
-          "pipeline_stage": "200-MIND",
-          "sovereign": true,
-          "required": ["header", "portfolio", "confidence_level"],
-          "properties": {
-            "header": { "$ref": "#/definitions/CommonRequestHeader" },
-            "portfolio": { "type": "object", "description": "Project/region/counterparty buckets" },
-            "confidence_level": { "type": "number", "minimum": 0.9, "maximum": 0.9999 },
-            "maruah_drawdown_floor": { "type": "number", "default": 0.6 }
-          }
-        },
-        "wealth_mind_emv": {
-          "type": "object",
-          "alias_of": "wealth_emv_risk",
-          "family": "MIND",
-          "pipeline_stage": "200-MIND",
-          "sovereign": true,
-          "required": ["header", "prospects"],
-          "properties": {
-            "header": { "$ref": "#/definitions/CommonRequestHeader" },
-            "prospects": { "type": "array", "items": { "type": "object" } },
-            "risk_free_rate": { "type": "number", "default": 0.04 }
-          }
-        },
-        "wealth_emv_risk": {
-          "type": "object",
-          "family": "MIND",
-          "pipeline_stage": "200-MIND",
-          "deprecated": true,
-          "sunset_version": "v3.0",
-          "properties": {
-            "prospects": { "type": "array", "items": { "type": "object" } }
-          }
-        },
-        "wealth_mind_monte_carlo": {
-          "type": "object",
-          "alias_of": "wealth_monte_carlo_forecast",
-          "family": "MIND",
-          "pipeline_stage": "200-MIND",
-          "sovereign": true,
-          "required": ["initial_commitment", "mean_cash_flows", "volatilities"],
-          "properties": {
-            "initial_commitment": { "type": "number" },
-            "mean_cash_flows": { "type": "array", "items": { "type": "number" } },
-            "volatilities": { "type": "array", "items": { "type": "number" } },
-            "discount_rate": { "type": "number", "default": 0.1 },
-            "simulations": { "type": "integer", "default": 10000 },
-            "distribution": { "type": "string", "enum": ["lognormal", "normal", "triangular"], "default": "lognormal" },
-            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
-          }
-        },
-        "wealth_monte_carlo_forecast": {
-          "type": "object",
-          "family": "MIND",
-          "pipeline_stage": "200-MIND",
-          "deprecated": true,
-          "sunset_version": "v3.0",
-          "properties": {
-            "initial_commitment": { "type": "number" }
-          }
-        },
-        "wealth_mind_correlation": {
-          "type": "object",
-          "alias_of": "wealth_correlation_guard_check",
-          "family": "MIND",
-          "pipeline_stage": "200-MIND",
-          "sovereign": true,
-          "properties": {
-            "portfolio": { "type": "array", "items": { "type": "object" } },
-            "threshold": { "type": "number", "default": 0.7 }
-          }
-        },
-        "wealth_correlation_guard_check": {
-          "type": "object",
-          "family": "MIND",
-          "pipeline_stage": "200-MIND",
-          "deprecated": true,
-          "sunset_version": "v3.0"
-        },
-        "wealth_survival_triage": {
-          "type": "object",
-          "alias_of": "wealth_crisis_triage",
-          "family": "SURVIVAL",
-          "pipeline_stage": "300-HEART",
-          "sovereign": true,
-          "required": ["resources", "demands"],
-          "properties": {
-            "resources": { "type": "object" },
-            "demands": { "type": "array", "items": { "type": "object" } },
-            "recovery_horizon_days": { "type": "number", "default": 30 },
-            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
-          }
-        },
-        "wealth_crisis_triage": {
-          "type": "object",
-          "family": "SURVIVAL",
-          "pipeline_stage": "300-HEART",
-          "deprecated": true,
-          "sunset_version": "v3.0"
-        },
-        "wealth_survival_civilization": {
-          "type": "object",
-          "alias_of": "wealth_civilization_stewardship",
-          "family": "SURVIVAL",
-          "pipeline_stage": "300-HEART",
-          "sovereign": true,
-          "required": ["population", "energy_budget_twh", "carbon_budget_gt", "tech_growth_rate"],
-          "properties": {
-            "population": { "type": "number" },
-            "energy_budget_twh": { "type": "number" },
-            "carbon_budget_gt": { "type": "number" },
-            "tech_growth_rate": { "type": "number" },
-            "time_horizon_years": { "type": "integer", "default": 100 },
-            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
-          }
-        },
-        "wealth_civilization_stewardship": {
-          "type": "object",
-          "family": "SURVIVAL",
-          "pipeline_stage": "300-HEART",
-          "deprecated": true,
-          "sunset_version": "v3.0"
-        },
-        "wealth_price_exergy_cost": {
-          "type": "object",
-          "required": ["header", "project_inputs"],
-          "properties": {
-            "header": { "$ref": "#/definitions/CommonRequestHeader" },
-            "project_inputs": {
-              "type": "object",
-              "properties": {
-                "energy_mj_per_unit": { "type": "number" },
-                "material_exergy_mj_per_unit": { "type": "number" },
-                "output_unit": { "type": "string" }
-              }
+            "mode": {
+              "default": "npv",
+              "type": "string"
+            },
+            "initial_investment": {
+              "default": 0,
+              "type": "number"
+            },
+            "cash_flows": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "discount_rate": {
+              "default": 0.1,
+              "type": "number"
+            },
+            "terminal_value": {
+              "default": 0,
+              "type": "number"
+            },
+            "period_unit": {
+              "default": "annual",
+              "type": "string"
+            },
+            "input_epistemic": {
+              "default": "CLAIM",
+              "type": "string"
+            },
+            "scale_mode": {
+              "default": "enterprise",
+              "type": "string"
+            },
+            "reinvestment_rate": {
+              "default": 0.1,
+              "type": "number"
+            },
+            "finance_rate": {
+              "default": 0.1,
+              "type": "number"
             }
           }
         },
-        "wealth_justice_maruah_score": {
+        "wealth_present_expect": {
           "type": "object",
-          "required": ["header", "project_profile"],
-          "properties": {
-            "header": { "$ref": "#/definitions/CommonRequestHeader" },
-            "project_profile": {
-              "type": "object",
-              "properties": {
-                "displacement_risk": { "type": "number", "minimum": 0, "maximum": 1 },
-                "pollution_load": { "type": "number", "minimum": 0, "maximum": 1 },
-                "cultural_loss_risk": { "type": "number", "minimum": 0, "maximum": 1 },
-                "community_benefit_share": { "type": "number", "minimum": 0, "maximum": 1 }
-              }
-            }
-          }
-        },
-        "wealth_control_gate_888": {
-          "type": "object",
-          "required": ["header", "candidate"],
-          "properties": {
-            "header": { "$ref": "#/definitions/CommonRequestHeader" },
-            "candidate": {
-              "type": "object",
-              "properties": {
-                "maruah": { "type": "number" },
-                "r_adj": { "type": "number" },
-                "entropy_budget_remaining": { "type": "number" },
-                "reversible": { "type": "boolean" }
-              }
-            }
-          }
-        },
-        "wealth_reason_npv": {
-          "type": "object",
-          "alias_of": "wealth_npv_reward",
-          "family": "REASON",
-          "pipeline_stage": "400-REASON",
-          "sovereign": true,
-          "properties": {
-            "initial_investment": { "type": "number" },
-            "cash_flows": { "type": "array", "items": { "type": "number" } },
-            "discount_rate": { "type": "number" },
-            "terminal_value": { "type": "number", "default": 0 },
-            "period_unit": { "type": "string", "default": "annual" },
-            "input_epistemic": { "type": "string", "default": "CLAIM" },
-            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
-          }
-        },
-        "wealth_npv_reward": {
-          "type": "object",
-          "family": "REASON",
-          "pipeline_stage": "400-REASON",
-          "deprecated": true,
-          "sunset_version": "v3.0",
-          "properties": {
-            "initial_investment": { "type": "number" },
-            "cash_flows": { "type": "array", "items": { "type": "number" } },
-            "discount_rate": { "type": "number" }
-          }
-        },
-        "wealth_reason_pi": {
-          "type": "object",
-          "alias_of": "wealth_pi_efficiency",
-          "family": "REASON",
-          "pipeline_stage": "400-REASON",
-          "sovereign": true,
-          "properties": {
-            "initial_investment": { "type": "number" },
-            "cash_flows": { "type": "array", "items": { "type": "number" } },
-            "discount_rate": { "type": "number" },
-            "terminal_value": { "type": "number", "default": 0 },
-            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
-          }
-        },
-        "wealth_pi_efficiency": {
-          "type": "object",
-          "family": "REASON",
-          "pipeline_stage": "400-REASON",
-          "deprecated": true,
-          "sunset_version": "v3.0"
-        },
-        "wealth_reason_agent": {
-          "type": "object",
-          "alias_of": "wealth_agent_budget",
-          "family": "REASON",
-          "pipeline_stage": "400-REASON",
-          "sovereign": true,
-          "required": ["compute_budget_usd", "token_budget", "time_deadline_hours", "expected_value_of_information", "actions"],
-          "properties": {
-            "compute_budget_usd": { "type": "number" },
-            "token_budget": { "type": "number" },
-            "time_deadline_hours": { "type": "number" },
-            "expected_value_of_information": { "type": "number" },
-            "actions": { "type": "array", "items": { "type": "object" } },
-            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
-          }
-        },
-        "wealth_agent_budget": {
-          "type": "object",
-          "family": "REASON",
-          "pipeline_stage": "400-REASON",
-          "deprecated": true,
-          "sunset_version": "v3.0"
-        },
-        "wealth_crisis_triage": {
-          "type": "object",
-          "display_name": "wealth_crisis_triage",
-          "family": "HEART",
-          "pipeline_stage": "300-HEART",
-          "sovereign": true,
-          "required": ["resources", "demands"],
-          "properties": {
-            "resources": { "type": "object" },
-            "demands": { "type": "array", "items": { "type": "object" } },
-            "recovery_horizon_days": { "type": "number", "default": 30 },
-            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
-          }
-        },
-        "wealth_civilization_stewardship": {
-          "type": "object",
-          "display_name": "wealth_stewardship_civ",
-          "family": "HEART",
-          "pipeline_stage": "300-HEART",
-          "sovereign": true,
-          "required": ["population", "energy_budget_twh", "carbon_budget_gt", "tech_growth_rate"],
-          "properties": {
-            "population": { "type": "number" },
-            "energy_budget_twh": { "type": "number" },
-            "carbon_budget_gt": { "type": "number" },
-            "tech_growth_rate": { "type": "number" },
-            "time_horizon_years": { "type": "integer", "default": 100 },
-            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
-          }
-        },
-        "wealth_coordination_equilibrium": {
-          "type": "object",
-          "display_name": "wealth_coord_equilibrium",
-          "family": "REASON",
-          "pipeline_stage": "400-REASON",
-          "sovereign": true,
-          "required": ["agents", "shared_resources"],
-          "properties": {
-            "agents": { "type": "array", "items": { "type": "object" } },
-            "shared_resources": { "type": "object" },
-            "mechanism": { "type": "string", "enum": ["cooperative", "competitive", "mixed"], "default": "cooperative" },
-            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
-          }
-        },
-        "wealth_game_theory_solve": {
-          "type": "object",
-          "display_name": "wealth_coord_game_theory",
-          "family": "REASON",
-          "pipeline_stage": "400-REASON",
-          "sovereign": true,
-          "required": ["agents", "resources"],
-          "properties": {
-            "agents": { "type": "array", "items": { "type": "object" } },
-            "resources": { "type": "object" },
-            "mechanism": { "type": "string", "enum": ["cooperative", "competitive", "mixed"], "default": "cooperative" },
-            "solve_equilibrium": { "type": "boolean", "default": false },
-            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
-          }
-        },
-        "wealth_monte_carlo_forecast": {
-          "type": "object",
-          "display_name": "wealth_risk_monte_carlo",
           "family": "MIND",
           "pipeline_stage": "200-MIND",
-          "sovereign": true,
-          "required": ["initial_commitment", "mean_cash_flows", "volatilities"],
+          "description": "Probability-Weighted Expectation (Present) \u2014 EMV. [Expect Dimension]",
+          "additionalProperties": false,
           "properties": {
-            "initial_commitment": { "type": "number" },
-            "mean_cash_flows": { "type": "array", "items": { "type": "number" } },
-            "volatilities": { "type": "array", "items": { "type": "number" } },
-            "discount_rate": { "type": "number", "default": 0.1 },
-            "simulations": { "type": "integer", "default": 10000 },
-            "distribution": { "type": "string", "enum": ["lognormal", "normal", "triangular"], "default": "lognormal" },
-            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+            "scenarios": {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "scale_mode": {
+              "default": "enterprise",
+              "type": "string"
+            }
+          },
+          "required": [
+            "scenarios"
+          ]
+        },
+        "wealth_future_simulate": {
+          "type": "object",
+          "family": "MIND",
+          "pipeline_stage": "200-MIND",
+          "description": "Stochastic Projection Engine (Future) \u2014 Monte Carlo. [Simulate Dimension]",
+          "additionalProperties": false,
+          "properties": {
+            "initial_commitment": {
+              "type": "number"
+            },
+            "mean_cash_flows": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "volatilities": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "discount_rate": {
+              "default": 0.1,
+              "type": "number"
+            },
+            "simulations": {
+              "default": 10000,
+              "type": "integer"
+            },
+            "distribution": {
+              "default": "lognormal",
+              "type": "string"
+            },
+            "scale_mode": {
+              "default": "enterprise",
+              "type": "string"
+            }
+          },
+          "required": [
+            "initial_commitment",
+            "mean_cash_flows",
+            "volatilities"
+          ]
+        },
+        "wealth_survival_liquidity": {
+          "type": "object",
+          "family": "SURVIVAL",
+          "pipeline_stage": "300-SURVIVAL",
+          "description": "Survival Liquidity \u2014 Cashflow, Runway, Triage. [Liquidity Dimension]",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "default": "cashflow",
+              "type": "string"
+            },
+            "income": {
+              "anyOf": [
+                {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "expenses": {
+              "anyOf": [
+                {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "liquid_assets": {
+              "default": 0,
+              "type": "number"
+            },
+            "scale_mode": {
+              "default": "enterprise",
+              "type": "string"
+            },
+            "principal": {
+              "default": 0,
+              "type": "number"
+            },
+            "rate": {
+              "default": 0,
+              "type": "number"
+            },
+            "years": {
+              "default": 1,
+              "type": "integer"
+            },
+            "annual_contribution": {
+              "default": 0,
+              "type": "number"
+            },
+            "monthly_burn": {
+              "default": 0,
+              "type": "number"
+            },
+            "resources": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "demands": {
+              "anyOf": [
+                {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "recovery_horizon_days": {
+              "default": 30,
+              "type": "number"
+            }
           }
         },
-        "wealth_ingest_fetch": {
+        "wealth_survival_leverage": {
           "type": "object",
-          "required": ["source", "series_id", "entity_code"],
+          "family": "SURVIVAL",
+          "pipeline_stage": "300-SURVIVAL",
+          "description": "Structural Load \u2014 DSCR + Balance Sheet. [Leverage Dimension]",
+          "additionalProperties": false,
           "properties": {
-            "source": { "type": "string", "enum": ["FRED", "WorldBank", "ECB", "Ember", "OWID"] },
-            "series_id": { "type": "string" },
-            "entity_code": { "type": "string" },
-            "use_cache": { "type": "boolean", "default": true }
+            "mode": {
+              "default": "dscr",
+              "type": "string"
+            },
+            "ebitda": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "principal": {
+              "default": 0,
+              "type": "number"
+            },
+            "interest": {
+              "default": 0,
+              "type": "number"
+            },
+            "leases": {
+              "default": 0,
+              "type": "number"
+            },
+            "cfads": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "debt_service": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "period_unit": {
+              "default": "annual",
+              "type": "string"
+            },
+            "input_epistemic": {
+              "default": "CLAIM",
+              "type": "string"
+            },
+            "scale_mode": {
+              "default": "enterprise",
+              "type": "string"
+            },
+            "assets": {
+              "anyOf": [
+                {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "liabilities": {
+              "anyOf": [
+                {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
           }
         },
-        "wealth_ingest_snapshot": {
+        "wealth_info_value": {
           "type": "object",
-          "required": ["entity_code"],
+          "family": "MIND",
+          "pipeline_stage": "200-MIND",
+          "description": "Expected Value of Information \u2014 EVOI point-estimate and Monte Carlo. [Info Dimension]",
+          "additionalProperties": false,
           "properties": {
-            "entity_code": { "type": "string" },
-            "sources": { "type": "array", "items": { "type": "string" } }
+            "mode": {
+              "default": "evoi",
+              "type": "string"
+            },
+            "well_cost_musd": {
+              "default": 0,
+              "type": "number"
+            },
+            "p50_value_musd": {
+              "default": 0,
+              "type": "number"
+            },
+            "prior_pos": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "posterior_pos": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "prospect_metrics": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "info_cost_musd": {
+              "default": 5.0,
+              "type": "number"
+            },
+            "discount_rate": {
+              "default": 0.1,
+              "type": "number"
+            },
+            "scale_mode": {
+              "default": "enterprise",
+              "type": "string"
+            },
+            "prior_pos_samples": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "posterior_pos_samples": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
           }
         },
-        "wealth_ingest_sources": {
+        "wealth_truth_validate": {
           "type": "object",
-          "properties": {}
-        },
-        "wealth_ingest_health": {
-          "type": "object",
+          "family": "MIND",
+          "pipeline_stage": "200-MIND",
+          "description": "Epistemic Integrity \u2014 Schema, Correlation, Entropy. [Truth Dimension]",
+          "additionalProperties": false,
           "properties": {
-            "adapter": { "type": "string" }
+            "mode": {
+              "default": "schema",
+              "type": "string"
+            },
+            "prospects": {
+              "anyOf": [
+                {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "initial_investment": {
+              "default": 0,
+              "type": "number"
+            },
+            "cash_flows": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "discount_rate": {
+              "default": 0.1,
+              "type": "number"
+            },
+            "correlation_threshold": {
+              "default": 3,
+              "type": "integer"
+            },
+            "scale_mode": {
+              "default": "enterprise",
+              "type": "string"
+            }
           }
         },
-        "wealth_ingest_vintage": {
+        "wealth_rule_enforce": {
           "type": "object",
-          "required": ["source", "series_id", "entity_code", "vintage_date"],
-          "properties": {
-            "source": { "type": "string", "enum": ["FRED"] },
-            "series_id": { "type": "string" },
-            "entity_code": { "type": "string" },
-            "vintage_date": { "type": "string", "format": "date" }
-          }
-        },
-        "wealth_ingest_reconcile": {
-          "type": "object",
-          "display_name": "wealth_ingest_reconcile",
-          "family": "SENSE",
-          "pipeline_stage": "100-SENSE",
-          "sovereign": true,
-          "required": ["entity_code"],
-          "properties": {
-            "entity_code": { "type": "string" }
-          }
-        },
-        "wealth_judge_kernel": {
-          "type": "object",
-          "alias_of": "wealth_score_kernel",
           "family": "JUDGE",
           "pipeline_stage": "888-JUDGE",
-          "primary_entrypoint": true,
-          "sovereign": true,
+          "description": "Governance Constraint \u2014 F1-F13 Floors, Policy Audit. [Rule Dimension]",
+          "additionalProperties": false,
           "properties": {
-            "proposal_id": { "type": "string" },
-            "scale_mode": { "$ref": "#/definitions/ScaleMode" }
+            "mode": {
+              "default": "floors",
+              "type": "string"
+            },
+            "proposal": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "constraints": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "reversible": {
+              "default": true,
+              "type": "boolean"
+            },
+            "human_confirmed": {
+              "default": false,
+              "type": "boolean"
+            },
+            "epistemic": {
+              "default": "ESTIMATE",
+              "type": "string"
+            },
+            "ai_is_deciding": {
+              "default": false,
+              "type": "boolean"
+            },
+            "floor_override": {
+              "default": false,
+              "type": "boolean"
+            },
+            "peace2": {
+              "default": 1.0,
+              "type": "number"
+            },
+            "maruah_score": {
+              "default": 0.5,
+              "type": "number"
+            },
+            "uncertainty_band": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "operation_type": {
+              "default": "PROJECTION",
+              "type": "string"
+            },
+            "scale_mode": {
+              "default": "enterprise",
+              "type": "string"
+            },
+            "task_definition": {
+              "default": "",
+              "type": "string"
+            },
+            "phantom_entries": {
+              "default": false,
+              "type": "boolean"
+            },
+            "critical": {
+              "default": false,
+              "type": "boolean"
+            },
+            "pin_verified": {
+              "default": false,
+              "type": "boolean"
+            }
           }
         },
-        "wealth_score_kernel": {
+        "wealth_allocate_optimize": {
           "type": "object",
-          "family": "JUDGE",
-          "pipeline_stage": "888-JUDGE",
-          "deprecated": true,
-          "sunset_version": "v3.0",
+          "family": "REASON",
+          "pipeline_stage": "400-REASON",
+          "description": "Capital Allocation Brain \u2014 Kernel, Personal, Agent. [Allocate Dimension]",
+          "additionalProperties": false,
           "properties": {
-            "proposal_id": { "type": "string" }
+            "mode": {
+              "default": "kernel",
+              "type": "string"
+            },
+            "d_s": {
+              "default": 0,
+              "type": "number"
+            },
+            "peace2": {
+              "default": 1.0,
+              "type": "number"
+            },
+            "maruah_score": {
+              "default": 0.5,
+              "type": "number"
+            },
+            "base_rate": {
+              "default": 0.1,
+              "type": "number"
+            },
+            "trust_index": {
+              "default": 0.5,
+              "type": "number"
+            },
+            "delta_civ": {
+              "default": 0.0,
+              "type": "number"
+            },
+            "wealth_signals": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "prospects": {
+              "anyOf": [
+                {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "extractive_signals": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "compare": {
+              "default": false,
+              "type": "boolean"
+            },
+            "scale_mode": {
+              "default": "enterprise",
+              "type": "string"
+            },
+            "task_definition": {
+              "default": "",
+              "type": "string"
+            },
+            "irreversible": {
+              "default": false,
+              "type": "boolean"
+            },
+            "alternatives": {
+              "anyOf": [
+                {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "constraints": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "values": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "compute_budget_usd": {
+              "default": 0,
+              "type": "number"
+            },
+            "token_budget": {
+              "default": 0,
+              "type": "number"
+            },
+            "time_deadline_hours": {
+              "default": 0,
+              "type": "number"
+            },
+            "expected_value_of_information": {
+              "default": 0,
+              "type": "number"
+            },
+            "actions": {
+              "anyOf": [
+                {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          }
+        },
+        "wealth_game_coordinate": {
+          "type": "object",
+          "family": "REASON",
+          "pipeline_stage": "400-REASON",
+          "description": "Multi-Agent Dynamics \u2014 Equilibrium, Game Theory. [Game Dimension]",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "default": "equilibrium",
+              "type": "string"
+            },
+            "agents": {
+              "anyOf": [
+                {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "shared_resources": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "resources": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "mechanism": {
+              "default": "cooperative",
+              "type": "string"
+            },
+            "solve_equilibrium": {
+              "default": false,
+              "type": "boolean"
+            },
+            "scale_mode": {
+              "default": "enterprise",
+              "type": "string"
+            }
+          }
+        },
+        "wealth_sense_ingest": {
+          "type": "object",
+          "family": "SENSE",
+          "pipeline_stage": "100-SENSE",
+          "description": "Reality Intake \u2014 Fetch, Snapshot, Sources, Health, Vintage, Reconcile. [Sense Dimension]",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "default": "fetch",
+              "type": "string"
+            },
+            "source": {
+              "default": "",
+              "type": "string"
+            },
+            "series_id": {
+              "default": "",
+              "type": "string"
+            },
+            "entity_code": {
+              "default": "",
+              "type": "string"
+            },
+            "use_cache": {
+              "default": true,
+              "type": "boolean"
+            },
+            "bus": {
+              "default": "slow",
+              "type": "string"
+            },
+            "sources": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "adapter": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "vintage_date": {
+              "default": "",
+              "type": "string"
+            }
+          }
+        },
+        "wealth_past_record": {
+          "type": "object",
+          "family": "VAULT",
+          "pipeline_stage": "999-VAULT",
+          "description": "Vault + Merkle Anchoring (Past) \u2014 Vault Init, Record, Snapshot. [Record Dimension]",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "default": "init",
+              "type": "string"
+            },
+            "session_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "actor_id": {
+              "default": "wealth-agent",
+              "type": "string"
+            },
+            "intent": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "tx_type": {
+              "default": "",
+              "type": "string"
+            },
+            "amount": {
+              "default": 0,
+              "type": "number"
+            },
+            "currency": {
+              "default": "MYR",
+              "type": "string"
+            },
+            "description": {
+              "default": "",
+              "type": "string"
+            },
+            "quantity": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "price": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "fees": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "broker": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "asset_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "category": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "notes": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "tool_name": {
+              "default": "",
+              "type": "string"
+            },
+            "arguments": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "result": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "scale_mode": {
+              "default": "enterprise",
+              "type": "string"
+            },
+            "nav_myr": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "quantity_held": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "price_close": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          }
+        },
+        "wealth_future_steward": {
+          "type": "object",
+          "family": "SURVIVAL",
+          "pipeline_stage": "300-SURVIVAL",
+          "description": "Long-Horizon Planetary Boundaries \u2014 Civilization Continuity. [Steward Dimension]",
+          "additionalProperties": false,
+          "properties": {
+            "carbon_budget_gtc": {
+              "default": 0,
+              "type": "number"
+            },
+            "energy_mix": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "population_projection": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "horizon_years": {
+              "default": 50,
+              "type": "integer"
+            },
+            "scale_mode": {
+              "default": "civilization",
+              "type": "string"
+            }
           }
         }
       }
@@ -491,368 +1311,694 @@
     "responses": {
       "type": "object",
       "properties": {
-        "wealth_state_market_snapshot": {
+        "wealth_future_value": {
           "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "description": "Canonical response envelope for wealth_future_value.",
           "properties": {
-            "rf_curve": { "type": "array", "items": { "type": "object" } },
-            "erp": { "type": "number" },
-            "credit_spreads": { "type": "object" },
-            "volatility_surface": { "type": "array", "items": { "type": "object" } },
-            "capital_temperature": { "type": "number", "description": "Composite entropy/risk proxy [ESTIMATE]" }
-          }
-        },
-        "wealth_risk_capital_allocation": {
-          "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
-          "properties": {
-            "economic_capital": { "type": "number" },
-            "risk_decomposition": { "type": "object" },
-            "risk_budgets": { "type": "array", "items": { "type": "object" } },
-            "liquidity_buffer": { "type": "number" }
-          }
-        },
-        "wealth_price_capitalx": {
-          "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
-          "properties": {
-            "r_adj": { "type": "number", "minimum": 0 },
-            "adjustments": {
-              "type": "object",
-              "properties": {
-                "entropy_penalty": { "type": "number" },
-                "peace_discount": { "type": "number" },
-                "maruah_discount": { "type": "number" },
-                "trust_discount": { "type": "number" },
-                "civ_discount": { "type": "number" }
-              }
+            "task": {
+              "type": "string",
+              "const": "wealth_future_value"
             },
-            "uncertainty_band": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } }
-          }
-        },
-        "wealth_price_exergy_cost": {
-          "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
-          "properties": {
-            "exergy_mj_per_unit": { "type": "number" },
-            "emergy_proxy": { "type": "number" },
-            "entropy_cost_per_unit": { "type": "number" }
-          }
-        },
-        "wealth_justice_maruah_score": {
-          "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
-          "properties": {
-            "maruah_score": { "type": "number", "minimum": 0, "maximum": 1 },
-            "maruah_band": { "type": "string", "enum": ["SOVEREIGN", "STABLE", "FLOOR", "AMBER", "RED"] },
-            "incidence_map": { "type": "object" },
-            "exclusion_flags": { "type": "array", "items": { "type": "string" } }
-          }
-        },
-        "wealth_control_gate_888": {
-          "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
-          "properties": {
-            "hold_triggered": { "type": "boolean" },
-            "hold_reasons": { "type": "array", "items": { "type": "string" } },
-            "recommendation": { "type": "string", "enum": ["FUND", "DEFER", "RESTRUCTURE", "KILL"] },
-            "repricing_hints": { "type": "array", "items": { "type": "string" } },
-            "upstream_signal": { "type": "string" }
-          }
-        },
-        "wealth_npv_reward": {
-          "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
-          "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "npv": { "type": "number" }
-              }
+            "canonical_tool": {
+              "type": "string",
+              "const": "wealth_future_value"
+            },
+            "mcp": {
+              "type": "string",
+              "const": "WEALTH"
+            },
+            "status": {
+              "type": "string"
+            },
+            "domain_verdict": {
+              "type": "string"
+            },
+            "governance_verdict": {
+              "type": "string"
+            },
+            "allocation_signal": {
+              "type": "string"
+            },
+            "engine_status": {
+              "type": "string"
+            },
+            "g_score": {
+              "type": "number"
+            },
+            "entropy_s": {
+              "type": "number"
+            },
+            "risk": {
+              "type": "object"
             },
             "secondary_metrics": {
-              "type": "object",
-              "properties": {
-                "eaa": { "type": "number" },
-                "pv_inflows": { "type": "number" },
-                "pv_outflows": { "type": "number" },
-                "period_count": { "type": "integer" },
-                "period_unit": { "type": "string" },
-                "confidence_band": { "type": "array", "items": { "type": "number" } }
-              }
+              "type": "object"
             }
-          }
+          },
+          "required": [
+            "task",
+            "canonical_tool",
+            "mcp",
+            "governance_verdict",
+            "allocation_signal",
+            "engine_status"
+          ]
         },
-        "wealth_pi_efficiency": {
+        "wealth_present_expect": {
           "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "description": "Canonical response envelope for wealth_present_expect.",
           "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "pi": { "type": "number" }
-              }
+            "task": {
+              "type": "string",
+              "const": "wealth_present_expect"
+            },
+            "canonical_tool": {
+              "type": "string",
+              "const": "wealth_present_expect"
+            },
+            "mcp": {
+              "type": "string",
+              "const": "WEALTH"
+            },
+            "status": {
+              "type": "string"
+            },
+            "domain_verdict": {
+              "type": "string"
+            },
+            "governance_verdict": {
+              "type": "string"
+            },
+            "allocation_signal": {
+              "type": "string"
+            },
+            "engine_status": {
+              "type": "string"
+            },
+            "g_score": {
+              "type": "number"
+            },
+            "entropy_s": {
+              "type": "number"
+            },
+            "risk": {
+              "type": "object"
             },
             "secondary_metrics": {
-              "type": "object",
-              "properties": {
-                "ranking_signal": { "type": "string", "enum": ["EFFICIENT", "EXTRACTIVE"] }
-              }
+              "type": "object"
             }
-          }
+          },
+          "required": [
+            "task",
+            "canonical_tool",
+            "mcp",
+            "governance_verdict",
+            "allocation_signal",
+            "engine_status"
+          ]
         },
-        "wealth_personal_decision": {
+        "wealth_future_simulate": {
           "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "description": "Canonical response envelope for wealth_future_simulate.",
           "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "ranked_alternatives": { "type": "array", "items": { "type": "object" } }
-              }
+            "task": {
+              "type": "string",
+              "const": "wealth_future_simulate"
+            },
+            "canonical_tool": {
+              "type": "string",
+              "const": "wealth_future_simulate"
+            },
+            "mcp": {
+              "type": "string",
+              "const": "WEALTH"
+            },
+            "status": {
+              "type": "string"
+            },
+            "domain_verdict": {
+              "type": "string"
+            },
+            "governance_verdict": {
+              "type": "string"
+            },
+            "allocation_signal": {
+              "type": "string"
+            },
+            "engine_status": {
+              "type": "string"
+            },
+            "g_score": {
+              "type": "number"
+            },
+            "entropy_s": {
+              "type": "number"
+            },
+            "risk": {
+              "type": "object"
             },
             "secondary_metrics": {
-              "type": "object",
-              "properties": {
-                "constraint_summary": { "type": "object" }
-              }
+              "type": "object"
             }
-          }
+          },
+          "required": [
+            "task",
+            "canonical_tool",
+            "mcp",
+            "governance_verdict",
+            "allocation_signal",
+            "engine_status"
+          ]
         },
-        "wealth_agent_budget": {
+        "wealth_survival_liquidity": {
           "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "description": "Canonical response envelope for wealth_survival_liquidity.",
           "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "selected_actions": { "type": "array", "items": { "type": "string" } },
-                "total_value": { "type": "number" }
-              }
+            "task": {
+              "type": "string",
+              "const": "wealth_survival_liquidity"
+            },
+            "canonical_tool": {
+              "type": "string",
+              "const": "wealth_survival_liquidity"
+            },
+            "mcp": {
+              "type": "string",
+              "const": "WEALTH"
+            },
+            "status": {
+              "type": "string"
+            },
+            "domain_verdict": {
+              "type": "string"
+            },
+            "governance_verdict": {
+              "type": "string"
+            },
+            "allocation_signal": {
+              "type": "string"
+            },
+            "engine_status": {
+              "type": "string"
+            },
+            "g_score": {
+              "type": "number"
+            },
+            "entropy_s": {
+              "type": "number"
+            },
+            "risk": {
+              "type": "object"
             },
             "secondary_metrics": {
-              "type": "object",
-              "properties": {
-                "remaining_budget": { "type": "number" },
-                "remaining_time": { "type": "number" }
-              }
+              "type": "object"
             }
-          }
+          },
+          "required": [
+            "task",
+            "canonical_tool",
+            "mcp",
+            "governance_verdict",
+            "allocation_signal",
+            "engine_status"
+          ]
         },
-        "wealth_crisis_triage": {
+        "wealth_survival_leverage": {
           "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "description": "Canonical response envelope for wealth_survival_leverage.",
           "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "survival_probability": { "type": "number" },
-                "resource_gap": { "type": "number" }
-              }
+            "task": {
+              "type": "string",
+              "const": "wealth_survival_leverage"
+            },
+            "canonical_tool": {
+              "type": "string",
+              "const": "wealth_survival_leverage"
+            },
+            "mcp": {
+              "type": "string",
+              "const": "WEALTH"
+            },
+            "status": {
+              "type": "string"
+            },
+            "domain_verdict": {
+              "type": "string"
+            },
+            "governance_verdict": {
+              "type": "string"
+            },
+            "allocation_signal": {
+              "type": "string"
+            },
+            "engine_status": {
+              "type": "string"
+            },
+            "g_score": {
+              "type": "number"
+            },
+            "entropy_s": {
+              "type": "number"
+            },
+            "risk": {
+              "type": "object"
             },
             "secondary_metrics": {
-              "type": "object",
-              "properties": {
-                "triage_allocation": { "type": "array", "items": { "type": "object" } },
-                "recovery_horizon_days": { "type": "number" }
-              }
+              "type": "object"
             }
-          }
+          },
+          "required": [
+            "task",
+            "canonical_tool",
+            "mcp",
+            "governance_verdict",
+            "allocation_signal",
+            "engine_status"
+          ]
         },
-        "wealth_civilization_stewardship": {
+        "wealth_info_value": {
           "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "description": "Canonical response envelope for wealth_info_value.",
           "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "sustainability_index": { "type": "number" },
-                "collapse_risk": { "type": "number" },
-                "sustainable_growth_rate": { "type": "number" }
-              }
+            "task": {
+              "type": "string",
+              "const": "wealth_info_value"
+            },
+            "canonical_tool": {
+              "type": "string",
+              "const": "wealth_info_value"
+            },
+            "mcp": {
+              "type": "string",
+              "const": "WEALTH"
+            },
+            "status": {
+              "type": "string"
+            },
+            "domain_verdict": {
+              "type": "string"
+            },
+            "governance_verdict": {
+              "type": "string"
+            },
+            "allocation_signal": {
+              "type": "string"
+            },
+            "engine_status": {
+              "type": "string"
+            },
+            "g_score": {
+              "type": "number"
+            },
+            "entropy_s": {
+              "type": "number"
+            },
+            "risk": {
+              "type": "object"
             },
             "secondary_metrics": {
-              "type": "object",
-              "properties": {
-                "energy_per_capita_twh": { "type": "number" },
-                "projected_population_billions": { "type": "number" },
-                "time_horizon_years": { "type": "integer" }
-              }
+              "type": "object"
             }
-          }
+          },
+          "required": [
+            "task",
+            "canonical_tool",
+            "mcp",
+            "governance_verdict",
+            "allocation_signal",
+            "engine_status"
+          ]
         },
-        "wealth_coordination_equilibrium": {
+        "wealth_truth_validate": {
           "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "description": "Canonical response envelope for wealth_truth_validate.",
           "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "tragedy_risk": { "type": "number" },
-                "conflict_count": { "type": "integer" },
-                "total_welfare": { "type": "number" }
-              }
+            "task": {
+              "type": "string",
+              "const": "wealth_truth_validate"
+            },
+            "canonical_tool": {
+              "type": "string",
+              "const": "wealth_truth_validate"
+            },
+            "mcp": {
+              "type": "string",
+              "const": "WEALTH"
+            },
+            "status": {
+              "type": "string"
+            },
+            "domain_verdict": {
+              "type": "string"
+            },
+            "governance_verdict": {
+              "type": "string"
+            },
+            "allocation_signal": {
+              "type": "string"
+            },
+            "engine_status": {
+              "type": "string"
+            },
+            "g_score": {
+              "type": "number"
+            },
+            "entropy_s": {
+              "type": "number"
+            },
+            "risk": {
+              "type": "object"
             },
             "secondary_metrics": {
-              "type": "object",
-              "properties": {
-                "conflicts": { "type": "array", "items": { "type": "object" } },
-                "cooperative_surplus": { "type": "number" },
-                "mechanism": { "type": "string" },
-                "shadow_prices": { "type": "object" }
-              }
+              "type": "object"
             }
-          }
+          },
+          "required": [
+            "task",
+            "canonical_tool",
+            "mcp",
+            "governance_verdict",
+            "allocation_signal",
+            "engine_status"
+          ]
         },
-        "wealth_game_theory_solve": {
+        "wealth_rule_enforce": {
           "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "description": "Canonical response envelope for wealth_rule_enforce.",
           "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "total_welfare": { "type": "number" },
-                "tragedy_risk": { "type": "number" },
-                "in_core": { "type": "boolean" },
-                "blocking_coalitions": { "type": "array", "items": { "type": "object" } }
-              }
+            "task": {
+              "type": "string",
+              "const": "wealth_rule_enforce"
+            },
+            "canonical_tool": {
+              "type": "string",
+              "const": "wealth_rule_enforce"
+            },
+            "mcp": {
+              "type": "string",
+              "const": "WEALTH"
+            },
+            "status": {
+              "type": "string"
+            },
+            "domain_verdict": {
+              "type": "string"
+            },
+            "governance_verdict": {
+              "type": "string"
+            },
+            "allocation_signal": {
+              "type": "string"
+            },
+            "engine_status": {
+              "type": "string"
+            },
+            "g_score": {
+              "type": "number"
+            },
+            "entropy_s": {
+              "type": "number"
+            },
+            "risk": {
+              "type": "object"
             },
             "secondary_metrics": {
-              "type": "object",
-              "properties": {
-                "allocations": { "type": "object" },
-                "shadow_prices": { "type": "object" },
-                "shapley": { "type": "object" },
-                "scarcity_index": { "type": "object" },
-                "equilibrium": { "type": "object" }
-              }
+              "type": "object"
             }
-          }
+          },
+          "required": [
+            "task",
+            "canonical_tool",
+            "mcp",
+            "governance_verdict",
+            "allocation_signal",
+            "engine_status"
+          ]
         },
-        "wealth_monte_carlo_forecast": {
+        "wealth_allocate_optimize": {
           "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "description": "Canonical response envelope for wealth_allocate_optimize.",
           "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "probability_positive_nrv": { "type": "number" },
-                "expected_shortfall_5pct": { "type": "number" },
-                "upside_potential_95pct": { "type": "number" }
-              }
+            "task": {
+              "type": "string",
+              "const": "wealth_allocate_optimize"
+            },
+            "canonical_tool": {
+              "type": "string",
+              "const": "wealth_allocate_optimize"
+            },
+            "mcp": {
+              "type": "string",
+              "const": "WEALTH"
+            },
+            "status": {
+              "type": "string"
+            },
+            "domain_verdict": {
+              "type": "string"
+            },
+            "governance_verdict": {
+              "type": "string"
+            },
+            "allocation_signal": {
+              "type": "string"
+            },
+            "engine_status": {
+              "type": "string"
+            },
+            "g_score": {
+              "type": "number"
+            },
+            "entropy_s": {
+              "type": "number"
+            },
+            "risk": {
+              "type": "object"
             },
             "secondary_metrics": {
-              "type": "object",
-              "properties": {
-                "mean_npv": { "type": "number" },
-                "volatility_of_outcome": { "type": "number" },
-                "simulations": { "type": "integer" },
-                "distribution": { "type": "string" }
-              }
+              "type": "object"
             }
-          }
+          },
+          "required": [
+            "task",
+            "canonical_tool",
+            "mcp",
+            "governance_verdict",
+            "allocation_signal",
+            "engine_status"
+          ]
         },
-        "wealth_ingest_fetch": {
+        "wealth_game_coordinate": {
           "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "description": "Canonical response envelope for wealth_game_coordinate.",
           "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "count": { "type": "integer" },
-                "cached": { "type": "boolean" }
-              }
+            "task": {
+              "type": "string",
+              "const": "wealth_game_coordinate"
+            },
+            "canonical_tool": {
+              "type": "string",
+              "const": "wealth_game_coordinate"
+            },
+            "mcp": {
+              "type": "string",
+              "const": "WEALTH"
+            },
+            "status": {
+              "type": "string"
+            },
+            "domain_verdict": {
+              "type": "string"
+            },
+            "governance_verdict": {
+              "type": "string"
+            },
+            "allocation_signal": {
+              "type": "string"
+            },
+            "engine_status": {
+              "type": "string"
+            },
+            "g_score": {
+              "type": "number"
+            },
+            "entropy_s": {
+              "type": "number"
+            },
+            "risk": {
+              "type": "object"
             },
             "secondary_metrics": {
-              "type": "object",
-              "properties": {
-                "records": { "type": "array", "items": { "type": "object" } },
-                "flags": { "type": "array", "items": { "type": "string" } }
-              }
+              "type": "object"
             }
-          }
+          },
+          "required": [
+            "task",
+            "canonical_tool",
+            "mcp",
+            "governance_verdict",
+            "allocation_signal",
+            "engine_status"
+          ]
         },
-        "wealth_ingest_snapshot": {
+        "wealth_sense_ingest": {
           "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "description": "Canonical response envelope for wealth_sense_ingest.",
           "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "coverage": { "type": "integer" },
-                "entity_code": { "type": "string" }
-              }
+            "task": {
+              "type": "string",
+              "const": "wealth_sense_ingest"
+            },
+            "canonical_tool": {
+              "type": "string",
+              "const": "wealth_sense_ingest"
+            },
+            "mcp": {
+              "type": "string",
+              "const": "WEALTH"
+            },
+            "status": {
+              "type": "string"
+            },
+            "domain_verdict": {
+              "type": "string"
+            },
+            "governance_verdict": {
+              "type": "string"
+            },
+            "allocation_signal": {
+              "type": "string"
+            },
+            "engine_status": {
+              "type": "string"
+            },
+            "g_score": {
+              "type": "number"
+            },
+            "entropy_s": {
+              "type": "number"
+            },
+            "risk": {
+              "type": "object"
             },
             "secondary_metrics": {
-              "type": "object",
-              "properties": {
-                "snapshot": { "type": "object" },
-                "flags": { "type": "array", "items": { "type": "string" } }
-              }
+              "type": "object"
             }
-          }
+          },
+          "required": [
+            "task",
+            "canonical_tool",
+            "mcp",
+            "governance_verdict",
+            "allocation_signal",
+            "engine_status"
+          ]
         },
-        "wealth_ingest_sources": {
+        "wealth_past_record": {
           "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "description": "Canonical response envelope for wealth_past_record.",
           "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "sources": { "type": "array", "items": { "type": "string" } }
-              }
-            }
-          }
-        },
-        "wealth_ingest_health": {
-          "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
-          "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "health": { "type": "object" }
-              }
-            }
-          }
-        },
-        "wealth_ingest_vintage": {
-          "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
-          "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "count": { "type": "integer" }
-              }
+            "task": {
+              "type": "string",
+              "const": "wealth_past_record"
+            },
+            "canonical_tool": {
+              "type": "string",
+              "const": "wealth_past_record"
+            },
+            "mcp": {
+              "type": "string",
+              "const": "WEALTH"
+            },
+            "status": {
+              "type": "string"
+            },
+            "domain_verdict": {
+              "type": "string"
+            },
+            "governance_verdict": {
+              "type": "string"
+            },
+            "allocation_signal": {
+              "type": "string"
+            },
+            "engine_status": {
+              "type": "string"
+            },
+            "g_score": {
+              "type": "number"
+            },
+            "entropy_s": {
+              "type": "number"
+            },
+            "risk": {
+              "type": "object"
             },
             "secondary_metrics": {
-              "type": "object",
-              "properties": {
-                "records": { "type": "array", "items": { "type": "object" } },
-                "flags": { "type": "array", "items": { "type": "string" } }
-              }
+              "type": "object"
             }
-          }
+          },
+          "required": [
+            "task",
+            "canonical_tool",
+            "mcp",
+            "governance_verdict",
+            "allocation_signal",
+            "engine_status"
+          ]
         },
-        "wealth_ingest_reconcile": {
+        "wealth_future_steward": {
           "type": "object",
-          "allOf": [{ "$ref": "#/definitions/CommonResponseFooter" }],
+          "description": "Canonical response envelope for wealth_future_steward.",
           "properties": {
-            "primary_result": {
-              "type": "object",
-              "properties": {
-                "divergences": { "type": "array", "items": { "type": "object" } },
-                "snapshot_coverage": { "type": "integer" }
-              }
+            "task": {
+              "type": "string",
+              "const": "wealth_future_steward"
+            },
+            "canonical_tool": {
+              "type": "string",
+              "const": "wealth_future_steward"
+            },
+            "mcp": {
+              "type": "string",
+              "const": "WEALTH"
+            },
+            "status": {
+              "type": "string"
+            },
+            "domain_verdict": {
+              "type": "string"
+            },
+            "governance_verdict": {
+              "type": "string"
+            },
+            "allocation_signal": {
+              "type": "string"
+            },
+            "engine_status": {
+              "type": "string"
+            },
+            "g_score": {
+              "type": "number"
+            },
+            "entropy_s": {
+              "type": "number"
+            },
+            "risk": {
+              "type": "object"
             },
             "secondary_metrics": {
-              "type": "object",
-              "properties": {
-                "flags": { "type": "array", "items": { "type": "string" } }
-              }
+              "type": "object"
             }
-          }
+          },
+          "required": [
+            "task",
+            "canonical_tool",
+            "mcp",
+            "governance_verdict",
+            "allocation_signal",
+            "engine_status"
+          ]
         }
       }
     }
