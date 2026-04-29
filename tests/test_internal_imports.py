@@ -7,7 +7,12 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from internal.invariants import get_g_score
-from internal.monolith import mcp, wealth_future_value
+from internal.monolith import (
+    mcp,
+    wealth_future_steward,
+    wealth_future_value,
+    wealth_game_coordinate,
+)
 
 
 def test_g_score_engine_imports_and_runs():
@@ -59,3 +64,29 @@ def test_mcp_exports_only_13_canonical_tools():
         "wealth_past_record",
         "wealth_future_steward",
     }
+
+
+def test_game_coordinate_accepts_scalar_packets():
+    envelope = wealth_game_coordinate(
+        mode="equilibrium",
+        agents=[
+            {"id": "a1", "utility": 1.0, "resource_demand": 2.0},
+            {"id": "a2", "utility": 0.8, "resource_demand": 1.0},
+        ],
+        shared_resources={"budget": 100.0},
+    )
+
+    assert envelope["task"] == "wealth_game_coordinate"
+    assert envelope["engine_status"] in {"VALID", "WARNING", "ERROR"}
+
+
+def test_future_steward_maps_public_packet_to_internal_engine():
+    envelope = wealth_future_steward(
+        carbon_budget_gtc=250.0,
+        energy_mix={"renewables": 0.6, "fossil": 0.4},
+        population_projection={"current": 34_000_000, "target": 36_000_000},
+        horizon_years=25,
+    )
+
+    assert envelope["task"] == "wealth_future_steward"
+    assert "risk" in envelope

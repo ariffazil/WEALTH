@@ -2413,15 +2413,7 @@ def coordination_equilibrium(
 ) -> Any:
     """Multi-agent resource coordination and equilibrium analysis. [Coordination Dimension]"""
     # Normalize agents to LP schema
-    lp_agents = []
-    for agent in agents:
-        lp_agents.append(
-            {
-                "name": agent.get("name", "unnamed"),
-                "utility": agent.get("utility", {res: 1.0 for res in shared_resources}),
-                "demand": agent.get("resource_demand", {}),
-            }
-        )
+    lp_agents = _normalize_coordination_agents(agents, list(shared_resources.keys()))
 
     lp_result = lp_allocate(lp_agents, shared_resources)
     commons = commons_risk(lp_agents, shared_resources)
@@ -2496,15 +2488,7 @@ def game_theory_solve(
     scale_mode: str = "enterprise",
 ) -> Any:
     """Multi-agent allocation brain: LP welfare, Shapley/core, and Nash approximation. [Coordination Dimension]"""
-    lp_agents = []
-    for agent in agents:
-        lp_agents.append(
-            {
-                "name": agent.get("name", "unnamed"),
-                "utility": agent.get("utility", {res: 1.0 for res in resources}),
-                "demand": agent.get("resource_demand", {}),
-            }
-        )
+    lp_agents = _normalize_coordination_agents(agents, list(resources.keys()))
 
     lp_result = lp_allocate(lp_agents, resources)
     commons = commons_risk(lp_agents, resources)
@@ -3469,6 +3453,34 @@ def _normalize_primitive_envelope(result: Any, canonical_tool: str) -> Any:
 
     return result
 
+
+def _normalize_coordination_agents(
+    agents: List[dict], resource_keys: List[str], default_demand: float = math.inf
+) -> List[dict]:
+    """Accept scalar or dict agent packets and normalize them to LP-ready structures."""
+    normalized = []
+    for index, agent in enumerate(agents):
+        utility = agent.get("utility", {})
+        if isinstance(utility, (int, float)):
+            utility = {resource: float(utility) for resource in resource_keys}
+        elif not isinstance(utility, dict):
+            utility = {resource: 1.0 for resource in resource_keys}
+
+        demand = agent.get("resource_demand", agent.get("demand", {}))
+        if isinstance(demand, (int, float)):
+            demand = {resource: float(demand) for resource in resource_keys}
+        elif not isinstance(demand, dict):
+            demand = {resource: default_demand for resource in resource_keys}
+
+        normalized.append(
+            {
+                "name": agent.get("name") or agent.get("id") or f"agent_{index + 1}",
+                "utility": utility,
+                "demand": demand,
+            }
+        )
+    return normalized
+
 @mcp.tool()
 def wealth_future_value(
     mode: str = "npv",
@@ -3877,11 +3889,24 @@ def wealth_future_steward(
     scale_mode: str = "civilization",
 ) -> Any:
     """Long-Horizon Planetary Boundaries — Civilization Continuity. [Steward Dimension]"""
+    energy_mix = energy_mix or {}
+    population_projection = population_projection or {}
+    current_population = float(population_projection.get("current", 0.0))
+    renewable_mix = float(energy_mix.get("renewables", 0.0))
+    fossil_mix = float(energy_mix.get("fossil", max(0.0, 1.0 - renewable_mix)))
+    energy_budget_twh = float(energy_mix.get("energy_budget_twh", 1000.0 * max(renewable_mix + fossil_mix, 1.0)))
+    tech_growth_rate = float(
+        energy_mix.get(
+            "tech_growth_rate",
+            population_projection.get("tech_growth_rate", max(0.0, renewable_mix * 0.03)),
+        )
+    )
     return _normalize_primitive_envelope(
         civilization_stewardship(
+            current_population,
+            energy_budget_twh,
             carbon_budget_gtc,
-            energy_mix,
-            population_projection,
+            tech_growth_rate,
             horizon_years,
             scale_mode,
         ),
