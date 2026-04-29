@@ -146,12 +146,24 @@ python server.py
 
 # Civilizational demo server
 python mcp/server.py
+```
+
+### Docker (Federation Deploy)
+
+```bash
+# Build image
+docker build -t compose-wealth-organ:latest .
+
+# Run standalone
+docker run -p 8082:8082 compose-wealth-organ:latest
 
 # Health check
-curl http://localhost:8000/health
+curl http://localhost:8082/health
+```
 
+```bash
 # MCP initialize (streamable-http)
-curl -X POST http://localhost:8000/mcp \
+curl -X POST http://localhost:8082/mcp \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test"}}}'
