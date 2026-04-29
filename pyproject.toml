@@ -20,4 +20,5 @@ classifiers = [
 dependencies = [
     "supabase>=2.10.0",
     "fastmcp>=3.2.4",
+    "numpy>=1.26.0",
 ]
