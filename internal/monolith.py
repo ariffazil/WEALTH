@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 try:
-    from .invariants import get_g_score
+    from internal.invariants import get_g_score
 
     G_SCORE_AVAILABLE = True
     G_SCORE_IMPORT_ERROR = None
