@@ -8,7 +8,7 @@ Finalized G-Score Instrumentation (v1.0 Blueprint).
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
-from .kernel_math import RobustRegimeKalmanFilter, calculate_g_score, estimate_lyapunov, HoltSmoothing
+from internal.kernel_math import RobustRegimeKalmanFilter, calculate_g_score, estimate_lyapunov, HoltSmoothing
 
 class GScoreEngine:
     """
