@@ -9,6 +9,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from .invariants import get_g_score
+
 __version__ = "2026.04.29"
 """WEALTH v2026.04.29 - Sovereign Pipeline OS with Expanded Resource Lattice."""
 
@@ -1011,12 +1013,21 @@ def create_envelope(
         next_safe_action = "Proceed with manual verification."
 
     mode_map = {"PASS": "full", "CAUTION": "structured", "HOLD": "draft_only", "VOID": "pause"}
+
+    # --- WEALTH G-Score Integration (Thermodynamic Governance) ---
+    g_score_params = {**primary, "violations": flags, "scale_mode": scale_mode}
+    if secondary:
+        g_score_params.update(secondary)
+    
+    g_data = get_g_score(g_score_params)
         
     envelope = {
         "mcp": "WEALTH",
         "task": tool,
         "status": status,
         "domain_verdict": derived_governance,
+        "g_score": g_data["g_score"],
+        "entropy_s": g_data["entropy_s"],
         "confidence": "LOW" if failure_flags or is_high_stress else "HIGH",
         "epistemic": {
             "class": derived_epistemic,
@@ -1035,6 +1046,11 @@ def create_envelope(
             "economic": "LOW" if derived_allocation == "ACCEPT" else "HIGH",
             "constitutional": "LOW",
             "coupled": "UNKNOWN",
+            "g_score": g_data["g_score"],
+            "delta_s": g_data["delta_s"],
+            "lyapunov_lambda": g_data["lyapunov_lambda"],
+            "verdict": g_data["verdict"],
+            "regime": g_data["regime"]
         },
         "execution": {
             "recommended_mode": mode_map.get(status, "pause"),
