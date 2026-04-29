@@ -20,6 +20,9 @@ classifiers = [
 dependencies = [
     "supabase>=2.10.0",
     "fastmcp>=3.2.4",
+    "anyio>=4.0.0",
     "numpy>=1.26.0",
     "psycopg[binary]>=3.1.0",
+    "starlette>=0.40.0",
+    "uvicorn[standard]>=0.30.0",
 ]
