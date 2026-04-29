@@ -18,7 +18,7 @@
 - **URL:** `https://wealth.arif-fazil.com/mcp`
 - **Transport:** streamable-http (FastMCP 3.2.0)
 - **Status:** **SEALED** — returns real MCP JSON-RPC responses
-- **Caddy Route:** `reverse_proxy /mcp* wealth-organ:8000`
+- **Caddy Route:** `reverse_proxy /mcp* wealth-organ:8082`
 
 ## Operational Doctrine
 - All long-term source changes MUST be committed to `/root/WEALTH`.

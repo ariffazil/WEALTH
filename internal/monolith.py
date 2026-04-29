@@ -4096,4 +4096,19 @@ if __name__ == "__main__":
         if v1_name in _v1_funcs:
             mcp.tool(name=v2_name)(_v1_funcs[v1_name])
 
-    mcp.run(transport="http", host="0.0.0.0", port=8000, path="/mcp", show_banner=False, log_level="info")
+    from starlette.responses import JSONResponse
+    import uvicorn
+
+    app = mcp.http_app(path="/mcp")
+
+    async def health_handler(request):
+        return JSONResponse({"status": "healthy", "service": "wealth-mcp", "version": __version__})
+
+    app.add_route("/health", health_handler, methods=["GET"])
+
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 8082)),
+        log_level=os.environ.get("LOG_LEVEL", "info"),
+    )
