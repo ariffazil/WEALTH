@@ -2792,9 +2792,32 @@ def record_transaction_tool(
     asset_id: Optional[str] = None,
     category: Optional[str] = None,
     notes: Optional[str] = None,
+    dry_run: bool = False,
+    human_confirmed: bool = False,
+    idempotency_key: Optional[str] = None,
 ) -> Any:
     """Record a financial transaction to VAULT999 arifos_vault.wealth.transactions. [Vault Dimension]"""
     from host.governance.vault import record_transaction as _rt
+
+    if dry_run:
+        return create_envelope(
+            "wealth_record_transaction",
+            "Vault",
+            {
+                "tx_id": None,
+                "status": "DRY_RUN",
+                "integrity": None,
+                "idempotency_key": idempotency_key,
+                "human_confirmed": human_confirmed,
+                "would_write": True,
+                "dry_run": True,
+            },
+            {},
+            [],
+            ["DRY_RUN: No transaction written to VAULT999."],
+            verdict="HOLD",
+            scale_mode="enterprise",
+        )
 
     result = _rt(
         tx_type=tx_type,
@@ -2809,6 +2832,11 @@ def record_transaction_tool(
         category=category,
         source_tool="wealth_record_transaction",
         notes=notes,
+        metadata={
+            "idempotency_key": idempotency_key,
+            "human_confirmed": human_confirmed,
+            "tool": "wealth_record_transaction",
+        },
     )
     verdict = "SEAL" if result.get("status") == "INSERTED" else "VOID"
     return create_envelope(
@@ -2818,6 +2846,8 @@ def record_transaction_tool(
             "tx_id": result.get("tx_id"),
             "status": result.get("status"),
             "integrity": result.get("integrity"),
+            "idempotency_key": idempotency_key,
+            "human_confirmed": human_confirmed,
         },
         {"pg_error": result.get("pg_error")},
         [],
@@ -2838,9 +2868,32 @@ def snapshot_portfolio_tool(
     quantity_held: Optional[float] = None,
     price_close: Optional[float] = None,
     currency: str = "MYR",
+    dry_run: bool = False,
+    human_confirmed: bool = False,
+    idempotency_key: Optional[str] = None,
 ) -> Any:
     """Snapshot a tool computation result to VAULT999 arifos_vault.wealth.portfolio_snapshots. [Vault Dimension]"""
     from host.governance.vault import snapshot_portfolio as _sp
+
+    if dry_run:
+        return create_envelope(
+            "wealth_snapshot_portfolio",
+            "Vault",
+            {
+                "snapshot_id": None,
+                "status": "DRY_RUN",
+                "integrity": None,
+                "idempotency_key": idempotency_key,
+                "human_confirmed": human_confirmed,
+                "would_write": True,
+                "dry_run": True,
+            },
+            {},
+            [],
+            ["DRY_RUN: No snapshot written to VAULT999."],
+            verdict="HOLD",
+            scale_mode="enterprise",
+        )
 
     snap = _sp(
         tool_name=tool_name,
@@ -2861,6 +2914,8 @@ def snapshot_portfolio_tool(
             "snapshot_id": snap.get("snapshot_id"),
             "status": snap.get("status"),
             "integrity": snap.get("integrity"),
+            "idempotency_key": idempotency_key,
+            "human_confirmed": human_confirmed,
         },
         {"pg_error": snap.get("pg_error")},
         [],

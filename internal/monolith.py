@@ -340,8 +340,8 @@ class HarnessEngine:
         "wealth_monte_carlo_forecast": {"family": "MIND", "stage": "200-MIND", "display": "wealth_risk_monte_carlo"},
         "wealth_emv_risk": {"family": "MIND", "stage": "200-MIND", "display": "wealth_risk_emv"},
         "wealth_audit_entropy": {"family": "MIND", "stage": "200-MIND", "display": "wealth_audit_entropy", "dual_domain": ["MIND", "JUDGE"]},
-        "wealth_dscr_leverage": {"family": "HEART", "stage": "300-HEART", "display": "wealth_survival_dscr"},
-        "wealth_crisis_triage": {"family": "HEART", "stage": "300-HEART", "display": "wealth_crisis_triage"},
+        "wealth_dscr_leverage": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_survival_dscr"},
+        "wealth_crisis_triage": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_crisis_triage"},
         "wealth_civilization_stewardship": {"family": "HEART", "stage": "300-HEART", "display": "wealth_stewardship_civ"},
         "wealth_npv_reward": {"family": "REASON", "stage": "400-REASON", "display": "wealth_calc_npv"},
         "wealth_irr_yield": {"family": "REASON", "stage": "400-REASON", "display": "wealth_calc_irr"},
@@ -355,9 +355,9 @@ class HarnessEngine:
         "wealth_check_floors": {"family": "JUDGE", "stage": "800-JUDGE", "display": "wealth_check_floors"},
         "wealth_policy_audit": {"family": "JUDGE", "stage": "800-JUDGE", "display": "wealth_policy_audit"},
         "wealth_evoi_monte_carlo": {"family": "MIND", "stage": "200-MIND", "display": "wealth_evoi_monte_carlo"},
-        "wealth_cashflow_flow": {"family": "HEART", "stage": "300-HEART", "display": "wealth_survival_flow"},
-        "wealth_networth_state": {"family": "HEART", "stage": "300-HEART", "display": "wealth_survival_networth"},
-        "wealth_growth_velocity": {"family": "HEART", "stage": "300-HEART", "display": "wealth_survival_velocity"},
+        "wealth_cashflow_flow": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_survival_flow"},
+        "wealth_networth_state": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_survival_networth"},
+        "wealth_growth_velocity": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_survival_velocity"},
     }
 
     # ============================================================
@@ -908,6 +908,21 @@ def derive_allocation_signal(
             return "MARGINAL"
         return "ACCEPT"
 
+    if tool in {"wealth_evoi_compute", "wealth_mind_evoi", "wealth_evoi_monte_carlo"}:
+        drill = primary.get("drill_recommendation", "")
+        if drill.startswith("PROCEED"):
+            return "ACCEPT"
+        if drill.startswith("DO_NOT_DRILL"):
+            return "REJECT"
+        if drill.startswith("HOLD") or drill.startswith("ACQUIRE_DATA"):
+            return "MARGINAL"
+        evoi_val = primary.get("evoi_musd", 0)
+        if evoi_val > 0:
+            return "ACCEPT"
+        if evoi_val < 0:
+            return "REJECT"
+        return "MARGINAL"
+
     return "MARGINAL"
 
 
@@ -1103,6 +1118,8 @@ def create_envelope(
         "governance_verdict": derived_governance,
         "allocation_signal": derived_allocation,
         "engine_status": engine_status,
+        "economic_signal": primary.get("economic_signal"),
+        "execution_verdict": primary.get("execution_verdict"),
         "secondary_metrics": {
             "display_name": meta.get("display", tool),
             "family": meta.get("family", dimension.upper()),
@@ -1116,6 +1133,9 @@ def create_envelope(
         "failure_flags": failure_flags,
         "reversibility": "REVERSIBLE" if "read" in tool or "check" in tool else "UNKNOWN",
         "final_authority": "Arif",
+        "recommendation_only": True,
+        "execution_authorized": False,
+        "human_final_authority": "Arif",
         "epoch": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "w0": "OPERATOR_VETO_INTACT / HIERARCHY_INVARIANT",
     }
@@ -2925,9 +2945,32 @@ def record_transaction_tool(
     asset_id: Optional[str] = None,
     category: Optional[str] = None,
     notes: Optional[str] = None,
+    dry_run: bool = False,
+    human_confirmed: bool = False,
+    idempotency_key: Optional[str] = None,
 ) -> Any:
     """Record a financial transaction to VAULT999 arifos_vault.wealth.transactions. [Vault Dimension]"""
     from host.governance.vault import record_transaction as _rt
+
+    if dry_run:
+        return create_envelope(
+            "wealth_record_transaction",
+            "Vault",
+            {
+                "tx_id": None,
+                "status": "DRY_RUN",
+                "integrity": None,
+                "idempotency_key": idempotency_key,
+                "human_confirmed": human_confirmed,
+                "would_write": True,
+                "dry_run": True,
+            },
+            {},
+            [],
+            ["DRY_RUN: No transaction written to VAULT999."],
+            verdict="HOLD",
+            scale_mode="enterprise",
+        )
 
     result = _rt(
         tx_type=tx_type,
@@ -2942,6 +2985,11 @@ def record_transaction_tool(
         category=category,
         source_tool="wealth_record_transaction",
         notes=notes,
+        metadata={
+            "idempotency_key": idempotency_key,
+            "human_confirmed": human_confirmed,
+            "tool": "wealth_record_transaction",
+        },
     )
     verdict = "SEAL" if result.get("status") == "INSERTED" else "VOID"
     return create_envelope(
@@ -2951,6 +2999,8 @@ def record_transaction_tool(
             "tx_id": result.get("tx_id"),
             "status": result.get("status"),
             "integrity": result.get("integrity"),
+            "idempotency_key": idempotency_key,
+            "human_confirmed": human_confirmed,
         },
         {"pg_error": result.get("pg_error")},
         [],
@@ -2971,9 +3021,32 @@ def snapshot_portfolio_tool(
     quantity_held: Optional[float] = None,
     price_close: Optional[float] = None,
     currency: str = "MYR",
+    dry_run: bool = False,
+    human_confirmed: bool = False,
+    idempotency_key: Optional[str] = None,
 ) -> Any:
     """Snapshot a tool computation result to VAULT999 arifos_vault.wealth.portfolio_snapshots. [Vault Dimension]"""
     from host.governance.vault import snapshot_portfolio as _sp
+
+    if dry_run:
+        return create_envelope(
+            "wealth_snapshot_portfolio",
+            "Vault",
+            {
+                "snapshot_id": None,
+                "status": "DRY_RUN",
+                "integrity": None,
+                "idempotency_key": idempotency_key,
+                "human_confirmed": human_confirmed,
+                "would_write": True,
+                "dry_run": True,
+            },
+            {},
+            [],
+            ["DRY_RUN: No snapshot written to VAULT999."],
+            verdict="HOLD",
+            scale_mode="enterprise",
+        )
 
     snap = _sp(
         tool_name=tool_name,
@@ -2994,6 +3067,8 @@ def snapshot_portfolio_tool(
             "snapshot_id": snap.get("snapshot_id"),
             "status": snap.get("status"),
             "integrity": snap.get("integrity"),
+            "idempotency_key": idempotency_key,
+            "human_confirmed": human_confirmed,
         },
         {"pg_error": snap.get("pg_error")},
         [],
@@ -3181,6 +3256,15 @@ async def wealth_evoi_compute(
             discount_rate=discount_rate,
         )
 
+        drill = res.get("drill_recommendation", "")
+        if drill.startswith("PROCEED"):
+            res["economic_signal"] = "POSITIVE_EVOI"
+        elif drill.startswith("DO_NOT_DRILL"):
+            res["economic_signal"] = "NEGATIVE_EVOI"
+        else:
+            res["economic_signal"] = "MARGINAL_EVOI"
+        res["execution_verdict"] = "REQUIRES_888_JUDGE"
+
         return create_envelope(
             "wealth_evoi_compute",
             "Epistemic",
@@ -3238,6 +3322,14 @@ async def wealth_evoi_monte_carlo(
             p50_value_musd=p50_value_musd,
             info_cost_musd=info_cost_musd,
         )
+        evoi_p50 = res.get("evoi_p50", 0)
+        if evoi_p50 > 0:
+            res["economic_signal"] = "POSITIVE_EVOI"
+        elif evoi_p50 < 0:
+            res["economic_signal"] = "NEGATIVE_EVOI"
+        else:
+            res["economic_signal"] = "MARGINAL_EVOI"
+        res["execution_verdict"] = "REQUIRES_888_JUDGE"
 
         return create_envelope(
             "wealth_evoi_monte_carlo",
