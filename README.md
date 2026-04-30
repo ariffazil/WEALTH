@@ -41,9 +41,9 @@ WEALTH is the **capital evidence organ** — it surfaces the financial and econo
 | Field | Value |
 |-------|-------|
 | Canonical repository | `https://github.com/ariffazil/wealth` |
-| Version | `v2026.04.29` |
+| Version | `v2026.04.29-76a2c62` |
 | Governing kernel | `arifOS F1–F13` |
-| MCP tools (canonical kernel) | 13 sovereign primitives |
+| MCP tools (canonical kernel) | 19 sovereign functions |
 | MCP tools (cross-domain demo) | 6 additional tools |
 | Capital scales | 11 (personal → civilization) |
 | Capital types | 7 (financial, temporal, cognitive, social, ecological, strategic, thermodynamic) |
