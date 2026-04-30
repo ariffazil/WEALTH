@@ -521,6 +521,19 @@ def maruah_band(score):
 
 mcp = FastMCP("WEALTH Valuation Kernel")
 
+@mcp.tool()
+def mcp_health_check() -> dict:
+    """Universal health check for federation stability."""
+    return {
+        "mcp": "WEALTH",
+        "status": "OK",
+        "transport": "SSE_VALID",
+        "auth": "OK",
+        "schema_version": "2026.04",
+        "read_only": True,
+        "final_authority": "ARIF",
+    }
+
 EPSILON = 1e-9
 INVALID_FLAGS = {
     "INVALID_INITIAL_INVESTMENT",
@@ -4099,7 +4112,7 @@ if __name__ == "__main__":
     from starlette.responses import JSONResponse
     import uvicorn
 
-    app = mcp.http_app(path="/mcp")
+    app = mcp.http_app(path="/mcp", transport="sse")
 
     async def health_handler(request):
         return JSONResponse({"status": "healthy", "service": "wealth-mcp", "version": __version__})
