@@ -3,7 +3,7 @@
 > **Constitutional Capital Allocation Layer for arifOS**
 > **DITEMPA BUKAN DIBERI — Forged, Not Given**
 
-[![WEALTH](https://img.shields.io/badge/WEALTH-v2026.04.29-00B894?style=flat-square)](https://github.com/ariffazil/wealth)
+[![WEALTH](https://img.shields.io/badge/WEALTH-v2026.05.01--KANON-00B894?style=flat-square)](https://github.com/ariffazil/wealth)
 [![MCP](https://img.shields.io/badge/MCP-FastMCP_3.2.4-7C3AED?style=flat-square)](https://github.com/ariffazil/wealth)
 [![arifOS](https://img.shields.io/badge/arifOS-F1%E2%80%93F13_Governed-FF6B00?style=flat-square)](https://github.com/ariffazil/arifOS)
 [![License](https://img.shields.io/badge/License-AGPL_V3-4EAF0C?style=flat-square)](./LICENSE)
