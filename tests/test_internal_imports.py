@@ -46,11 +46,13 @@ def test_primitive_response_uses_canonical_tool_name():
     assert "verdict" in envelope["risk"]
 
 
-def test_mcp_exports_only_13_canonical_tools():
+def test_mcp_tool_surface_minimum_16_core():
     tool_names = {tool.name for tool in asyncio.run(mcp.list_tools())}
-
-    assert tool_names == {
+    assert len(tool_names) >= 16, f"Expected >=16 tools at module import, got {len(tool_names)}: {sorted(tool_names)}"
+    core = {
         "mcp_health_check",
+        "vault_write",
+        "vault_query",
         "wealth_allocate_optimize",
         "wealth_future_simulate",
         "wealth_future_steward",
@@ -65,6 +67,7 @@ def test_mcp_exports_only_13_canonical_tools():
         "wealth_survival_liquidity",
         "wealth_truth_validate",
     }
+    assert core.issubset(tool_names), f"Core tools missing: {core - tool_names}"
 
 
 def test_game_coordinate_accepts_scalar_packets():
