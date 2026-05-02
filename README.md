@@ -3,7 +3,7 @@
 > **Constitutional Capital Allocation Layer for arifOS**
 > **DITEMPA BUKAN DIBERI — Forged, Not Given**
 
-[![WEALTH](https://img.shields.io/badge/WEALTH-v2026.05.01--KANON-00B894?style=flat-square)](https://github.com/ariffazil/wealth)
+[![WEALTH](https://img.shields.io/badge/WEALTH-v2026.05.02--KANON-00B894?style=flat-square)](https://github.com/ariffazil/wealth)
 [![MCP](https://img.shields.io/badge/MCP-FastMCP_3.2.4-7C3AED?style=flat-square)](https://github.com/ariffazil/wealth)
 [![arifOS](https://img.shields.io/badge/arifOS-F1%E2%80%93F13_Governed-FF6B00?style=flat-square)](https://github.com/ariffazil/arifOS)
 [![License](https://img.shields.io/badge/License-AGPL_V3-4EAF0C?style=flat-square)](./LICENSE)
@@ -41,11 +41,11 @@ WEALTH is the **capital evidence organ** — it surfaces the financial and econo
 | Field | Value |
 |-------|-------|
 | Canonical repository | `https://github.com/ariffazil/wealth` |
-| Version | `v2026.04.29-76a2c62` |
+| Version | `v2026.05.02-bbf8332` |
 | Governing kernel | `arifOS F1–F13` |
-| MCP tools (canonical kernel) | 19 sovereign functions |
-| MCP tools (cross-domain demo) | 6 additional tools |
-| Capital scales | 11 (personal → civilization) |
+| MCP tools (canonical kernel) | 48 tools (13 primitives × mode variants, each mode is a callable endpoint) |
+| MCP tools (cross-domain demo) | 6 additional tools (separate `mcp/server.py`) |
+| Capital scales | 8 (personal → household → sme → enterprise → national → crisis → civilization → agentic) |
 | Capital types | 7 (financial, temporal, cognitive, social, ecological, strategic, thermodynamic) |
 | Homepage | https://wealth.arif-fazil.com/ |
 
@@ -53,14 +53,16 @@ WEALTH is the **capital evidence organ** — it surfaces the financial and econo
 
 ## Architecture — Sovereign Pipeline Families
 
-| Family | Stage | Purpose | Primary Tools |
-|--------|-------|---------|---------------|
-| **SENSE** | 100 | Reality ingestion | `wealth_sense_ingest` (6 modes) |
-| **MIND** | 200 | Epistemic modeling | `wealth_present_expect`, `wealth_future_simulate`, `wealth_info_value`, `wealth_truth_validate` |
-| **SURVIVAL** | 300 | Solvency & stewardship | `wealth_survival_liquidity`, `wealth_survival_leverage`, `wealth_future_steward` |
-| **REASON** | 400 | Capital discipline | `wealth_future_value`, `wealth_allocate_optimize`, `wealth_game_coordinate` |
-| **JUDGE** | 888 | Constitutional gating | `wealth_rule_enforce` |
-| **VAULT** | 999 | Immutable anchoring | `wealth_past_record` |
+> The MCP surface exposes **48 callable tools** — every mode and sub-mode is a first-class endpoint. The 13 canonical primitives (left column) are the architectural concept; the MCP tools are their operational surface.
+
+| Family | Stage | Purpose | Canonical Primitive | MCP Tools (48 total) |
+|--------|-------|---------|-------------------|----------------------|
+| **SENSE** | 100 | Reality ingestion | `wealth_sense_ingest` | 7 tools: `wealth_sense_ingest`, `_fetch`, `_health`, `_reconcile`, `_snapshot`, `_sources`, `_vintage` |
+| **MIND** | 200 | Epistemic modeling | `wealth_present_expect`, `wealth_future_simulate`, `wealth_info_value`, `wealth_truth_validate` | 6 tools: `wealth_mind_emv`, `_evoi`, `_evoi_mc`, `_monte_carlo`, `_schema`, `_correlation` |
+| **SURVIVAL** | 300 | Solvency & stewardship | `wealth_survival_liquidity`, `wealth_survival_leverage`, `wealth_future_steward` | 8 tools: `wealth_survival_cashflow`, `_velocity`, `_triage`, `_dscr`, `_networth`, `_leverage`, `_liquidity`, `_civilization` |
+| **REASON** | 400 | Capital discipline | `wealth_future_value`, `wealth_allocate_optimize`, `wealth_game_coordinate` | 9 tools: `wealth_reason_npv`, `_irr`, `_payback`, `_pi`, `_personal`, `_agent`, `_equilibrium`, `_game` + `wealth_npv_reward` |
+| **JUDGE** | 888 | Constitutional gating | `wealth_rule_enforce` | 4 tools: `wealth_judge_floors`, `_policy`, `_kernel`, `_entropy` |
+| **VAULT** | 999 | Immutable anchoring | `wealth_past_record` | 3 tools: `wealth_vault_init`, `_record`, `_snapshot` |
 
 ---
 
@@ -68,7 +70,7 @@ WEALTH is the **capital evidence organ** — it surfaces the financial and econo
 
 | Surface | File | Tools | Purpose |
 |---------|------|-------|---------|
-| **Canonical kernel** | `internal/monolith.py` | 13 MCP tools | Core valuation, risk, crisis, coordination |
+| **Canonical kernel** | `internal/monolith.py` | 48 MCP tools (13 primitives × mode variants) | Core valuation, risk, crisis, coordination |
 | **Boot wrapper** | `server.py` | Thin compat | Points to canonical kernel |
 | **Civilizational demo** | `mcp/server.py` | 6 tools | Markets, energy, food security domains |
 
