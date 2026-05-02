@@ -50,19 +50,20 @@ def test_mcp_exports_only_13_canonical_tools():
     tool_names = {tool.name for tool in asyncio.run(mcp.list_tools())}
 
     assert tool_names == {
-        "wealth_future_value",
-        "wealth_present_expect",
-        "wealth_future_simulate",
-        "wealth_info_value",
-        "wealth_truth_validate",
-        "wealth_survival_liquidity",
-        "wealth_survival_leverage",
-        "wealth_rule_enforce",
+        "mcp_health_check",
         "wealth_allocate_optimize",
-        "wealth_game_coordinate",
-        "wealth_sense_ingest",
-        "wealth_past_record",
+        "wealth_future_simulate",
         "wealth_future_steward",
+        "wealth_future_value",
+        "wealth_game_coordinate",
+        "wealth_info_value",
+        "wealth_past_record",
+        "wealth_present_expect",
+        "wealth_rule_enforce",
+        "wealth_sense_ingest",
+        "wealth_survival_leverage",
+        "wealth_survival_liquidity",
+        "wealth_truth_validate",
     }
 
 
