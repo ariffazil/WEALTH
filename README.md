@@ -108,15 +108,36 @@ Every scale has different risk tolerance, time horizon, and dignity constraints.
 
 ---
 
-## Sibling Organ READMEs
+## arifOS Federation
 
-| Organ | One-liner |
-|-------|----------|
-| [`arifOS`](https://github.com/ariffazil/arifOS) | Constitutional kernel — F1–F13 floors, 13 tools, VAULT999 |
-| [`AAA`](https://github.com/ariffazil/AAA) | Identity, A2A federation gateway, and operator control plane |
-| [`A-FORGE`](https://github.com/ariffazil/A-FORGE) | Execution shell, orchestration, and operator observability |
-| [`GEOX`](https://github.com/ariffazil/geox) | Governed earth intelligence — seismic, petrophysics, basin analysis |
-| [`WELL`](https://github.com/ariffazil/well) | Biological substrate governance — human readiness mirroring |
+arifOS is part of a federated AI governance system. Each organ has a narrow responsibility so no single agent becomes uncontrolled, unaccountable, or self-authorizing.
+
+| Organ | Human Meaning | System Role | Docs |
+|---|---|---|---|
+| **ARIF / APEX** | Final human authority | F13 sovereign veto, approval, override, terminal judgment | [arif-fazil.com](https://arif-fazil.com) |
+| **AAA** | Operator cockpit | Identity, A2A federation gateway, session control, agent supervision | [README](https://github.com/ariffazil/AAA) |
+| **A-FORGE** | Execution shell | Runs tools, performs dry-runs, executes approved actions, reports outcomes | [README](https://github.com/ariffazil/A-FORGE) |
+| **arifOS** | Governance kernel | Checks evidence, risk, authority, verdicts, and auditability before action | [README](https://github.com/ariffazil/arifOS) |
+| **GEOX** | Earth intelligence | Seismic, petrophysics, basin, subsurface, and physics-grounded evidence | [README](https://github.com/ariffazil/geox) |
+| **WEALTH** | Capital intelligence | NPV, IRR, EMV, risk scoring, crisis triage, economic judgment | [README](https://github.com/ariffazil/wealth) |
+| **WELL** | Human readiness mirror | Operator pressure, biological state, cognitive load, human-system safety | — |
+| **Ω-Wiki** | Knowledge base | Persistent compiled knowledge, doctrine, references, and memory surfaces | [wiki.arif-fazil.com](https://wiki.arif-fazil.com) |
+
+### How the organs work together
+
+A governed action should not move directly from prompt to execution.
+
+```
+Human / Agent request
+→ AAA identifies the session
+→ arifOS judges the request
+→ GEOX / WEALTH / WELL provide domain evidence when needed
+→ A-FORGE executes only approved actions
+→ VAULT999 records the receipt
+→ APEX / Human can veto at any time
+```
+
+> **AAA controls the session. arifOS judges. Domain organs provide evidence. A-FORGE executes. VAULT999 records. The human remains sovereign.**
 
 ---
 
