@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://wealth.arif-fazil.com/api/schemas/wealth-mcp-tools.json",
   "title": "WEALTH Canonical MCP Tool Schema",
-  "description": "13-tool canonical WEALTH MCP surface with legacy aliases merged into mode-bearing sovereign primitives.",
+  "description": "48-tool WEALTH MCP surface — 13 canonical primitives with every mode exposed as a first-class callable endpoint. Sovereign pipeline families: SENSE (7), MIND (6), SURVIVAL (8), REASON (9), JUDGE (4), VAULT (3).",
   "definitions": {
     "CommonRequestHeader": {
       "type": "object",
