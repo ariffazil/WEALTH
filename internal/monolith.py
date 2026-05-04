@@ -7,13 +7,18 @@ import os
 import sys
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple, Callable
 
-# Ensure sibling directories are in path BEFORE importing internal modules
-# This is needed because running 'python internal/monolith.py' doesn't add /app to sys.path
+# Ensure parent directory is in path for absolute imports if needed
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if base_dir not in sys.path:
     sys.path.append(base_dir)
+
+# WEALTH Internal Imports (Use relative or try/except for robustness)
+try:
+    from .governance import ForgeLaw, compute_kappa_r, compute_psi_le, get_qdf_version
+except ImportError:
+    from governance import ForgeLaw, compute_kappa_r, compute_psi_le, get_qdf_version
 
 try:
     from internal.invariants import get_g_score
@@ -21,24 +26,31 @@ try:
     G_SCORE_AVAILABLE = True
     G_SCORE_IMPORT_ERROR = None
 except Exception as exc:
-    G_SCORE_AVAILABLE = False
-    G_SCORE_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
+    # If standard import fails, try relative import
+    try:
+        from invariants import get_g_score
+        G_SCORE_AVAILABLE = True
+        G_SCORE_IMPORT_ERROR = None
+    except Exception as exc2:
+        G_SCORE_AVAILABLE = False
+        G_SCORE_IMPORT_ERROR = f"{type(exc2).__name__}: {exc2}"
 
-    def get_g_score(params: Dict[str, Any]) -> Dict[str, Any]:
-        return {
-            "g_score": 0.0,
-            "delta_s": 0.0,
-            "lyapunov_lambda": 0.0,
-            "omega_capacity": 0.0,
-            "entropy_s": 1.0,
-            "verdict": "UNAVAILABLE",
-            "regime": "unavailable",
-            "is_outlier": False,
-            "boundary_stress": params.get("resource_utilization", 0.8),
-            "engine_error": G_SCORE_IMPORT_ERROR,
-        }
+        def get_g_score(params: Dict[str, Any]) -> Dict[str, Any]:
+            return {
+                "g_score": 0.0,
+                "delta_s": 0.0,
+                "delta_S": 0.0, # Compat
+                "lyapunov_lambda": 0.0,
+                "omega_capacity": 0.0,
+                "entropy_s": 1.0,
+                "verdict": "UNAVAILABLE",
+                "regime": "unavailable",
+                "is_outlier": False,
+                "boundary_stress": params.get("resource_utilization", 0.8),
+                "engine_error": G_SCORE_IMPORT_ERROR,
+            }
 
-__version__ = "2026.04.29"
+__version__ = "2026.05.02"
 """WEALTH v2026.04.29 - Sovereign Pipeline OS with Expanded Resource Lattice."""
 
 LAST_RECEIPT_HASH = "0" * 64
@@ -289,6 +301,8 @@ class HarnessEngine:
 
     TOOL_TO_HARNESS = {
         "wealth_init": "Identity",
+        "vault_write": "Identity",
+        "vault_query": "Identity",
         "wealth_record_transaction": "Identity",
         "wealth_snapshot_portfolio": "Identity",
         "wealth_ingest_fetch": "Reality",
@@ -327,6 +341,8 @@ class HarnessEngine:
     
     SOVEREIGN_METADATA = {
         "wealth_init": {"family": "VAULT", "stage": "000-VAULT", "display": "wealth_init"},
+        "vault_write": {"family": "VAULT", "stage": "000-VAULT", "display": "vault_write"},
+        "vault_query": {"family": "VAULT", "stage": "000-VAULT", "display": "vault_query"},
         "wealth_record_transaction": {"family": "VAULT", "stage": "000-VAULT", "display": "wealth_record_transaction"},
         "wealth_snapshot_portfolio": {"family": "VAULT", "stage": "000-VAULT", "display": "wealth_snapshot_portfolio"},
         "wealth_ingest_fetch": {"family": "SENSE", "stage": "100-SENSE", "display": "wealth_ingest_fetch"},
@@ -1096,6 +1112,15 @@ def create_envelope(
         "domain_verdict": derived_governance,
         "g_score": g_data["g_score"],
         "entropy_s": g_data["entropy_s"],
+        "qdf": get_qdf_version(),
+        "witness": {
+            "human": governance_args.get("human_confirmed", False) if governance_args else False,
+            "ai": True,
+            "earth": True
+        },
+        "shadow": len(audit_res.get("violations", [])) > 0 or len(audit_res.get("holds", [])) > 0,
+        "kappa_r": compute_kappa_r(primary.get("rasa", 0.9), primary.get("truth_consistency", 0.95)),
+        "psi_le": compute_psi_le(g_data["entropy_s"], systemic_stress),
         "confidence": "LOW" if failure_flags or is_high_stress else "HIGH",
         "epistemic": {
             "class": derived_epistemic,
@@ -4067,6 +4092,95 @@ def wealth_future_steward(
         "wealth_future_steward",
     )
 
+@mcp.tool()
+def vault_write(
+    action: str,
+    payload: Dict[str, Any],
+    session_id: str = "UNKNOWN",
+    agent_id: str = "WEALTH_AGENT",
+    verdict: str = "SEAL",
+    ack_irreversible: bool = False,
+) -> Any:
+    """999: Ledger Append — Permanently write an economic event to VAULT999.
+    F01 AMANAH: This operation is irreversible. Requires ack_irreversible=True or verdict != SEAL.
+    """
+    # F01 Irreversibility gate
+    if verdict == "SEAL" and not ack_irreversible:
+        return create_envelope(
+            "vault_write",
+            "VAULT",
+            {
+                "action": action,
+                "status": "HOLD",
+                "reason": "F01: Irreversible VAULT999 write requires ack_irreversible=True",
+                "vault_id": None,
+                "chain_hash": None,
+            },
+            flags=["F01_HOLD:ack_irreversible_required"],
+            epistemic="FACT",
+            verdict="888-HOLD",
+        )
+
+    # Ensure session_id is in payload for arifOS compliance
+    payload["session_id"] = session_id
+
+    # Bridge to arifOS vault system
+    res = _vault_append(
+        {
+            "tool": "vault_write",
+            "agent_id": agent_id,
+            "action": action,
+            "payload": payload,
+            "verdict": verdict,
+            "confidence": 1.0,
+        }
+    )
+
+    # Standard WEALTH Envelope
+    primary = {
+        "action": action,
+        "payload": payload,
+        "vault_id": res.get("event_id") if isinstance(res, dict) else str(uuid.uuid4()),
+        "chain_hash": res.get("chain_hash") if isinstance(res, dict) else "0" * 64,
+    }
+
+    return create_envelope(
+        "vault_write",
+        "VAULT",
+        primary,
+        epistemic="FACT",
+        verdict=verdict,
+        governance_args={"human_confirmed": ack_irreversible},
+    )
+
+@mcp.tool()
+def vault_query(
+    query: str,
+    limit: int = 10,
+    session_id: Optional[str] = None,
+) -> Any:
+    """999: Ledger Read — Query the immutable governance ledger.
+    Reads from VAULT999 via Supabase REST API. Returns earth_refs[] for F03 traceability.
+    """
+    from host.governance.vault_supabase import query_vault999
+
+    result = query_vault999(query=query, limit=limit, session_id=session_id)
+
+    primary = {
+        "query": result["query"],
+        "earth_refs": result["earth_refs"],
+        "count": result["count"],
+        "vault_seal": result["vault_seal"],
+    }
+
+    epistemic = "FACT" if result["count"] > 0 else "ESTIMATE"
+    return create_envelope(
+        "vault_query",
+        "VAULT",
+        primary,
+        epistemic=epistemic,
+    )
+
 if __name__ == "__main__":
     # Register v2 legacy aliases (non-breaking Phase 1 Migration)
     engine = HarnessEngine()
@@ -4104,15 +4218,19 @@ if __name__ == "__main__":
         "wealth_init": wealth_init_tool,
         "wealth_record_transaction": record_transaction_tool,
         "wealth_snapshot_portfolio": snapshot_portfolio_tool,
+        "vault_write": record_transaction_tool,
+        "vault_query": snapshot_portfolio_tool,
     }
     for v2_name, v1_name in engine.V2_CANONICAL_MAP.items():
+        if v2_name in ("vault_write", "vault_query"):
+            continue
         if v1_name in _v1_funcs:
             mcp.tool(name=v2_name)(_v1_funcs[v1_name])
 
     from starlette.responses import JSONResponse
     import uvicorn
 
-    app = mcp.http_app(path="/mcp", transport="sse")
+    app = mcp.http_app(path="/mcp", transport="streamable-http")
 
     async def health_handler(request):
         return JSONResponse({"status": "healthy", "service": "wealth-mcp", "version": __version__})
