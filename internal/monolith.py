@@ -4230,7 +4230,7 @@ if __name__ == "__main__":
     from starlette.responses import JSONResponse
     import uvicorn
 
-    app = mcp.http_app(path="/mcp", transport="streamable-http")
+    app = mcp.http_app(path="/mcp", transport="streamable-http", json_response=True, stateless_http=True)
 
     async def health_handler(request):
         return JSONResponse({"status": "healthy", "service": "wealth-mcp", "version": __version__})
