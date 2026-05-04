@@ -4227,15 +4227,64 @@ if __name__ == "__main__":
         if v1_name in _v1_funcs:
             mcp.tool(name=v2_name)(_v1_funcs[v1_name])
 
-    from starlette.responses import JSONResponse
+    from starlette.applications import Starlette
+    from starlette.routing import Route, Mount
+    from starlette.responses import JSONResponse as _JR
     import uvicorn
 
-    app = mcp.http_app(path="/mcp", transport="streamable-http", json_response=True, stateless_http=True)
+    async def legacy_mcp_handler(request):
+        """Direct JSON-RPC handler — bypasses FastMCP Accept-header enforcement."""
+        if request.method == "GET":
+            return _JR({
+                "mcp": "WEALTH",
+                "kernel": "Capital Intelligence Engine",
+                "version": __version__,
+                "transport": "streamable-http",
+                "note": "Use POST for JSON-RPC tool calls",
+            })
+        try:
+            payload = await request.json()
+        except Exception:
+            return _JR({"error": "Parse error"}, status_code=400)
+
+        method = payload.get("method")
+        params = payload.get("params", {})
+        response_id = payload.get("id")
+
+        if method == "tools/list":
+            all_tools = await mcp.list_tools()
+            return _JR({
+                "jsonrpc": "2.0",
+                "id": response_id,
+                "result": {"tools": [{"name": t.name, "description": t.description, "inputSchema": getattr(t, "inputSchema", {}), "outputSchema": getattr(t, "output_schema", {})} for t in all_tools]}
+            })
+
+        if method == "tools/call":
+            name = params.get("name")
+            arguments = params.get("arguments", {})
+            if not name:
+                return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32602, "message": "Missing tool name"}}, status_code=400)
+            try:
+                result = await mcp.call_tool(name, arguments)
+                return _JR({"jsonrpc": "2.0", "id": response_id, "result": result})
+            except Exception as e:
+                return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32603, "message": str(e)}}, status_code=500)
+
+        return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32601, "message": "Method not found"}}, status_code=404)
 
     async def health_handler(request):
-        return JSONResponse({"status": "healthy", "service": "wealth-mcp", "version": __version__})
+        return _JR({"status": "healthy", "service": "wealth-mcp", "version": __version__})
 
-    app.add_route("/health", health_handler, methods=["GET"])
+    mcp_app = mcp.http_app(path="/", transport="streamable-http", stateless_http=True)
+
+    app = Starlette(
+        routes=[
+            Route("/mcp", legacy_mcp_handler, methods=["GET", "POST"]),
+            Route("/health", health_handler, methods=["GET"]),
+            Mount("/", app=mcp_app),
+        ],
+        lifespan=getattr(mcp_app, "lifespan", None),
+    )
 
     uvicorn.run(
         app,
