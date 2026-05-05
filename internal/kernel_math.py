@@ -46,11 +46,16 @@ class RobustRegimeKalmanFilter:
         S_cov = np.dot(self.C, np.dot(self.P, self.C.T)) + base_theta
         
         # Calculate Mahalanobis distance for outlier detection
-        try:
-            S_inv = np.linalg.inv(S_cov)
-            mahalanobis = np.sqrt(np.dot(np.dot(y.T, S_inv), y))[0][0]
-        except np.linalg.LinAlgError:
-            mahalanobis = 0.0
+        # FIX: use solve (numerically stable) instead of inv, and clamp sqrt arg to prevent NaN
+        mahalanobis = 0.0
+        with np.errstate(all='ignore'):
+            try:
+                # solve(S_cov, y) is equivalent to S_cov^-1 @ y but more stable
+                S_inv_y = np.linalg.solve(S_cov, y)
+                mahalanobis_raw = float(np.dot(y.T, S_inv_y)[0][0])
+                mahalanobis = np.sqrt(max(mahalanobis_raw, 0.0))
+            except (np.linalg.LinAlgError, ValueError, FloatingPointError):
+                mahalanobis = 0.0
 
         # GMM weight adjustment: if mahalanobis is high, inflate Theta (outlier)
         # Threshold k=3 for innovation gating
