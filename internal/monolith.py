@@ -2298,14 +2298,16 @@ def personal_decision(
 
 # INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_agent_budget)
 def agent_budget(
-    compute_budget_usd: float,
-    token_budget: float,
-    time_deadline_hours: float,
-    expected_value_of_information: float,
-    actions: List[dict],
+    compute_budget_usd: float = 1.0,
+    token_budget: float = 1000.0,
+    time_deadline_hours: float = 1.0,
+    expected_value_of_information: float = 0.0,
+    actions: List[dict] = None,
     scale_mode: str = "agentic",
 ) -> Any:
     """Optimal action sequence for an AI agent under resource constraints. [Agentic Dimension]"""
+    if actions is None:
+        actions = []
     feasible = []
     for action in actions:
         cost = action.get("compute_cost_usd", 0) + action.get("token_cost", 0) * 0.00001
@@ -4232,6 +4234,24 @@ if __name__ == "__main__":
     from starlette.responses import JSONResponse as _JR
     import uvicorn
 
+    def _serialize_result(result):
+        """Convert FastMCP ToolResult to JSON-serializable dict."""
+        if result is None:
+            return None
+        if hasattr(result, "model_dump"):
+            d = result.model_dump()
+            # Recursively serialize content items
+            if "content" in d and isinstance(d["content"], list):
+                serialized_content = []
+                for item in d["content"]:
+                    if hasattr(item, "model_dump"):
+                        serialized_content.append(item.model_dump())
+                    else:
+                        serialized_content.append(dict(item) if isinstance(item, dict) else str(item))
+                d["content"] = serialized_content
+            return d
+        return result  # Already serializable (dict, str, etc.)
+
     async def legacy_mcp_handler(request):
         """Direct JSON-RPC handler — bypasses FastMCP Accept-header enforcement."""
         if request.method == "GET":
@@ -4266,9 +4286,10 @@ if __name__ == "__main__":
                 return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32602, "message": "Missing tool name"}}, status_code=400)
             try:
                 result = await mcp.call_tool(name, arguments)
-                return _JR({"jsonrpc": "2.0", "id": response_id, "result": result})
+                return _JR({"jsonrpc": "2.0", "id": response_id, "result": _serialize_result(result)})
             except Exception as e:
-                return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32603, "message": str(e)}}, status_code=500)
+                # Return JSON-RPC error as HTTP 200 — clients expect error in body, not 5xx
+                return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32603, "message": str(e)}}, status_code=200)
 
         return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32601, "message": "Method not found"}}, status_code=404)
 
