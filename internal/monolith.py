@@ -3668,7 +3668,7 @@ def _normalize_coordination_agents(
         )
     return normalized
 
-@mcp.tool()
+@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
 def wealth_future_value(
     mode: str = "npv",
     initial_investment: float = 0,
@@ -3681,7 +3681,7 @@ def wealth_future_value(
     reinvestment_rate: float = 0.1,
     finance_rate: float = 0.1,
 ) -> Any:
-    """Time-Discounted Projection Engine — NPV, IRR, PI, Payback. [Value Dimension]"""
+    """⚠️ DEPRECATED — Use atomic tools: wealth_value_npv, wealth_energy_irr, wealth_density_pi, wealth_time_payback. [Value Dimension — DEPRECATED]"""
     cash_flows = cash_flows or []
     if mode == "npv":
         result = npv_reward(initial_investment, cash_flows, discount_rate, terminal_value, period_unit, input_epistemic, scale_mode)
@@ -3696,12 +3696,12 @@ def wealth_future_value(
     return _normalize_primitive_envelope(result, "wealth_future_value")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
 def wealth_present_expect(
     scenarios: List[dict],
     scale_mode: str = "enterprise",
 ) -> Any:
-    """Probability-Weighted Expectation (Present) — EMV. [Expect Dimension]"""
+    """⚠️ DEPRECATED — Use: wealth_expectation_emv. [Expect Dimension — DEPRECATED]"""
     normalized = []
     for s in scenarios:
         normalized.append({
@@ -3711,7 +3711,7 @@ def wealth_present_expect(
     return _normalize_primitive_envelope(emv_risk(normalized, scale_mode), "wealth_present_expect")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
 def wealth_future_simulate(
     initial_commitment: float,
     mean_cash_flows: List[float],
@@ -3721,7 +3721,7 @@ def wealth_future_simulate(
     distribution: str = "lognormal",
     scale_mode: str = "enterprise",
 ) -> Any:
-    """Stochastic Projection Engine (Future) — Monte Carlo. [Simulate Dimension]"""
+    """⚠️ DEPRECATED — Use: wealth_signal_monte_carlo. [Simulate Dimension — DEPRECATED]"""
     return _normalize_primitive_envelope(
         monte_carlo_forecast(
             initial_commitment,
@@ -3736,7 +3736,7 @@ def wealth_future_simulate(
     )
 
 
-@mcp.tool()
+@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
 def wealth_survival_liquidity(
     mode: str = "cashflow",
     income: Optional[List[dict]] = None,
@@ -3752,7 +3752,7 @@ def wealth_survival_liquidity(
     demands: Optional[List[dict]] = None,
     recovery_horizon_days: float = 30,
 ) -> Any:
-    """Survival Liquidity — Cashflow, Runway, Triage. [Liquidity Dimension]"""
+    """⚠️ DEPRECATED — Use: wealth_flow_cashflow, wealth_velocity_runway, wealth_pressure_triage. [Liquidity Dimension — DEPRECATED]"""
     resources = resources or {}
     demands = demands or []
     if mode == "cashflow":
@@ -3766,7 +3766,7 @@ def wealth_survival_liquidity(
     return _normalize_primitive_envelope(result, "wealth_survival_liquidity")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
 def wealth_survival_leverage(
     mode: str = "dscr",
     ebitda: Optional[float] = None,
@@ -3781,7 +3781,7 @@ def wealth_survival_leverage(
     assets: Optional[List[dict]] = None,
     liabilities: Optional[List[dict]] = None,
 ) -> Any:
-    """Structural Load — DSCR + Balance Sheet. [Leverage Dimension]"""
+    """⚠️ DEPRECATED — Use: wealth_gravity_dscr. [Leverage Dimension — DEPRECATED]"""
     if mode == "dscr":
         result = dscr_leverage(ebitda, principal, interest, leases, cfads, debt_service, period_unit, input_epistemic, scale_mode)
     elif mode == "networth":
@@ -3792,7 +3792,7 @@ def wealth_survival_leverage(
 
 
 
-@mcp.tool()
+@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
 async def wealth_info_value(
     mode: str = "evoi",
     well_cost_musd: float = 0,
@@ -3806,7 +3806,7 @@ async def wealth_info_value(
     prior_pos_samples: Optional[List[float]] = None,
     posterior_pos_samples: Optional[List[float]] = None,
 ) -> Any:
-    """Expected Value of Information — EVOI point-estimate and Monte Carlo. [Info Dimension]"""
+    """⚠️ DEPRECATED — Use: wealth_opportunity_evoi. [Info Dimension — DEPRECATED]"""
     if mode == "evoi":
         result = await wealth_evoi_compute(
             well_cost_musd,
@@ -3832,7 +3832,7 @@ async def wealth_info_value(
     return _normalize_primitive_envelope(result, "wealth_info_value")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
 async def wealth_truth_validate(
     mode: str = "schema",
     prospects: Optional[List[Dict[str, Any]]] = None,
@@ -3842,7 +3842,7 @@ async def wealth_truth_validate(
     correlation_threshold: int = 3,
     scale_mode: str = "enterprise",
 ) -> Any:
-    """Epistemic Integrity — Schema, Correlation, Entropy. [Truth Dimension]"""
+    """⚠️ DEPRECATED — Use: wealth_boundary_floors, wealth_entropy_audit. [Truth Dimension — DEPRECATED]"""
     cash_flows = cash_flows or []
     if mode == "schema":
         result = await wealth_schema_validate(prospects or [], scale_mode)
@@ -3855,7 +3855,7 @@ async def wealth_truth_validate(
     return _normalize_primitive_envelope(result, "wealth_truth_validate")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
 def wealth_rule_enforce(
     mode: str = "floors",
     proposal: Optional[dict] = None,
@@ -3875,7 +3875,7 @@ def wealth_rule_enforce(
     critical: bool = False,
     pin_verified: bool = False,
 ) -> Any:
-    """Governance Constraint — F1-F13 Floors, Policy Audit. [Rule Dimension]"""
+    """⚠️ DEPRECATED — Use: wealth_governance_verdict. [Rule Dimension — DEPRECATED]"""
     proposal = proposal or {}
     constraints = constraints or {}
     if mode == "floors":
@@ -3902,7 +3902,7 @@ def wealth_rule_enforce(
     return _normalize_primitive_envelope(result, "wealth_rule_enforce")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
 def wealth_allocate_optimize(
     mode: str = "kernel",
     d_s: float = 0,
@@ -3927,7 +3927,7 @@ def wealth_allocate_optimize(
     expected_value_of_information: float = 0,
     actions: Optional[List[dict]] = None,
 ) -> Any:
-    """Capital Allocation Brain — Kernel, Personal, Agent. [Allocate Dimension]"""
+    """⚠️ DEPRECATED — Use: wealth_stewardship_kernel, wealth_preference_rank, wealth_agent_path. [Allocate Dimension — DEPRECATED]"""
     if mode == "kernel":
         result = wealth_score_kernel(
             d_s,
@@ -3960,7 +3960,7 @@ def wealth_allocate_optimize(
     return _normalize_primitive_envelope(result, "wealth_allocate_optimize")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
 def wealth_game_coordinate(
     mode: str = "equilibrium",
     agents: Optional[List[dict]] = None,
@@ -3970,7 +3970,7 @@ def wealth_game_coordinate(
     solve_equilibrium: bool = False,
     scale_mode: str = "enterprise",
 ) -> Any:
-    """Multi-Agent Dynamics — Equilibrium, Game Theory. [Game Dimension]"""
+    """⚠️ DEPRECATED — Use: wealth_field_game, wealth_field_equilibrium. [Game Dimension — DEPRECATED]"""
     agents = agents or []
     shared_resources = shared_resources or {}
     resources = resources or {}
@@ -3983,7 +3983,7 @@ def wealth_game_coordinate(
     return _normalize_primitive_envelope(result, "wealth_game_coordinate")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
 def wealth_sense_ingest(
     mode: str = "fetch",
     source: str = "",
@@ -3995,7 +3995,7 @@ def wealth_sense_ingest(
     adapter: Optional[str] = None,
     vintage_date: str = "",
 ) -> Any:
-    """Reality Intake — Fetch, Snapshot, Sources, Health, Vintage, Reconcile. [Sense Dimension]"""
+    """⚠️ DEPRECATED — Use: wealth_sensor_fetch, wealth_sensor_snapshot, wealth_sensor_reconcile, etc. [Sense Dimension — DEPRECATED]"""
     if mode == "fetch":
         result = ingest_fetch(source, series_id, entity_code, use_cache, bus)
     elif mode == "snapshot":
@@ -4013,7 +4013,7 @@ def wealth_sense_ingest(
     return _normalize_primitive_envelope(result, "wealth_sense_ingest")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
 async def wealth_past_record(
     mode: str = "init",
     session_id: Optional[str] = None,
@@ -4038,7 +4038,7 @@ async def wealth_past_record(
     quantity_held: Optional[float] = None,
     price_close: Optional[float] = None,
 ) -> Any:
-    """Vault + Merkle Anchoring (Past) — Vault Init, Record, Snapshot. [Record Dimension]"""
+    """⚠️ DEPRECATED — Use: wealth_ledger_record, wealth_ledger_snapshot. [Record Dimension — DEPRECATED]"""
     if mode == "init":
         result = await wealth_init_tool(session_id, actor_id, intent)
     elif mode == "transaction":
@@ -5392,6 +5392,8 @@ if __name__ == "__main__":
         "wealth_cashflow_flow": cashflow_flow,
         "wealth_crisis_triage": crisis_triage,
         "wealth_civilization_stewardship": civilization_stewardship,
+        # NOTE: wealth_npv_reward is an alias for wealth_value_npv (npv_reward).
+        # Deprecated — do not register as a public tool. Use wealth_value_npv instead.
         "wealth_npv_reward": npv_reward,
         "wealth_irr_yield": irr_yield,
         "wealth_pi_efficiency": pi_efficiency,
@@ -5411,10 +5413,14 @@ if __name__ == "__main__":
         "vault_query": snapshot_portfolio_tool,
     }
     for v2_name, v1_name in engine.V2_CANONICAL_MAP.items():
-        if v2_name in ("vault_write", "vault_query"):
+        if v2_name in ("vault_write", "vault_query", "vaultwrite", "vaultquery"):
             continue
         if v1_name in _v1_funcs:
             mcp.tool(name=v2_name)(_v1_funcs[v1_name])
+
+    # NOTE: vaultwrite and vaultquery duplicate vault_write/vault_query.
+    # They are defined below but NOT registered as MCP tools.
+    # Skip them in the alias loop above.
 
     from starlette.applications import Starlette
     from starlette.routing import Route, Mount
