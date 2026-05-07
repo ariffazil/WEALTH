@@ -1,0 +1,96 @@
+{
+  "schema_version": "2026.05.07",
+  "migration_phase": "phase2-deprecation",
+  "description": "WEALTH MCP alias registry — maps deprecated names to canonical names. Used during migration window to maintain backward compatibility.",
+
+  "alias_map": {
+    "__comment__": "V2 legacy aliases — map old names to canonical atomic tools",
+
+    "wealth_sense_fetch":       "wealth_sensor_fetch",
+    "wealth_sense_snapshot":    "wealth_sensor_snapshot",
+    "wealth_sense_reconcile":   "wealth_sensor_reconcile",
+    "wealth_sense_health":      "wealth_sensor_health",
+    "wealth_sense_vintage":     "wealth_sensor_vintage",
+    "wealth_sense_sources":     "wealth_sensor_sources",
+
+    "wealth_mind_emv":          "wealth_expectation_emv",
+    "wealth_mind_monte_carlo":  "wealth_probability_monte_carlo",
+    "wealth_mind_correlation":  "wealth_coupling_correlation",
+    "wealth_mind_evoi":         "wealth_signal_evoi",
+    "wealth_mind_evoi_mc":      "wealth_signal_evoi_mc",
+    "wealth_mind_schema":       "wealth_measurement_schema",
+
+    "wealth_survival_dscr":     "wealth_gravity_dscr",
+    "wealth_survival_networth": "wealth_mass_networth",
+    "wealth_survival_velocity": "wealth_velocity_runway",
+    "wealth_survival_cashflow":"wealth_flow_cashflow",
+    "wealth_survival_triage":   "wealth_pressure_triage",
+    "wealth_survival_civilization": "wealth_stewardship_civilization",
+
+    "wealth_reason_npv":        "wealth_value_npv",
+    "wealth_reason_irr":        "wealth_energy_irr",
+    "wealth_reason_pi":         "wealth_density_pi",
+    "wealth_reason_payback":    "wealth_time_payback",
+    "wealth_reason_equilibrium":"wealth_field_equilibrium",
+    "wealth_reason_game":       "wealth_field_game",
+    "wealth_reason_personal":   "wealth_preference_rank",
+    "wealth_reason_agent":      "wealth_agent_path",
+
+    "wealth_judge_kernel":       "wealth_governance_verdict",
+    "wealth_judge_floors":      "wealth_boundary_floors",
+    "wealth_judge_policy":      "wealth_boundary_policy",
+    "wealth_judge_entropy":     "wealth_entropy_audit",
+
+    "wealth_vault_init":        "wealth_ledger_init",
+    "wealth_vault_record":      "wealth_ledger_record",
+    "wealth_vault_snapshot":    "wealth_ledger_snapshot"
+  },
+
+  "umbrella_to_prompt": {
+    "__comment__": "Old umbrella tools that dispatch multiple engines — migrate to prompts",
+
+    "wealth_future_value":     "wealth_appraise_project",
+    "wealth_present_expect":   "wealth_opportunity_ranking",
+    "wealth_future_simulate":  "wealth_run_information_audit",
+    "wealth_survival_liquidity":  "wealth_run_survival_audit",
+    "wealth_survival_leverage":    "wealth_run_survival_audit",
+    "wealth_info_value":       "wealth_run_information_audit",
+    "wealth_truth_validate":   "wealth_run_information_audit",
+    "wealth_rule_enforce":     "wealth_governance_full_audit",
+    "wealth_allocate_optimize":"wealth_judge_allocation",
+    "wealth_game_coordinate":  "wealth_run_game_coordination",
+    "wealth_sense_ingest":     "wealth_run_macro_snapshot",
+    "wealth_past_record":      "wealth_record_governed_event"
+  },
+
+  "resource_rename_map": {
+    "__comment__": "Rename existing resources to match canonical URI spec",
+
+    "wealth://schemas/cashflow_project":   "wealth://schemas/project_cashflow",
+    "wealth://governance/floors":          "wealth://policy/f1_f13_floors",
+    "wealth://vault/latest_seal":          "wealth://vault/latest_state"
+  },
+
+  "deprecated_tools": {
+    "__comment__": "Tools to remove from public surface after migration window",
+
+    "vaultwrite":   {"reason": "Duplicate of vault_write", "target": "vault_write", "irreversible": false},
+    "vaultquery":   {"reason": "Duplicate of vault_query", "target": "vault_query", "irreversible": false},
+    "wealth_npv_reward": {"reason": "Use wealth_value_npv instead", "target": "wealth_value_npv", "irreversible": false}
+  },
+
+  "deprecation_policy": {
+    "migration_window_days": 30,
+    "alias_removal_policy": "soft",  // aliases return deprecation warning but still work
+    "umbrella_removal_policy": "hard", // umbrellas return deprecation notice pointing to atomic tool + prompt
+    "registry_announcement": "On day 1, announce migration window. On day 30, remove deprecated tools from registry."
+  },
+
+  "canonical_tools_count": {
+    "atomic_physics": 35,
+    "vault_interface": 2,
+    "health": 1,
+    "domain_specific": 6,
+    "total_canonical": 44
+  }
+}

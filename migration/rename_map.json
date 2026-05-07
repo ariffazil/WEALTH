@@ -1,0 +1,74 @@
+{
+  "schema_version": "2026.05.07",
+  "description": "Simplified rename map for WEALTH MCP migration. Maps old names to canonical names.",
+
+  "tools": {
+    "__comment__": "tool_name: canonical_name. null = retire.",
+    "vaultwrite": null,
+    "vaultquery": null,
+    "wealth_npv_reward": null,
+    "wealth_sense_fetch": "wealth_sensor_fetch",
+    "wealth_sense_snapshot": "wealth_sensor_snapshot",
+    "wealth_sense_reconcile": "wealth_sensor_reconcile",
+    "wealth_sense_health": "wealth_sensor_health",
+    "wealth_sense_vintage": "wealth_sensor_vintage",
+    "wealth_sense_sources": "wealth_sensor_sources",
+    "wealth_mind_emv": "wealth_expectation_emv",
+    "wealth_mind_monte_carlo": "wealth_probability_monte_carlo",
+    "wealth_mind_correlation": "wealth_coupling_correlation",
+    "wealth_mind_evoi": "wealth_signal_evoi",
+    "wealth_mind_evoi_mc": "wealth_signal_evoi_mc",
+    "wealth_mind_schema": "wealth_measurement_schema",
+    "wealth_survival_dscr": "wealth_gravity_dscr",
+    "wealth_survival_networth": "wealth_mass_networth",
+    "wealth_survival_velocity": "wealth_velocity_runway",
+    "wealth_survival_cashflow": "wealth_flow_cashflow",
+    "wealth_survival_triage": "wealth_pressure_triage",
+    "wealth_survival_civilization": "wealth_stewardship_civilization",
+    "wealth_reason_npv": "wealth_value_npv",
+    "wealth_reason_irr": "wealth_energy_irr",
+    "wealth_reason_pi": "wealth_density_pi",
+    "wealth_reason_payback": "wealth_time_payback",
+    "wealth_reason_equilibrium": "wealth_field_equilibrium",
+    "wealth_reason_game": "wealth_field_game",
+    "wealth_reason_personal": "wealth_preference_rank",
+    "wealth_reason_agent": "wealth_agent_path",
+    "wealth_judge_kernel": "wealth_governance_verdict",
+    "wealth_judge_floors": "wealth_boundary_floors",
+    "wealth_judge_policy": "wealth_boundary_policy",
+    "wealth_judge_entropy": "wealth_entropy_audit",
+    "wealth_vault_init": "wealth_ledger_init",
+    "wealth_vault_record": "wealth_ledger_record",
+    "wealth_vault_snapshot": "wealth_ledger_snapshot"
+  },
+
+  "umbrella_tools": {
+    "__comment__": "These become prompts. Tool surface deprecated after migration.",
+    "wealth_future_value": "wealth_appraise_project",
+    "wealth_present_expect": "wealth_opportunity_ranking",
+    "wealth_future_simulate": "wealth_run_information_audit",
+    "wealth_survival_liquidity": "wealth_run_survival_audit",
+    "wealth_survival_leverage": "wealth_run_survival_audit",
+    "wealth_info_value": "wealth_run_information_audit",
+    "wealth_truth_validate": "wealth_run_information_audit",
+    "wealth_rule_enforce": "wealth_governance_full_audit",
+    "wealth_allocate_optimize": "wealth_judge_allocation",
+    "wealth_game_coordinate": "wealth_run_game_coordination",
+    "wealth_sense_ingest": "wealth_run_macro_snapshot",
+    "wealth_past_record": "wealth_record_governed_event"
+  },
+
+  "resources": {
+    "__comment__": "Resource URI renames",
+    "wealth://schemas/cashflow_project": "wealth://schemas/project_cashflow",
+    "wealth://governance/floors": "wealth://policy/f1_f13_floors",
+    "wealth://vault/latest_seal": "wealth://vault/latest_state"
+  },
+
+  "irreversible_actions": {
+    "__comment__": "Tools that perform irreversible operations — require ack_irreversible",
+    "wealth_ledger_write": "Irreversible vault write",
+    "vault_write": "Irreversible vault write",
+    "wealth_boundary_floors": "Constitutional gate — do not bypass"
+  }
+}
