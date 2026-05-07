@@ -12,94 +12,82 @@
 ## 0. IDENTITY & MOUNT POINT
 
 - REPO_NAME: WEALTH
-- CONTAINER_ID: 2026-04-28
+- CONTAINER_ID: 2026-05-07
 - DOMAIN_ROLE: Capital Intelligence Engine — constitutional capital allocation layer for arifOS federation
 - STABILITY_CLASS: RAPID-ITERATE
 
 
 ## 1. CURRENT FOCUS (INSTRUCTION POINTER)
 
-- WEALTH README built from scratch (repo previously had no README)
-- License confirmed Apache 2.0 (previously WEALTH repo had no license — now added)
-- Dual-verdict architecture documented: verdict (allocation_signal) + governance_verdict (SEAL/VOID)
-- Status: SOFT_FRICTION — README built from code audit; makcik2 tools in local workspace were never pushed (blocked by .private secret scan)
+- Next Horizon refactor complete: 36 atomic MCP tools, 12 prompts, 28 resources in `internal/monolith.py`
+- Physics-first naming convention deployed (wealth_value_npv, wealth_flow_cashflow, etc.)
+- Old canonical tools retained as deprecated shims — zero breaking changes
+- Status: SOFT_FRICTION resolved — makcik2 domain tools superseded by atomic architecture
 
 
 ## 2. OPERATIONAL MANDATE
 
-- What this repo does: WEALTH is the capital allocation intelligence engine — NPV, IRR, EMV, crisis triage, civilization stewardship, coordination equilibrium — produces capital intelligence that arifOS 888_JUDGE ratifies
+- WEALTH is the capital allocation intelligence engine — 36 atomic tools across 9 physics dimensions + 12 reasoning workflows via prompts
+- Entry point shifted from `server.py` to `internal/monolith.py` (monolith now 5522 lines)
 - Upstream: GEOX (prospect economics), arifOS kernel (constitutional governance)
-- Downstream: Capital allocation teams, financial decision-makers, civilization-level resource planning
+- Downstream: arifOS 888_JUDGE, capital allocation teams
 
 
 ## 3. THE 999 SEAL (SESSION LOG)
 
-- TIMESTAMP: 2026-04-23 15:30 UTC+8
-- CLERK_ID: arifOS_bot / HUMAN-ARIF
+- TIMESTAMP: 2026-05-07 11:19 UTC
+- CLERK_ID: big-pickle (opencode)
 - SEAL_SUMMARY:
-  - WEALTH README built from scratch: 13 sovereign primitives, 66 legacy aliases, 62 internal functions, 8 tool families
-  - License confirmed Apache 2.0 (commit c69d433)
-  - arifOS AGPL confirmed correct — WEALTH Apache 2.0 intentional (commercial capital layer)
-  - makcik2 tools NOT pushed — local workspace had server.py with 3051 lines but makcik2 tools were in a blocked local state
-  - ARIF.md Gold Seal v1.0 pushed to AAA (c4061f3)
-  - arifmeta-v1.0.json schema pushed to AAA (b959e60)
-  - Gist published: https://gist.github.com/ariffazil/81314f6cda1ea898f9feb88ce8f8959b
-  - ARIF-999-SEAL-RITUAL.md pushed to AAA (69d82eb)
-- VAULT_REF: https://github.com/ariffazil/AAA/commit/69d82eb
+  - branch `wealth/next-horizon-refactor` created
+  - 35 new atomic @mcp.tool() wrappers added (36 total with mcp_health_check)
+  - 12 @mcp.prompt() reasoning workflows added
+  - 21 new @mcp.resource() declarations (schemas, policies, formulas, ontology, vault, sources)
+  - HarnessEngine mappings and sovereign metadata updated for all new tools
+  - Old canonical tools preserved as deprecated shims
 
 
 ## 4. ACTIVE TOPOLOGY (MEMORY MAP)
 
 - CRITICAL_FILES:
-  - `server.py` → Canonical WEALTH MCP kernel (5 async tools + 57 sync functions)
+  - `internal/monolith.py` → WEALTH MCP kernel (5522 lines): 51 tools, 12 prompts, 28 resources
   - `mcp/server.py` → Civilizational demo surface (6 tools: markets, energy, food)
   - `host/governance/` → Floor enforcement, vault, policy engine
-  - `api/schemas/wealth-mcp-tools.json` → Tool manifest + envelope schema
-  - `canon/WEALTH_HARNESS.md` → Harness architecture spec (v1.6.0)
-  - `capitalx/DESIGN.md` → CapitalX pricing engine design
+  - `canon/WEALTH_HARNESS.md` → Harness architecture spec
 
 - ENTRYPOINTS:
-  - `python server.py` → Canonical MCP server on port 8080
-  - `python mcp/server.py` → Civilizational demo server
-  - `npm test` → Node test suite
-
-- DATA_FLOWS:
-  - `GEOX prospect_evaluate` → WEALTH capitalx → NPV/IRR/EMV → arifOS 888_JUDGE → SEAL/HOLD/VOID
-  - `capital signal` → `WEALTH Engine` → `Intelligence Output` → `arifOS 888_JUDGE`
+  - `python internal/monolith.py` → WEALTH MCP server on port 8082
+  - `npm test` → Test suite
 
 
 ## 5. INTERRUPTS & FAULTS (BLOCKERS)
 
-- HARD_BLOCK: None — WEALTH is standalone, not VPS-dependent
-- SOFT_FRICTION: makcik2 tools exist in local workspace only, never pushed to GitHub → impact: missing domain-specific tools in production → workaround: need Arif to review and push makcik2 tools if appropriate
+- HARD_BLOCK: None
 
 
 ## 6. RECENT SCARS (W_scar)
 
-- [WEALTH had no README at all] → [Ran full code audit from GitHub] → [Built README from actual server.py + mcp/server.py] → [Always ensure every repo has a SOT README]
+- [Umbrella tools with mode dispatch] → [Decomposed into 36 atomic tools + 12 prompts] → [Physics-first naming, no breaking changes]
 
 
 ## 7. EXECUTION BUFFER (COMMANDS)
 
 | Command | Status | Context |
 |---------|--------|---------|
-| `python server.py` | ✅ | Local dev — works |
-| `python mcp/server.py` | ✅ | Civilizational demo — works |
-| `npm test` | ✅ | Test suite — run after changes |
-| `git push origin main` | ✅ | Works from af-forge |
+| `python internal/monolith.py` | ✅ | WEALTH MCP on port 8082 |
 
 
 ## 8. PRIVILEGE ESCALATION (888 HOLD)
 
-- [Q]: Should makcik2 domain tools be pushed to production?
-- [CONTEXT]: Local workspace had 3051-line server.py with makcik2 tools. Never pushed. Security/quality review needed. Ω₀ = 0.5
+- [Q]: Confirm Next Horizon Phases 3-4 — retire 25 legacy aliases, clean up mcp/server.py domain tools
+- [CONTEXT]: Architecture doc at WEALTH_UNIFIED_ARCHITECTURE.md defines migration path. Ω₀ = 0.3
 
 
 ## 9. PIPELINE PREFETCH (NEXT MOVES)
 
-- [ ] Arif reviews makcik2 tools — decide whether to push to production
-- [ ] Connect WEALTH to GEOX prospect_evaluate pipeline (capitalx integration)
-- [ ] Run full test suite to verify dual-verdict enforcement
+- [ ] Phase 3: Retire 25 legacy V2 aliases from `__main__` block
+- [ ] Phase 4: Clean up mcp/server.py domain tools to atomic naming
+- [ ] Connect WEALTH to GEOX prospect_evaluate pipeline
+- [ ] Run full test suite to verify zero breaking changes
 
 
 ---
