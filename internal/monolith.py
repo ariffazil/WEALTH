@@ -21,6 +21,17 @@ except ImportError:
     from governance import ForgeLaw, compute_kappa_r, compute_psi_le, get_qdf_version
 
 try:
+    from host.governance.tri_witness import TriWitness
+    TRIWITNESS_AVAILABLE = True
+except Exception:
+    TRIWITNESS_AVAILABLE = False
+    class TriWitness:
+        def __init__(self, *args, **kwargs):
+            pass
+        def to_dict(self):
+            return {}
+
+try:
     from internal.invariants import get_g_score
 
     G_SCORE_AVAILABLE = True
@@ -1012,6 +1023,7 @@ def create_envelope(
     scale_mode: str = "enterprise",
     governance_args: Optional[Dict[str, Any]] = None,
     parent_hash: Optional[str] = None,
+    witness: Optional[Any] = None,
 ) -> Dict[str, Any]:
     global LAST_RECEIPT_HASH
     flags = flags or []
@@ -1113,7 +1125,7 @@ def create_envelope(
         "g_score": g_data["g_score"],
         "entropy_s": g_data["entropy_s"],
         "qdf": get_qdf_version(),
-        "witness": {
+        "witness": witness.to_dict() if witness is not None else {
             "human": governance_args.get("human_confirmed", False) if governance_args else False,
             "ai": True,
             "earth": True
@@ -4155,6 +4167,47 @@ def vault_write(
         governance_args={"human_confirmed": ack_irreversible},
     )
 
+
+@mcp.tool()
+def vaultwrite(
+    action: str,
+    payload: Dict[str, Any],
+    session_id: str = "UNKNOWN",
+    agent_id: str = "WEALTH_AGENT",
+    verdict: str = "SEAL",
+    ack_irreversible: bool = False,
+) -> Any:
+    """998: Ledger Append (Alias) — Permanently write an economic event to VAULT999.
+    F01 AMANAH: This operation is irreversible. Requires ack_irreversible=True or verdict != SEAL.
+    Wrapper around vault_write for arifOS compatibility.
+    """
+    return vault_write(
+        action=action,
+        payload=payload,
+        session_id=session_id,
+        agent_id=agent_id,
+        verdict=verdict,
+        ack_irreversible=ack_irreversible,
+    )
+
+
+@mcp.tool()
+def vaultquery(
+    query: str,
+    limit: int = 10,
+    session_id: Optional[str] = None,
+) -> Any:
+    """998: Ledger Read (Alias) — Query the immutable governance ledger.
+    Reads from VAULT999 via Supabase REST API. Read-only operation; no F01 gate.
+    Wrapper around vault_query for arifOS compatibility.
+    """
+    return vault_query(
+        query=query,
+        limit=limit,
+        session_id=session_id,
+    )
+
+
 @mcp.tool()
 def vault_query(
     query: str,
@@ -5431,8 +5484,82 @@ if __name__ == "__main__":
                 "id": response_id,
                 "result": {
                     "protocolVersion": "2024-11-05",
-                    "capabilities": {"tools": {"listChanged": True}},
+                    "capabilities": {
+                        "tools": {"listChanged": True},
+                        "prompts": {"listChanged": True},
+                        "resources": {"listChanged": True, "subscribe": True},
+                    },
                     "serverInfo": {"name": "WEALTH", "version": __version__},
+                }
+            })
+
+        if method == "prompts/list":
+            all_prompts = await mcp.list_prompts()
+            return _JR({
+                "jsonrpc": "2.0",
+                "id": response_id,
+                "result": {
+                    "prompts": [
+                        {
+                            "name": p.name,
+                            "description": p.description or "",
+                            "arguments": getattr(p, "arguments", []),
+                        }
+                        for p in all_prompts
+                    ]
+                }
+            })
+
+        if method == "prompts/get":
+            prompt_name = params.get("name")
+            all_prompts = await mcp.list_prompts()
+            for p in all_prompts:
+                if p.name == prompt_name:
+                    try:
+                        rendered = await mcp.render_prompt(p, params.get("arguments", {}))
+                    except Exception:
+                        rendered = {"prompt": getattr(p, "_fn", lambda: "")()}
+                    return _JR({
+                        "jsonrpc": "2.0",
+                        "id": response_id,
+                        "result": {
+                            "description": p.description or "",
+                            "messages": [{"role": "user", "content": {"text": str(rendered)}}]
+                            if isinstance(rendered, str)
+                            else {"content": str(rendered)},
+                        }
+                    })
+            return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32602, "message": f"Prompt not found: {prompt_name}"}}, status_code=404)
+
+        if method == "resources/list":
+            all_resources = await mcp.list_resources()
+            all_templates = []
+            try:
+                all_templates = await mcp.list_resource_templates()
+            except Exception:
+                pass
+            return _JR({
+                "jsonrpc": "2.0",
+                "id": response_id,
+                "result": {
+                    "resources": [
+                        {
+                            "uri": str(r.uri),
+                            "name": str(getattr(r, "name", r.uri) or r.uri),
+                            "description": str(getattr(r, "description", "") or ""),
+                            "mimeType": str(getattr(r, "mime_type", "application/json") or "application/json"),
+                        }
+                        for r in all_resources
+                    ],
+                    "resourceTemplates": [
+                        {
+                            "uriTemplate": str(t.uriTemplate),
+                            "name": str(getattr(t, "name", t.uriTemplate) or t.uriTemplate),
+                            "description": str(getattr(t, "description", "") or ""),
+                            "mimeType": str(getattr(t, "mime_type", "application/json") or "application/json"),
+                        }
+                        for t in all_templates
+                    ],
                 }
             })
 
@@ -5491,12 +5618,65 @@ if __name__ == "__main__":
     async def health_handler(request):
         return _JR({"status": "healthy", "service": "wealth-mcp", "version": __version__})
 
+    async def prompts_handler(request):
+        """Federation prompt discovery — returns governance reasoning workflows."""
+        all_prompts = await mcp.list_prompts()
+        return _JR({
+            "organ": "WEALTH",
+            "role": "Capital Intelligence / NPV + EMV + Crisis Triage",
+            "schema": "wealth-federation-v2026.05.07",
+            "version": __version__,
+            "count": len(all_prompts),
+            "prompts": [
+                {
+                    "name": p.name,
+                    "description": p.description or "",
+                }
+                for p in all_prompts
+            ],
+        })
+
+    async def resources_handler(request):
+        """Federation resource discovery — returns schemas/policies/formulas/ontology/state."""
+        all_resources = await mcp.list_resources()
+        all_templates = []
+        try:
+            all_templates = await mcp.list_resource_templates()
+        except Exception:
+            pass
+        return _JR({
+            "organ": "WEALTH",
+            "role": "Capital Intelligence / NPV + EMV + Crisis Triage",
+            "schema": "wealth-federation-v2026.05.07",
+            "version": __version__,
+            "resourceCount": len(all_resources),
+            "templateCount": len(all_templates),
+            "resources": [
+                {
+                    "uri": str(r.uri),
+                    "name": str(getattr(r, "name", r.uri) or r.uri),
+                    "description": str(getattr(r, "description", "") or ""),
+                }
+                for r in all_resources
+            ],
+            "resourceTemplates": [
+                {
+                    "uriTemplate": str(t.uriTemplate),
+                    "name": str(getattr(t, "name", t.uriTemplate) or t.uriTemplate),
+                    "description": str(getattr(t, "description", "") or ""),
+                }
+                for t in all_templates
+            ],
+        })
+
     mcp_app = mcp.http_app(path="/", transport="streamable-http", stateless_http=True)
 
     app = Starlette(
         routes=[
             Route("/mcp", legacy_mcp_handler, methods=["GET", "POST"]),
             Route("/tools", tools_handler, methods=["GET"]),
+            Route("/prompts", prompts_handler, methods=["GET"]),
+            Route("/resources", resources_handler, methods=["GET"]),
             Route("/health", health_handler, methods=["GET"]),
             Mount("/", app=mcp_app),
         ],
