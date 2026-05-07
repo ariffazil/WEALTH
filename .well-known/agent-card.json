@@ -1,0 +1,33 @@
+{
+  "name": "WEALTH Capital Intelligence",
+  "description": "Capital intelligence engine for the arifOS federation. Provides NPV, EMV, valuation, risk scoring, and portfolio optimization under constitutional floors F1-F13.",
+  "url": "https://wealth.arif-fazil.com",
+  "provider": { "organization": "arifOS", "system": "WEALTH" },
+  "version": "2026.05.01",
+  "protocol_version": "1.0.0",
+  "capabilities": { "streaming": false, "push_notifications": false, "authenticated_extended_card": false },
+  "authentication": { "schemes": ["bearer"] },
+  "default_input_modes": ["text/plain", "application/json"],
+  "default_output_modes": ["text/plain", "application/json"],
+  "skills": [
+    { "id": "wealth-npv-reward", "name": "NPV Reward", "description": "Net Present Value computation for capital allocation decisions.", "tags": ["finance", "npv", "valuation"], "examples": ["Calculate NPV of this project", "Evaluate investment reward"] },
+    { "id": "wealth-emv-risk", "name": "EMV Risk", "description": "Expected Monetary Value and risk-adjusted return analysis.", "tags": ["finance", "emv", "risk"], "examples": ["Compute EMV for this scenario", "Risk-adjusted expected value"] },
+    { "id": "wealth-allocate-optimize", "name": "Portfolio Optimization", "description": "Optimal capital allocation across competing opportunities.", "tags": ["finance", "portfolio", "optimization"], "examples": ["Optimize my portfolio allocation", "Best capital distribution"] }
+  ],
+  "governance": {
+    "constitutional_floors": ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13"],
+    "verdict_authority": "888_JUDGE",
+    "vault": "VAULT999",
+    "irreversible_requires_human": true,
+    "self_approval_forbidden": true,
+    "federation_trust_model": "untrusted_peers"
+  },
+  "a2a_endpoints": {
+    "health": "GET /health",
+    "mcp": "POST /mcp"
+  },
+  "honesty_disclaimer": {
+    "transport_note": "MCP primary; A2A agent card for federation discovery only.",
+    "last_audited": "2026-05-07"
+  }
+}
