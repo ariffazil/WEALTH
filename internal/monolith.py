@@ -4293,6 +4293,56 @@ if __name__ == "__main__":
 
         return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32601, "message": "Method not found"}}, status_code=404)
 
+    async def tools_handler(request):
+        """Federation tool discovery — returns flat tool registry with danger/fail metadata."""
+        all_tools = await mcp.list_tools()
+        # WEALTH tool danger taxonomy (mirrors arifOS federation_topology)
+        _DANGER_MAP = {
+            # L4 — irreversible / operational mutation
+            "wealth_vault_seal": {"danger_level": "L4", "fail_posture": "fail-closed"},
+            "wealth_emv_final": {"danger_level": "L4", "fail_posture": "fail-closed"},
+            # L3 — routing / memory / judgment
+            "wealth_reason_agent": {"danger_level": "L3", "fail_posture": "fail-closed"},
+            "wealth_kernel_route": {"danger_level": "L3", "fail_posture": "fail-closed"},
+            "wealth_judge_deliberate": {"danger_level": "L3", "fail_posture": "fail-closed"},
+            # L2 — session state
+            "wealth_session_init": {"danger_level": "L2", "fail_posture": "fail-open"},
+            "wealth_evidence_fetch": {"danger_level": "L2", "fail_posture": "fail-open"},
+            # L1 — observe / degraded output
+            "wealth_sense_observe": {"danger_level": "L1", "fail_posture": "fail-open"},
+            "wealth_ops_measure": {"danger_level": "L1", "fail_posture": "fail-open"},
+        }
+        # Fail-open constraint for L1/L2: may degrade output, MUST NOT elevate authority
+        _FAIL_OPEN_CONSTRAINT = "may degrade output, must not elevate authority"
+        tools = []
+        for t in all_tools:
+            name = t.name
+            meta = _DANGER_MAP.get(name, {"danger_level": "L2", "fail_posture": "fail-open"})
+            tools.append({
+                "name": name,
+                "description": t.description or "",
+                "inputSchema": getattr(t, "inputSchema", {}),
+                "outputSchema": getattr(t, "output_schema", {}),
+                "danger_level": meta["danger_level"],
+                "fail_posture": meta["fail_posture"],
+                "fail_open_constraint": _FAIL_OPEN_CONSTRAINT if meta["fail_posture"] == "fail-open" else None,
+            })
+        return _JR({
+            "organ": "WEALTH",
+            "role": "Capital Intelligence / NPV + EMV + Crisis Triage",
+            "schema": "wealth-federation-v2026.05.07",
+            "version": __version__,
+            "count": len(tools),
+            "danger_taxonomy": {
+                "L4": "irreversible / operational mutation — fail-closed mandatory",
+                "L3": "routing / memory / judgment — fail-closed mandatory",
+                "L2": "session state — fail-open with constraint",
+                "L1": "observe / degraded output — fail-open with constraint",
+            },
+            "fail_open_constraint": _FAIL_OPEN_CONSTRAINT,
+            "tools": tools,
+        })
+
     async def health_handler(request):
         return _JR({"status": "healthy", "service": "wealth-mcp", "version": __version__})
 
@@ -4301,6 +4351,7 @@ if __name__ == "__main__":
     app = Starlette(
         routes=[
             Route("/mcp", legacy_mcp_handler, methods=["GET", "POST"]),
+            Route("/tools", tools_handler, methods=["GET"]),
             Route("/health", health_handler, methods=["GET"]),
             Mount("/", app=mcp_app),
         ],
