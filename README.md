@@ -41,13 +41,21 @@ WEALTH is the **capital evidence organ** — it surfaces the financial and econo
 | Field | Value |
 |-------|-------|
 | Canonical repository | `https://github.com/ariffazil/wealth` |
-| Version | `v2026.05.10-fb24d3d` |
+| Version | `v2026.05.10-1cb75fb` |
 | Governing kernel | `arifOS F1–F13` |
 | MCP tools (canonical kernel) | 48 tools (13 primitives × mode variants, each mode is a callable endpoint) |
 | MCP tools (cross-domain demo) | 6 additional tools (separate `mcp/server.py`) |
 | Capital scales | 8 (personal → household → sme → enterprise → national → crisis → civilization → agentic) |
 | Capital types | 7 (financial, temporal, cognitive, social, ecological, strategic, thermodynamic) |
 | Homepage | https://wealth.arif-fazil.com/ |
+
+---
+
+## What Changed (2026-05-10)
+
+- WEALTH now sits behind arifOS embodiment-aware kernel and REST gating.
+- Governance attestation resolves the current model registry correctly, including `gpt-5.5-thinking`.
+- The immediate frontier is dual-runtime consolidation, thermodynamic capital accounting, and tighter GEOX coupling.
 
 ---
 
