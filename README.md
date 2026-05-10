@@ -3,7 +3,7 @@
 > **Constitutional Capital Allocation Layer for arifOS**
 > **DITEMPA BUKAN DIBERI — Forged, Not Given**
 
-[![WEALTH](https://img.shields.io/badge/WEALTH-v2026.05.02--KANON-00B894?style=flat-square)](https://github.com/ariffazil/wealth)
+[![WEALTH](https://img.shields.io/badge/WEALTH-v2026.05.10-00B894?style=flat-square)](https://github.com/ariffazil/wealth)
 [![MCP](https://img.shields.io/badge/MCP-FastMCP_3.2.4-7C3AED?style=flat-square)](https://github.com/ariffazil/wealth)
 [![arifOS](https://img.shields.io/badge/arifOS-F1%E2%80%93F13_Governed-FF6B00?style=flat-square)](https://github.com/ariffazil/arifOS)
 [![License](https://img.shields.io/badge/License-AGPL_V3-4EAF0C?style=flat-square)](./LICENSE)
@@ -41,7 +41,7 @@ WEALTH is the **capital evidence organ** — it surfaces the financial and econo
 | Field | Value |
 |-------|-------|
 | Canonical repository | `https://github.com/ariffazil/wealth` |
-| Version | `v2026.05.02-bbf8332` |
+| Version | `v2026.05.10-fb24d3d` |
 | Governing kernel | `arifOS F1–F13` |
 | MCP tools (canonical kernel) | 48 tools (13 primitives × mode variants, each mode is a callable endpoint) |
 | MCP tools (cross-domain demo) | 6 additional tools (separate `mcp/server.py`) |
