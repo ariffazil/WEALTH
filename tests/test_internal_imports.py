@@ -1,4 +1,5 @@
 import asyncio
+import json
 import sys
 from pathlib import Path
 
@@ -13,6 +14,8 @@ from internal.monolith import (
     wealth_future_value,
     wealth_game_coordinate,
 )
+from host.ingest.health import HealthTracker
+from host.ingest.registry import _cache_age_hours
 
 
 def test_g_score_engine_imports_and_runs():
@@ -94,3 +97,30 @@ def test_future_steward_maps_public_packet_to_internal_engine():
 
     assert envelope["task"] == "wealth_future_steward"
     assert "risk" in envelope
+
+
+def test_cache_age_is_unknown_when_no_cache_file_exists(tmp_path):
+    missing = tmp_path / "missing-cache.json"
+    assert _cache_age_hours(str(missing)) is None
+
+
+def test_health_tracker_sanitizes_non_finite_cache_age(tmp_path):
+    health_path = tmp_path / "ingest-health.json"
+    tracker = HealthTracker(str(health_path))
+
+    tracker.record_attempt("Ember", True, 0.0, cache_age_hours=float("inf"))
+
+    payload = tracker.get_health()
+    assert payload["Ember"]["cache_age_hours"] is None
+    json.dumps(payload, allow_nan=False)
+
+
+def test_health_tracker_sanitizes_legacy_non_finite_state(tmp_path):
+    health_path = tmp_path / "legacy-ingest-health.json"
+    health_path.write_text('{"Ember":{"cache_age_hours":Infinity}}', encoding="utf-8")
+
+    tracker = HealthTracker(str(health_path))
+    payload = tracker.get_health()
+
+    assert payload["Ember"]["cache_age_hours"] is None
+    json.dumps(payload, allow_nan=False)
