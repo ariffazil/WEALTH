@@ -20,8 +20,15 @@ import httpx
 
 DEFAULT_VAULT_PATH = os.path.join(os.getcwd(), "data", "vault999.jsonl")
 INTEGRITY_SALT = "WEALTH-VAULT999-2026"
-SUPABASE_URL = "https://utbmmjmbolmuahwixjqc.supabase.co"
-SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0Ym1tam1ib2xtdWFod2l4anFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTQzMzEsImV4cCI6MjA5MTk5MDMzMX0.Nxg2Rkf-PyqnemVGz-_H1VW22jhNbmq67hH6EZ2EzEs"
+SUPABASE_URL = os.environ.get(
+    "SUPABASE_URL", "https://utbmmjmbolmuahwixjqc.supabase.co"
+)
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY")
+if not SUPABASE_ANON_KEY:
+    raise RuntimeError(
+        "SUPABASE_ANON_KEY environment variable is required. "
+        "Set it in the runtime environment or a .env file loaded before import."
+    )
 
 _MIGRATED = False
 _client: Optional[httpx.AsyncClient] = None
@@ -430,7 +437,7 @@ def health_check() -> Dict[str, Any]:
         if response.status_code == 200:
             return {
                 "status": "CONNECTED",
-                "supabase_url": SUPABASE_URL,
+                "supabase_url": SUPABASE_URL.split(".")[0] + ".***.co" if "." in SUPABASE_URL else "***",
                 "pg_available": True,
                 "wealth_tables_exist": True,
             }
