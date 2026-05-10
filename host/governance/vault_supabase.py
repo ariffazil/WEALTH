@@ -24,11 +24,6 @@ SUPABASE_URL = os.environ.get(
     "SUPABASE_URL", "https://utbmmjmbolmuahwixjqc.supabase.co"
 )
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY")
-if not SUPABASE_ANON_KEY:
-    raise RuntimeError(
-        "SUPABASE_ANON_KEY environment variable is required. "
-        "Set it in the runtime environment or a .env file loaded before import."
-    )
 
 _MIGRATED = False
 _client: Optional[httpx.AsyncClient] = None
@@ -36,6 +31,10 @@ _client: Optional[httpx.AsyncClient] = None
 
 def _get_client() -> httpx.AsyncClient:
     global _client
+    if not SUPABASE_ANON_KEY:
+        raise RuntimeError(
+            "SUPABASE_ANON_KEY environment variable is required for Supabase writes."
+        )
     if _client is None:
         _client = httpx.AsyncClient(
             base_url=SUPABASE_URL,
