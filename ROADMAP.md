@@ -1,184 +1,143 @@
-# WEALTH — Roadmap H1–H4
+# WEALTH — Roadmap: Next Horizon (180-Day)
 
-**Version:** v2026.05.10  
-**Organ:** WEALTH (Capital · Ω Node)  
-**Maturity:** PRODUCTION (155 commits, 48 tools)  
-**Role:** Capital intelligence coprocessor — NPV, EMV, crisis triage, Makcik² relational credit  
-**Status:** SEALED — pending APEX ratification — **EMBODIMENT-AWARE CAPITAL**
-
----
-
-## Executive Summary
-
-WEALTH is the capital intelligence coprocessor of the arifOS federation — the Ω node for economic and financial evidence. As of 2026-05-10, WEALTH benefits from kernel-level tool embodiment contracts and model registry fixes. The highest-priority risks are **C4 security debt** (Supabase key in git history, unrotated secrets) and **dual runtime consolidation** (Python + Node.js kernels).
-
-**WEALTH responsibilities by horizon:**
-
-| Horizon | Theme | WEALTH Milestones |
-|---------|-------|------------------|
-| **H1** (Q2–Q3 2026) | Substrate Hardening | Exergy/negentropy capital, stress testing, **security debt** |
-| **H2** (Q4 2026–Q1 2027) | Recursive Governance | WEALTH ↔ GEOX coupling, Makcik² GA |
-| **H3** (Q2–Q3 2027) | AGI-Scale Runtime | Real-time planetary boundary monitoring |
-| **H4** (Q4 2027+) | Foundational Substrate | Cross-federation capital standard |
+> **Roadmap Name:** ARIFOS_NEXT_HORIZON_2026  
+> **Strategic Verdict:** APPROVED FOR PLANNING  
+> **Execution Verdict:** HOLD until repo contracts and schemas are frozen  
+> **Role:** Capital evidence organ: NPV, IRR, EMV, crisis, stewardship  
+> **Seal:** DITEMPA BUKAN DIBERI
 
 ---
 
-## What Changed (2026-05-10)
+## North Star
 
-### ✅ Deployed
-- **arifOS embodiment contracts** — WEALTH tools now respect lane/tier gating at kernel + REST levels
-- **Model registry fix** — `gpt-5.5-thinking` resolves correctly for governance attestation
-
-### 🔄 Active Frontier
-- C4 security debt (Supabase key rotation, history purge)
-- Dual runtime consolidation (Python vs Node.js canonical kernel)
-- Thermodynamic capital accounting schema
+Make WEALTH a disciplined valuation witness, not a decision-maker. Every capital recommendation is labeled advisory.
 
 ---
 
-## H1: Substrate Hardening (Q2–Q3 2026)
+## The 10 Non-Negotiable Invariants
 
-### H1.0 — C4 Security Debt (P0)
-
-**WEALTH Supabase key in git history** — must be rotated and purged before any other H1 work.
-
-**Action items:**
-- Rotate Supabase key in Supabase dashboard
-- Purge from git history (`git filter-repo` or BFG)
-- Run `detect-secrets` + `truffleHog` across full history
-- Update `.env.example` with rotated placeholder
-
-**Blocked by:** Sovereign approval for history rewrite (F01 AMANAH).
-
-### H1.1 — Dual Runtime Consolidation
-
-WEALTH currently maintains **both Python and Node.js kernels**. Divergence risk is high.
-
-**Decision needed:** Python (FastMCP 3.2) should be the canonical kernel.
-
-**Action items:**
-- Audit feature parity — which tools exist only in Python vs only in Node
-- Migration plan with deprecation timeline
-- Freeze Node kernel with clear "legacy" labels
-- Unified test suite (single pytest runner)
-
-### H1.2 — Thermodynamic Capital Accounting
-
-Extend the 7 capital types to include **exergy** and **negentropy**.
-
-```python
-class CapitalType(Enum):
-  FINANCIAL = "financial"
-  MANUFACTURED = "manufactured"
-  HUMAN = "human"
-  SOCIAL = "social"
-  NATURAL = "natural"
-  INTELLECTUAL = "intellectual"
-  CULTURAL = "cultural"
-  EXERGY = "exergy"          # NEW: Useful work potential (kWh equivalent)
-  NEGENTROPY = "negentropy"  # NEW: Organizational/order capital (bits equivalent)
-```
-
-**Why this matters for AGI substrate:**
-A pure financial optimization will destroy natural capital and human wellbeing. Exergy and negentropy give arifOS a thermodynamic language for trade-offs that financial models cannot express.
-
-**Owner:** WEALTH science team  
-**Target:** September 2026
-
-### H1.3 — Cross-Scale Stress Testing
-
-Build automated catastrophe scenarios that cascade from `personal` → `agentic` scale in <60 seconds.
-
-**Required test scenarios (H1):**
-1. **Flash crash** — Capital markets drop 40% in 60 seconds
-2. **Opportunity cost cascade** — Wrong personal decision → agentic failure → institutional stress
-3. **Constitutional stress** — Does F5 PEACE hold when financial survival is at stake?
-4. **Makcik² default** — Relational credit network collapse simulation
-
-**Target:** All constitutional floors hold at all scales by September 2026.
-
-**Owner:** WEALTH risk team  
-**Target:** September 2026
-
-### H1.4 — WEALTH ↔ GEOX Coupling
-
-Price ecological damage in real time: GEOX outputs feed directly into WEALTH `wealth_future_steward`.
-
-```python
-class PlanetaryBoundaryInput:
-  # From GEOX real-time sensor bridge
-  seismic_risk_index: float           # 0–1
-  groundwater_depletion_rate: float   # m³/year
-  soil_erosion_flux: float            # tonnes/year
-  carbon_storage_delta: float         # tonnes CO2/year
-  
-  # WEALTH processing
-  ecological_damage_price: float      # MYR/year
-  planetary_boundary_indicator: float # 0–1 (1 = boundary exceeded)
-  
-  # Alert thresholds
-  boundary_warning: bool              # True if > 0.8
-  boundary_exceeded: bool             # True if > 1.0
-```
+1. arifOS judges.
+2. AAA identifies.
+3. GEOX witnesses earth.
+4. WEALTH witnesses capital.
+5. A-FORGE executes only after verdict.
+6. VAULT999 records.
+7. ARIF may veto.
+8. No agent self-authorizes.
+9. No hidden irreversible action.
+10. No evidence, no SEAL.
 
 ---
 
-## H2: Recursive Governance (Q4 2026 – Q1 2027)
+## Horizon 0 — Days 0–14: Canon Lock 🧊
 
-### H2.1 — Makcik² Relational Credit GA
+**Goal:** Define capital evidence authority boundaries.
 
-Makcik² relational credit scoring reaches General Availability.
-
-**Current state:** Prototype  
-**Target:** GA with full VAULT999 audit trail
-
-### H2.2 — Cross-Institutional Capital Flow
-
-WEALTH tracks capital flows across institutional boundaries with constitutional compliance verification at each handoff.
+| Deliverable | Output |
+|-------------|--------|
+| `REPO_AUTHORITY_MATRIX.md` | What WEALTH may own / must not own |
+| Tool inventory | 48 canonical tools — verify no overlap with other repos |
+| Schema inventory | Map all valuation schemas |
+| C4 security debt | Rotate Supabase key, purge from git history |
 
 ---
 
-## H3: AGI-Scale Runtime (Q2–Q3 2027)
+## Horizon 1 — Days 15–45: Security + Session Spine 🔐
 
-### H3.1 — Real-Time Planetary Boundary Monitoring
+**Goal:** Every model output has assumptions. Every capital recommendation is labeled advisory.
 
-Continuous WEALTH ↔ GEOX loop with automatic alerting when planetary boundaries are approached or exceeded.
-
-### H3.2 — Emotional/Social Capital Quantification
-
-Extend capital types to include emotional capital (wellbeing, trust) as quantified dimensions.
-
----
-
-## H4: Foundational Substrate (Q4 2027+)
-
-### H4.1 — Cross-Federation Capital Standard
-
-WEALTH capital schemas adopted as the federation standard for economic evidence exchange.
+| Deliverable | Output |
+|-------------|--------|
+| `/schemas/capital_evidence.schema.json` | Structured capital evidence object |
+| `/schemas/emv.schema.json` | Expected monetary value schema |
+| `/schemas/risk_exposure.schema.json` | Risk exposure schema |
+| Assumption inventory | Every model output declares assumptions explicitly |
 
 ---
 
-## Dependency Chain
+## Horizon 2 — Days 46–90: Deterministic Judge ⚖️
+
+**Goal:** Every high-impact financial action returns HOLD unless arifOS SEAL + F13 approval exist.
+
+| Deliverable | Output |
+|-------------|--------|
+| `/ontology/fibo_map.yaml` | FIBO-compatible concept map |
+| `/models/npv.py`, `/models/irr.py`, `/models/emv.py`, `/models/downside.py` | Valuation models with explicit assumptions |
+| Valuation golden cases | `/tests/valuation_golden_cases.py` |
+
+---
+
+## Horizon 3 — Days 91–135: Semantic Federation 🌍💰
+
+**Goal:** GEOX uncertainty produces WEALTH risk witness without manual prompt glue.
+
+### Bridge Contract
 
 ```
-[C4 Security Debt] ──► [Dual Runtime Consolidation]
-         │
-         └──────► [Exergy/Negentropy Capital] ──► [Stress Testing]
-                          │
-                          └──────► [WEALTH↔GEOX Coupling]
-                                           │
-                                           ▼
-                          [H3 Real-time Planetary Monitoring]
+GEOX evidence:
+  seismic_anomaly
+  reservoir_uncertainty
+  porosity_risk
+  pressure_regime
+  basin_context
+
+        ↓ maps into
+
+WEALTH evidence:
+  capex_exposure
+  downside_case
+  expected_monetary_value
+  abandonment_risk
+  portfolio_option_value
 ```
 
+| Deliverable | Output |
+|-------------|--------|
+| `capital_evidence.schema.json` | WEALTH evidence export format |
+| FIBO mapping v1 | Semantic concept alignment |
+| Cross-domain evidence demo | One real GEOX → WEALTH bridge case |
+| GEOX → WEALTH evidence bridge | Works on one real example |
+
+### First Cross-Domain Pipeline
+> "Given a subsurface uncertainty, produce a capital-risk witness without approving capital action."
+
+GEOX detects uncertainty → arifOS requests evidence → WEALTH calculates EMV/downside/option value → arifOS judges → A-FORGE executes report generation only → VAULT999 seals trace.
+
 ---
 
-## Tool Count Note
+## Horizon 4 — Days 136–180: Self-Healing + Public Release 🛠️
 
-WEALTH claims 48 tools (13 sovereign primitives × modes). This must be reconciled in the unified `MCP_ENDPOINT_REGISTRY` v2.0 (AAA ownership, June 2026).
+**Goal:** Causal decision intelligence. Capital risk affects execution permission.
+
+| Deliverable | Output |
+|-------------|--------|
+| Causal template integration | WEALTH → A-FORGE capital risk affects execution permission |
+| Public docs cleanup | README, AGENTS.md, API docs |
+| Release tag `vNext-Horizon-0` | All repos tagged |
 
 ---
 
-**DITEMPA BUKAN DIBERI — Capital intelligence is forged, not given.**
+## What to Build Next
 
-*SEALED: 2026-05-10 | WEALTH Capital Domain — Embodiment-Aware*
+Identity → Evidence → Formal Verdict → Sandboxed Execution → Immutable Seal
+
+## What to Avoid
+
+- More overlapping dashboards.
+- More untyped tools.
+- More prompt-only governance.
+- More agent autonomy language without execution contracts.
+
+## What Wins
+
+- Deterministic checks.
+- Typed schemas.
+- Scoped authority.
+- Evidence contracts.
+- Human veto preserved.
+
+---
+
+*DITEMPA BUKAN DIBERI — Capital intelligence is forged, not given.*
+
+*SEALED: 2026-05-10 | WEALTH Capital Domain — Next Horizon APPROVED FOR PLANNING*
