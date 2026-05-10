@@ -66,9 +66,9 @@ def _is_fresh(path: str, bus: str) -> bool:
     return datetime.now(timezone.utc) - mtime < ttl
 
 
-def _cache_age_hours(path: str) -> float:
+def _cache_age_hours(path: str) -> Optional[float]:
     if not os.path.exists(path):
-        return float("inf")
+        return None
     mtime = datetime.fromtimestamp(os.path.getmtime(path), tz=timezone.utc)
     return (datetime.now(timezone.utc) - mtime).total_seconds() / 3600.0
 
