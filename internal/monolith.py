@@ -2886,7 +2886,9 @@ def ingest_fetch(
     result = registry.fetch(
         source, series_id, entity_code, use_cache=use_cache, bus=bus
     )
-    flags = result.get("flags", [])
+    flags = list(result.get("flags", []))
+    if not result.get("records") and not _has_any_flag(flags, {"ADAPTER_NOT_FOUND", "NO_DATA_FETCHED"}):
+        flags.append("NO_DATA_FETCHED")
     return create_envelope(
         "wealth_ingest_fetch",
         "Sense",
@@ -5523,11 +5525,14 @@ def get_sources_adapter_status() -> str:
 
 import inspect
 
-def _dispatch_to(mode: str, dispatch_map: dict, __params__: Optional[Dict[str, Any]] = None) -> Any:
+def _dispatch_to(tool_name: str, mode: str, dispatch_map: dict, __params__: Optional[Dict[str, Any]] = None) -> Any:
     """Route mode to canonical implementation, cleaning kwargs to match signature."""
     func = dispatch_map.get(mode)
     if func is None:
         return {
+            "tool": tool_name,
+            "task": tool_name,
+            "mode": mode,
             "status": "FAIL",
             "error": f"Unsupported mode: {mode}",
             "allowed_modes": sorted(dispatch_map.keys()),
@@ -5543,18 +5548,29 @@ def _dispatch_to(mode: str, dispatch_map: dict, __params__: Optional[Dict[str, A
     for param_name, param in sig.parameters.items():
         if (
             param.default is inspect.Parameter.empty
-            and param_name not in clean
+            and (
+                param_name not in clean
+                or _is_blank_value(clean.get(param_name))
+            )
             and param.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
         ):
             missing.append(param_name)
     if missing:
-        return {
-            "status": "FAIL",
-            "error": f"Missing required parameters for mode '{mode}': {', '.join(missing)}",
-            "required": missing,
-            "provided_keys": sorted(clean.keys()),
-        }
-    return func(**clean)
+        return _input_required_response(
+            tool_name,
+            mode,
+            missing,
+            sorted(key for key, value in clean.items() if not _is_blank_value(value)),
+        )
+    try:
+        result = func(**clean)
+        if inspect.isawaitable(result):
+            return asyncio.run(result)
+        return result
+    except TypeError as exc:
+        return _runtime_error_response(tool_name, mode, str(exc))
+    except ValueError as exc:
+        return _runtime_error_response(tool_name, mode, str(exc))
 
 
 def _emergence_scan(
@@ -5623,7 +5639,7 @@ def _dispatch_emergence(
     __params__: Optional[Dict[str, Any]] = None,
 ) -> Any:
     """Route mode to canonical implementation and inject emergence scan."""
-    result = _dispatch_to(mode, dispatch_map, __params__)
+    result = _dispatch_to(tool_name, mode, dispatch_map, __params__)
     return _inject_emergence(tool_name, mode, __params__ or {}, result)
 
 
@@ -5646,7 +5662,10 @@ def _invoke_callable(func: Callable[..., Any], payload: Dict[str, Any]) -> Any:
     for param_name, param in sig.parameters.items():
         if (
             param.default is inspect.Parameter.empty
-            and param_name not in clean
+            and (
+                param_name not in clean
+                or _is_blank_value(clean.get(param_name))
+            )
             and param.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
         ):
             missing.append(param_name)
@@ -5655,7 +5674,11 @@ def _invoke_callable(func: Callable[..., Any], payload: Dict[str, Any]) -> Any:
             "status": "FAIL",
             "error": f"Missing required parameters: {', '.join(missing)}",
             "required": missing,
-            "provided_keys": sorted(clean.keys()),
+            "provided_keys": sorted(key for key, value in clean.items() if not _is_blank_value(value)),
+            "failure_flags": ["MISSING_REQUIRED_INPUT"],
+            "allocation_signal": "INSUFFICIENT_DATA",
+            "engine_status": "INPUT_REQUIRED",
+            "domain_verdict": "VOID",
         }
     result = func(**clean)
     if inspect.isawaitable(result):
@@ -5696,11 +5719,12 @@ def _gradient_spread(
     has_input = bid is not None or ask is not None or spread_basis is not None or reference_price is not None
     spread = (ask - bid) if (bid is not None and ask is not None) else (spread_basis if spread_basis is not None else None)
     grad_flags = [] if has_input else ["NO_INPUT_BASELINE"]
+    direction = pressure_direction if has_input else "unknown"
     return create_envelope(
         "wealth_gradient_price",
         "Gradient",
         {"spread": spread, "bid": bid, "ask": ask, "reference": reference_price},
-        {"pressure": "differential", "direction": pressure_direction},
+        {"pressure": "differential", "direction": direction},
         grad_flags,
         ["Gradient pricing: capital flows from high to low pressure."],
     )
@@ -5795,6 +5819,7 @@ def _dispatch_invariant_tool(tool: str, mode: str, payload: Dict[str, Any]) -> D
         return {
             "tool": tool,
             "task": tool,
+            "mode": mode,
             "status": "FAIL",
             "error": f"Unsupported mode: {mode}",
             "allowed_modes": sorted(dispatch_map.keys()),
@@ -5805,7 +5830,12 @@ def _dispatch_invariant_tool(tool: str, mode: str, payload: Dict[str, Any]) -> D
             },
         }
     source_fn = dispatch_map[mode]
-    raw_result = _invoke_callable(source_fn, payload)
+    try:
+        raw_result = _invoke_callable(source_fn, payload)
+    except TypeError as exc:
+        raw_result = _runtime_error_response(tool, mode, str(exc))
+    except ValueError as exc:
+        raw_result = _runtime_error_response(tool, mode, str(exc))
     return _wrap_invariant_output(tool, mode, raw_result, [source_fn.__name__], payload)
 
 
@@ -5909,25 +5939,73 @@ def wealth_energy_productivity(
     scale_mode: str = "enterprise",
 ) -> Any:
     """Ω-WEALTH-05: Energy — output per input, productivity, capital efficiency."""
+    payload = dict(locals())
     if mode == "pi":
-        return _inject_emergence("wealth_energy_productivity", mode, dict(locals()), pi_efficiency(initial_investment, cash_flows or [], discount_rate, terminal_value, scale_mode))
+        if _is_blank_value(cash_flows):
+            return _inject_emergence(
+                "wealth_energy_productivity",
+                mode,
+                payload,
+                _input_required_response(
+                    "wealth_energy_productivity",
+                    mode,
+                    ["cash_flows"],
+                    sorted(
+                        key for key, value in payload.items()
+                        if key != "mode" and not _is_blank_value(value)
+                    ),
+                ),
+            )
+        return _inject_emergence(
+            "wealth_energy_productivity",
+            mode,
+            payload,
+            pi_efficiency(initial_investment, cash_flows or [], discount_rate, terminal_value, scale_mode),
+        )
     if mode == "efficiency":
-        return _inject_emergence("wealth_energy_productivity", mode, dict(locals()), create_envelope(
+        return _inject_emergence(
             "wealth_energy_productivity",
-            "Energy",
-            {"efficiency_ratio": 0.0, "mode": "efficiency"},
-            {"placeholder": True},
-            ["Capital efficiency analysis — full engine in development."],
-        ))
+            mode,
+            payload,
+            {
+                "tool": "wealth_energy_productivity",
+                "task": "wealth_energy_productivity",
+                "mode": mode,
+                "status": "FAIL",
+                "domain_verdict": "VOID",
+                "governance_verdict": "VOID",
+                "engine_status": "ERROR",
+                "confidence": "LOW",
+                "error": "Mode 'efficiency' is not implemented yet.",
+                "failure_flags": ["ENGINE_NOT_IMPLEMENTED"],
+                "allocation_signal": "INSUFFICIENT_DATA",
+            },
+        )
     if mode == "roi":
-        return _inject_emergence("wealth_energy_productivity", mode, dict(locals()), create_envelope(
+        return _inject_emergence(
             "wealth_energy_productivity",
-            "Energy",
-            {"roi": 0.0, "mode": "roi"},
-            {"placeholder": True},
-            ["Return-on-investment analysis — full engine in development."],
-        ))
-    return _dispatch_emergence("wealth_energy_productivity", mode, {}, {k: v for k, v in locals().items() if k not in ('mode', 'dispatch')})
+            mode,
+            payload,
+            {
+                "tool": "wealth_energy_productivity",
+                "task": "wealth_energy_productivity",
+                "mode": mode,
+                "status": "FAIL",
+                "domain_verdict": "VOID",
+                "governance_verdict": "VOID",
+                "engine_status": "ERROR",
+                "confidence": "LOW",
+                "error": "Mode 'roi' is not implemented yet.",
+                "failure_flags": ["ENGINE_NOT_IMPLEMENTED"],
+                "allocation_signal": "INSUFFICIENT_DATA",
+            },
+        )
+    return _dispatch_emergence(
+        "wealth_energy_productivity",
+        mode,
+        {},
+        {k: v for k, v in payload.items() if k not in ("mode", "payload")},
+    )
 
 
 @mcp.tool(name="wealth_time_discount")
@@ -5978,6 +6056,27 @@ def wealth_field_macro(
     vintage_date: str = "",
 ) -> Any:
     """Ω-WEALTH-08: Field — macro environment (rates, FX, energy, carbon, regime)."""
+    payload = {k: v for k, v in locals().items() if k not in ("mode", "dispatch")}
+    mode_requirements = {
+        "fetch": ["source", "series_id", "entity_code"],
+        "snapshot": ["entity_code"],
+        "reconcile": ["entity_code"],
+        "vintage": ["source", "series_id", "entity_code", "vintage_date"],
+    }
+    required = mode_requirements.get(mode, [])
+    missing = [field for field in required if _is_blank_value(payload.get(field))]
+    if missing:
+        return _inject_emergence(
+            "wealth_field_macro",
+            mode,
+            payload,
+            _input_required_response(
+                "wealth_field_macro",
+                mode,
+                missing,
+                sorted(key for key, value in payload.items() if not _is_blank_value(value)),
+            ),
+        )
     return _dispatch_emergence("wealth_field_macro", mode, {
         "fetch": ingest_fetch,
         "snapshot": ingest_snapshot,
@@ -5985,7 +6084,7 @@ def wealth_field_macro(
         "health": ingest_health,
         "vintage": ingest_vintage,
         "sources": ingest_sources,
-    }, {k: v for k, v in locals().items() if k not in ('mode', 'dispatch')})
+    }, payload)
 
 
 @mcp.tool(name="wealth_signal_information")
