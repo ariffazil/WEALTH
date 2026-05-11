@@ -59,6 +59,24 @@ WEALTH is the **capital evidence organ** — it surfaces the financial and econo
 
 ---
 
+## 🛠 Tool Discovery Architecture
+
+WEALTH operates as a **dynamic monolith**. Instead of static tool definitions, `internal/monolith.py` performs discovery at startup:
+
+1.  **Scan**: It scans the `host/ingest/` and `internal/analyzers/` registries.
+2.  **Wrap**: Each discovered adapter is wrapped in a `@governed_tool` decorator (F1–F13).
+3.  **Register**: Each adapter is registered as a FastMCP tool.
+
+The **87 tools** currently live are emergent from this registry. The `fastmcp.json` manifest and the summary table below act as a façade for this dynamic surface.
+
+### Capital Primitives → Tools
+Each architectural primitive (NPV, EMV, etc.) expands into a set of MCP tools:
+- `wealth_evaluate_<primitive>`: Core valuation calculation.
+- `wealth_health_<primitive>`: Adapter/feed health probe.
+- `wealth_schema_<primitive>`: Data contract validation.
+
+> **Governance Status**: 888 HOLD · EPOCH 1. Phase 1 gaps remaining in vault write wrappers.
+
 ## Architecture — Sovereign Pipeline Families
 
 > The MCP surface exposes **48 callable tools** — every mode and sub-mode is a first-class endpoint. The 13 canonical primitives (left column) are the architectural concept; the MCP tools are their operational surface.
