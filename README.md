@@ -159,3 +159,14 @@ Human / Agent request
 
 *Capital is not money. Capital is stored choice. WEALTH prices the choice before arifOS seals it.*
 *DITEMPA BUKAN DIBERI — Epistemic capital sovereignty is forged, not given.*
+
+## Repo + MCP Stabilization
+
+Operational stabilization policy and weekly hygiene protocol:
+`docs/operations/repo-mcp-stabilization.md`
+
+Install severity-based pre-push guard:
+
+```bash
+bash scripts/hooks/install_hooks.sh
+```
