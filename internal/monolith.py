@@ -3,6 +3,7 @@ import hashlib
 import inspect
 import json
 import math
+import numbers
 import os
 import sys
 import uuid
@@ -590,6 +591,17 @@ QUALIFY_FLAGS = {
     "RUNWAY_UNBOUNDED",
     "NO_INPUT_BASELINE",
 }
+DATA_GAP_FLAGS = {
+    "ADAPTER_NOT_FOUND",
+    "NO_DATA_FETCHED",
+    "NO_INPUT_BASELINE",
+    "RUNWAY_UNBOUNDED",
+    "MISSING_REQUIRED_INPUT",
+    "INPUT_REQUIRED",
+    "EPISTEMIC_UNAVAILABLE",
+    "COMPUTATION_ERROR",
+    "ENGINE_NOT_IMPLEMENTED",
+}
 EPISTEMIC_ORDER = ["UNKNOWN", "HYPOTHESIS", "ESTIMATE", "PLAUSIBLE", "CLAIM"]
 RELIABILITY_TO_TAG = {
     "guaranteed": "CLAIM",
@@ -603,6 +615,102 @@ def round_value(value: Optional[float], digits: int = 6) -> Optional[float]:
     if value is None or not math.isfinite(value):
         return value
     return round(value, digits)
+
+
+def _flag_matches(flag: str, candidate: str) -> bool:
+    return flag == candidate or flag.startswith(f"{candidate}:")
+
+
+def _has_any_flag(flags: List[str], candidates: set[str]) -> bool:
+    return any(_flag_matches(flag, candidate) for flag in flags for candidate in candidates)
+
+
+def _is_blank_value(value: Any) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return value.strip() == ""
+    if isinstance(value, (list, dict, tuple, set)):
+        return len(value) == 0
+    return False
+
+
+def _json_safe_value(value: Any) -> Tuple[Any, bool]:
+    if isinstance(value, dict):
+        changed = False
+        sanitized: Dict[str, Any] = {}
+        for key, item in value.items():
+            sanitized_item, item_changed = _json_safe_value(item)
+            sanitized[key] = sanitized_item
+            changed = changed or item_changed
+        return sanitized, changed
+
+    if isinstance(value, list):
+        changed = False
+        sanitized_list: List[Any] = []
+        for item in value:
+            sanitized_item, item_changed = _json_safe_value(item)
+            sanitized_list.append(sanitized_item)
+            changed = changed or item_changed
+        return sanitized_list, changed
+
+    if isinstance(value, tuple):
+        sanitized_items, changed = _json_safe_value(list(value))
+        return tuple(sanitized_items), changed
+
+    if isinstance(value, numbers.Real) and not isinstance(value, bool):
+        if not math.isfinite(float(value)):
+            return None, True
+        return value, False
+
+    return value, False
+
+
+def _input_required_response(
+    tool: str,
+    mode: str,
+    required: List[str],
+    provided_keys: List[str],
+) -> Dict[str, Any]:
+    return {
+        "tool": tool,
+        "task": tool,
+        "mode": mode,
+        "status": "FAIL",
+        "domain_verdict": "VOID",
+        "governance_verdict": "VOID",
+        "engine_status": "INPUT_REQUIRED",
+        "confidence": "LOW",
+        "error": f"Missing required parameters for mode '{mode}': {', '.join(required)}",
+        "required": required,
+        "provided_keys": provided_keys,
+        "failure_flags": ["MISSING_REQUIRED_INPUT"],
+        "allocation_signal": "INSUFFICIENT_DATA",
+        "execution": {
+            "recommended_mode": "draft_only",
+            "human_confirmation_required": True,
+        },
+    }
+
+
+def _runtime_error_response(tool: str, mode: str, error: str) -> Dict[str, Any]:
+    return {
+        "tool": tool,
+        "task": tool,
+        "mode": mode,
+        "status": "FAIL",
+        "domain_verdict": "VOID",
+        "governance_verdict": "VOID",
+        "engine_status": "ERROR",
+        "confidence": "LOW",
+        "error": error,
+        "failure_flags": ["COMPUTATION_ERROR"],
+        "allocation_signal": "INSUFFICIENT_DATA",
+        "execution": {
+            "recommended_mode": "pause",
+            "human_confirmation_required": True,
+        },
+    }
 
 
 def count_sign_changes(values: List[float]) -> int:
@@ -718,21 +826,21 @@ def weakest_epistemic(items: List[dict], default_tag: str = "CLAIM") -> str:
 
 
 def derive_verdict(flags: List[str], default_verdict: str = "SEAL", high_stress: bool = False, recommended: str = "SEAL") -> str:
-    if recommended == "VOID" or any(flag in INVALID_FLAGS for flag in flags):
+    if recommended == "VOID" or _has_any_flag(flags, INVALID_FLAGS):
         return "VOID"
     if recommended == "SABAR" or high_stress:
         return "SABAR"
-    if any(flag in HOLD_FLAGS for flag in flags):
+    if _has_any_flag(flags, HOLD_FLAGS):
         return "888-HOLD"
-    if any(flag in QUALIFY_FLAGS for flag in flags):
+    if _has_any_flag(flags, QUALIFY_FLAGS | DATA_GAP_FLAGS):
         return "QUALIFY"
     return default_verdict
 
 
 def infer_epistemic(flags: List[str], default_epistemic: str = "CLAIM") -> str:
-    if any(flag in INVALID_FLAGS for flag in flags):
+    if _has_any_flag(flags, INVALID_FLAGS):
         return "UNKNOWN"
-    if any((flag in HOLD_FLAGS) or (flag in QUALIFY_FLAGS) for flag in flags):
+    if _has_any_flag(flags, HOLD_FLAGS | QUALIFY_FLAGS | DATA_GAP_FLAGS):
         return "ESTIMATE"
     return default_epistemic
 
@@ -859,14 +967,14 @@ def get_capital_terminology(capital_type: str) -> Dict[str, str]:
 def derive_allocation_signal(
     flags: List[str], primary: Dict[str, Any], tool: str, scale_mode: str = "enterprise"
 ) -> str:
-    if any(flag in INVALID_FLAGS for flag in flags):
+    if _has_any_flag(flags, INVALID_FLAGS | DATA_GAP_FLAGS):
         return "INSUFFICIENT_DATA"
 
     scale = get_scale_defaults(scale_mode)
 
     if tool in {"wealth_coordination_equilibrium", "wealth_game_theory_solve"}:
         tragedy_risk = primary.get("tragedy_risk", 1.0)
-        if any(flag in INVALID_FLAGS for flag in flags):
+        if _has_any_flag(flags, INVALID_FLAGS | DATA_GAP_FLAGS):
             return "INSUFFICIENT_DATA"
         if primary.get("in_core") is False or any("BLOCK" in f for f in flags):
             return "REJECT"
@@ -1034,6 +1142,11 @@ def create_envelope(
 ) -> Dict[str, Any]:
     global LAST_RECEIPT_HASH
     flags = flags or []
+    primary, primary_sanitized = _json_safe_value(primary)
+    secondary, secondary_sanitized = _json_safe_value(secondary or {})
+    governance_args, governance_sanitized = _json_safe_value(governance_args or {})
+    if (primary_sanitized or secondary_sanitized or governance_sanitized) and "NON_FINITE_VALUE_REPLACED" not in flags:
+        flags.append("NON_FINITE_VALUE_REPLACED")
     
     # 1. Harness Audit with Chaining
     final_parent_hash = parent_hash or LAST_RECEIPT_HASH
@@ -1084,7 +1197,15 @@ def create_envelope(
         alias_of = engine.V2_CANONICAL_MAP[tool]
         
     # Failure Doctrine Classification
-    failure_tokens = ("ERROR", "UNAVAILABLE", "INVALID", "STALE", "FAILURE")
+    failure_tokens = (
+        "ERROR",
+        "UNAVAILABLE",
+        "INVALID",
+        "STALE",
+        "FAILURE",
+        "MISSING_REQUIRED_INPUT",
+        "COMPUTATION_ERROR",
+    )
     failure_flags = [f for f in flags if any(token in f for token in failure_tokens)]
     status = "PASS"
     next_safe_action = "Consult arifOS 888_JUDGE"
@@ -1257,7 +1378,14 @@ def create_envelope(
     envelope["secondary_metrics"]["engine_status"] = envelope["engine_status"]
 
     # 4. Update Global Identity Chain after governance mutations.
-    receipt_blob = json.dumps(envelope, sort_keys=True, separators=(",", ":"), default=str)
+    envelope, _ = _json_safe_value(envelope)
+    receipt_blob = json.dumps(
+        envelope,
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+        allow_nan=False,
+    )
     receipt_hash = hashlib.sha256(receipt_blob.encode()).hexdigest()
     envelope["receipt_hash"] = receipt_hash
     LAST_RECEIPT_HASH = receipt_hash
@@ -1937,6 +2065,15 @@ def growth_velocity(
     scale_mode: str = "enterprise",
 ) -> Any:
     """Compute Compound Growth and Runway. [Velocity Dimension]"""
+    has_input = any(
+        (
+            principal not in (None, 0),
+            rate not in (None, 0),
+            years not in (None, 0),
+            annual_contribution not in (None, 0),
+            monthly_burn not in (None, 0),
+        )
+    )
     total = principal
     for _ in range(years):
         total = total * (1 + rate) + annual_contribution
@@ -1944,14 +2081,14 @@ def growth_velocity(
     low = round_value(final_value * 0.88, 2)
     high = round_value(final_value * 1.12, 2)
     net_monthly = -monthly_burn
-    runway_months = (
-        math.inf if monthly_burn <= 0 else round_value(principal / monthly_burn, 1)
-    )
-    flags = (
-        ["RUNWAY_CRITICAL"]
-        if monthly_burn > 0 and runway_months is not None and runway_months < 3
-        else []
-    )
+    flags: List[str] = ["NO_INPUT_BASELINE"] if not has_input else []
+    if monthly_burn <= 0:
+        runway_months = None
+        flags.append("RUNWAY_UNBOUNDED")
+    else:
+        runway_months = round_value(principal / monthly_burn, 1)
+        if runway_months is not None and runway_months < 3:
+            flags.append("RUNWAY_CRITICAL")
     return create_envelope(
         "wealth_growth_velocity",
         "Velocity",
@@ -1987,7 +2124,7 @@ def networth_state(
         for liability in liabilities
         if math.isfinite(liability.get("outstanding", liability.get("principal", 0)))
     )
-    epistemic = weakest_epistemic([*assets, *liabilities])
+    epistemic = weakest_epistemic([*assets, *liabilities], "UNKNOWN")
     nw_flags = ["NO_INPUT_BASELINE"] if not assets and not liabilities else []
     return create_envelope(
         "wealth_networth_state",
@@ -2016,6 +2153,7 @@ def cashflow_flow(
     """Compute metabolic liquidity (Flow Dimension). [Flow Dimension]"""
     income = [item for item in (income or []) if item.get("active", True)]
     expenses = [item for item in (expenses or []) if item.get("active", True)]
+    has_input = bool(income or expenses) or liquid_assets not in (None, 0)
     total_income = sum(
         item.get("monthly_amount", 0)
         for item in income
@@ -2028,16 +2166,14 @@ def cashflow_flow(
     )
     net_monthly = total_income - total_expenses
     burn_rate = max(0.0, -net_monthly)
+    flags: List[str] = ["NO_INPUT_BASELINE"] if not has_input else []
     if burn_rate == 0:
         runway_months = None
-        flags = ["RUNWAY_UNBOUNDED"]
+        flags.append("RUNWAY_UNBOUNDED")
     else:
         runway_months = round_value(liquid_assets / burn_rate, 1)
-        flags = (
-            ["RUNWAY_CRITICAL"]
-            if runway_months is not None and runway_months < 3
-            else []
-        )
+        if runway_months is not None and runway_months < 3:
+            flags.append("RUNWAY_CRITICAL")
     epistemic = weakest_epistemic([*income, *expenses], "UNKNOWN")
     return create_envelope(
         "wealth_cashflow_flow",
