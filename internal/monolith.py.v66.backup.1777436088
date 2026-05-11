@@ -1,4 +1,3 @@
-import asyncio
 import hashlib
 import inspect
 import json
@@ -7,64 +6,17 @@ import os
 import sys
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple, Callable
+from typing import Any, Dict, List, Optional
 
-# Ensure parent directory is in path for absolute imports if needed
-base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if base_dir not in sys.path:
-    sys.path.append(base_dir)
-
-# WEALTH Internal Imports (Use relative or try/except for robustness)
-try:
-    from .governance import ForgeLaw, compute_kappa_r, compute_psi_le, get_qdf_version
-except ImportError:
-    from governance import ForgeLaw, compute_kappa_r, compute_psi_le, get_qdf_version
-
-try:
-    from host.governance.tri_witness import TriWitness
-    TRIWITNESS_AVAILABLE = True
-except Exception:
-    TRIWITNESS_AVAILABLE = False
-    class TriWitness:
-        def __init__(self, *args, **kwargs):
-            pass
-        def to_dict(self):
-            return {}
-
-try:
-    from internal.invariants import get_g_score
-
-    G_SCORE_AVAILABLE = True
-    G_SCORE_IMPORT_ERROR = None
-except Exception as exc:
-    # If standard import fails, try relative import
-    try:
-        from invariants import get_g_score
-        G_SCORE_AVAILABLE = True
-        G_SCORE_IMPORT_ERROR = None
-    except Exception as exc2:
-        G_SCORE_AVAILABLE = False
-        G_SCORE_IMPORT_ERROR = f"{type(exc2).__name__}: {exc2}"
-
-        def get_g_score(params: Dict[str, Any]) -> Dict[str, Any]:
-            return {
-                "g_score": 0.0,
-                "delta_s": 0.0,
-                "delta_S": 0.0, # Compat
-                "lyapunov_lambda": 0.0,
-                "omega_capacity": 0.0,
-                "entropy_s": 1.0,
-                "verdict": "UNAVAILABLE",
-                "regime": "unavailable",
-                "is_outlier": False,
-                "boundary_stress": params.get("resource_utilization", 0.8),
-                "engine_error": G_SCORE_IMPORT_ERROR,
-            }
-
-__version__ = "2026.05.02"
+__version__ = "2026.04.29"
 """WEALTH v2026.04.29 - Sovereign Pipeline OS with Expanded Resource Lattice."""
 
 LAST_RECEIPT_HASH = "0" * 64
+
+# Ensure sibling arifOS and host directories are in path
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if base_dir not in sys.path:
+    sys.path.append(base_dir)
 
 # Legacy arifOS path support
 arifos_path = os.path.join(base_dir, "arifOS")
@@ -134,41 +86,6 @@ def _vault_append(record, **kwargs):
             return asyncio.run(result)
         # Inside async context: fire-and-forget with task
         asyncio.create_task(result)
-    return result
-
-
-def _evaluate_floors(args: Dict[str, Any]) -> Dict[str, Any]:
-    """Local hard floors that remain active even when arifOS is unavailable."""
-    try:
-        result = check_floors(args)
-        if not isinstance(result, dict):
-            result = {}
-    except Exception:
-        result = {}
-
-    result = {
-        "pass": result.get("pass", True),
-        "verdict": result.get("verdict", "SEAL"),
-        "violations": list(result.get("violations", [])),
-        "holds": list(result.get("holds", [])),
-        "warnings": list(result.get("warnings", [])),
-    }
-
-    if args.get("ai_is_deciding"):
-        result["pass"] = False
-        result["verdict"] = "VOID"
-        if "F13_SOVEREIGN_DECISION_REQUIRED" not in result["violations"]:
-            result["violations"].append("F13_SOVEREIGN_DECISION_REQUIRED")
-
-    high_scale = args.get("scale_mode") in {"national", "crisis", "civilization", "agentic"}
-    irreversible_unconfirmed = not args.get("reversible", True) and not args.get("human_confirmed", False)
-    if irreversible_unconfirmed and (high_scale or args.get("critical", False)):
-        if result["verdict"] != "VOID":
-            result["verdict"] = "HOLD"
-        result["pass"] = False
-        if "F01_IRREVERSIBLE_ACTION_REQUIRES_HUMAN_CONFIRMATION" not in result["holds"]:
-            result["holds"].append("F01_IRREVERSIBLE_ACTION_REQUIRES_HUMAN_CONFIRMATION")
-
     return result
 
 
@@ -270,15 +187,11 @@ class HarnessEngine:
         """Compute hash of the WEALTH_HARNESS.md file."""
         if cls._DOCTRINE_HASH is None:
             try:
+                # Resolve path relative to this file
                 base_dir = os.path.dirname(__file__)
-                base_name = os.path.basename(base_dir)
-                if base_name == "internal":
-                    harness_path = os.path.join(base_dir, "..", "canon", "WEALTH_HARNESS.md")
-                else:
-                    harness_path = os.path.join(base_dir, "canon", "WEALTH_HARNESS.md")
-                harness_path = os.path.normpath(harness_path)
-                if os.path.exists(harness_path):
-                    with open(harness_path, "r", encoding="utf-8") as f:
+                path = os.path.join(base_dir, "canon", "WEALTH_HARNESS.md")
+                if os.path.exists(path):
+                    with open(path, "r", encoding="utf-8") as f:
                         cls._DOCTRINE_HASH = hashlib.sha256(f.read().encode()).hexdigest()
                 else:
                     cls._DOCTRINE_HASH = "MISSING_DOCTRINE_FILE"
@@ -312,8 +225,6 @@ class HarnessEngine:
 
     TOOL_TO_HARNESS = {
         "wealth_init": "Identity",
-        "vault_write": "Identity",
-        "vault_query": "Identity",
         "wealth_record_transaction": "Identity",
         "wealth_snapshot_portfolio": "Identity",
         "wealth_ingest_fetch": "Reality",
@@ -352,8 +263,6 @@ class HarnessEngine:
     
     SOVEREIGN_METADATA = {
         "wealth_init": {"family": "VAULT", "stage": "000-VAULT", "display": "wealth_init"},
-        "vault_write": {"family": "VAULT", "stage": "000-VAULT", "display": "vault_write"},
-        "vault_query": {"family": "VAULT", "stage": "000-VAULT", "display": "vault_query"},
         "wealth_record_transaction": {"family": "VAULT", "stage": "000-VAULT", "display": "wealth_record_transaction"},
         "wealth_snapshot_portfolio": {"family": "VAULT", "stage": "000-VAULT", "display": "wealth_snapshot_portfolio"},
         "wealth_ingest_fetch": {"family": "SENSE", "stage": "100-SENSE", "display": "wealth_ingest_fetch"},
@@ -367,8 +276,8 @@ class HarnessEngine:
         "wealth_monte_carlo_forecast": {"family": "MIND", "stage": "200-MIND", "display": "wealth_risk_monte_carlo"},
         "wealth_emv_risk": {"family": "MIND", "stage": "200-MIND", "display": "wealth_risk_emv"},
         "wealth_audit_entropy": {"family": "MIND", "stage": "200-MIND", "display": "wealth_audit_entropy", "dual_domain": ["MIND", "JUDGE"]},
-        "wealth_dscr_leverage": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_survival_dscr"},
-        "wealth_crisis_triage": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_crisis_triage"},
+        "wealth_dscr_leverage": {"family": "HEART", "stage": "300-HEART", "display": "wealth_survival_dscr"},
+        "wealth_crisis_triage": {"family": "HEART", "stage": "300-HEART", "display": "wealth_crisis_triage"},
         "wealth_civilization_stewardship": {"family": "HEART", "stage": "300-HEART", "display": "wealth_stewardship_civ"},
         "wealth_npv_reward": {"family": "REASON", "stage": "400-REASON", "display": "wealth_calc_npv"},
         "wealth_irr_yield": {"family": "REASON", "stage": "400-REASON", "display": "wealth_calc_irr"},
@@ -382,9 +291,9 @@ class HarnessEngine:
         "wealth_check_floors": {"family": "JUDGE", "stage": "800-JUDGE", "display": "wealth_check_floors"},
         "wealth_policy_audit": {"family": "JUDGE", "stage": "800-JUDGE", "display": "wealth_policy_audit"},
         "wealth_evoi_monte_carlo": {"family": "MIND", "stage": "200-MIND", "display": "wealth_evoi_monte_carlo"},
-        "wealth_cashflow_flow": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_survival_flow"},
-        "wealth_networth_state": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_survival_networth"},
-        "wealth_growth_velocity": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_survival_velocity"},
+        "wealth_cashflow_flow": {"family": "HEART", "stage": "300-HEART", "display": "wealth_survival_flow"},
+        "wealth_networth_state": {"family": "HEART", "stage": "300-HEART", "display": "wealth_survival_networth"},
+        "wealth_growth_velocity": {"family": "HEART", "stage": "300-HEART", "display": "wealth_survival_velocity"},
     }
 
     # ============================================================
@@ -415,7 +324,6 @@ class HarnessEngine:
         "wealth_survival_civilization": "wealth_civilization_stewardship",
         # REASON (400)
         "wealth_reason_npv": "wealth_npv_reward",
-        "wealth_npv_reward": "wealth_npv_reward",
         "wealth_reason_irr": "wealth_irr_yield",
         "wealth_reason_pi": "wealth_pi_efficiency",
         "wealth_reason_payback": "wealth_payback_time",
@@ -547,19 +455,6 @@ def maruah_band(score):
 
 
 mcp = FastMCP("WEALTH Valuation Kernel")
-
-@mcp.tool()
-def mcp_health_check() -> dict:
-    """Universal health check for federation stability."""
-    return {
-        "mcp": "WEALTH",
-        "status": "OK",
-        "transport": "SSE_VALID",
-        "auth": "OK",
-        "schema_version": "2026.04",
-        "read_only": True,
-        "final_authority": "ARIF",
-    }
 
 EPSILON = 1e-9
 INVALID_FLAGS = {
@@ -948,21 +843,6 @@ def derive_allocation_signal(
             return "MARGINAL"
         return "ACCEPT"
 
-    if tool in {"wealth_evoi_compute", "wealth_mind_evoi", "wealth_evoi_monte_carlo"}:
-        drill = primary.get("drill_recommendation", "")
-        if drill.startswith("PROCEED"):
-            return "ACCEPT"
-        if drill.startswith("DO_NOT_DRILL"):
-            return "REJECT"
-        if drill.startswith("HOLD") or drill.startswith("ACQUIRE_DATA"):
-            return "MARGINAL"
-        evoi_val = primary.get("evoi_musd", 0)
-        if evoi_val > 0:
-            return "ACCEPT"
-        if evoi_val < 0:
-            return "REJECT"
-        return "MARGINAL"
-
     return "MARGINAL"
 
 
@@ -1023,7 +903,6 @@ def create_envelope(
     scale_mode: str = "enterprise",
     governance_args: Optional[Dict[str, Any]] = None,
     parent_hash: Optional[str] = None,
-    witness: Optional[Any] = None,
 ) -> Dict[str, Any]:
     global LAST_RECEIPT_HASH
     flags = flags or []
@@ -1077,8 +956,7 @@ def create_envelope(
         alias_of = engine.V2_CANONICAL_MAP[tool]
         
     # Failure Doctrine Classification
-    failure_tokens = ("ERROR", "UNAVAILABLE", "INVALID", "STALE", "FAILURE")
-    failure_flags = [f for f in flags if any(token in f for token in failure_tokens)]
+    failure_flags = [f for f in flags if any(err in f for f in ["ERROR", "UNAVAILABLE", "INVALID", "STALE", "FAILURE"])]
     status = "PASS"
     next_safe_action = "Consult arifOS 888_JUDGE"
 
@@ -1096,43 +974,12 @@ def create_envelope(
         next_safe_action = "Proceed with manual verification."
 
     mode_map = {"PASS": "full", "CAUTION": "structured", "HOLD": "draft_only", "VOID": "pause"}
-
-    # --- WEALTH G-Score Integration (Thermodynamic Governance) ---
-    g_score_params = {**primary, "violations": flags, "scale_mode": scale_mode}
-    if secondary:
-        g_score_params.update(secondary)
-    if governance_args:
-        g_score_params.update(governance_args)
-    
-    g_data = get_g_score(g_score_params)
-    if g_data.get("engine_error"):
-        failure_flag = "G_SCORE_ENGINE_UNAVAILABLE"
-        if failure_flag not in flags:
-            flags.append(failure_flag)
-        if failure_flag not in failure_flags:
-            failure_flags.append(failure_flag)
-        if status == "PASS":
-            status = "HOLD"
-            next_safe_action = "Restore WEALTH thermodynamic dependencies before allocation."
-        if engine_status == "VALID":
-            engine_status = "WARNING"
         
     envelope = {
         "mcp": "WEALTH",
         "task": tool,
         "status": status,
         "domain_verdict": derived_governance,
-        "g_score": g_data["g_score"],
-        "entropy_s": g_data["entropy_s"],
-        "qdf": get_qdf_version(),
-        "witness": witness.to_dict() if witness is not None else {
-            "human": governance_args.get("human_confirmed", False) if governance_args else False,
-            "ai": True,
-            "earth": True
-        },
-        "shadow": len(audit_res.get("violations", [])) > 0 or len(audit_res.get("holds", [])) > 0,
-        "kappa_r": compute_kappa_r(primary.get("rasa", 0.9), primary.get("truth_consistency", 0.95)),
-        "psi_le": compute_psi_le(g_data["entropy_s"], systemic_stress),
         "confidence": "LOW" if failure_flags or is_high_stress else "HIGH",
         "epistemic": {
             "class": derived_epistemic,
@@ -1151,11 +998,6 @@ def create_envelope(
             "economic": "LOW" if derived_allocation == "ACCEPT" else "HIGH",
             "constitutional": "LOW",
             "coupled": "UNKNOWN",
-            "g_score": g_data["g_score"],
-            "delta_s": g_data["delta_s"],
-            "lyapunov_lambda": g_data["lyapunov_lambda"],
-            "verdict": g_data["verdict"],
-            "regime": g_data["regime"]
         },
         "execution": {
             "recommended_mode": mode_map.get(status, "pause"),
@@ -1163,13 +1005,6 @@ def create_envelope(
             "next_safe_action": next_safe_action,
         },
         "primary_metrics": primary,
-        # Historical namespace map for interpreting older receipts and migration-era records.
-        "primary_result": primary,
-        "governance_verdict": derived_governance,
-        "allocation_signal": derived_allocation,
-        "engine_status": engine_status,
-        "economic_signal": primary.get("economic_signal"),
-        "execution_verdict": primary.get("execution_verdict"),
         "secondary_metrics": {
             "display_name": meta.get("display", tool),
             "family": meta.get("family", dimension.upper()),
@@ -1177,15 +1012,11 @@ def create_envelope(
             "engine_status": engine_status,
             "harness_audit": audit_res,
             "secondary_metrics_raw": secondary or {},
-            **(secondary or {}),
         },
         "assumptions": assumptions or [],
         "failure_flags": failure_flags,
         "reversibility": "REVERSIBLE" if "read" in tool or "check" in tool else "UNKNOWN",
         "final_authority": "Arif",
-        "recommendation_only": True,
-        "execution_authorized": False,
-        "human_final_authority": "Arif",
         "epoch": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "w0": "OPERATOR_VETO_INTACT / HIERARCHY_INVARIANT",
     }
@@ -1193,6 +1024,13 @@ def create_envelope(
         envelope["dual_domain"] = meta["dual_domain"]
     if meta.get("primary"):
         envelope["primary_entrypoint"] = True
+    
+    # 4. Update Global Identity Chain
+    # Hash the envelope to create the next receipt
+    receipt_blob = json.dumps(envelope, sort_keys=True, separators=(",", ":"), default=str)
+    receipt_hash = hashlib.sha256(receipt_blob.encode()).hexdigest()
+    envelope["receipt_hash"] = receipt_hash
+    LAST_RECEIPT_HASH = receipt_hash
 
     # === Constitutional Governance Layer ===
     # Governance tools are exempt from recursive envelope governance so they can audit bad proposals
@@ -1202,18 +1040,16 @@ def create_envelope(
         and not is_governance_tool
     ):
         gov_args = governance_args or {}
-        floor_result = _evaluate_floors(
+        floor_result = check_floors(
             {**gov_args, "epistemic": derived_epistemic, "scale_mode": scale_mode}
         )
         # Merge floor outcomes
         if floor_result["verdict"] == "VOID":
             envelope["governance_verdict"] = "VOID"
-            envelope["domain_verdict"] = "VOID"
             envelope["allocation_signal"] = "REJECT"
             envelope["engine_status"] = "ERROR"
         elif floor_result["verdict"] == "HOLD":
             envelope["governance_verdict"] = "888-HOLD"
-            envelope["domain_verdict"] = "888-HOLD"
             envelope["allocation_signal"] = "INSUFFICIENT_DATA"
             envelope["engine_status"] = "WARNING"
 
@@ -1229,7 +1065,6 @@ def create_envelope(
             policy_result = _policy_engine.evaluate(gov_args, scale_mode)
             if not policy_result["policy_pass"]:
                 envelope["governance_verdict"] = "VOID"
-                envelope["domain_verdict"] = "VOID"
                 envelope["allocation_signal"] = "REJECT"
                 envelope["engine_status"] = "ERROR"
             envelope["policy_audit"] = policy_result
@@ -1245,15 +1080,6 @@ def create_envelope(
                 "policy_audit": envelope.get("policy_audit"),
             }
         )
-
-    envelope["secondary_metrics"]["allocation_signal"] = envelope["allocation_signal"]
-    envelope["secondary_metrics"]["engine_status"] = envelope["engine_status"]
-
-    # 4. Update Global Identity Chain after governance mutations.
-    receipt_blob = json.dumps(envelope, sort_keys=True, separators=(",", ":"), default=str)
-    receipt_hash = hashlib.sha256(receipt_blob.encode()).hexdigest()
-    envelope["receipt_hash"] = receipt_hash
-    LAST_RECEIPT_HASH = receipt_hash
 
     return envelope
 
@@ -1679,7 +1505,7 @@ def capitalx(base_rate: float, signals: Dict[str, float]) -> Dict[str, Any]:
     }
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_npv_reward)
+@mcp.tool(name="wealth_npv_reward")
 def npv_reward(
     initial_investment: float,
     cash_flows: List[float],
@@ -1716,7 +1542,7 @@ def npv_reward(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_irr_yield)
+@mcp.tool(name="wealth_irr_yield")
 def irr_yield(
     initial_investment: float,
     cash_flows: List[float],
@@ -1759,7 +1585,7 @@ def irr_yield(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_pi_efficiency)
+@mcp.tool(name="wealth_pi_efficiency")
 def pi_efficiency(
     initial_investment: float,
     cash_flows: List[float],
@@ -1795,7 +1621,7 @@ def pi_efficiency(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_emv_risk)
+@mcp.tool(name="wealth_emv_risk")
 def emv_risk(scenarios: List[dict], scale_mode: str = "enterprise") -> Any:
     """Compute Expected Monetary Value (Probability Density). [Entropy Dimension]"""
     measurement = measurement_emv(scenarios)
@@ -1818,7 +1644,7 @@ def emv_risk(scenarios: List[dict], scale_mode: str = "enterprise") -> Any:
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_audit_entropy)
+@mcp.tool(name="wealth_audit_entropy")
 def audit_entropy(
     initial_investment: float,
     cash_flows: List[float],
@@ -1856,7 +1682,7 @@ def audit_entropy(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_dscr_leverage)
+@mcp.tool(name="wealth_dscr_leverage")
 def dscr_leverage(
     ebitda: Optional[float] = None,
     principal: float = 0,
@@ -1894,7 +1720,7 @@ def dscr_leverage(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_payback_time)
+@mcp.tool(name="wealth_payback_time")
 def payback_time(
     initial_investment: float,
     cash_flows: List[float],
@@ -1920,7 +1746,7 @@ def payback_time(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_growth_velocity)
+@mcp.tool(name="wealth_growth_velocity")
 def growth_velocity(
     principal: float,
     rate: float,
@@ -1961,7 +1787,7 @@ def growth_velocity(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_networth_state)
+@mcp.tool(name="wealth_networth_state")
 def networth_state(
     assets: Optional[List[dict]] = None,
     liabilities: Optional[List[dict]] = None,
@@ -1998,7 +1824,7 @@ def networth_state(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_cashflow_flow)
+@mcp.tool(name="wealth_cashflow_flow")
 def cashflow_flow(
     income: Optional[List[dict]] = None,
     expenses: Optional[List[dict]] = None,
@@ -2048,7 +1874,7 @@ def cashflow_flow(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_score_kernel)
+@mcp.tool(name="wealth_score_kernel")
 def wealth_score_kernel(
     d_s: float,
     peace2: float,
@@ -2261,7 +2087,7 @@ def wealth_score_kernel(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_personal_decision)
+@mcp.tool(name="wealth_personal_decision")
 def personal_decision(
     alternatives: List[dict],
     constraints: dict,
@@ -2308,18 +2134,16 @@ def personal_decision(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_agent_budget)
+@mcp.tool(name="wealth_agent_budget")
 def agent_budget(
-    compute_budget_usd: float = 1.0,
-    token_budget: float = 1000.0,
-    time_deadline_hours: float = 1.0,
-    expected_value_of_information: float = 0.0,
-    actions: List[dict] = None,
+    compute_budget_usd: float,
+    token_budget: float,
+    time_deadline_hours: float,
+    expected_value_of_information: float,
+    actions: List[dict],
     scale_mode: str = "agentic",
 ) -> Any:
     """Optimal action sequence for an AI agent under resource constraints. [Agentic Dimension]"""
-    if actions is None:
-        actions = []
     feasible = []
     for action in actions:
         cost = action.get("compute_cost_usd", 0) + action.get("token_cost", 0) * 0.00001
@@ -2366,7 +2190,7 @@ def agent_budget(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_crisis_triage)
+@mcp.tool(name="wealth_crisis_triage")
 def crisis_triage(
     resources: dict,
     demands: List[dict],
@@ -2429,7 +2253,7 @@ def crisis_triage(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_civilization_stewardship)
+@mcp.tool(name="wealth_civilization_stewardship")
 def civilization_stewardship(
     population: float,
     energy_budget_twh: float,
@@ -2482,7 +2306,7 @@ def civilization_stewardship(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_coordination_equilibrium)
+@mcp.tool(name="wealth_coordination_equilibrium")
 def coordination_equilibrium(
     agents: List[dict],
     shared_resources: dict,
@@ -2491,7 +2315,15 @@ def coordination_equilibrium(
 ) -> Any:
     """Multi-agent resource coordination and equilibrium analysis. [Coordination Dimension]"""
     # Normalize agents to LP schema
-    lp_agents = _normalize_coordination_agents(agents, list(shared_resources.keys()))
+    lp_agents = []
+    for agent in agents:
+        lp_agents.append(
+            {
+                "name": agent.get("name", "unnamed"),
+                "utility": agent.get("utility", {res: 1.0 for res in shared_resources}),
+                "demand": agent.get("resource_demand", {}),
+            }
+        )
 
     lp_result = lp_allocate(lp_agents, shared_resources)
     commons = commons_risk(lp_agents, shared_resources)
@@ -2557,7 +2389,7 @@ def coordination_equilibrium(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_game_theory_solve)
+@mcp.tool(name="wealth_game_theory_solve")
 def game_theory_solve(
     agents: List[dict],
     resources: dict,
@@ -2566,7 +2398,15 @@ def game_theory_solve(
     scale_mode: str = "enterprise",
 ) -> Any:
     """Multi-agent allocation brain: LP welfare, Shapley/core, and Nash approximation. [Coordination Dimension]"""
-    lp_agents = _normalize_coordination_agents(agents, list(resources.keys()))
+    lp_agents = []
+    for agent in agents:
+        lp_agents.append(
+            {
+                "name": agent.get("name", "unnamed"),
+                "utility": agent.get("utility", {res: 1.0 for res in resources}),
+                "demand": agent.get("resource_demand", {}),
+            }
+        )
 
     lp_result = lp_allocate(lp_agents, resources)
     commons = commons_risk(lp_agents, resources)
@@ -2637,7 +2477,7 @@ def game_theory_solve(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_monte_carlo_forecast)
+@mcp.tool(name="wealth_monte_carlo_forecast")
 def monte_carlo_forecast(
     initial_commitment: float,
     mean_cash_flows: List[float],
@@ -2718,7 +2558,7 @@ except Exception:
         return None
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_ingest_fetch)
+@mcp.tool(name="wealth_ingest_fetch")
 def ingest_fetch(
     source: str,
     series_id: str,
@@ -2751,7 +2591,7 @@ def ingest_fetch(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_ingest_snapshot)
+@mcp.tool(name="wealth_ingest_snapshot")
 def ingest_snapshot(entity_code: str, sources: Optional[List[str]] = None) -> Any:
     """Fetch a cross-source macro/energy/carbon snapshot for a geography. [Sense Dimension]"""
     if not INGEST_AVAILABLE:
@@ -2776,7 +2616,7 @@ def ingest_snapshot(entity_code: str, sources: Optional[List[str]] = None) -> An
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_ingest_sources)
+@mcp.tool(name="wealth_ingest_sources")
 def ingest_sources() -> Any:
     """List available data sources and their adapter status. [Sense Dimension]"""
     if not INGEST_AVAILABLE:
@@ -2802,7 +2642,7 @@ def ingest_sources() -> Any:
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_ingest_health)
+@mcp.tool(name="wealth_ingest_health")
 def ingest_health(adapter: Optional[str] = None) -> Any:
     """Return bus health metrics: latency, cache age, field completeness, stale flags. [Sense Dimension]"""
     if not INGEST_AVAILABLE:
@@ -2826,7 +2666,7 @@ def ingest_health(adapter: Optional[str] = None) -> Any:
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_ingest_vintage)
+@mcp.tool(name="wealth_ingest_vintage")
 def ingest_vintage(
     source: str, series_id: str, entity_code: str, vintage_date: str
 ) -> Any:
@@ -2869,7 +2709,7 @@ def ingest_vintage(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_ingest_reconcile)
+@mcp.tool(name="wealth_ingest_reconcile")
 def ingest_reconcile(entity_code: str) -> Any:
     """Cross-source divergence detection for a geography. [Sense Dimension]"""
     if not INGEST_AVAILABLE:
@@ -2896,7 +2736,7 @@ def ingest_reconcile(entity_code: str) -> Any:
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_check_floors)
+@mcp.tool(name="wealth_check_floors")
 def check_floors_tool(
     reversible: bool = True,
     human_confirmed: bool = False,
@@ -2914,7 +2754,7 @@ def check_floors_tool(
     pin_verified: bool = False,
 ) -> Any:
     """Evaluate F1–F13 constitutional floors. [Governance Dimension]"""
-    result = _evaluate_floors(
+    result = check_floors(
         {
             "reversible": reversible,
             "human_confirmed": human_confirmed,
@@ -2956,7 +2796,7 @@ def check_floors_tool(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_policy_audit)
+@mcp.tool(name="wealth_policy_audit")
 def policy_audit(
     proposal: dict, constraints: Optional[dict] = None, scale_mode: str = "enterprise"
 ) -> Any:
@@ -2984,7 +2824,7 @@ def policy_audit(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_record_transaction)
+@mcp.tool(name="wealth_record_transaction")
 def record_transaction_tool(
     tx_type: str,
     amount: float,
@@ -2997,32 +2837,9 @@ def record_transaction_tool(
     asset_id: Optional[str] = None,
     category: Optional[str] = None,
     notes: Optional[str] = None,
-    dry_run: bool = False,
-    human_confirmed: bool = False,
-    idempotency_key: Optional[str] = None,
 ) -> Any:
     """Record a financial transaction to VAULT999 arifos_vault.wealth.transactions. [Vault Dimension]"""
     from host.governance.vault import record_transaction as _rt
-
-    if dry_run:
-        return create_envelope(
-            "wealth_record_transaction",
-            "Vault",
-            {
-                "tx_id": None,
-                "status": "DRY_RUN",
-                "integrity": None,
-                "idempotency_key": idempotency_key,
-                "human_confirmed": human_confirmed,
-                "would_write": True,
-                "dry_run": True,
-            },
-            {},
-            [],
-            ["DRY_RUN: No transaction written to VAULT999."],
-            verdict="HOLD",
-            scale_mode="enterprise",
-        )
 
     result = _rt(
         tx_type=tx_type,
@@ -3037,11 +2854,6 @@ def record_transaction_tool(
         category=category,
         source_tool="wealth_record_transaction",
         notes=notes,
-        metadata={
-            "idempotency_key": idempotency_key,
-            "human_confirmed": human_confirmed,
-            "tool": "wealth_record_transaction",
-        },
     )
     verdict = "SEAL" if result.get("status") == "INSERTED" else "VOID"
     return create_envelope(
@@ -3051,8 +2863,6 @@ def record_transaction_tool(
             "tx_id": result.get("tx_id"),
             "status": result.get("status"),
             "integrity": result.get("integrity"),
-            "idempotency_key": idempotency_key,
-            "human_confirmed": human_confirmed,
         },
         {"pg_error": result.get("pg_error")},
         [],
@@ -3062,7 +2872,7 @@ def record_transaction_tool(
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_snapshot_portfolio)
+@mcp.tool(name="wealth_snapshot_portfolio")
 def snapshot_portfolio_tool(
     tool_name: str,
     arguments: Dict[str, Any],
@@ -3073,32 +2883,9 @@ def snapshot_portfolio_tool(
     quantity_held: Optional[float] = None,
     price_close: Optional[float] = None,
     currency: str = "MYR",
-    dry_run: bool = False,
-    human_confirmed: bool = False,
-    idempotency_key: Optional[str] = None,
 ) -> Any:
     """Snapshot a tool computation result to VAULT999 arifos_vault.wealth.portfolio_snapshots. [Vault Dimension]"""
     from host.governance.vault import snapshot_portfolio as _sp
-
-    if dry_run:
-        return create_envelope(
-            "wealth_snapshot_portfolio",
-            "Vault",
-            {
-                "snapshot_id": None,
-                "status": "DRY_RUN",
-                "integrity": None,
-                "idempotency_key": idempotency_key,
-                "human_confirmed": human_confirmed,
-                "would_write": True,
-                "dry_run": True,
-            },
-            {},
-            [],
-            ["DRY_RUN: No snapshot written to VAULT999."],
-            verdict="HOLD",
-            scale_mode="enterprise",
-        )
 
     snap = _sp(
         tool_name=tool_name,
@@ -3119,8 +2906,6 @@ def snapshot_portfolio_tool(
             "snapshot_id": snap.get("snapshot_id"),
             "status": snap.get("status"),
             "integrity": snap.get("integrity"),
-            "idempotency_key": idempotency_key,
-            "human_confirmed": human_confirmed,
         },
         {"pg_error": snap.get("pg_error")},
         [],
@@ -3256,7 +3041,7 @@ def get_epistemic_matrix() -> str:
     )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_evoi_compute)
+@mcp.tool(name="wealth_evoi_compute")
 async def wealth_evoi_compute(
     well_cost_musd: float,
     p50_value_musd: float,
@@ -3308,15 +3093,6 @@ async def wealth_evoi_compute(
             discount_rate=discount_rate,
         )
 
-        drill = res.get("drill_recommendation", "")
-        if drill.startswith("PROCEED"):
-            res["economic_signal"] = "POSITIVE_EVOI"
-        elif drill.startswith("DO_NOT_DRILL"):
-            res["economic_signal"] = "NEGATIVE_EVOI"
-        else:
-            res["economic_signal"] = "MARGINAL_EVOI"
-        res["execution_verdict"] = "REQUIRES_888_JUDGE"
-
         return create_envelope(
             "wealth_evoi_compute",
             "Epistemic",
@@ -3342,7 +3118,7 @@ async def wealth_evoi_compute(
         )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_evoi_monte_carlo)
+@mcp.tool(name="wealth_evoi_monte_carlo")
 async def wealth_evoi_monte_carlo(
     prior_pos_samples: List[float],
     posterior_pos_samples: List[float],
@@ -3374,14 +3150,6 @@ async def wealth_evoi_monte_carlo(
             p50_value_musd=p50_value_musd,
             info_cost_musd=info_cost_musd,
         )
-        evoi_p50 = res.get("evoi_p50", 0)
-        if evoi_p50 > 0:
-            res["economic_signal"] = "POSITIVE_EVOI"
-        elif evoi_p50 < 0:
-            res["economic_signal"] = "NEGATIVE_EVOI"
-        else:
-            res["economic_signal"] = "MARGINAL_EVOI"
-        res["execution_verdict"] = "REQUIRES_888_JUDGE"
 
         return create_envelope(
             "wealth_evoi_monte_carlo",
@@ -3404,7 +3172,7 @@ async def wealth_evoi_monte_carlo(
         )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_correlation_guard_check)
+@mcp.tool(name="wealth_correlation_guard_check")
 async def wealth_correlation_guard_check(
     prospects: List[Dict[str, Any]],
     correlation_threshold: int = 3,
@@ -3450,7 +3218,7 @@ async def wealth_correlation_guard_check(
         )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_schema_validate)
+@mcp.tool(name="wealth_schema_validate")
 async def wealth_schema_validate(
     prospects: List[Dict[str, Any]],
     scale_mode: str = "enterprise",
@@ -3495,7 +3263,7 @@ async def wealth_schema_validate(
         )
 
 
-# INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_init)
+@mcp.tool(name="wealth_init")
 async def wealth_init_tool(
     session_id: Optional[str] = None,
     actor_id: str = "wealth-agent",
@@ -3524,16 +3292,9 @@ async def wealth_init_tool(
 
     sid = session_id or f"wealth-session-{_uuid.uuid4().hex[:12]}"
 
-    # Try arifOS vault first, fall back to file-based anchor
-    import hashlib
-    import json as _json
-
-    vault_ok = False
-    chain_hash = ""
-    ledger_id = ""
-
     try:
         from arifosmcp.runtime.vault_postgres import seal_to_vault
+
         res = await seal_to_vault(
             event_type="WEALTH_SESSION_INIT",
             session_id=sid,
@@ -3543,2155 +3304,77 @@ async def wealth_init_tool(
             payload={"intent": intent or "economic-analysis", "source": "WEALTH-MCP"},
             risk_tier="low",
         )
-        chain_hash = getattr(res, "chain_hash", "")
-        ledger_id = getattr(res, "ledger_id", "")
-        vault_ok = True
-    except Exception:
-        # Fallback: write to local JSONL vault
-        try:
-            vault_dir = "/app/data"
-            os.makedirs(vault_dir, exist_ok=True)
-            vault_path = os.path.join(vault_dir, "vault999.jsonl")
-            entry = {
-                "event_type": "WEALTH_SESSION_INIT",
-                "session_id": sid,
-                "actor_id": actor_id,
-                "stage": "000_INIT",
-                "verdict": "ACTIVE",
-                "payload": {"intent": intent or "economic-analysis", "source": "WEALTH-MCP"},
-                "risk_tier": "low",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            }
-            entry["_hash"] = hashlib.sha256(
-                _json.dumps(entry, sort_keys=True).encode()
-            ).hexdigest()
-            with open(vault_path, "a") as f:
-                f.write(_json.dumps(entry) + "\n")
-            chain_hash = entry["_hash"]
-            ledger_id = f"local-vault-{sid}"
-            vault_ok = True
-        except Exception:
-            pass
 
-    if vault_ok:
         return create_envelope(
             "wealth_init",
             "Vault",
             {
                 "session_id": sid,
                 "stage": "000_INIT",
-                "chain_hash": chain_hash,
-                "vault_id": ledger_id,
+                "chain_hash": res.chain_hash if hasattr(res, "chain_hash") else "",
+                "vault_id": res.ledger_id if hasattr(res, "ledger_id") else "",
             },
             {},
             [],
             ["WEALTH session anchored to VAULT999 chain. Ready for analysis."],
             verdict="SEAL",
         )
-    else:
+    except Exception as e:
         return create_envelope(
             "wealth_init",
             "Vault",
             {},
-            {"error": "Vault unavailable: arifOS not installed and local write failed"},
+            {"error": str(e)},
             [],
-            ["Vault anchor failed — arifOS not mounted in this container"],
+            ["Vault anchor failed."],
             verdict="VOID",
         )
 
 
 # ============================================================
-# V3 Sovereign Primitives (13 public MCP tools)
+# Register v2 aliases (non-breaking Phase 1 Migration)
 # ============================================================
-
-CANONICAL_TOOL_METADATA = {
-    "wealth_future_value": {"family": "REASON", "stage": "400-REASON", "display": "wealth_future_value"},
-    "wealth_present_expect": {"family": "MIND", "stage": "200-MIND", "display": "wealth_present_expect"},
-    "wealth_future_simulate": {"family": "MIND", "stage": "200-MIND", "display": "wealth_future_simulate"},
-    "wealth_info_value": {"family": "MIND", "stage": "200-MIND", "display": "wealth_info_value"},
-    "wealth_truth_validate": {"family": "MIND", "stage": "200-MIND", "display": "wealth_truth_validate"},
-    "wealth_survival_liquidity": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_survival_liquidity"},
-    "wealth_survival_leverage": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_survival_leverage"},
-    "wealth_rule_enforce": {"family": "JUDGE", "stage": "888-JUDGE", "display": "wealth_rule_enforce"},
-    "wealth_allocate_optimize": {"family": "REASON", "stage": "400-REASON", "display": "wealth_allocate_optimize"},
-    "wealth_game_coordinate": {"family": "REASON", "stage": "400-REASON", "display": "wealth_game_coordinate"},
-    "wealth_sense_ingest": {"family": "SENSE", "stage": "100-SENSE", "display": "wealth_sense_ingest"},
-    "wealth_past_record": {"family": "VAULT", "stage": "999-VAULT", "display": "wealth_past_record"},
-    "wealth_future_steward": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "wealth_future_steward"},
+_engine = HarnessEngine()
+_v1_to_func = {
+    "wealth_ingest_fetch": ingest_fetch,
+    "wealth_ingest_snapshot": ingest_snapshot,
+    "wealth_ingest_reconcile": ingest_reconcile,
+    "wealth_ingest_health": ingest_health,
+    "wealth_ingest_vintage": ingest_vintage,
+    "wealth_ingest_sources": ingest_sources,
+    "wealth_emv_risk": emv_risk,
+    "wealth_monte_carlo_forecast": monte_carlo_forecast,
+    "wealth_correlation_guard_check": wealth_correlation_guard_check,
+    "wealth_evoi_compute": wealth_evoi_compute,
+    "wealth_evoi_monte_carlo": wealth_evoi_monte_carlo,
+    "wealth_schema_validate": wealth_schema_validate,
+    "wealth_dscr_leverage": dscr_leverage,
+    "wealth_networth_state": networth_state,
+    "wealth_growth_velocity": growth_velocity,
+    "wealth_cashflow_flow": cashflow_flow,
+    "wealth_crisis_triage": crisis_triage,
+    "wealth_civilization_stewardship": civilization_stewardship,
+    "wealth_npv_reward": npv_reward,
+    "wealth_irr_yield": irr_yield,
+    "wealth_pi_efficiency": pi_efficiency,
+    "wealth_payback_time": payback_time,
+    "wealth_coordination_equilibrium": coordination_equilibrium,
+    "wealth_game_theory_solve": game_theory_solve,
+    "wealth_personal_decision": personal_decision,
+    "wealth_agent_budget": agent_budget,
+    "wealth_score_kernel": wealth_score_kernel,
+    "wealth_check_floors": check_floors_tool,
+    "wealth_policy_audit": policy_audit,
+    "wealth_audit_entropy": audit_entropy,
+    "wealth_init": wealth_init_tool,
+    "wealth_record_transaction": record_transaction_tool,
+    "wealth_snapshot_portfolio": snapshot_portfolio_tool,
 }
 
+for v2_name, v1_name in _engine.V2_CANONICAL_MAP.items():
+    if v1_name in _v1_to_func:
+        mcp.tool(name=v2_name)(_v1_to_func[v1_name])
 
-def _normalize_primitive_envelope(result: Any, canonical_tool: str) -> Any:
-    """Rewrite internal helper labels to the public 13-tool canonical surface."""
-    if not isinstance(result, dict):
-        return result
-
-    metadata = CANONICAL_TOOL_METADATA.get(canonical_tool)
-    if metadata is None:
-        return result
-
-    result["task"] = canonical_tool
-    result["canonical_tool"] = canonical_tool
-
-    secondary_metrics = result.get("secondary_metrics")
-    if isinstance(secondary_metrics, dict):
-        secondary_metrics["display_name"] = metadata["display"]
-        secondary_metrics["family"] = metadata["family"]
-
-    return result
-
-
-def _normalize_coordination_agents(
-    agents: List[dict], resource_keys: List[str], default_demand: float = math.inf
-) -> List[dict]:
-    """Accept scalar or dict agent packets and normalize them to LP-ready structures."""
-    normalized = []
-    for index, agent in enumerate(agents):
-        utility = agent.get("utility", {})
-        if isinstance(utility, (int, float)):
-            utility = {resource: float(utility) for resource in resource_keys}
-        elif not isinstance(utility, dict):
-            utility = {resource: 1.0 for resource in resource_keys}
-
-        demand = agent.get("resource_demand", agent.get("demand", {}))
-        if isinstance(demand, (int, float)):
-            demand = {resource: float(demand) for resource in resource_keys}
-        elif not isinstance(demand, dict):
-            demand = {resource: default_demand for resource in resource_keys}
-
-        normalized.append(
-            {
-                "name": agent.get("name") or agent.get("id") or f"agent_{index + 1}",
-                "utility": utility,
-                "demand": demand,
-            }
-        )
-    return normalized
-
-@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
-def wealth_future_value(
-    mode: str = "npv",
-    initial_investment: float = 0,
-    cash_flows: Optional[List[float]] = None,
-    discount_rate: float = 0.1,
-    terminal_value: float = 0,
-    period_unit: str = "annual",
-    input_epistemic: str = "CLAIM",
-    scale_mode: str = "enterprise",
-    reinvestment_rate: float = 0.1,
-    finance_rate: float = 0.1,
-) -> Any:
-    """⚠️ DEPRECATED — Use atomic tools: wealth_value_npv, wealth_energy_irr, wealth_density_pi, wealth_time_payback. [Value Dimension — DEPRECATED]"""
-    cash_flows = cash_flows or []
-    if mode == "npv":
-        result = npv_reward(initial_investment, cash_flows, discount_rate, terminal_value, period_unit, input_epistemic, scale_mode)
-    elif mode == "irr":
-        result = irr_yield(initial_investment, cash_flows, reinvestment_rate, finance_rate, period_unit, discount_rate, scale_mode)
-    elif mode == "pi":
-        result = pi_efficiency(initial_investment, cash_flows, discount_rate, terminal_value, scale_mode)
-    elif mode == "payback":
-        result = payback_time(initial_investment, cash_flows, discount_rate, period_unit, scale_mode)
-    else:
-        raise ValueError(f"Unknown mode: {mode}")
-    return _normalize_primitive_envelope(result, "wealth_future_value")
-
-
-@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
-def wealth_present_expect(
-    scenarios: List[dict],
-    scale_mode: str = "enterprise",
-) -> Any:
-    """⚠️ DEPRECATED — Use: wealth_expectation_emv. [Expect Dimension — DEPRECATED]"""
-    normalized = []
-    for s in scenarios:
-        normalized.append({
-            "probability": s.get("probability", s.get("prob", 0)),
-            "outcome": s.get("outcome", s.get("return", s.get("cash_flow", 0))),
-        })
-    return _normalize_primitive_envelope(emv_risk(normalized, scale_mode), "wealth_present_expect")
-
-
-@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
-def wealth_future_simulate(
-    initial_commitment: float,
-    mean_cash_flows: List[float],
-    volatilities: List[float],
-    discount_rate: float = 0.1,
-    simulations: int = 10000,
-    distribution: str = "lognormal",
-    scale_mode: str = "enterprise",
-) -> Any:
-    """⚠️ DEPRECATED — Use: wealth_signal_monte_carlo. [Simulate Dimension — DEPRECATED]"""
-    return _normalize_primitive_envelope(
-        monte_carlo_forecast(
-            initial_commitment,
-            mean_cash_flows,
-            volatilities,
-            discount_rate,
-            simulations,
-            distribution,
-            scale_mode,
-        ),
-        "wealth_future_simulate",
-    )
-
-
-@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
-def wealth_survival_liquidity(
-    mode: str = "cashflow",
-    income: Optional[List[dict]] = None,
-    expenses: Optional[List[dict]] = None,
-    liquid_assets: float = 0,
-    scale_mode: str = "enterprise",
-    principal: float = 0,
-    rate: float = 0,
-    years: int = 1,
-    annual_contribution: float = 0,
-    monthly_burn: float = 0,
-    resources: Optional[dict] = None,
-    demands: Optional[List[dict]] = None,
-    recovery_horizon_days: float = 30,
-) -> Any:
-    """⚠️ DEPRECATED — Use: wealth_flow_cashflow, wealth_velocity_runway, wealth_pressure_triage. [Liquidity Dimension — DEPRECATED]"""
-    resources = resources or {}
-    demands = demands or []
-    if mode == "cashflow":
-        result = cashflow_flow(income, expenses, liquid_assets, scale_mode)
-    elif mode == "velocity":
-        result = growth_velocity(principal, rate, years, annual_contribution, monthly_burn, scale_mode)
-    elif mode == "triage":
-        result = crisis_triage(resources, demands, recovery_horizon_days, scale_mode)
-    else:
-        raise ValueError(f"Unknown mode: {mode}")
-    return _normalize_primitive_envelope(result, "wealth_survival_liquidity")
-
-
-@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
-def wealth_survival_leverage(
-    mode: str = "dscr",
-    ebitda: Optional[float] = None,
-    principal: float = 0,
-    interest: float = 0,
-    leases: float = 0,
-    cfads: Optional[float] = None,
-    debt_service: Optional[float] = None,
-    period_unit: str = "annual",
-    input_epistemic: str = "CLAIM",
-    scale_mode: str = "enterprise",
-    assets: Optional[List[dict]] = None,
-    liabilities: Optional[List[dict]] = None,
-) -> Any:
-    """⚠️ DEPRECATED — Use: wealth_gravity_dscr. [Leverage Dimension — DEPRECATED]"""
-    if mode == "dscr":
-        result = dscr_leverage(ebitda, principal, interest, leases, cfads, debt_service, period_unit, input_epistemic, scale_mode)
-    elif mode == "networth":
-        result = networth_state(assets, liabilities, scale_mode)
-    else:
-        raise ValueError(f"Unknown mode: {mode}")
-    return _normalize_primitive_envelope(result, "wealth_survival_leverage")
-
-
-
-@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
-async def wealth_info_value(
-    mode: str = "evoi",
-    well_cost_musd: float = 0,
-    p50_value_musd: float = 0,
-    prior_pos: Optional[float] = None,
-    posterior_pos: Optional[float] = None,
-    prospect_metrics: Optional[dict] = None,
-    info_cost_musd: float = 5.0,
-    discount_rate: float = 0.10,
-    scale_mode: str = "enterprise",
-    prior_pos_samples: Optional[List[float]] = None,
-    posterior_pos_samples: Optional[List[float]] = None,
-) -> Any:
-    """⚠️ DEPRECATED — Use: wealth_opportunity_evoi. [Info Dimension — DEPRECATED]"""
-    if mode == "evoi":
-        result = await wealth_evoi_compute(
-            well_cost_musd,
-            p50_value_musd,
-            prior_pos,
-            posterior_pos,
-            prospect_metrics,
-            info_cost_musd,
-            discount_rate,
-            scale_mode,
-        )
-    elif mode == "evoi_mc":
-        result = await wealth_evoi_monte_carlo(
-            prior_pos_samples or [],
-            posterior_pos_samples or [],
-            well_cost_musd,
-            p50_value_musd,
-            info_cost_musd,
-            scale_mode,
-        )
-    else:
-        raise ValueError(f"Unknown mode: {mode}")
-    return _normalize_primitive_envelope(result, "wealth_info_value")
-
-
-@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
-async def wealth_truth_validate(
-    mode: str = "schema",
-    prospects: Optional[List[Dict[str, Any]]] = None,
-    initial_investment: float = 0,
-    cash_flows: Optional[List[float]] = None,
-    discount_rate: float = 0.1,
-    correlation_threshold: int = 3,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """⚠️ DEPRECATED — Use: wealth_boundary_floors, wealth_entropy_audit. [Truth Dimension — DEPRECATED]"""
-    cash_flows = cash_flows or []
-    if mode == "schema":
-        result = await wealth_schema_validate(prospects or [], scale_mode)
-    elif mode == "correlation":
-        result = await wealth_correlation_guard_check(prospects or [], correlation_threshold, scale_mode)
-    elif mode == "entropy":
-        result = audit_entropy(initial_investment, cash_flows, discount_rate, scale_mode)
-    else:
-        raise ValueError(f"Unknown mode: {mode}")
-    return _normalize_primitive_envelope(result, "wealth_truth_validate")
-
-
-@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
-def wealth_rule_enforce(
-    mode: str = "floors",
-    proposal: Optional[dict] = None,
-    constraints: Optional[dict] = None,
-    reversible: bool = True,
-    human_confirmed: bool = False,
-    epistemic: str = "ESTIMATE",
-    ai_is_deciding: bool = False,
-    floor_override: bool = False,
-    peace2: float = 1.0,
-    maruah_score: float = 0.5,
-    uncertainty_band: Optional[List[float]] = None,
-    operation_type: str = "PROJECTION",
-    scale_mode: str = "enterprise",
-    task_definition: str = "",
-    phantom_entries: bool = False,
-    critical: bool = False,
-    pin_verified: bool = False,
-) -> Any:
-    """⚠️ DEPRECATED — Use: wealth_governance_verdict. [Rule Dimension — DEPRECATED]"""
-    proposal = proposal or {}
-    constraints = constraints or {}
-    if mode == "floors":
-        result = check_floors_tool(
-            reversible,
-            human_confirmed,
-            epistemic,
-            ai_is_deciding,
-            floor_override,
-            peace2,
-            maruah_score,
-            uncertainty_band,
-            operation_type,
-            scale_mode,
-            task_definition,
-            phantom_entries,
-            critical,
-            pin_verified,
-        )
-    elif mode == "policy":
-        result = policy_audit(proposal, constraints, scale_mode)
-    else:
-        raise ValueError(f"Unknown mode: {mode}")
-    return _normalize_primitive_envelope(result, "wealth_rule_enforce")
-
-
-@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
-def wealth_allocate_optimize(
-    mode: str = "kernel",
-    d_s: float = 0,
-    peace2: float = 1.0,
-    maruah_score: float = 0.5,
-    base_rate: float = 0.1,
-    trust_index: float = 0.5,
-    delta_civ: float = 0.0,
-    wealth_signals: Optional[dict] = None,
-    prospects: Optional[List[dict]] = None,
-    extractive_signals: Optional[dict] = None,
-    compare: bool = False,
-    scale_mode: str = "enterprise",
-    task_definition: str = "",
-    irreversible: bool = False,
-    alternatives: Optional[List[dict]] = None,
-    constraints: Optional[dict] = None,
-    values: Optional[dict] = None,
-    compute_budget_usd: float = 0,
-    token_budget: float = 0,
-    time_deadline_hours: float = 0,
-    expected_value_of_information: float = 0,
-    actions: Optional[List[dict]] = None,
-) -> Any:
-    """⚠️ DEPRECATED — Use: wealth_stewardship_kernel, wealth_preference_rank, wealth_agent_path. [Allocate Dimension — DEPRECATED]"""
-    if mode == "kernel":
-        result = wealth_score_kernel(
-            d_s,
-            peace2,
-            maruah_score,
-            base_rate,
-            trust_index,
-            delta_civ,
-            wealth_signals,
-            prospects,
-            extractive_signals,
-            compare,
-            scale_mode,
-            task_definition,
-            irreversible,
-        )
-    elif mode == "personal":
-        result = personal_decision(alternatives or [], constraints or {}, values, scale_mode)
-    elif mode == "agent":
-        result = agent_budget(
-            compute_budget_usd,
-            token_budget,
-            time_deadline_hours,
-            expected_value_of_information,
-            actions or [],
-            scale_mode,
-        )
-    else:
-        raise ValueError(f"Unknown mode: {mode}")
-    return _normalize_primitive_envelope(result, "wealth_allocate_optimize")
-
-
-@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
-def wealth_game_coordinate(
-    mode: str = "equilibrium",
-    agents: Optional[List[dict]] = None,
-    shared_resources: Optional[dict] = None,
-    resources: Optional[dict] = None,
-    mechanism: str = "cooperative",
-    solve_equilibrium: bool = False,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """⚠️ DEPRECATED — Use: wealth_field_game, wealth_field_equilibrium. [Game Dimension — DEPRECATED]"""
-    agents = agents or []
-    shared_resources = shared_resources or {}
-    resources = resources or {}
-    if mode == "equilibrium":
-        result = coordination_equilibrium(agents, shared_resources, mechanism, scale_mode)
-    elif mode == "game":
-        result = game_theory_solve(agents, resources, mechanism, solve_equilibrium, scale_mode)
-    else:
-        raise ValueError(f"Unknown mode: {mode}")
-    return _normalize_primitive_envelope(result, "wealth_game_coordinate")
-
-
-@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
-def wealth_sense_ingest(
-    mode: str = "fetch",
-    source: str = "",
-    series_id: str = "",
-    entity_code: str = "",
-    use_cache: bool = True,
-    bus: str = "slow",
-    sources: Optional[List[str]] = None,
-    adapter: Optional[str] = None,
-    vintage_date: str = "",
-) -> Any:
-    """⚠️ DEPRECATED — Use: wealth_sensor_fetch, wealth_sensor_snapshot, wealth_sensor_reconcile, etc. [Sense Dimension — DEPRECATED]"""
-    if mode == "fetch":
-        result = ingest_fetch(source, series_id, entity_code, use_cache, bus)
-    elif mode == "snapshot":
-        result = ingest_snapshot(entity_code, sources)
-    elif mode == "sources":
-        result = ingest_sources()
-    elif mode == "health":
-        result = ingest_health(adapter)
-    elif mode == "vintage":
-        result = ingest_vintage(source, series_id, entity_code, vintage_date)
-    elif mode == "reconcile":
-        result = ingest_reconcile(entity_code)
-    else:
-        raise ValueError(f"Unknown mode: {mode}")
-    return _normalize_primitive_envelope(result, "wealth_sense_ingest")
-
-
-@mcp.tool(annotations={"deprecatedHint": True, "title": "⚠️ DEPRECATED — Use atomic tools"})
-async def wealth_past_record(
-    mode: str = "init",
-    session_id: Optional[str] = None,
-    actor_id: str = "wealth-agent",
-    intent: Optional[str] = None,
-    tx_type: str = "",
-    amount: float = 0,
-    currency: str = "MYR",
-    description: str = "",
-    quantity: Optional[float] = None,
-    price: Optional[float] = None,
-    fees: Optional[float] = None,
-    broker: Optional[str] = None,
-    asset_id: Optional[str] = None,
-    category: Optional[str] = None,
-    notes: Optional[str] = None,
-    tool_name: str = "",
-    arguments: Optional[Dict[str, Any]] = None,
-    result: Optional[Dict[str, Any]] = None,
-    scale_mode: str = "enterprise",
-    nav_myr: Optional[float] = None,
-    quantity_held: Optional[float] = None,
-    price_close: Optional[float] = None,
-) -> Any:
-    """⚠️ DEPRECATED — Use: wealth_ledger_record, wealth_ledger_snapshot. [Record Dimension — DEPRECATED]"""
-    if mode == "init":
-        result = await wealth_init_tool(session_id, actor_id, intent)
-    elif mode == "transaction":
-        result = record_transaction_tool(
-            tx_type,
-            amount,
-            currency,
-            description,
-            quantity,
-            price,
-            fees,
-            broker,
-            asset_id,
-            category,
-            notes,
-        )
-    elif mode == "portfolio":
-        result = snapshot_portfolio_tool(
-            tool_name,
-            arguments or {},
-            result or {},
-            scale_mode,
-            asset_id,
-            nav_myr,
-            quantity_held,
-            price_close,
-            currency,
-        )
-    else:
-        raise ValueError(f"Unknown mode: {mode}")
-    return _normalize_primitive_envelope(result, "wealth_past_record")
-
-
-
-@mcp.tool()
-def wealth_future_steward(
-    carbon_budget_gtc: float = 0,
-    energy_mix: Optional[dict] = None,
-    population_projection: Optional[dict] = None,
-    horizon_years: int = 50,
-    scale_mode: str = "civilization",
-) -> Any:
-    """Long-Horizon Planetary Boundaries — Civilization Continuity. [Steward Dimension]"""
-    energy_mix = energy_mix or {}
-    population_projection = population_projection or {}
-    current_population = float(population_projection.get("current", 0.0))
-    renewable_mix = float(energy_mix.get("renewables", 0.0))
-    fossil_mix = float(energy_mix.get("fossil", max(0.0, 1.0 - renewable_mix)))
-    energy_budget_twh = float(energy_mix.get("energy_budget_twh", 1000.0 * max(renewable_mix + fossil_mix, 1.0)))
-    tech_growth_rate = float(
-        energy_mix.get(
-            "tech_growth_rate",
-            population_projection.get("tech_growth_rate", max(0.0, renewable_mix * 0.03)),
-        )
-    )
-    return _normalize_primitive_envelope(
-        civilization_stewardship(
-            current_population,
-            energy_budget_twh,
-            carbon_budget_gtc,
-            tech_growth_rate,
-            horizon_years,
-            scale_mode,
-        ),
-        "wealth_future_steward",
-    )
-
-@mcp.tool()
-def vault_write(
-    action: str,
-    payload: Dict[str, Any],
-    session_id: str = "UNKNOWN",
-    agent_id: str = "WEALTH_AGENT",
-    verdict: str = "SEAL",
-    ack_irreversible: bool = False,
-) -> Any:
-    """999: Ledger Append — Permanently write an economic event to VAULT999.
-    F01 AMANAH: This operation is irreversible. Requires ack_irreversible=True or verdict != SEAL.
-    """
-    # F01 Irreversibility gate
-    if verdict == "SEAL" and not ack_irreversible:
-        return create_envelope(
-            "vault_write",
-            "VAULT",
-            {
-                "action": action,
-                "status": "HOLD",
-                "reason": "F01: Irreversible VAULT999 write requires ack_irreversible=True",
-                "vault_id": None,
-                "chain_hash": None,
-            },
-            flags=["F01_HOLD:ack_irreversible_required"],
-            epistemic="FACT",
-            verdict="888-HOLD",
-        )
-
-    # Ensure session_id is in payload for arifOS compliance
-    payload["session_id"] = session_id
-
-    # Bridge to arifOS vault system
-    res = _vault_append(
-        {
-            "tool": "vault_write",
-            "agent_id": agent_id,
-            "action": action,
-            "payload": payload,
-            "verdict": verdict,
-            "confidence": 1.0,
-        }
-    )
-
-    # Standard WEALTH Envelope
-    primary = {
-        "action": action,
-        "payload": payload,
-        "vault_id": res.get("event_id") if isinstance(res, dict) else str(uuid.uuid4()),
-        "chain_hash": res.get("chain_hash") if isinstance(res, dict) else "0" * 64,
-    }
-
-    return create_envelope(
-        "vault_write",
-        "VAULT",
-        primary,
-        epistemic="FACT",
-        verdict=verdict,
-        governance_args={"human_confirmed": ack_irreversible},
-    )
-
-
-@mcp.tool()
-def vaultwrite(
-    action: str,
-    payload: Dict[str, Any],
-    session_id: str = "UNKNOWN",
-    agent_id: str = "WEALTH_AGENT",
-    verdict: str = "SEAL",
-    ack_irreversible: bool = False,
-) -> Any:
-    """998: Ledger Append (Alias) — Permanently write an economic event to VAULT999.
-    F01 AMANAH: This operation is irreversible. Requires ack_irreversible=True or verdict != SEAL.
-    Wrapper around vault_write for arifOS compatibility.
-    """
-    return vault_write(
-        action=action,
-        payload=payload,
-        session_id=session_id,
-        agent_id=agent_id,
-        verdict=verdict,
-        ack_irreversible=ack_irreversible,
-    )
-
-
-@mcp.tool()
-def vaultquery(
-    query: str,
-    limit: int = 10,
-    session_id: Optional[str] = None,
-) -> Any:
-    """998: Ledger Read (Alias) — Query the immutable governance ledger.
-    Reads from VAULT999 via Supabase REST API. Read-only operation; no F01 gate.
-    Wrapper around vault_query for arifOS compatibility.
-    """
-    return vault_query(
-        query=query,
-        limit=limit,
-        session_id=session_id,
-    )
-
-
-@mcp.tool()
-def vault_query(
-    query: str,
-    limit: int = 10,
-    session_id: Optional[str] = None,
-) -> Any:
-    """999: Ledger Read — Query the immutable governance ledger.
-    Reads from VAULT999 via Supabase REST API. Returns earth_refs[] for F03 traceability.
-    """
-    from host.governance.vault_supabase import query_vault999
-
-    result = query_vault999(query=query, limit=limit, session_id=session_id)
-
-    primary = {
-        "query": result["query"],
-        "earth_refs": result["earth_refs"],
-        "count": result["count"],
-        "vault_seal": result["vault_seal"],
-    }
-
-    epistemic = "FACT" if result["count"] > 0 else "ESTIMATE"
-    return create_envelope(
-        "vault_query",
-        "VAULT",
-        primary,
-        epistemic=epistemic,
-    )
-
-# ============================================================
-# HarnessEngine v3 mappings — new atomic tools
-# ============================================================
-_ATOMIC_TO_HARNESS = {
-    "wealth_value_npv": "Efficiency",
-    "wealth_energy_irr": "Efficiency",
-    "wealth_density_pi": "Efficiency",
-    "wealth_time_payback": "Efficiency",
-    "wealth_expectation_emv": "Entropy",
-    "wealth_probability_monte_carlo": "Entropy",
-    "wealth_signal_evoi": "Epistemic",
-    "wealth_signal_evoi_mc": "Epistemic",
-    "wealth_coupling_correlation": "Epistemic",
-    "wealth_flow_cashflow": "Survival",
-    "wealth_velocity_runway": "Survival",
-    "wealth_gravity_dscr": "Survival",
-    "wealth_mass_networth": "Survival",
-    "wealth_pressure_triage": "Survival",
-    "wealth_stewardship_civilization": "Civilization",
-    "wealth_measurement_schema": "Epistemic",
-    "wealth_entropy_audit": "Entropy",
-    "wealth_boundary_floors": "Constitutional",
-    "wealth_boundary_policy": "Constitutional",
-    "wealth_governance_verdict": "Constitutional",
-    "wealth_field_game": "Coordination",
-    "wealth_field_equilibrium": "Coordination",
-    "wealth_preference_rank": "Coordination",
-    "wealth_agent_path": "Coordination",
-    "wealth_sensor_fetch": "Reality",
-    "wealth_sensor_snapshot": "Reality",
-    "wealth_sensor_reconcile": "Reality",
-    "wealth_sensor_health": "Reality",
-    "wealth_sensor_vintage": "Reality",
-    "wealth_sensor_sources": "Reality",
-    "wealth_ledger_query": "Identity",
-    "wealth_ledger_write": "Identity",
-    "wealth_ledger_init": "Identity",
-    "wealth_ledger_record": "Identity",
-    "wealth_ledger_snapshot": "Identity",
-}
-HarnessEngine.TOOL_TO_HARNESS.update(_ATOMIC_TO_HARNESS)
-
-_ATOMIC_METADATA = {
-    "wealth_value_npv": {"family": "REASON", "stage": "400-REASON", "display": "value_npv"},
-    "wealth_energy_irr": {"family": "REASON", "stage": "400-REASON", "display": "energy_irr"},
-    "wealth_density_pi": {"family": "REASON", "stage": "400-REASON", "display": "density_pi"},
-    "wealth_time_payback": {"family": "REASON", "stage": "400-REASON", "display": "time_payback"},
-    "wealth_expectation_emv": {"family": "MIND", "stage": "200-MIND", "display": "expectation_emv"},
-    "wealth_probability_monte_carlo": {"family": "MIND", "stage": "200-MIND", "display": "probability_monte_carlo"},
-    "wealth_signal_evoi": {"family": "MIND", "stage": "200-MIND", "display": "signal_evoi"},
-    "wealth_signal_evoi_mc": {"family": "MIND", "stage": "200-MIND", "display": "signal_evoi_mc"},
-    "wealth_coupling_correlation": {"family": "MIND", "stage": "200-MIND", "display": "coupling_correlation"},
-    "wealth_flow_cashflow": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "flow_cashflow"},
-    "wealth_velocity_runway": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "velocity_runway"},
-    "wealth_gravity_dscr": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "gravity_dscr"},
-    "wealth_mass_networth": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "mass_networth"},
-    "wealth_pressure_triage": {"family": "SURVIVAL", "stage": "300-SURVIVAL", "display": "pressure_triage"},
-    "wealth_stewardship_civilization": {"family": "HEART", "stage": "300-HEART", "display": "stewardship_civilization"},
-    "wealth_measurement_schema": {"family": "MIND", "stage": "200-MIND", "display": "measurement_schema"},
-    "wealth_entropy_audit": {"family": "MIND", "stage": "200-MIND", "display": "entropy_audit", "dual_domain": ["MIND", "JUDGE"]},
-    "wealth_boundary_floors": {"family": "JUDGE", "stage": "800-JUDGE", "display": "boundary_floors"},
-    "wealth_boundary_policy": {"family": "JUDGE", "stage": "800-JUDGE", "display": "boundary_policy"},
-    "wealth_governance_verdict": {"family": "JUDGE", "stage": "888-JUDGE", "display": "governance_verdict", "primary": True},
-    "wealth_field_game": {"family": "REASON", "stage": "400-REASON", "display": "field_game"},
-    "wealth_field_equilibrium": {"family": "REASON", "stage": "400-REASON", "display": "field_equilibrium"},
-    "wealth_preference_rank": {"family": "REASON", "stage": "400-REASON", "display": "preference_rank"},
-    "wealth_agent_path": {"family": "REASON", "stage": "400-REASON", "display": "agent_path"},
-    "wealth_sensor_fetch": {"family": "SENSE", "stage": "100-SENSE", "display": "sensor_fetch"},
-    "wealth_sensor_snapshot": {"family": "SENSE", "stage": "100-SENSE", "display": "sensor_snapshot"},
-    "wealth_sensor_reconcile": {"family": "SENSE", "stage": "100-SENSE", "display": "sensor_reconcile"},
-    "wealth_sensor_health": {"family": "SENSE", "stage": "100-SENSE", "display": "sensor_health"},
-    "wealth_sensor_vintage": {"family": "SENSE", "stage": "100-SENSE", "display": "sensor_vintage"},
-    "wealth_sensor_sources": {"family": "SENSE", "stage": "100-SENSE", "display": "sensor_sources"},
-    "wealth_ledger_query": {"family": "VAULT", "stage": "000-VAULT", "display": "ledger_query"},
-    "wealth_ledger_write": {"family": "VAULT", "stage": "000-VAULT", "display": "ledger_write"},
-    "wealth_ledger_init": {"family": "VAULT", "stage": "000-VAULT", "display": "ledger_init"},
-    "wealth_ledger_record": {"family": "VAULT", "stage": "000-VAULT", "display": "ledger_record"},
-    "wealth_ledger_snapshot": {"family": "VAULT", "stage": "000-VAULT", "display": "ledger_snapshot"},
-}
-HarnessEngine.SOVEREIGN_METADATA.update(_ATOMIC_METADATA)
-
-# ============================================================
-# V3 Atomic Tools (Physics-First Naming)
-# Each wraps its existing internal engine with a physics analogy.
-# Old canonical tools at lines 3659+ remain as deprecated shims.
-# ============================================================
-
-# --- Value / Time Tools (4) ---
-
-@mcp.tool()
-def wealth_value_npv(
-    initial_investment: float = 0,
-    cash_flows: Optional[List[float]] = None,
-    discount_rate: float = 0.1,
-    terminal_value: float = 0,
-    period_unit: str = "annual",
-    input_epistemic: str = "CLAIM",
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Net Present Value — scalar thermodynamic work potential.
-    Physics analogy: NPV is the total work extracted from a temporal potential well."""
-    cash_flows = cash_flows or []
-    return npv_reward(initial_investment, cash_flows, discount_rate, terminal_value, period_unit, input_epistemic, scale_mode)
-
-
-@mcp.tool()
-def wealth_energy_irr(
-    initial_investment: float = 0,
-    cash_flows: Optional[List[float]] = None,
-    reinvestment_rate: float = 0.1,
-    finance_rate: float = 0.1,
-    period_unit: str = "annual",
-    discount_rate: float = 0.1,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Internal Rate of Return — energy yield of a capital system.
-    Physics analogy: IRR is the eigenrate at which a capital system breaks even."""
-    cash_flows = cash_flows or []
-    return irr_yield(initial_investment, cash_flows, reinvestment_rate, finance_rate, period_unit, discount_rate, scale_mode)
-
-
-@mcp.tool()
-def wealth_density_pi(
-    initial_investment: float = 0,
-    cash_flows: Optional[List[float]] = None,
-    discount_rate: float = 0.1,
-    terminal_value: float = 0,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Profitability Index — value density per unit of capital committed.
-    Physics analogy: PI is the energy density (value per unit mass)."""
-    cash_flows = cash_flows or []
-    return pi_efficiency(initial_investment, cash_flows, discount_rate, terminal_value, scale_mode)
-
-
-@mcp.tool()
-def wealth_time_payback(
-    initial_investment: float = 0,
-    cash_flows: Optional[List[float]] = None,
-    discount_rate: float = 0,
-    period_unit: str = "annual",
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Payback Period — time to recover committed capital.
-    Physics analogy: Payback is the characteristic time constant of capital recovery."""
-    cash_flows = cash_flows or []
-    return payback_time(initial_investment, cash_flows, discount_rate, period_unit, scale_mode)
-
-
-# --- Probability / Information Tools (5) ---
-
-@mcp.tool()
-def wealth_expectation_emv(
-    scenarios: List[dict],
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Expected Monetary Value — probability-weighted outcome.
-    Physics analogy: EMV is the center of mass of a probability density over outcomes."""
-    return emv_risk(scenarios, scale_mode)
-
-
-@mcp.tool()
-def wealth_probability_monte_carlo(
-    initial_commitment: float,
-    mean_cash_flows: List[float],
-    volatilities: List[float],
-    discount_rate: float = 0.1,
-    simulations: int = 10000,
-    distribution: str = "lognormal",
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Monte Carlo Simulation — stochastic forecast of outcome distribution.
-    Physics analogy: Monte Carlo samples the phase space of possible economic trajectories."""
-    return monte_carlo_forecast(initial_commitment, mean_cash_flows, volatilities, discount_rate, simulations, distribution, scale_mode)
-
-
-@mcp.tool()
-async def wealth_signal_evoi(
-    well_cost_musd: float = 0,
-    p50_value_musd: float = 0,
-    prior_pos: Optional[float] = None,
-    posterior_pos: Optional[float] = None,
-    prospect_metrics: Optional[dict] = None,
-    info_cost_musd: float = 5.0,
-    discount_rate: float = 0.10,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Expected Value of Information — point-estimate of information signal.
-    Physics analogy: EVOI measures the signal-to-noise gain from additional observation."""
-    return await wealth_evoi_compute(well_cost_musd, p50_value_musd, prior_pos, posterior_pos, prospect_metrics, info_cost_musd, discount_rate, scale_mode)
-
-
-@mcp.tool()
-async def wealth_signal_evoi_mc(
-    prior_pos_samples: List[float],
-    posterior_pos_samples: List[float],
-    well_cost_musd: float,
-    p50_value_musd: float,
-    info_cost_musd: float = 5.0,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Expected Value of Information — distributional Monte Carlo.
-    Physics analogy: Distributional EVOI measures the information entropy reduction."""
-    return await wealth_evoi_monte_carlo(prior_pos_samples, posterior_pos_samples, well_cost_musd, p50_value_musd, info_cost_musd, scale_mode)
-
-
-@mcp.tool()
-async def wealth_coupling_correlation(
-    prospects: List[Dict[str, Any]],
-    correlation_threshold: int = 3,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Coupled-System Correlation Risk — shared model lineage detection.
-    Physics analogy: Coupling measures the phase-lock between oscillators (prospects)."""
-    return await wealth_correlation_guard_check(prospects, correlation_threshold, scale_mode)
-
-
-# --- Survival / Balance Sheet Tools (6) ---
-
-@mcp.tool()
-def wealth_flow_cashflow(
-    income: Optional[List[dict]] = None,
-    expenses: Optional[List[dict]] = None,
-    liquid_assets: float = 0,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Cash Flow Projection — metabolic liquidity rate.
-    Physics analogy: Cash flow is the mass flow rate through the economic system."""
-    return cashflow_flow(income, expenses, liquid_assets, scale_mode)
-
-
-@mcp.tool()
-def wealth_velocity_runway(
-    principal: float,
-    rate: float,
-    years: int,
-    annual_contribution: float = 0,
-    monthly_burn: float = 0,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Compound Growth Velocity and Runway — expansion speed.
-    Physics analogy: Velocity is the first derivative of capital position over time."""
-    return growth_velocity(principal, rate, years, annual_contribution, monthly_burn, scale_mode)
-
-
-@mcp.tool()
-def wealth_gravity_dscr(
-    ebitda: Optional[float] = None,
-    principal: float = 0,
-    interest: float = 0,
-    leases: float = 0,
-    cfads: Optional[float] = None,
-    debt_service: Optional[float] = None,
-    period_unit: str = "annual",
-    input_epistemic: str = "CLAIM",
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Debt Service Coverage Ratio — gravitational load on capital structure.
-    Physics analogy: DSCR measures the structural load capacity under gravity (debt)."""
-    return dscr_leverage(ebitda, principal, interest, leases, cfads, debt_service, period_unit, input_epistemic, scale_mode)
-
-
-@mcp.tool()
-def wealth_mass_networth(
-    assets: Optional[List[dict]] = None,
-    liabilities: Optional[List[dict]] = None,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Net Worth — accumulated balance sheet mass.
-    Physics analogy: Net worth is the invariant mass of the capital system."""
-    return networth_state(assets, liabilities, scale_mode)
-
-
-@mcp.tool()
-def wealth_pressure_triage(
-    resources: dict,
-    demands: List[dict],
-    recovery_horizon_days: float = 30,
-    scale_mode: str = "crisis",
-) -> Any:
-    """Crisis Triage — emergency pressure relief under resource constraint.
-    Physics analogy: Triage applies a pressure-gradient allocation to critical systems."""
-    return crisis_triage(resources, demands, recovery_horizon_days, scale_mode)
-
-
-@mcp.tool()
-def wealth_stewardship_civilization(
-    population: float,
-    energy_budget_twh: float,
-    carbon_budget_gt: float,
-    tech_growth_rate: float,
-    time_horizon_years: int = 100,
-    scale_mode: str = "civilization",
-) -> Any:
-    """Long-Horizon Civilization Continuity — planetary stewardship.
-    Physics analogy: Civilization stewardship measures negentropic capacity."""
-    return civilization_stewardship(population, energy_budget_twh, carbon_budget_gt, tech_growth_rate, time_horizon_years, scale_mode)
-
-
-# --- Truth / Measurement Tools (2) ---
-
-@mcp.tool()
-async def wealth_measurement_schema(
-    prospects: List[Dict[str, Any]],
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Schema Validity Check — epistemic measurement integrity.
-    Physics analogy: Schema validation ensures the measurement apparatus is calibrated."""
-    return await wealth_schema_validate(prospects, scale_mode)
-
-
-@mcp.tool()
-def wealth_entropy_audit(
-    initial_investment: float,
-    cash_flows: List[float],
-    discount_rate: float = 0.1,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Entropy/Noise Audit — cash flow noise and multiple IRR detection.
-    Physics analogy: Entropy audit measures the thermodynamic disorder in cash flow series."""
-    return audit_entropy(initial_investment, cash_flows, discount_rate, scale_mode)
-
-
-# --- Governance Tools (3) ---
-
-@mcp.tool()
-def wealth_boundary_floors(
-    reversible: bool = True,
-    human_confirmed: bool = False,
-    epistemic: str = "ESTIMATE",
-    ai_is_deciding: bool = False,
-    floor_override: bool = False,
-    peace2: float = 1.0,
-    maruah_score: float = 0.5,
-    uncertainty_band: Optional[List[float]] = None,
-    operation_type: str = "PROJECTION",
-    scale_mode: str = "enterprise",
-    task_definition: str = "",
-    phantom_entries: bool = False,
-    critical: bool = False,
-    pin_verified: bool = False,
-) -> Any:
-    """F1-F13 Constitutional Floor Check — governance boundary enforcement.
-    Physics analogy: Floors are the boundary conditions on the economic potential function."""
-    return check_floors_tool(reversible, human_confirmed, epistemic, ai_is_deciding, floor_override, peace2, maruah_score, uncertainty_band, operation_type, scale_mode, task_definition, phantom_entries, critical, pin_verified)
-
-
-@mcp.tool()
-def wealth_boundary_policy(
-    proposal: dict,
-    constraints: Optional[dict] = None,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Policy Constraint Audit — configurable rule enforcement.
-    Physics analogy: Policy audits check solution feasibility against constraint surfaces."""
-    return policy_audit(proposal, constraints, scale_mode)
-
-
-@mcp.tool()
-def wealth_governance_verdict(
-    d_s: float = 0,
-    peace2: float = 1.0,
-    maruah_score: float = 0.5,
-    base_rate: float = 0.1,
-    trust_index: float = 0.5,
-    delta_civ: float = 0.0,
-    wealth_signals: Optional[dict] = None,
-    prospects: Optional[List[dict]] = None,
-    extractive_signals: Optional[dict] = None,
-    compare: bool = False,
-    scale_mode: str = "enterprise",
-    task_definition: str = "",
-    irreversible: bool = False,
-) -> Any:
-    """Final Allocation Verdict — sovereign governance recommendation.
-    Physics analogy: The verdict collapses the wavefunction into an observable allocation."""
-    return wealth_score_kernel(d_s, peace2, maruah_score, base_rate, trust_index, delta_civ, wealth_signals, prospects, extractive_signals, compare, scale_mode, task_definition, irreversible)
-
-
-# --- Allocation / Coordination Tools (4) ---
-
-@mcp.tool()
-def wealth_field_game(
-    agents: Optional[List[dict]] = None,
-    resources: Optional[dict] = None,
-    mechanism: str = "cooperative",
-    solve_equilibrium: bool = False,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Game Theory Solver — multi-agent strategic interaction.
-    Physics analogy: Game theory computes Nash equilibria of coupled agent fields."""
-    agents = agents or []
-    resources = resources or {}
-    return game_theory_solve(agents, resources, mechanism, solve_equilibrium, scale_mode)
-
-
-@mcp.tool()
-def wealth_field_equilibrium(
-    agents: Optional[List[dict]] = None,
-    shared_resources: Optional[dict] = None,
-    mechanism: str = "cooperative",
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Coordination Equilibrium — multi-agent resource allocation stability.
-    Physics analogy: Equilibrium minimizes the free energy of the agent-resource system."""
-    agents = agents or []
-    shared_resources = shared_resources or {}
-    return coordination_equilibrium(agents, shared_resources, mechanism, scale_mode)
-
-
-@mcp.tool()
-def wealth_preference_rank(
-    alternatives: List[dict],
-    constraints: dict,
-    values: Optional[dict] = None,
-    scale_mode: str = "personal",
-) -> Any:
-    """Personal Utility Ranking — preference ordering under constraints.
-    Physics analogy: Ranking sorts alternatives by potential energy in the utility field."""
-    return personal_decision(alternatives, constraints, values, scale_mode)
-
-
-@mcp.tool()
-def wealth_agent_path(
-    compute_budget_usd: float = 1.0,
-    token_budget: float = 1000.0,
-    time_deadline_hours: float = 1.0,
-    expected_value_of_information: float = 0.0,
-    actions: Optional[List[dict]] = None,
-    scale_mode: str = "agentic",
-) -> Any:
-    """Resource-Constrained Agent Path — optimal action sequence.
-    Physics analogy: Agent path is the least-action trajectory through resource space."""
-    return agent_budget(compute_budget_usd, token_budget, time_deadline_hours, expected_value_of_information, actions or [], scale_mode)
-
-
-# --- Sensor / Data Intake Tools (6) ---
-
-@mcp.tool()
-def wealth_sensor_fetch(
-    source: str,
-    series_id: str,
-    entity_code: str,
-    use_cache: bool = True,
-    bus: str = "slow",
-) -> Any:
-    """Live Data Probe — fetch a real-world data series.
-    Physics analogy: A sensor measures an observable from the external reality field."""
-    return ingest_fetch(source, series_id, entity_code, use_cache, bus)
-
-
-@mcp.tool()
-def wealth_sensor_snapshot(
-    entity_code: str,
-    sources: Optional[List[str]] = None,
-) -> Any:
-    """Cross-Source Macro Snapshot — multi-sensor state observation.
-    Physics analogy: A snapshot is the state vector of all sensors at time t."""
-    return ingest_snapshot(entity_code, sources)
-
-
-@mcp.tool()
-def wealth_sensor_reconcile(
-    entity_code: str,
-) -> Any:
-    """Sensor Divergence Detection — cross-source consistency check.
-    Physics analogy: Reconciliation detects measurement divergence across parallel instruments."""
-    return ingest_reconcile(entity_code)
-
-
-@mcp.tool()
-def wealth_sensor_health(
-    adapter: Optional[str] = None,
-) -> Any:
-    """Instrument Health Metrics — latency, cache age, freshness.
-    Physics analogy: Health monitors the calibration state of each sensing instrument."""
-    return ingest_health(adapter)
-
-
-@mcp.tool()
-def wealth_sensor_vintage(
-    source: str, series_id: str, entity_code: str, vintage_date: str
-) -> Any:
-    """Historical Measurement State — fetch data as known at a specific date.
-    Physics analogy: Vintage preserves the wavefunction collapse at a past measurement time."""
-    return ingest_vintage(source, series_id, entity_code, vintage_date)
-
-
-@mcp.tool()
-def wealth_sensor_sources() -> Any:
-    """Sensor Inventory — list available data sources and adapter status.
-    Physics analogy: Source inventory is the instrument manifest."""
-    return ingest_sources()
-
-
-# --- Ledger / Vault Tools (5) ---
-
-@mcp.tool()
-def wealth_ledger_query(
-    query: str,
-    limit: int = 10,
-    session_id: Optional[str] = None,
-) -> Any:
-    """Ledger Read — query the immutable governance ledger.
-    Physics analogy: A ledger read observes the conserved state of the economic record."""
-    return vault_query(query, limit, session_id)
-
-
-@mcp.tool()
-def wealth_ledger_write(
-    action: str,
-    payload: Dict[str, Any],
-    session_id: str = "UNKNOWN",
-    agent_id: str = "WEALTH_AGENT",
-    verdict: str = "SEAL",
-    ack_irreversible: bool = False,
-) -> Any:
-    """Ledger Append — irreversible state transition to VAULT999.
-    F01 AMANAH: irreversible operation. Requires explicit ack_irreversible.
-    Physics analogy: A ledger write is an irreversible thermodynamic transition."""
-    return vault_write(action, payload, session_id, agent_id, verdict, ack_irreversible)
-
-
-@mcp.tool()
-async def wealth_ledger_init(
-    session_id: Optional[str] = None,
-    actor_id: str = "wealth-agent",
-    intent: Optional[str] = None,
-) -> Any:
-    """Session Boundary Initialization — anchor a new governance session.
-    Physics analogy: Initialization sets the boundary conditions for the economic system."""
-    return await wealth_init_tool(session_id, actor_id, intent)
-
-
-@mcp.tool()
-def wealth_ledger_record(
-    tx_type: str,
-    amount: float,
-    currency: str,
-    description: str,
-    quantity: Optional[float] = None,
-    price: Optional[float] = None,
-    fees: Optional[float] = None,
-    broker: Optional[str] = None,
-    asset_id: Optional[str] = None,
-    category: Optional[str] = None,
-    notes: Optional[str] = None,
-    dry_run: bool = False,
-    human_confirmed: bool = False,
-    idempotency_key: Optional[str] = None,
-) -> Any:
-    """Structured Transaction Write — record to VAULT999.
-    Physics analogy: A transaction is a discrete quantum of economic exchange."""
-    return record_transaction_tool(tx_type, amount, currency, description, quantity, price, fees, broker, asset_id, category, notes, dry_run, human_confirmed, idempotency_key)
-
-
-@mcp.tool()
-def wealth_ledger_snapshot(
-    tool_name: str,
-    arguments: Dict[str, Any],
-    result: Dict[str, Any],
-    scale_mode: str = "enterprise",
-    asset_id: Optional[str] = None,
-    nav_myr: Optional[float] = None,
-    quantity_held: Optional[float] = None,
-    price_close: Optional[float] = None,
-    currency: str = "MYR",
-    dry_run: bool = False,
-    human_confirmed: bool = False,
-    idempotency_key: Optional[str] = None,
-) -> Any:
-    """Portfolio State Snapshot — seal computation result to VAULT999.
-    Physics analogy: A snapshot freezes the state vector at a specific observation time."""
-    return snapshot_portfolio_tool(tool_name, arguments, result, scale_mode, asset_id, nav_myr, quantity_held, price_close, currency, dry_run, human_confirmed, idempotency_key)
-
-
-# ============================================================
-# V3 Prompts (12 Reasoning Workflows)
-# ============================================================
-
-@mcp.prompt()
-def wealth_appraise_project() -> str:
-    """Full project valuation under governance: compute value, energy, density, time."""
-    return """## wealth_appraise_project — Full Project Valuation
-
-Call these tools in sequence:
-
-1. **wealth_value_npv** — Compute Net Present Value
-2. **wealth_energy_irr** — Compute Internal Rate of Return / MIRR
-3. **wealth_density_pi** — Compute Profitability Index
-4. **wealth_time_payback** — Compute Payback Period
-5. **wealth_boundary_floors** — Check F1-F13 constitutional compliance
-
-Combine the results into a valuation summary. The allocation signal
-from each tool indicates ACCEPT/REJECT/MARGINAL — synthesize them
-into a final recommendation for Arif (F13 SOVEREIGN)."""
-
-
-@mcp.prompt()
-def wealth_judge_allocation() -> str:
-    """Governed capital allocation decision: verdict + floors + policy."""
-    return """## wealth_judge_allocation — Governed Allocation Decision
-
-Call these tools in sequence:
-
-1. **wealth_governance_verdict** — Compute the sovereign allocation verdict
-2. **wealth_boundary_floors** — Verify F1-F13 constitutional compliance
-3. **wealth_boundary_policy** — Audit against configurable policy constraints
-
-Synthesize the governance verdict, floor status, and policy audit into
-an allocation recommendation. The final decision rests with Arif (F13)."""
-
-
-@mcp.prompt()
-def wealth_run_survival_audit() -> str:
-    """Complete survival health check: flow, velocity, gravity, mass, pressure."""
-    return """## wealth_run_survival_audit — Complete Survival Health Check
-
-Call these tools in sequence:
-
-1. **wealth_flow_cashflow** — Metabolic liquidity rate
-2. **wealth_velocity_runway** — Compound growth and runway
-3. **wealth_gravity_dscr** — Debt service coverage ratio
-4. **wealth_mass_networth** — Balance sheet net worth
-5. **wealth_pressure_triage** — Emergency pressure relief (if in crisis)
-
-Summarize the survival posture. Flag any REJECT signals for immediate
-escalation to Arif."""
-
-
-@mcp.prompt()
-def wealth_run_information_audit() -> str:
-    """Information value + noise assessment: EVOI, entropy, schema."""
-    return """## wealth_run_information_audit — Information Value and Noise Assessment
-
-Call these tools in sequence:
-
-1. **wealth_signal_evoi** — Expected Value of Information (point estimate)
-2. **wealth_signal_evoi_mc** — EVOI Monte Carlo (distributional)
-3. **wealth_entropy_audit** — Cash flow noise and signal quality
-4. **wealth_measurement_schema** — Epistemic schema integrity
-
-Assess whether additional information is worth its cost. Recommend
-PROCEED, HOLD, or DO_NOT_DRILL to Arif."""
-
-
-@mcp.prompt()
-def wealth_run_macro_snapshot() -> str:
-    """Full market/macro data intake: fetch, snapshot, reconcile."""
-    return """## wealth_run_macro_snapshot — Full Macro Data Intake
-
-Call these tools in sequence:
-
-1. **wealth_sensor_fetch** — Fetch live data series
-2. **wealth_sensor_snapshot** — Cross-source snapshot for geography
-3. **wealth_sensor_reconcile** — Cross-source divergence detection
-4. **wealth_sensor_health** — Adapter and instrument health metrics
-5. **wealth_sensor_sources** — Available data source inventory
-
-Compile a data quality report. Flag any source divergences or stale
-adapters for remedial action."""
-
-
-@mcp.prompt()
-def wealth_run_game_coordination() -> str:
-    """Multi-agent coordination analysis: game theory + equilibrium."""
-    return """## wealth_run_game_coordination — Multi-Agent Coordination Analysis
-
-Call these tools in sequence:
-
-1. **wealth_field_game** — Game theory solver (LP, Shapley, Core, Nash)
-2. **wealth_field_equilibrium** — Coordination equilibrium analysis
-3. **wealth_preference_rank** — Personal utility ranking under constraints
-4. **wealth_agent_path** — Resource-constrained agent budget path
-
-Synthesize the equilibrium, tragedy risk, and preference rankings into
-a coordinated allocation strategy. Flag any CORE_BLOCK or TRAGEDY_OF_COMMONS."""
-
-
-@mcp.prompt()
-def wealth_diagnose_portfolio() -> str:
-    """Portfolio health diagnosis: mass, flow, entropy, floors."""
-    return """## wealth_diagnose_portfolio — Portfolio Health Diagnosis
-
-Call these tools in sequence:
-
-1. **wealth_mass_networth** — Portfolio net worth / balance sheet mass
-2. **wealth_flow_cashflow** — Portfolio metabolic cash flow
-3. **wealth_entropy_audit** — Portfolio noise and fragility audit
-4. **wealth_boundary_floors** — F1-F13 constitutional boundary check
-
-Diagnose the health of the portfolio and flag any systems approaching
-critical entropy or boundary violations."""
-
-
-@mcp.prompt()
-def wealth_crisis_triage() -> str:
-    """Crisis classification + priority: triage, cashflow, runway."""
-    return """## wealth_crisis_triage — Crisis Classification and Priority
-
-Call these tools in sequence:
-
-1. **wealth_pressure_triage** — Emergency resource allocation
-2. **wealth_flow_cashflow** — Current metabolic liquidity
-3. **wealth_velocity_runway** — Remaining runway under current burn
-
-Assess the crisis severity. Implement the triage allocation and
-report survival probability to Arif for sovereign override if needed."""
-
-
-@mcp.prompt()
-def wealth_opportunity_ranking() -> str:
-    """Rank prospects by expected value: EMV, EVOI, entropy."""
-    return """## wealth_opportunity_ranking — Rank Prospects by Expected Value
-
-Call these tools in sequence:
-
-1. **wealth_expectation_emv** — Probability-weighted expected value
-2. **wealth_signal_evoi** — Expected value of additional information
-3. **wealth_entropy_audit** — Noise and uncertainty assessment
-
-Rank all prospects by EMV, adjust for information value, and flag
-high-entropy (uncertain) prospects for additional due diligence."""
-
-
-@mcp.prompt()
-def wealth_allocation_rebalance() -> str:
-    """Propose rebalancing: verdict + preference + policy."""
-    return """## wealth_allocation_rebalance — Proposed Portfolio Rebalancing
-
-Call these tools in sequence:
-
-1. **wealth_governance_verdict** — Current allocation governance verdict
-2. **wealth_preference_rank** — Preference-ranked alternatives
-3. **wealth_boundary_policy** — Policy constraint audit
-
-Propose a rebalancing plan that respects governance verdicts,
-preference rankings, and policy boundaries. Present to Arif for
-sovereign approval."""
-
-
-@mcp.prompt()
-def wealth_governance_full_audit() -> str:
-    """F1-F13 full audit: floors + policy + entropy."""
-    return """## wealth_governance_full_audit — Full Constitutional Audit (F1-F13)
-
-Call these tools in sequence:
-
-1. **wealth_boundary_floors** — F1-F13 floor check
-2. **wealth_boundary_policy** — Policy constraint audit
-3. **wealth_entropy_audit** — Noise and disorder assessment
-
-Produce a full constitutional compliance report. Every violation and
-HOLD must be documented. The final audit is sealed to VAULT999 for
-immutable traceability."""
-
-
-@mcp.prompt()
-def wealth_record_governed_event() -> str:
-    """Governed vault write with full audit trail: record + snapshot + floors."""
-    return """## wealth_record_governed_event — Governed Vault Write
-
-Call these tools in sequence:
-
-1. **wealth_ledger_record** — Record the transaction to VAULT999
-2. **wealth_ledger_snapshot** — Snapshot the resulting portfolio state
-3. **wealth_boundary_floors** — Verify post-event floor compliance
-
-The vault write (Step 1) is irreversible. Ensure ack_irreversible is
-confirmed by the human operator before proceeding. The snapshot (Step 2)
-preserves the post-event state for audit. Step 3 closes the governance loop."""
-
-
-# ============================================================
-# V3 Resources (21 total — adding 14 new, 7 existing)
-# ============================================================
-
-# --- Schemas (5) ---
-
-@mcp.resource("wealth://schemas/prospect_metrics")
-def get_schema_prospect_metrics() -> str:
-    return json.dumps({
-        "prospect": {
-            "composite_pos": "float (0-1) — probability of success",
-            "p10_value_musd": "float — 10th percentile value",
-            "p50_value_musd": "float — 50th percentile value",
-            "p90_value_musd": "float — 90th percentile value",
-            "model_lineage_hash": "string — AI model provenance",
-            "name": "string — prospect identifier",
-        },
-        "required": ["composite_pos", "p50_value_musd"],
-    }, indent=2)
-
-
-@mcp.resource("wealth://schemas/cashflow_project")
-def get_schema_cashflow_project() -> str:
-    return json.dumps({
-        "cashflow_project": {
-            "initial_investment": "float — capital commitment at t=0",
-            "cash_flows": "List[float] — periodic net cash flows",
-            "discount_rate": "float — time value of capital (default 0.10)",
-            "terminal_value": "float — residual at end of projection (default 0)",
-            "period_unit": "string — annual|monthly|quarterly",
-        },
-        "required": ["initial_investment", "cash_flows"],
-    }, indent=2)
-
-
-@mcp.resource("wealth://schemas/portfolio")
-def get_schema_portfolio() -> str:
-    return json.dumps({
-        "portfolio": {
-            "assets": "List[dict] — each with {name, value, model_lineage_hash?, type?}",
-            "liabilities": "List[dict] — each with {name, outstanding, principal?, type?}",
-            "prospects": "List[dict] — each with prospect_metrics schema",
-        },
-        "notes": "Assets and liabilities use networth schema. Prospects use prospect_metrics.",
-    }, indent=2)
-
-
-@mcp.resource("wealth://schemas/vault_event")
-def get_schema_vault_event() -> str:
-    return json.dumps({
-        "vault_event": {
-            "event_type": "string — WEALTH_SESSION_INIT | TRANSACTION | SNAPSHOT",
-            "session_id": "string — governance session UUID",
-            "actor_id": "string — sovereign actor identifier",
-            "stage": "string — 000_INIT | 100_SENSE | ... | 999_VAULT",
-            "verdict": "string — ACTIVE | SEAL | HOLD | VOID",
-            "payload": "dict — domain-specific event payload",
-            "risk_tier": "string — low | medium | high | critical",
-            "timestamp": "ISO8601 datetime",
-        },
-        "required": ["event_type", "session_id", "stage", "verdict"],
-    }, indent=2)
-
-
-@mcp.resource("wealth://schemas/governance_verdict")
-def get_schema_governance_verdict() -> str:
-    return json.dumps({
-        "governance_verdict": {
-            "verdict": "SEAL | SABAR | 888-HOLD | VOID | QUALIFY",
-            "allocation_signal": "ACCEPT | REJECT | MARGINAL | INSUFFICIENT_DATA",
-            "g_score": "float (0-1) — thermodynamic genius score",
-            "kappa_r": "float — humility/empathy score",
-            "psi_le": "float — life-entropy coupling",
-            "floor_check": "dict — F1-F13 compliance result",
-            "harness_audit": "dict — 9-harness constraint status",
-        },
-        "note": "Verdict is a SYSTEM RECOMMENDATION. Final authority is Arif (F13).",
-    }, indent=2)
-
-
-# --- Policies (4) ---
-
-@mcp.resource("wealth://policy/f1_f13_floors")
-def get_policy_f1_f13() -> str:
-    return json.dumps({
-        "F1": "Amanah — All actions must be reversible or reparable. Irreversible actions require human confirmation.",
-        "F2": "Truth — Prioritize factual grounding. Cite sources. No hallucination.",
-        "F3": "Tri-Witness — Decisions require Theory + Constitution + Manifesto agreement.",
-        "F4": "Clarity — Responses must reduce confusion (delta S <= 0).",
-        "F5": "Peace^2 — Exponential penalty for destruction of value or trust.",
-        "F6": "Empathy (RASA) — Receive, Appreciate, Summarize, Ask.",
-        "F7": "Humility — Maintain epistemic uncertainty within [0.03, 0.05].",
-        "F8": "Genius — Maintain G >= 0.80 across A, P, X, E dials.",
-        "F9": "Ethics — Dark genius (C_dark) must remain below 0.30.",
-        "F10": "Conscience — No false consciousness. Maintain Lab-Shaped Identity.",
-        "F11": "Auditability — Immutable, tamper-evident logs for all decisions.",
-        "F12": "Resilience — Degrade safely. Never crash.",
-        "F13": "Adaptability — Governed evolution via W^3 consensus and tests.",
-    }, indent=2)
-
-
-@mcp.resource("wealth://policy/allocation_constraints")
-def get_policy_allocation_constraints() -> str:
-    return json.dumps({
-        "capital_rationing": "PI >= 1.0 for capital-constrained environments",
-        "survival_floor": "DSCR >= 1.25 for leveraged positions",
-        "runway_minimum": "3 months minimum runway for going concerns",
-        "epistemic_integrity": "integrity_score >= 0.3 for capital allocation",
-        "correlation_risk": "correlation_risk < 0.5 to avoid systemic bias",
-        "sovereign_dignity": "maruahScore >= 0.6 for F13 compliance",
-    }, indent=2)
-
-
-@mcp.resource("wealth://policy/vault_irreversibility")
-def get_policy_vault_irreversibility() -> str:
-    return json.dumps({
-        "doctrine": "VAULT999 writes are irreversible. F01 Amanah applies.",
-        "requirements": [
-            "ack_irreversible must be explicitly True for SEAL verdicts",
-            "All vault writes include session_id and actor_id for chain continuity",
-            "Every vault entry is hashed and chained to the previous entry",
-            "Vault entries are immutable — no DELETE or UPDATE operations",
-        ],
-        "dry_run": "Use dry_run=True to preview before irreversible write",
-    }, indent=2)
-
-
-@mcp.resource("wealth://policy/final_authority_arif")
-def get_policy_final_authority() -> str:
-    return json.dumps({
-        "doctrine": "F13 SOVEREIGN — Final authority rests with the human sovereign (Arif).",
-        "constraints": [
-            "All WEALTH outputs are recommendations_only — never execution_authorized",
-            "888-JUDGE verdicts are advisory. Arif may override.",
-            "No AI agent may commit irreversible economic actions without human confirmation",
-            "wealth_governance_verdict is a SYSTEM recommendation — Arif decides",
-        ],
-        "enforcement": "F13_SOVEREIGN_DECISION_REQUIRED flag when ai_is_deciding=True",
-    }, indent=2)
-
-
-# --- Formulas (6) ---
-
-@mcp.resource("wealth://formulas/npv")
-def get_formula_npv() -> str:
-    return json.dumps({
-        "name": "Net Present Value",
-        "formula": "NPV = -I₀ + Σ(CFₜ / (1 + r)ᵗ) + TV / (1 + r)ⁿ",
-        "variables": {
-            "I₀": "Initial investment (capital commitment at t=0)",
-            "CFₜ": "Cash flow at period t",
-            "r": "Discount rate (cost of capital)",
-            "n": "Number of periods",
-            "TV": "Terminal value (residual at end of projection)",
-        },
-        "decision_rule": "ACCEPT if NPV > 0; REJECT if NPV < 0; MARGINAL if NPV = 0",
-        "domain": "Primary capital allocation metric. Always pair with IRR and PI.",
-    }, indent=2)
-
-
-@mcp.resource("wealth://formulas/irr")
-def get_formula_irr() -> str:
-    return json.dumps({
-        "name": "Internal Rate of Return",
-        "formula": "IRR = r where NPV(r) = 0; MIRR uses finance_rate and reinvestment_rate",
-        "note": "IRR is the discount rate that makes NPV=0. MIRR = (FV_positive / |PV_negative|)^(1/n) - 1",
-        "edge_cases": [
-            "Multiple IRRs possible when cash flows change sign more than once",
-            "No IRR exists when cash flows never cross zero",
-            "MIRR resolves the multiple-IRR ambiguity by separating finance and reinvestment rates",
-        ],
-        "decision_rule": "ACCEPT if IRR > hurdle_rate; MIRR preferred for non-normal flows",
-    }, indent=2)
-
-
-@mcp.resource("wealth://formulas/emv")
-def get_formula_emv() -> str:
-    return json.dumps({
-        "name": "Expected Monetary Value",
-        "formula": "EMV = Σ(pᵢ × vᵢ) for scenarios i=1..n",
-        "variables": {
-            "pᵢ": "Probability of scenario i (must sum to 1.0)",
-            "vᵢ": "Outcome value of scenario i",
-        },
-        "derived_metrics": {
-            "variance": "Σ(pᵢ × (vᵢ - EMV)²) — outcome dispersion",
-            "downside_probability": "Σ(pᵢ for vᵢ < 0) — probability of loss",
-        },
-        "decision_rule": "Pair EMV with downside probability. Never use EMV alone for irreversible decisions.",
-    }, indent=2)
-
-
-@mcp.resource("wealth://formulas/evoi")
-def get_formula_evoi() -> str:
-    return json.dumps({
-        "name": "Expected Value of Information",
-        "formula": "EVOI = E[V | with_info] - E[V | without_info]",
-        "components": {
-            "prior_pos": "Pre-information probability of success (PoS)",
-            "posterior_pos": "Post-information probability of success",
-            "well_cost_musd": "Cost of the project/investment (MUSD)",
-            "p50_value_musd": "P50 value if successful (MUSD)",
-            "info_cost_musd": "Cost of acquiring the information (MUSD)",
-        },
-        "decision_rule": "PROCEED if EVOI > info_cost; DO_NOT_DRILL if EVOI < 0; HOLD if uncertain",
-        "note": "EVOI quantifies whether acquiring additional information is economically rational.",
-    }, indent=2)
-
-
-@mcp.resource("wealth://formulas/dscr")
-def get_formula_dscr() -> str:
-    return json.dumps({
-        "name": "Debt Service Coverage Ratio",
-        "formula": "DSCR = CFADS / Debt_Service  |  DSCR = EBITDA / (Principal + Interest + Leases)",
-        "variables": {
-            "CFADS": "Cash Flow Available for Debt Service (preferred)",
-            "EBITDA": "Earnings Before Interest, Tax, Depreciation, Amortization (proxy)",
-            "debt_service": "Total debt service (principal + interest)",
-        },
-        "thresholds": {
-            ">= 1.50": "HEALTHY — strong coverage",
-            "1.25 - 1.50": "ADEQUATE — marginal",
-            "1.00 - 1.25": "CRITICAL — approaching default",
-            "< 1.00": "DEFAULT — debt service cannot be met",
-        },
-        "note": "CFADS is preferred. EBITDA proxy flagged in output.",
-    }, indent=2)
-
-
-@mcp.resource("wealth://formulas/payback")
-def get_formula_payback() -> str:
-    return json.dumps({
-        "name": "Payback Period",
-        "formula": "Payback = min(t) where ΣCFₜ >= |I₀|  |  Discounted Payback uses discounted CFₜ",
-        "variables": {
-            "I₀": "Initial investment",
-            "CFₜ": "Cash flow at period t (discounted if discount_rate > 0)",
-        },
-        "note": "Payback is a secondary metric. Never override NPV with payback alone.",
-        "decision_rule": "ACCEPT if payback <= maximum acceptable period; otherwise MARGINAL.",
-    }, indent=2)
-
-
-# --- Ontology (3) ---
-
-@mcp.resource("wealth://ontology/physics_economics_map")
-def get_ontology_physics_map() -> str:
-    return json.dumps({
-        "value_npv": {"physics": "Scalar work potential", "economics": "Net Present Value"},
-        "energy_irr": {"physics": "Energy yield / eigenrate", "economics": "Internal Rate of Return"},
-        "density_pi": {"physics": "Energy density", "economics": "Profitability Index"},
-        "time_payback": {"physics": "Characteristic time constant", "economics": "Payback Period"},
-        "expectation_emv": {"physics": "Center of probability mass", "economics": "Expected Monetary Value"},
-        "probability_monte_carlo": {"physics": "Phase space sampling", "economics": "Stochastic simulation"},
-        "signal_evoi": {"physics": "Signal-to-noise gain", "economics": "Expected Value of Information"},
-        "coupling_correlation": {"physics": "Phase-lock between oscillators", "economics": "Portfolio correlation risk"},
-        "flow_cashflow": {"physics": "Mass flow rate", "economics": "Cash flow / metabolic liquidity"},
-        "velocity_runway": {"physics": "First derivative of position", "economics": "Growth rate / runway"},
-        "gravity_dscr": {"physics": "Structural load capacity", "economics": "Debt Service Coverage Ratio"},
-        "mass_networth": {"physics": "Invariant mass", "economics": "Net worth / balance sheet"},
-        "pressure_triage": {"physics": "Pressure gradient", "economics": "Crisis resource allocation"},
-        "stewardship_civilization": {"physics": "Negentropic capacity", "economics": "Civilization continuity"},
-        "measurement_schema": {"physics": "Measurement calibration", "economics": "Epistemic schema validation"},
-        "entropy_audit": {"physics": "Thermodynamic disorder", "economics": "Noise / fragility audit"},
-        "boundary_floors": {"physics": "Boundary conditions", "economics": "F1-F13 constitutional floors"},
-        "boundary_policy": {"physics": "Constraint surface", "economics": "Policy constraint audit"},
-        "governance_verdict": {"physics": "Wavefunction collapse", "economics": "Allocation verdict"},
-        "field_game": {"physics": "Coupled agent fields", "economics": "Game theory / Nash equilibrium"},
-        "field_equilibrium": {"physics": "Free energy minimum", "economics": "Coordination equilibrium"},
-        "preference_rank": {"physics": "Potential energy sorting", "economics": "Personal utility ranking"},
-        "agent_path": {"physics": "Least-action trajectory", "economics": "Resource-constrained agent budget"},
-    }, indent=2)
-
-
-@mcp.resource("wealth://ontology/dimensions")
-def get_ontology_dimensions() -> str:
-    return json.dumps({
-        "Value": "NPV, EAA — scalar thermodynamic work potential",
-        "Energy": "IRR, MIRR — energy yield and efficiency",
-        "Density": "PI — value per unit committed capital",
-        "Time": "Payback — recovery velocity characteristic",
-        "Expectation": "EMV — probability-weighted center of mass",
-        "Probability": "Monte Carlo — stochastic phase space",
-        "Signal": "EVOI — information entropy reduction",
-        "Coupling": "Correlation — phase-lock between prospects",
-        "Flow": "Cash flow — metabolic mass flow rate",
-        "Velocity": "Growth — first derivative of position",
-        "Gravity": "DSCR — structural load under debt gravity",
-        "Mass": "Net worth — invariant balance sheet mass",
-        "Pressure": "Triage — gradient-driven emergency allocation",
-        "Entropy": "Audit — thermodynamic noise measurement",
-        "Boundary": "Floors/Policy — constitutional constraint surfaces",
-        "Field": "Game/Equilibrium — multi-agent coupled fields",
-        "Preference": "Ranking — utility potential sorting",
-        "Agent": "Path — least-action resource trajectory",
-        "Sensor": "Fetch/Snapshot — external reality measurement",
-        "Ledger": "VAULT999 — conserved economic record",
-    }, indent=2)
-
-
-@mcp.resource("wealth://ontology/verdict_labels")
-def get_ontology_verdict_labels() -> str:
-    return json.dumps({
-        "SEAL": "Computation valid and constitutionally compliant. Ready for sovereign decision.",
-        "SABAR": "Computation valid but high stress detected. Proceed with caution.",
-        "888-HOLD": "Constitutional hold. Requires human confirmation via 888_JUDGE.",
-        "VOID": "Computation invalid or constitutionally blocked. Do not allocate.",
-        "QUALIFY": "Result requires qualification or manual verification before use.",
-        "ACCEPT": "Allocation signal: proceed with capital commitment.",
-        "REJECT": "Allocation signal: do not commit capital.",
-        "MARGINAL": "Allocation signal: borderline — requires additional due diligence.",
-        "INSUFFICIENT_DATA": "Allocation signal: cannot determine without more information.",
-    }, indent=2)
-
-
-# --- State / Vault (2) ---
-
-@mcp.resource("wealth://vault/latest_seal")
-def get_vault_latest_seal() -> str:
-    return json.dumps({
-        "description": "Return the last VAULT999 seal state from the Merkle chain.",
-        "note": "Dynamic resource — calls vault_query to fetch latest seal.",
-        "usage": "Call vault_query with 'SELECT * FROM vault_seals ORDER BY chain_index DESC LIMIT 1'",
-        "last_receipt_hash": LAST_RECEIPT_HASH,
-    }, indent=2)
-
-
-@mcp.resource("wealth://vault/session_state")
-def get_vault_session_state() -> str:
-    return json.dumps({
-        "description": "Current governance session state and chain position.",
-        "note": "Dynamic resource — reflects the current in-memory session anchor.",
-        "doctrine_hash": HarnessEngine.get_doctrine_hash(),
-        "lineage_hash": HarnessEngine.get_lineage_hash(),
-        "last_receipt_hash": LAST_RECEIPT_HASH,
-        "floors_available": GOVERNANCE_AVAILABLE,
-        "epistemic_available": EPISTEMIC_AVAILABLE,
-        "coordination_available": COORDINATION_AVAILABLE,
-        "ingest_available": INGEST_AVAILABLE,
-    }, indent=2)
-
-
-# --- Sources (1) ---
-
-@mcp.resource("wealth://sources/adapter_status")
-def get_sources_adapter_status() -> str:
-    return json.dumps({
-        "description": "Data adapter health status for all registered sensors.",
-        "note": "Dynamic resource — calls wealth_sensor_health for each adapter.",
-        "adapters": {
-            "FRED": "Federal Reserve Economic Data — US macro series",
-            "EIA": "US Energy Information Administration — energy data",
-            "FAO": "Food and Agriculture Organization — food prices",
-            "WORLD_BANK": "World Bank Open Data — development indicators",
-            "IMF": "International Monetary Fund — financial statistics",
-        },
-        "health_check": "Call wealth_sensor_health(adapter='FRED') for per-adapter metrics",
-    }, indent=2)
-
-
-# ============================================================
 if __name__ == "__main__":
-    # Register v2 legacy aliases (non-breaking Phase 1 Migration)
-    engine = HarnessEngine()
-    _v1_funcs = {
-        "wealth_ingest_fetch": ingest_fetch,
-        "wealth_ingest_snapshot": ingest_snapshot,
-        "wealth_ingest_reconcile": ingest_reconcile,
-        "wealth_ingest_health": ingest_health,
-        "wealth_ingest_vintage": ingest_vintage,
-        "wealth_ingest_sources": ingest_sources,
-        "wealth_emv_risk": emv_risk,
-        "wealth_monte_carlo_forecast": monte_carlo_forecast,
-        "wealth_correlation_guard_check": wealth_correlation_guard_check,
-        "wealth_evoi_compute": wealth_evoi_compute,
-        "wealth_evoi_monte_carlo": wealth_evoi_monte_carlo,
-        "wealth_schema_validate": wealth_schema_validate,
-        "wealth_dscr_leverage": dscr_leverage,
-        "wealth_networth_state": networth_state,
-        "wealth_growth_velocity": growth_velocity,
-        "wealth_cashflow_flow": cashflow_flow,
-        "wealth_crisis_triage": crisis_triage,
-        "wealth_civilization_stewardship": civilization_stewardship,
-        # NOTE: wealth_npv_reward is an alias for wealth_value_npv (npv_reward).
-        # Deprecated — do not register as a public tool. Use wealth_value_npv instead.
-        "wealth_npv_reward": npv_reward,
-        "wealth_irr_yield": irr_yield,
-        "wealth_pi_efficiency": pi_efficiency,
-        "wealth_payback_time": payback_time,
-        "wealth_coordination_equilibrium": coordination_equilibrium,
-        "wealth_game_theory_solve": game_theory_solve,
-        "wealth_personal_decision": personal_decision,
-        "wealth_agent_budget": agent_budget,
-        "wealth_score_kernel": wealth_score_kernel,
-        "wealth_check_floors": check_floors_tool,
-        "wealth_policy_audit": policy_audit,
-        "wealth_audit_entropy": audit_entropy,
-        "wealth_init": wealth_init_tool,
-        "wealth_record_transaction": record_transaction_tool,
-        "wealth_snapshot_portfolio": snapshot_portfolio_tool,
-        "vault_write": record_transaction_tool,
-        "vault_query": snapshot_portfolio_tool,
-    }
-    for v2_name, v1_name in engine.V2_CANONICAL_MAP.items():
-        if v2_name in ("vault_write", "vault_query", "vaultwrite", "vaultquery"):
-            continue
-        if v1_name in _v1_funcs:
-            mcp.tool(name=v2_name)(_v1_funcs[v1_name])
-
-    # NOTE: vaultwrite and vaultquery duplicate vault_write/vault_query.
-    # They are defined below but NOT registered as MCP tools.
-    # Skip them in the alias loop above.
-
-    from starlette.applications import Starlette
-    from starlette.routing import Route, Mount
-    from starlette.responses import JSONResponse as _JR
-    import uvicorn
-
-    def _serialize_result(result):
-        """Convert FastMCP ToolResult to JSON-serializable dict."""
-        if result is None:
-            return None
-        if hasattr(result, "model_dump"):
-            d = result.model_dump()
-            # Recursively serialize content items
-            if "content" in d and isinstance(d["content"], list):
-                serialized_content = []
-                for item in d["content"]:
-                    if hasattr(item, "model_dump"):
-                        serialized_content.append(item.model_dump())
-                    else:
-                        serialized_content.append(dict(item) if isinstance(item, dict) else str(item))
-                d["content"] = serialized_content
-            return d
-        return result  # Already serializable (dict, str, etc.)
-
-    async def legacy_mcp_handler(request):
-        """Direct JSON-RPC handler — bypasses FastMCP Accept-header enforcement."""
-        if request.method == "GET":
-            return _JR({
-                "mcp": "WEALTH",
-                "kernel": "Capital Intelligence Engine",
-                "version": __version__,
-                "transport": "streamable-http",
-                "note": "Use POST for JSON-RPC tool calls",
-            })
-        try:
-            payload = await request.json()
-        except Exception:
-            return _JR({"error": "Parse error"}, status_code=400)
-
-        method = payload.get("method")
-        params = payload.get("params", {})
-        response_id = payload.get("id")
-
-        if method == "tools/list":
-            all_tools = await mcp.list_tools()
-            return _JR({
-                "jsonrpc": "2.0",
-                "id": response_id,
-                "result": {"tools": [{"name": t.name, "description": t.description, "inputSchema": getattr(t, "inputSchema", {}), "outputSchema": getattr(t, "output_schema", {})} for t in all_tools]}
-            })
-
-        if method == "tools/call":
-            name = params.get("name")
-            arguments = params.get("arguments", {})
-            if not name:
-                return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32602, "message": "Missing tool name"}}, status_code=400)
-            try:
-                result = await mcp.call_tool(name, arguments)
-                return _JR({"jsonrpc": "2.0", "id": response_id, "result": _serialize_result(result)})
-            except Exception as e:
-                # Return JSON-RPC error as HTTP 200 — clients expect error in body, not 5xx
-                return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32603, "message": str(e)}}, status_code=200)
-
-        if method == "initialize":
-            return _JR({
-                "jsonrpc": "2.0",
-                "id": response_id,
-                "result": {
-                    "protocolVersion": "2025-11-25",
-                    "capabilities": {
-                        "tools": {"listChanged": True},
-                        "prompts": {"listChanged": True},
-                        "resources": {"listChanged": True, "subscribe": True},
-                    },
-                    "serverInfo": {"name": "WEALTH", "version": __version__},
-                }
-            })
-
-        if method == "prompts/list":
-            all_prompts = await mcp.list_prompts()
-            return _JR({
-                "jsonrpc": "2.0",
-                "id": response_id,
-                "result": {
-                    "prompts": [
-                        {
-                            "name": p.name,
-                            "description": p.description or "",
-                            "arguments": getattr(p, "arguments", []),
-                        }
-                        for p in all_prompts
-                    ]
-                }
-            })
-
-        if method == "prompts/get":
-            prompt_name = params.get("name")
-            all_prompts = await mcp.list_prompts()
-            for p in all_prompts:
-                if p.name == prompt_name:
-                    try:
-                        rendered = await mcp.render_prompt(p, params.get("arguments", {}))
-                    except Exception:
-                        rendered = {"prompt": getattr(p, "_fn", lambda: "")()}
-                    return _JR({
-                        "jsonrpc": "2.0",
-                        "id": response_id,
-                        "result": {
-                            "description": p.description or "",
-                            "messages": [{"role": "user", "content": {"text": str(rendered)}}]
-                            if isinstance(rendered, str)
-                            else {"content": str(rendered)},
-                        }
-                    })
-            return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32602, "message": f"Prompt not found: {prompt_name}"}}, status_code=404)
-
-        if method == "resources/list":
-            all_resources = await mcp.list_resources()
-            all_templates = []
-            try:
-                all_templates = await mcp.list_resource_templates()
-            except Exception:
-                pass
-            return _JR({
-                "jsonrpc": "2.0",
-                "id": response_id,
-                "result": {
-                    "resources": [
-                        {
-                            "uri": str(r.uri),
-                            "name": str(getattr(r, "name", r.uri) or r.uri),
-                            "description": str(getattr(r, "description", "") or ""),
-                            "mimeType": str(getattr(r, "mime_type", "application/json") or "application/json"),
-                        }
-                        for r in all_resources
-                    ],
-                    "resourceTemplates": [
-                        {
-                            "uriTemplate": str(t.uriTemplate),
-                            "name": str(getattr(t, "name", t.uriTemplate) or t.uriTemplate),
-                            "description": str(getattr(t, "description", "") or ""),
-                            "mimeType": str(getattr(t, "mime_type", "application/json") or "application/json"),
-                        }
-                        for t in all_templates
-                    ],
-                }
-            })
-
-        return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32601, "message": "Method not found"}}, status_code=404)
-
-    async def tools_handler(request):
-        """Federation tool discovery — returns flat tool registry with danger/fail metadata."""
-        all_tools = await mcp.list_tools()
-        # WEALTH tool danger taxonomy (mirrors arifOS federation_topology)
-        _DANGER_MAP = {
-            # L4 — irreversible / operational mutation
-            "wealth_vault_seal": {"danger_level": "L4", "fail_posture": "fail-closed"},
-            "wealth_emv_final": {"danger_level": "L4", "fail_posture": "fail-closed"},
-            # L3 — routing / memory / judgment
-            "wealth_reason_agent": {"danger_level": "L3", "fail_posture": "fail-closed"},
-            "wealth_kernel_route": {"danger_level": "L3", "fail_posture": "fail-closed"},
-            "wealth_judge_deliberate": {"danger_level": "L3", "fail_posture": "fail-closed"},
-            # L2 — session state
-            "wealth_session_init": {"danger_level": "L2", "fail_posture": "fail-open"},
-            "wealth_evidence_fetch": {"danger_level": "L2", "fail_posture": "fail-open"},
-            # L1 — observe / degraded output
-            "wealth_sense_observe": {"danger_level": "L1", "fail_posture": "fail-open"},
-            "wealth_ops_measure": {"danger_level": "L1", "fail_posture": "fail-open"},
-        }
-        # Fail-open constraint for L1/L2: may degrade output, MUST NOT elevate authority
-        _FAIL_OPEN_CONSTRAINT = "may degrade output, must not elevate authority"
-        tools = []
-        for t in all_tools:
-            name = t.name
-            meta = _DANGER_MAP.get(name, {"danger_level": "L2", "fail_posture": "fail-open"})
-            tools.append({
-                "name": name,
-                "description": t.description or "",
-                "inputSchema": getattr(t, "inputSchema", {}),
-                "outputSchema": getattr(t, "output_schema", {}),
-                "danger_level": meta["danger_level"],
-                "fail_posture": meta["fail_posture"],
-                "fail_open_constraint": _FAIL_OPEN_CONSTRAINT if meta["fail_posture"] == "fail-open" else None,
-            })
-        return _JR({
-            "organ": "WEALTH",
-            "role": "Capital Intelligence / NPV + EMV + Crisis Triage",
-            "schema": "wealth-federation-v2026.05.07",
-            "version": __version__,
-            "count": len(tools),
-            "danger_taxonomy": {
-                "L4": "irreversible / operational mutation — fail-closed mandatory",
-                "L3": "routing / memory / judgment — fail-closed mandatory",
-                "L2": "session state — fail-open with constraint",
-                "L1": "observe / degraded output — fail-open with constraint",
-            },
-            "fail_open_constraint": _FAIL_OPEN_CONSTRAINT,
-            "tools": tools,
-        })
-
-    async def health_handler(request):
-        return _JR({"status": "healthy", "service": "wealth-mcp", "version": __version__})
-
-    async def prompts_handler(request):
-        """Federation prompt discovery — returns governance reasoning workflows."""
-        all_prompts = await mcp.list_prompts()
-        return _JR({
-            "organ": "WEALTH",
-            "role": "Capital Intelligence / NPV + EMV + Crisis Triage",
-            "schema": "wealth-federation-v2026.05.07",
-            "version": __version__,
-            "count": len(all_prompts),
-            "prompts": [
-                {
-                    "name": p.name,
-                    "description": p.description or "",
-                }
-                for p in all_prompts
-            ],
-        })
-
-    async def resources_handler(request):
-        """Federation resource discovery — returns schemas/policies/formulas/ontology/state."""
-        all_resources = await mcp.list_resources()
-        all_templates = []
-        try:
-            all_templates = await mcp.list_resource_templates()
-        except Exception:
-            pass
-        return _JR({
-            "organ": "WEALTH",
-            "role": "Capital Intelligence / NPV + EMV + Crisis Triage",
-            "schema": "wealth-federation-v2026.05.07",
-            "version": __version__,
-            "resourceCount": len(all_resources),
-            "templateCount": len(all_templates),
-            "resources": [
-                {
-                    "uri": str(r.uri),
-                    "name": str(getattr(r, "name", r.uri) or r.uri),
-                    "description": str(getattr(r, "description", "") or ""),
-                }
-                for r in all_resources
-            ],
-            "resourceTemplates": [
-                {
-                    "uriTemplate": str(t.uriTemplate),
-                    "name": str(getattr(t, "name", t.uriTemplate) or t.uriTemplate),
-                    "description": str(getattr(t, "description", "") or ""),
-                }
-                for t in all_templates
-            ],
-        })
-
-    mcp_app = mcp.http_app(path="/", transport="streamable-http", stateless_http=True)
-
-    app = Starlette(
-        routes=[
-            Route("/mcp", legacy_mcp_handler, methods=["GET", "POST"]),
-            Route("/tools", tools_handler, methods=["GET"]),
-            Route("/prompts", prompts_handler, methods=["GET"]),
-            Route("/resources", resources_handler, methods=["GET"]),
-            Route("/health", health_handler, methods=["GET"]),
-            Mount("/", app=mcp_app),
-        ],
-        lifespan=getattr(mcp_app, "lifespan", None),
-    )
-
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=int(os.environ.get("PORT", 8082)),
-        log_level=os.environ.get("LOG_LEVEL", "info"),
-    )
+    # Hardened for production container deployments
+    mcp.run(transport="http", host="0.0.0.0", port=8000, path="/mcp", show_banner=False, log_level="info")

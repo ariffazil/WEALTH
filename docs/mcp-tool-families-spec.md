@@ -22,62 +22,23 @@ The rest of this document treats `server.py` as the primary operational surface 
 
 ## 2. Canonical kernel families (`server.py`)
 
-### 2.1 Valuation and reward
+### 2.1 Canonical 13-tool public surface
 Tools:
-- `wealth_npv_reward`
-- `wealth_irr_yield`
-- `wealth_pi_efficiency`
-- `wealth_emv_risk`
-- `wealth_payback_time`
-- `wealth_growth_velocity`
-- `wealth_monte_carlo_forecast`
+- `wealth_future_value`
+- `wealth_present_expect`
+- `wealth_future_simulate`
+- `wealth_info_value`
+- `wealth_truth_validate`
+- `wealth_survival_liquidity`
+- `wealth_survival_leverage`
+- `wealth_rule_enforce`
+- `wealth_allocate_optimize`
+- `wealth_game_coordinate`
+- `wealth_sense_ingest`
+- `wealth_past_record`
+- `wealth_future_steward`
 
-Core question: **What is the reward profile once time, uncertainty, and compounding are made explicit?**
-
-### 2.2 Structural load and survival
-Tools:
-- `wealth_dscr_leverage`
-- `wealth_audit_entropy`
-
-Core question: **Can the structure survive its own financing and cashflow noise?**
-
-### 2.3 State and portfolio metabolism
-Tools:
-- `wealth_networth_state`
-- `wealth_cashflow_flow`
-- `wealth_score_kernel`
-- `wealth_personal_decision`
-- `wealth_agent_budget`
-
-Core question: **What is the current financial state, and which choice is most defensible under constraints?**
-
-### 2.4 Crisis, civilization, and coordination
-Tools:
-- `wealth_crisis_triage`
-- `wealth_civilization_stewardship`
-- `wealth_coordination_equilibrium`
-- `wealth_game_theory_solve`
-
-Core question: **How should capital be allocated when many actors, survival constraints, or long-horizon stewardship pressures interact?**
-
-### 2.5 Sense / ingest
-Tools:
-- `wealth_ingest_fetch`
-- `wealth_ingest_snapshot`
-- `wealth_ingest_sources`
-- `wealth_ingest_health`
-- `wealth_ingest_vintage`
-- `wealth_ingest_reconcile`
-
-Core question: **What live or cached external signals are available, and how trustworthy are they right now?**
-
-### 2.6 Governance and vault
-Tools:
-- `wealth_check_floors`
-- `wealth_policy_audit`
-- `wealth_record_transaction`
-- `wealth_snapshot_portfolio`
-- `wealth_init`
+Core question: **Can every valuation, survival, governance, sensing, and record operation be expressed through the canonical 13-tool surface?**
 
 Resources:
 - `wealth://doctrine/valuation`
@@ -108,14 +69,14 @@ This surface is **real**, but it is **not** the packaged kernel used by `npm run
 
 ---
 
-## 4. Canonical 11-band map vs live runtime
+## 4. Legacy alias status
 
-`registry.json` still expresses the **canonical 11-band organism lattice**. That file is a conceptual lane map, not a complete live tool inventory.
+Legacy v1/v2 alias names are no longer exported by the canonical WEALTH MCP kernel.
 
 Therefore:
 
 - `registry.json` = canonical 11-band map
-- `server.py` = packaged runtime truth
+- `server.py` / `internal/monolith.py` = packaged runtime truth
 - `mcp/server.py` = secondary civilizational demo truth
 
 If those ever conflict, prefer the runtime files.

@@ -1,5 +1,5 @@
 # Use a multi-stage build or a single image with both runtimes
-FROM python:3.11-slim-bookworm
+FROM python:3.12-slim-bookworm
 
 # Install Node.js (needed for WEALTH CLI logic)
 RUN apt-get update && apt-get install -y curl git && \
@@ -17,9 +17,10 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
 # Copy pyproject.toml and install Python dependencies
+# Use UV_SKIP_WHEEL_FILENAME_CHECK to allow lock file version flexibility
 COPY pyproject.toml ./
 COPY uv.lock ./
-RUN uv sync --no-dev
+RUN UV_SKIP_WHEEL_FILENAME_CHECK=1 uv sync --no-dev
 
 # Copy the rest of the application
 COPY . .
@@ -29,8 +30,9 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV NODE_ENV=production
 ENV PYTHONUNBUFFERED=1
 
-# Expose port (if using SSE transport, default is stdio)
-EXPOSE 8000
+# Expose canonical HTTP transport port
+ENV PORT=8082
+EXPOSE 8082
 
 # Default command: Run the FastMCP server
 # Use --transport sse if deploying to cloud, or keep default for stdio

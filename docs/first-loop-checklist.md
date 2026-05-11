@@ -44,7 +44,7 @@
 
 ### 6. Form decision
 - [ ] `wealth_score_kernel` returns a final WEALTH-side allocation verdict
-- [ ] If multiple candidate actions exist, `wealth_personal_decision` or `wealth_agent_budget` ranks them coherently under constraints
+- [ ] If multiple candidate actions exist, `wealth_allocate_optimize` ranks them coherently under constraints
 
 ### 7. Persist evidence
 - [ ] `wealth_record_transaction` can append a transaction-style evidence record to VAULT999
