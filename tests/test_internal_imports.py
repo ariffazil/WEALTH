@@ -12,6 +12,9 @@ import internal.monolith as monolith
 from internal.invariants import get_g_score
 from internal.monolith import (
     _PUBLIC_TOOLS,
+    wealth_energy_productivity,
+    wealth_field_macro,
+    wealth_flow_liquidity,
     wealth_boundary_governance,
     wealth_entropy_risk,
     wealth_gradient_price,
@@ -72,6 +75,33 @@ def test_time_discount_wraps_existing_engine():
     )
     assert envelope["tool"] == "wealth_time_discount"
     assert envelope["status"] in {"OK", "WARN", "HOLD"}
+
+
+def test_time_discount_requires_cash_flows():
+    envelope = wealth_time_discount(mode="npv")
+    assert envelope["status"] == "FAIL"
+    assert envelope["engine_status"] == "INPUT_REQUIRED"
+    assert "cash_flows" in envelope["required"]
+
+
+def test_energy_productivity_requires_cash_flows():
+    envelope = wealth_energy_productivity(mode="pi")
+    assert envelope["status"] == "FAIL"
+    assert envelope["engine_status"] == "INPUT_REQUIRED"
+    assert envelope["allocation_signal"] == "INSUFFICIENT_DATA"
+
+
+def test_field_macro_requires_fetch_coordinates():
+    envelope = wealth_field_macro(mode="fetch")
+    assert envelope["status"] == "FAIL"
+    assert set(envelope["required"]) == {"source", "series_id", "entity_code"}
+
+
+def test_flow_liquidity_default_payload_is_json_safe():
+    envelope = wealth_flow_liquidity(mode="cashflow")
+    assert envelope["primary_metrics"]["runway_months"] is None
+    assert envelope["allocation_signal"] == "INSUFFICIENT_DATA"
+    json.dumps(envelope, allow_nan=False)
 
 
 def test_registry_status_matches_runtime_surface():

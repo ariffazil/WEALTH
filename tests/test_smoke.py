@@ -161,6 +161,8 @@ def test_inertia_leverage_dscr_emergence():
 def test_field_macro_fetch_emergence():
     result = wealth_field_macro(mode="fetch")
     _assert_emergence(result, "wealth_field_macro")
+    assert result["status"] == "FAIL"
+    assert set(result["required"]) == {"source", "series_id", "entity_code"}
 
 
 def test_signal_information_schema_emergence():
