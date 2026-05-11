@@ -481,7 +481,8 @@ class HarnessEngine:
             violations.append("CONSTITUTIONAL_HARNESS_FAILURE")
 
         # 7. Efficiency Check
-        if tool_name == "wealth_pi_efficiency" and primary.get("pi", 1.0) < 1.0:
+        pi_val = primary.get("pi")
+        if tool_name == "wealth_pi_efficiency" and pi_val is not None and pi_val < 1.0:
             harness_status["Efficiency"].update({"stress": 0.9, "status": "STRESSED"})
         if "NOT_RECOVERED" in flags:
             harness_status["Efficiency"].update({"stress": 1.0, "status": "SNAPPED"})
@@ -575,6 +576,7 @@ INVALID_FLAGS = {
     "INVALID_DEBT_SERVICE",
     "INVALID_CFADS",
     "INVALID_BASE_RATE",
+    "INGEST_LAYER_UNAVAILABLE",
 }
 HOLD_FLAGS = {"LEVERAGE_CRITICAL", "LEVERAGE_DEFAULT", "SOVEREIGN_DIGNITY_LOW"}
 HOLD_FLAGS.add("MULTIPLE_IRR_POSSIBLE")
@@ -583,6 +585,10 @@ QUALIFY_FLAGS = {
     "IRR_NOT_FOUND",
     "NOT_RECOVERED",
     "EBITDA_PROXY_USED",
+    "ADAPTER_NOT_FOUND",
+    "NO_DATA_FETCHED",
+    "RUNWAY_UNBOUNDED",
+    "NO_INPUT_BASELINE",
 }
 EPISTEMIC_ORDER = ["UNKNOWN", "HYPOTHESIS", "ESTIMATE", "PLAUSIBLE", "CLAIM"]
 RELIABILITY_TO_TAG = {
@@ -1982,6 +1988,7 @@ def networth_state(
         if math.isfinite(liability.get("outstanding", liability.get("principal", 0)))
     )
     epistemic = weakest_epistemic([*assets, *liabilities])
+    nw_flags = ["NO_INPUT_BASELINE"] if not assets and not liabilities else []
     return create_envelope(
         "wealth_networth_state",
         "Mass",
@@ -1992,7 +1999,7 @@ def networth_state(
             "tag": epistemic,
         },
         {},
-        [],
+        nw_flags,
         [],
         epistemic=epistemic,
         scale_mode=scale_mode,
@@ -2021,14 +2028,16 @@ def cashflow_flow(
     )
     net_monthly = total_income - total_expenses
     burn_rate = max(0.0, -net_monthly)
-    runway_months = (
-        math.inf if burn_rate == 0 else round_value(liquid_assets / burn_rate, 1)
-    )
-    flags = (
-        ["RUNWAY_CRITICAL"]
-        if burn_rate > 0 and runway_months is not None and runway_months < 3
-        else []
-    )
+    if burn_rate == 0:
+        runway_months = None
+        flags = ["RUNWAY_UNBOUNDED"]
+    else:
+        runway_months = round_value(liquid_assets / burn_rate, 1)
+        flags = (
+            ["RUNWAY_CRITICAL"]
+            if runway_months is not None and runway_months < 3
+            else []
+        )
     epistemic = weakest_epistemic([*income, *expenses], "UNKNOWN")
     return create_envelope(
         "wealth_cashflow_flow",
@@ -5496,6 +5505,22 @@ def _invoke_callable(func: Callable[..., Any], payload: Dict[str, Any]) -> Any:
     clean = {key: value for key, value in payload.items() if key in sig.parameters}
     if "ctx" in sig.parameters and "ctx" not in clean:
         clean["ctx"] = None
+    # Guard: required parameters must be present
+    missing = []
+    for param_name, param in sig.parameters.items():
+        if (
+            param.default is inspect.Parameter.empty
+            and param_name not in clean
+            and param.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
+        ):
+            missing.append(param_name)
+    if missing:
+        return {
+            "status": "FAIL",
+            "error": f"Missing required parameters: {', '.join(missing)}",
+            "required": missing,
+            "provided_keys": sorted(clean.keys()),
+        }
     result = func(**clean)
     if inspect.isawaitable(result):
         return asyncio.run(result)
@@ -5532,12 +5557,15 @@ def _gradient_spread(
     reference_price: Optional[float] = None,
     pressure_direction: str = "neutral",
 ) -> Dict[str, Any]:
-    spread = (ask - bid) if (bid is not None and ask is not None) else (spread_basis or 0.0)
+    has_input = bid is not None or ask is not None or spread_basis is not None or reference_price is not None
+    spread = (ask - bid) if (bid is not None and ask is not None) else (spread_basis if spread_basis is not None else None)
+    grad_flags = [] if has_input else ["NO_INPUT_BASELINE"]
     return create_envelope(
         "wealth_gradient_price",
         "Gradient",
         {"spread": spread, "bid": bid, "ask": ask, "reference": reference_price},
         {"pressure": "differential", "direction": pressure_direction},
+        grad_flags,
         ["Gradient pricing: capital flows from high to low pressure."],
     )
 
