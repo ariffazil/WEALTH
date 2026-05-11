@@ -4,7 +4,7 @@
 ## Configuration
 - **Canonical Git Source:** `/root/wealth`
 - **Canonical Branch:** `main`
-- **Repo HEAD at audit:** `d6c4e44`
+- **Repo HEAD at audit:** `fd14938`
 - **Runtime Entrypoint:** `internal/monolith.py` (mounted into `wealth-organ`)
 - **Backward-Compat Wrapper:** `server.py`
 - **Supplemental Surface:** `mcp/server.py` (demo / non-canonical)

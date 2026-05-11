@@ -42,7 +42,7 @@ WEALTH is the **capital evidence organ** — it surfaces the financial and econo
 |-------|-------|
 | Canonical repository | `https://github.com/ariffazil/wealth` |
 | Canonical branch | `main` |
-| Repo head audited | `d6c4e44` |
+| Repo head audited | `fd14938` |
 | Governing kernel | `arifOS F1–F13` |
 | Runtime entrypoint | `internal/monolith.py` |
 | Public MCP surface | `14` canonical tools |
@@ -59,7 +59,7 @@ WEALTH is the **capital evidence organ** — it surfaces the financial and econo
 - The live public WEALTH surface is now sealed around `14` canonical tools: `mcp_health_check`, `12` invariant tools, and `wealth_system_registry_status`.
 - `/tools`, `/ready`, and MCP `tools/list` now agree on the same public registry truth.
 - Legacy tools remain callable through compatibility routing, but they are no longer published as public MCP actions.
-- `repo_head` now resolves live as `d6c4e44` through the mounted repository path.
+- `repo_head` now resolves live as `fd14938` through the mounted repository path.
 
 ---
 

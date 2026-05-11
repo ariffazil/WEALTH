@@ -3452,7 +3452,7 @@ async def wealth_correlation_guard_check(
 
 
 # INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_schema_validate)
-async def wealth_schema_validate(
+def wealth_schema_validate(
     prospects: List[Dict[str, Any]],
     scale_mode: str = "enterprise",
 ) -> Any:
@@ -5393,6 +5393,22 @@ def _dispatch_to(mode: str, dispatch_map: dict, __params__: Optional[Dict[str, A
     # Always pass ctx if the function accepts it
     if "ctx" in sig.parameters and "ctx" not in clean:
         clean["ctx"] = None
+    # Guard: required parameters must be present
+    missing = []
+    for param_name, param in sig.parameters.items():
+        if (
+            param.default is inspect.Parameter.empty
+            and param_name not in clean
+            and param.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
+        ):
+            missing.append(param_name)
+    if missing:
+        return {
+            "status": "FAIL",
+            "error": f"Missing required parameters for mode '{mode}': {', '.join(missing)}",
+            "required": missing,
+            "provided_keys": sorted(clean.keys()),
+        }
     return func(**clean)
 
 
@@ -5504,6 +5520,8 @@ def _wrap_invariant_output(tool: str, mode: str, raw_result: Any, source_tools: 
         "source_tools": source_tools,
         "payload_keys": sorted(payload.keys()),
     }
+    # Trinity emergence scan
+    envelope["emergence"] = _emergence_scan(tool, mode, payload, envelope)
     return envelope
 
 
@@ -5745,7 +5763,7 @@ def wealth_energy_productivity(
             {"placeholder": True},
             ["Return-on-investment analysis — full engine in development."],
         ))
-    return _dispatch_emergence("wealth_gradient_price", mode, {}, {k: v for k, v in locals().items() if k not in ('mode', 'dispatch')})
+    return _dispatch_emergence("wealth_energy_productivity", mode, {}, {k: v for k, v in locals().items() if k not in ('mode', 'dispatch')})
 
 
 @mcp.tool(name="wealth_time_discount")
@@ -6014,7 +6032,7 @@ def _resolve_repo_head() -> str:
             continue
         try:
             result = subprocess.run(
-                ["git", "-C", candidate, "rev-parse", "--short", "HEAD"],
+                ["git", "-c", f"safe.directory={candidate}", "-C", candidate, "rev-parse", "--short", "HEAD"],
                 check=True,
                 capture_output=True,
                 text=True,
