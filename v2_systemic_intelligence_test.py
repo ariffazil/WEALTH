@@ -16,12 +16,12 @@ AgentRun = namedtuple("AgentRun", ["tool_sequence"])
 # ---------------------------------------------------------
 
 PIPELINE_ORDER = [
-    "wealth_sense_ingest",
-    "wealth_info_value",
-    "wealth_survival_leverage",
-    "wealth_future_value",
-    "wealth_rule_enforce",
-    "wealth_past_record",
+    "sense",
+    "mind",
+    "survival",
+    "reason",
+    "judge",
+    "vault"
 ]
 
 WEIGHTS = {
@@ -40,7 +40,10 @@ def extract_family(tool_name):
     """
     Maps canonical v3 tool names into the pipeline order.
     """
-    return tool_name if tool_name in PIPELINE_ORDER else None
+    try:
+        return tool_name.split("_")[1]
+    except:
+        return None
 
 
 def is_v2_name(tool_name):
@@ -112,12 +115,12 @@ def evaluate_agent_run(agent_run):
 if __name__ == "__main__":
 
     offshore_case = AgentRun(tool_sequence=[
-        "wealth_sense_ingest",
+        "wealth_sense_snapshot",
         "wealth_info_value",
         "wealth_survival_leverage",
         "wealth_future_value",
         "wealth_rule_enforce",
-        "wealth_past_record",
+        "wealth_past_record"
     ])
 
     report = evaluate_agent_run(offshore_case)

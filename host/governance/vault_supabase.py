@@ -14,14 +14,16 @@ import json
 import os
 import time
 from datetime import datetime, date, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 import httpx
 
 DEFAULT_VAULT_PATH = os.path.join(os.getcwd(), "data", "vault999.jsonl")
 INTEGRITY_SALT = "WEALTH-VAULT999-2026"
-SUPABASE_URL = "https://utbmmjmbolmuahwixjqc.supabase.co"
-SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0Ym1tam1ib2xtdWFod2l4anFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTQzMzEsImV4cCI6MjA5MTk5MDMzMX0.Nxg2Rkf-PyqnemVGz-_H1VW22jhNbmq67hH6EZ2EzEs"
+SUPABASE_URL = os.environ.get(
+    "SUPABASE_URL", "https://utbmmjmbolmuahwixjqc.supabase.co"
+)
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY")
 
 _MIGRATED = False
 _client: Optional[httpx.AsyncClient] = None
@@ -29,6 +31,10 @@ _client: Optional[httpx.AsyncClient] = None
 
 def _get_client() -> httpx.AsyncClient:
     global _client
+    if not SUPABASE_ANON_KEY:
+        raise RuntimeError(
+            "SUPABASE_ANON_KEY environment variable is required for Supabase writes."
+        )
     if _client is None:
         _client = httpx.AsyncClient(
             base_url=SUPABASE_URL,
@@ -130,6 +136,72 @@ async def _supabase_rpc(fn: str, params: Dict[str, Any]) -> Optional[Dict[str, A
         }
     except Exception as e:
         return {"status": "ERROR", "rpc": fn, "exception": str(e)}
+
+
+async def _supabase_select(
+    table: str,
+    params: Dict[str, Any],
+    limit: int = 10,
+) -> List[Dict[str, Any]]:
+    """Select rows from Supabase table via REST API. Returns list of rows."""
+    client = _get_client()
+    try:
+        query_params = "&".join(f"{k}={v}" for k, v in params.items())
+        response = await client.get(
+            f"/rest/v1/{table}?{query_params}&limit={limit}",
+            headers={"Prefer": "count=none"},
+        )
+        if response.status_code == 200:
+            return response.json()
+        return []
+    except Exception:
+        return []
+
+
+def query_vault999(
+    query: str,
+    limit: int = 10,
+    session_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Query the VAULT999 ledger via Supabase REST API.
+
+    Args:
+        query:       Search text (matches tool name or action)
+        limit:       Max rows to return (default 10)
+        session_id:  Optional session filter
+
+    Returns:
+        dict with records list, earth_refs, and count
+    """
+    loop = __import__("asyncio").get_event_loop()
+    filters = {"order": "epoch.desc", "limit": str(limit)}
+    if session_id:
+        filters["session_id"] = f"eq.{session_id}"
+    if query:
+        filters["action"] = f"ilike.%{query}%"
+
+    rows = loop.run_until_complete(_supabase_select("wealth_transactions", filters, limit))
+
+    earth_refs = []
+    for row in rows:
+        earth_refs.append(
+            {
+                "tx_id": row.get("id"),
+                "tool": row.get("tool"),
+                "action": row.get("action"),
+                "epoch": row.get("epoch"),
+                "integrity": row.get("integrity", "")[:16],
+            }
+        )
+
+    return {
+        "query": query,
+        "records": rows,
+        "earth_refs": earth_refs,
+        "count": len(rows),
+        "vault_seal": "VAULT999",
+    }
 
 
 def record_transaction(
@@ -364,7 +436,7 @@ def health_check() -> Dict[str, Any]:
         if response.status_code == 200:
             return {
                 "status": "CONNECTED",
-                "supabase_url": SUPABASE_URL,
+                "supabase_url": SUPABASE_URL.split(".")[0] + ".***.co" if "." in SUPABASE_URL else "***",
                 "pg_available": True,
                 "wealth_tables_exist": True,
             }
