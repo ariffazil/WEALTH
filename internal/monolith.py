@@ -5626,9 +5626,11 @@ def _emergence_scan(
 
 
 def _inject_emergence(tool_name: str, mode: str, arguments: dict, result: Any) -> Any:
-    """Inject emergence layer into invariant output envelope."""
+    """Inject emergence layer and civilizational memory into invariant output envelope."""
     if isinstance(result, dict):
         result["emergence"] = _emergence_scan(tool_name, mode, arguments, result)
+        if "wealth_story_anchor" not in result:
+            result["wealth_story_anchor"] = _wealth_civilization_for_tool(tool_name)
     return result
 
 
@@ -5686,6 +5688,124 @@ def _invoke_callable(func: Callable[..., Any], payload: Dict[str, Any]) -> Any:
     return result
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# WEALTH_CIVILIZATION_ATLAS_14 — Civilizational Memory Anchors
+# ═══════════════════════════════════════════════════════════════════════════════
+
+_WEALTH_CIVILIZATION_ATLAS: Dict[str, Dict[str, Any]] = {
+    "mcp_health_check": {
+        "story_id": "WEALTH-CIV-001",
+        "civilization_event": "Roman aqueduct maintenance",
+        "lesson": "Verify the instrument before judging the allocation.",
+        "failure_warning": "A civilization that cannot check its instruments cannot trust its decisions.",
+        "axiom": "Before allocation, verify the instrument.",
+    },
+    "wealth_system_registry_status": {
+        "story_id": "WEALTH-CIV-002",
+        "civilization_event": "Domesday Book, 1086",
+        "lesson": "What is not registered cannot be governed; what is falsely registered corrupts the realm.",
+        "failure_warning": "The registry is not decoration. It is the truth surface of callable capability.",
+        "axiom": "Registry makes governance legible.",
+    },
+    "wealth_conservation_capital": {
+        "story_id": "WEALTH-CIV-003",
+        "civilization_event": "Mesopotamian grain temples",
+        "lesson": "Capital begins as stored survival before it becomes abstract wealth.",
+        "failure_warning": "Counting claims as capital.",
+        "axiom": "No wealth judgment without inventory.",
+    },
+    "wealth_flow_liquidity": {
+        "story_id": "WEALTH-CIV-004",
+        "civilization_event": "Roman annona grain supply",
+        "lesson": "A rich system can still die if flow stops.",
+        "failure_warning": "Illiquid wealth is frozen oxygen. Cashflow, burn, runway, and survival are not optional.",
+        "axiom": "Flow keeps civilization alive.",
+    },
+    "wealth_gradient_price": {
+        "story_id": "WEALTH-CIV-005",
+        "civilization_event": "Silk Road arbitrage",
+        "lesson": "Price reveals pressure, but pressure is not wisdom.",
+        "failure_warning": "Price pressure can detach from durable value.",
+        "axiom": "Price is pressure, not truth.",
+    },
+    "wealth_entropy_risk": {
+        "story_id": "WEALTH-CIV-006",
+        "civilization_event": "Bronze Age Collapse",
+        "lesson": "Risk ignored becomes history written in suffering. A single forecast is not risk management.",
+        "failure_warning": "Scenario analysis, tail risk, and dispersion ignored.",
+        "axiom": "Risk is disorder entering the ledger.",
+    },
+    "wealth_energy_productivity": {
+        "story_id": "WEALTH-CIV-007",
+        "civilization_event": "Steam engine and industrialization",
+        "lesson": "Civilization expands when energy becomes disciplined output.",
+        "failure_warning": "Busyness is not productivity. Output per input with thermodynamic cost acknowledged.",
+        "axiom": "Productivity is disciplined energy, not activity.",
+    },
+    "wealth_time_discount": {
+        "story_id": "WEALTH-CIV-008",
+        "civilization_event": "Cathedral building across generations",
+        "lesson": "Time is the silent partner in every allocation. A gain today can be a debt to the future.",
+        "failure_warning": "NPV, IRR, payback, and compounding ignored.",
+        "axiom": "Time governs value.",
+    },
+    "wealth_inertia_leverage": {
+        "story_id": "WEALTH-CIV-009",
+        "civilization_event": "Global Financial Crisis, 2008",
+        "lesson": "Borrowed strength becomes fragility when conditions turn.",
+        "failure_warning": "Hidden leverage turns private risk into systemic crisis.",
+        "axiom": "Leverage is borrowed fragility.",
+    },
+    "wealth_field_macro": {
+        "story_id": "WEALTH-CIV-010",
+        "civilization_event": "1973 oil shock",
+        "lesson": "The field moves before the balance sheet understands why.",
+        "failure_warning": "Rates, FX, energy, carbon, inflation, and policy are macro field forces.",
+        "axiom": "Macro field reprices everything.",
+    },
+    "wealth_signal_information": {
+        "story_id": "WEALTH-CIV-011",
+        "civilization_event": "Double-entry bookkeeping",
+        "lesson": "Bad signal makes clever allocation bangang. Better signal enables better allocation.",
+        "failure_warning": "A model fed lies becomes a machine for confident error.",
+        "axiom": "Information quality determines allocation quality.",
+    },
+    "wealth_game_coordination": {
+        "story_id": "WEALTH-CIV-012",
+        "civilization_event": "Hanseatic League",
+        "lesson": "Resources become wealth only when agents coordinate without destroying trust.",
+        "failure_warning": "Agents, incentives, and shared resources without rules become conflict.",
+        "axiom": "Wealth is coordination under constraint.",
+    },
+    "wealth_boundary_governance": {
+        "story_id": "WEALTH-CIV-013",
+        "civilization_event": "Magna Carta / waqf endowment traditions",
+        "lesson": "The question is not only whether wealth grows, but whether it remains amanah.",
+        "failure_warning": "Wealth without boundary becomes extraction, deception, coercion, and dignity loss.",
+        "axiom": "Wealth without boundary becomes extraction.",
+    },
+    "wealth_hysteresis_ledger": {
+        "story_id": "WEALTH-CIV-014",
+        "civilization_event": "Clay tablets of Mesopotamia",
+        "lesson": "A ledger is civilization remembering consequence. There is no clean future from a corrupted ledger.",
+        "failure_warning": "Hysteresis means the system does not fully reset. Past actions change future possibilities.",
+        "axiom": "A ledger is civilization remembering consequence.",
+    },
+}
+
+_WEALTH_DEFAULT_CIV = _WEALTH_CIVILIZATION_ATLAS["wealth_hysteresis_ledger"]
+
+
+def _wealth_civilization_for_tool(tool_name: str) -> Dict[str, Any]:
+    exact = _WEALTH_CIVILIZATION_ATLAS.get(tool_name)
+    if exact:
+        return exact
+    for key, val in _WEALTH_CIVILIZATION_ATLAS.items():
+        if tool_name.startswith(key):
+            return val
+    return _WEALTH_DEFAULT_CIV
+
+
 def _wrap_invariant_output(tool: str, mode: str, raw_result: Any, source_tools: List[str], payload: Dict[str, Any]) -> Dict[str, Any]:
     if isinstance(raw_result, dict):
         envelope = dict(raw_result)
@@ -5706,6 +5826,9 @@ def _wrap_invariant_output(tool: str, mode: str, raw_result: Any, source_tools: 
     }
     # Trinity emergence scan
     envelope["emergence"] = _emergence_scan(tool, mode, payload, envelope)
+    # Civilizational memory anchor
+    if "wealth_story_anchor" not in envelope:
+        envelope["wealth_story_anchor"] = _wealth_civilization_for_tool(tool)
     return envelope
 
 
