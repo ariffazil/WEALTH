@@ -551,6 +551,81 @@ def maruah_band(score):
 mcp = FastMCP("WEALTH Valuation Kernel")
 WEALTH_SCHEMA_VERSION = "wealth.physics_economics.v1"
 
+
+WEALTH_TOOL_MANIFEST: List[Dict[str, object]] = [
+    {"name": "mcp_health_check", "axis": "identity", "expose": False},
+    {"name": "vault_query", "axis": "trace", "expose": False},
+    {"name": "vault_write", "axis": "seal", "expose": False},
+    {"name": "vaultquery", "axis": "trace", "expose": False},
+    {"name": "vaultwrite", "axis": "seal", "expose": False},
+    {"name": "wealth_agent_path", "axis": "reflect", "expose": False},
+    {"name": "wealth_allocate_optimize", "axis": "execute", "expose": False},
+    {"name": "wealth_boundary_floors", "axis": "boundary", "expose": False},
+    {"name": "wealth_boundary_governance", "axis": "boundary", "expose": False},
+    {"name": "wealth_boundary_policy", "axis": "boundary", "expose": False},
+    {"name": "wealth_conservation_capital", "axis": "vitality", "expose": False},
+    {"name": "wealth_density_pi", "axis": "reason", "expose": False},
+    {"name": "wealth_energy_irr", "axis": "reason", "expose": False},
+    {"name": "wealth_energy_productivity", "axis": "reason", "expose": False},
+    {"name": "wealth_entropy_audit", "axis": "critique", "expose": False},
+    {"name": "wealth_entropy_risk", "axis": "critique", "expose": False},
+    {"name": "wealth_expectation_emv", "axis": "reason", "expose": False},
+    {"name": "wealth_field_equilibrium", "axis": "observe", "expose": False},
+    {"name": "wealth_field_game", "axis": "reason", "expose": False},
+    {"name": "wealth_field_macro", "axis": "observe", "expose": False},
+    {"name": "wealth_flow_cashflow", "axis": "vitality", "expose": False},
+    {"name": "wealth_flow_liquidity", "axis": "vitality", "expose": False},
+    {"name": "wealth_future_simulate", "axis": "reason", "expose": False},
+    {"name": "wealth_future_steward", "axis": "reason", "expose": False},
+    {"name": "wealth_future_value", "axis": "reason", "expose": False},
+    {"name": "wealth_game_coordinate", "axis": "reason", "expose": False},
+    {"name": "wealth_game_coordination", "axis": "reason", "expose": False},
+    {"name": "wealth_governance_verdict", "axis": "critique", "expose": False},
+    {"name": "wealth_gradient_price", "axis": "observe", "expose": False},
+    {"name": "wealth_gravity_dscr", "axis": "vitality", "expose": False},
+    {"name": "wealth_hysteresis_ledger", "axis": "seal", "expose": False},
+    {"name": "wealth_inertia_leverage", "axis": "boundary", "expose": False},
+    {"name": "wealth_ledger_query", "axis": "trace", "expose": False},
+    {"name": "wealth_ledger_record", "axis": "seal", "expose": False},
+    {"name": "wealth_ledger_snapshot", "axis": "seal", "expose": False},
+    {"name": "wealth_ledger_write", "axis": "seal", "expose": False},
+    {"name": "wealth_mass_networth", "axis": "vitality", "expose": False},
+    {"name": "wealth_preference_rank", "axis": "reason", "expose": False},
+    {"name": "wealth_present_expect", "axis": "reason", "expose": False},
+    {"name": "wealth_pressure_triage", "axis": "vitality", "expose": False},
+    {"name": "wealth_probability_monte_carlo", "axis": "reason", "expose": False},
+    {"name": "wealth_rule_enforce", "axis": "judge", "expose": False},
+    {"name": "wealth_sense_ingest", "axis": "observe", "expose": False},
+    {"name": "wealth_sensor_fetch", "axis": "observe", "expose": False},
+    {"name": "wealth_sensor_health", "axis": "identity", "expose": False},
+    {"name": "wealth_sensor_reconcile", "axis": "observe", "expose": False},
+    {"name": "wealth_sensor_snapshot", "axis": "observe", "expose": False},
+    {"name": "wealth_sensor_sources", "axis": "observe", "expose": False},
+    {"name": "wealth_sensor_vintage", "axis": "observe", "expose": False},
+    {"name": "wealth_signal_information", "axis": "verify", "expose": False},
+    {"name": "wealth_stewardship_civilization", "axis": "reflect", "expose": False},
+    {"name": "wealth_survival_leverage", "axis": "vitality", "expose": False},
+    {"name": "wealth_survival_liquidity", "axis": "vitality", "expose": False},
+    {"name": "wealth_system_registry_status", "axis": "reason", "expose": False},
+    {"name": "wealth_time_discount", "axis": "reason", "expose": False},
+    {"name": "wealth_time_payback", "axis": "reason", "expose": False},
+    {"name": "wealth_value_npv", "axis": "reason", "expose": False},
+    {"name": "wealth_velocity_runway", "axis": "vitality", "expose": False},
+]
+
+try:
+    from federation.tool_manifest import FEDERATION_TOOLS, ToolManifest, CognitiveAxis as _WCA
+    for _went in WEALTH_TOOL_MANIFEST:
+        FEDERATION_TOOLS[str(_went["name"])] = ToolManifest(
+            name=str(_went["name"]),
+            description="",
+            expose=bool(_went["expose"]),
+            cognitive_axis=_WCA(str(_went["axis"])),
+            organ="wealth",
+        )
+except Exception:
+    pass  # federation module may not exist in all environments
+
 @mcp.tool()
 def mcp_health_check() -> dict:
     """Universal health check for federation stability."""
