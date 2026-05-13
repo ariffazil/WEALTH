@@ -45,18 +45,32 @@ WEALTH is the **capital evidence organ** — it surfaces the financial and econo
 | Repo head audited | `fd14938` |
 | Governing kernel | `arifOS F1–F13` |
 | Runtime entrypoint | `internal/monolith.py` |
-| Public MCP surface | `14` canonical tools |
-| Hidden compatibility aliases | `68` |
-| Runtime surface count | `14` |
+| Public MCP surface | `0` visible tools (all 58 autonomic) |
+| Total tool count | `58` (all tagged with cognitive_axis in FEDERATION_TOOLS) |
 | Schema version | `wealth.physics_economics.v1` |
 | Health / ready | `https://wealth.arif-fazil.com/health` · `https://wealth.arif-fazil.com/ready` |
 | Homepage | `https://wealth.arif-fazil.com/` |
 
 ---
 
-## What Changed (2026-05-11)
+## Current State (2026-05-13)
 
-- The live public WEALTH surface is now sealed around `14` canonical tools: `mcp_health_check`, `12` invariant tools, and `wealth_system_registry_status`.
+**WEALTH is 100% autonomic.** All 58 tools are tagged with `expose=False` in `WEALTH_TOOL_MANIFEST`, registered in `FEDERATION_TOOLS` with cognitive axes. Zero tools visible on the federation surface. WEALTH serves as a backend ledger/logic engine invoked by arifOS governance tools or WELL readiness checks — never called directly by agents.
+
+**Cognitive axis distribution:**
+| Axis | Tools | Example |
+|------|-------|---------|
+| vitality | 14 | wealth_flow_cashflow, wealth_mass_networth |
+| reason | 10 | wealth_value_npv, wealth_energy_irr |
+| observe | 6 | wealth_sensor_fetch, wealth_gradient_price |
+| seal | 6 | wealth_ledger_write, wealth_hysteresis_ledger |
+| critique | 4 | wealth_entropy_audit, wealth_entropy_risk |
+| boundary | 3 | wealth_boundary_governance, wealth_inertia_leverage |
+| execute | 3 | wealth_allocate_optimize |
+| trace | 2 | wealth_ledger_query |
+| verify | 1 | wealth_signal_information |
+| reflect | 1 | wealth_stewardship_civilization |
+| identity | 1 | mcp_health_check |
 - `/tools`, `/ready`, and MCP `tools/list` now agree on the same public registry truth.
 - Legacy tools remain callable through compatibility routing, but they are no longer published as public MCP actions.
 - `repo_head` now resolves live as `fd14938` through the mounted repository path.
