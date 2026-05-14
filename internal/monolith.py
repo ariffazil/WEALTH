@@ -6634,7 +6634,7 @@ if __name__ == "__main__":
             return _JR({
                 "jsonrpc": "2.0",
                 "id": response_id,
-                "result": {"tools": [{"name": t.name, "description": t.description, "inputSchema": getattr(t, "inputSchema", {}), "outputSchema": getattr(t, "output_schema", {})} for t in filtered_tools]}
+                "result": {"tools": [{"name": t.name, "description": t.description, "inputSchema": (getattr(t, "inputSchema", None) or {}) | {"type": "object"}, "outputSchema": (getattr(t, "output_schema", None) or {}) | {"type": "object"}} for t in filtered_tools]}
             })
 
         if method == "tools/call":
@@ -6742,6 +6742,9 @@ if __name__ == "__main__":
                 }
             })
 
+        if method == "notifications/initialized":
+            return _JR({"jsonrpc": "2.0", "id": response_id, "result": {}})
+
         return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32601, "message": "Method not found"}}, status_code=404)
 
     async def tools_handler(request):
@@ -6774,7 +6777,7 @@ if __name__ == "__main__":
                 "name": name,
                 "description": t.description or "",
                 "inputSchema": getattr(t, "inputSchema", {}),
-                "outputSchema": getattr(t, "output_schema", {}),
+                "outputSchema": (getattr(t, "output_schema", None) or {}) | {"type": "object"},
                 "danger_level": meta["danger_level"],
                 "fail_posture": meta["fail_posture"],
                 "fail_open_constraint": _FAIL_OPEN_CONSTRAINT if meta["fail_posture"] == "fail-open" else None,
