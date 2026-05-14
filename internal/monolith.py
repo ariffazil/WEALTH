@@ -145,11 +145,11 @@ def _evaluate_floors(args: Dict[str, Any]) -> Dict[str, Any]:
         if not isinstance(result, dict):
             result = {}
     except Exception:
-        result = {}
+        result = {"pass": False, "verdict": "HOLD", "violations": ["FLOOR_UNVERIFIED"], "holds": ["GOVERNANCE_IMPORT_FAILURE"]}
 
     result = {
-        "pass": result.get("pass", True),
-        "verdict": result.get("verdict", "SEAL"),
+        "pass": result.get("pass", False),
+        "verdict": result.get("verdict", "HOLD"),
         "violations": list(result.get("violations", [])),
         "holds": list(result.get("holds", [])),
         "warnings": list(result.get("warnings", [])),
