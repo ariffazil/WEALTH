@@ -7,6 +7,7 @@
 [![MCP](https://img.shields.io/badge/MCP-FastMCP_3.2.4-7C3AED?style=flat-square)](https://github.com/ariffazil/wealth)
 [![arifOS](https://img.shields.io/badge/arifOS-F1%E2%80%93F13_Governed-FF6B00?style=flat-square)](https://github.com/ariffazil/arifOS)
 [![License](https://img.shields.io/badge/License-AGPL_V3-4EAF0C?style=flat-square)](./LICENSE)
+[![SafeSkill 85/100](https://img.shields.io/badge/SafeSkill-85%2F100_Passes%20with%20Notes-yellow)](https://safeskill.dev/scan/ariffazil-wealth)
 
 ---
 
