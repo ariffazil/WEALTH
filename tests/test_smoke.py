@@ -79,13 +79,13 @@ def test_mcp_surface_exactly_14_public_tools():
 
 
 def test_alias_dispatch_has_backward_compat_entries():
-    assert "wealth_npv_reward" in _ALIAS_DISPATCH
-    assert "vault_write" in _ALIAS_DISPATCH
-    assert len(_ALIAS_DISPATCH) >= 36
-
-
-# ── Signature Hygiene ───────────────────────────────────────────────────
-
+    # P1-1: v1 legacy layer retired — v2 names are the backward-compat layer.
+    # v2 equivalents: wealth_reason_npv (for deprecated wealth_npv_reward),
+    # wealth_vault_record (for deprecated vault_write).
+    assert "wealth_reason_npv" in _ALIAS_DISPATCH
+    assert "wealth_vault_record" in _ALIAS_DISPATCH
+    # v2 canonical: 6 SENSE + 6 MIND + 6 SURVIVAL + 8 REASON + 4 JUDGE + 3 VAULT = 33 (+1 self-ref = 34)
+    assert len(_ALIAS_DISPATCH) >= 33
 
 def test_all_invariants_forbid_var_kwargs():
     for tool in (
