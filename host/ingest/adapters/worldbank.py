@@ -4,6 +4,7 @@ Docs: https://datahelpdesk.worldbank.org/knowledgebase/articles/898581-api-basic
 """
 
 import json
+from datetime import datetime, timezone
 from typing import List, Optional
 from urllib.parse import urlencode
 from urllib.request import urlopen, Request
@@ -11,6 +12,44 @@ from urllib.request import urlopen, Request
 from host.ingest.schema import DataRecord
 
 BASE_URL = "https://api.worldbank.org/v2"
+
+# WorldBank macro data (GDP, inflation, etc.) can lag 1-2 years from current date.
+# Above this threshold, confidence is capped and a staleness flag is emitted.
+_STALENESS_WARN_YEARS = 2
+_STALENESS_CRITICAL_YEARS = 3
+
+
+def _check_observation_staleness(records: List[DataRecord]) -> Optional[str]:
+    """
+    Inspect the most recent observation_time across records.
+    Returns a staleness flag string if data is stale, None if fresh.
+    observation_time is typically a year string ("2022") or ISO date.
+    """
+    if not records:
+        return None
+
+    current_year = datetime.now(timezone.utc).year
+    latest_year: Optional[int] = None
+
+    for r in records:
+        if not r.observation_time:
+            continue
+        try:
+            year = int(str(r.observation_time).split("-")[0])
+            if latest_year is None or year > latest_year:
+                latest_year = year
+        except (ValueError, IndexError):
+            continue
+
+    if latest_year is None:
+        return None
+
+    age_years = current_year - latest_year
+    if age_years >= _STALENESS_CRITICAL_YEARS:
+        return f"STALE_CRITICAL:latest_observation={latest_year},age={age_years}y — confidence capped at LOW"
+    if age_years >= _STALENESS_WARN_YEARS:
+        return f"STALE_WARN:latest_observation={latest_year},age={age_years}y — confidence capped at MEDIUM"
+    return None
 
 
 def _fetch(url: str) -> list:
@@ -82,4 +121,14 @@ def fetch_indicator(
                 bus="slow",
             )
         )
+
+    staleness_flag = _check_observation_staleness(records)
+    if staleness_flag:
+        for r in records:
+            r.metadata["staleness_flag"] = staleness_flag
+            if "CRITICAL" in staleness_flag:
+                r.metadata["confidence_ceiling"] = "LOW"
+            else:
+                r.metadata["confidence_ceiling"] = "MEDIUM"
+
     return records

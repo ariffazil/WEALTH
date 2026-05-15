@@ -23,17 +23,20 @@
       "transport": "http_sse",
       "url": "https://wealth.fastmcp.app/sse",
       "tools": [
-        "wealth_npv_reward",
-        "wealth_irr_yield",
-        "wealth_pi_efficiency",
-        "wealth_payback_time",
-        "wealth_audit_entropy",
-        "wealth_dscr_leverage",
-        "wealth_networth_state",
-        "wealth_cashflow_flow",
-        "wealth_growth_velocity",
-        "wealth_score_kernel",
-        "wealth_policy_audit"
+        "mcp_health_check",
+        "wealth_system_registry_status",
+        "wealth_conservation_capital",
+        "wealth_flow_liquidity",
+        "wealth_gradient_price",
+        "wealth_entropy_risk",
+        "wealth_energy_productivity",
+        "wealth_time_discount",
+        "wealth_inertia_leverage",
+        "wealth_field_macro",
+        "wealth_signal_information",
+        "wealth_game_coordination",
+        "wealth_boundary_governance",
+        "wealth_hysteresis_ledger"
       ]
     },
     "geox": {
@@ -58,7 +61,7 @@
           "name": "arifos_check_hold",
           "borrowed_from": "arifos",
           "declared": true,
-          "note": "Option B — delegated to arifOS, declared in manifest"
+          "note": "Option B \u2014 delegated to arifOS, declared in manifest"
         },
         {
           "name": "arifos_manage_hold",
@@ -83,7 +86,9 @@
       "role": "Time and timezone",
       "transport": "stdio",
       "command": "npx",
-      "args": ["@modelcontextprotocol/server-time"],
+      "args": [
+        "@modelcontextprotocol/server-time"
+      ],
       "tools": [
         "get_current_time",
         "get_epoch",
@@ -94,7 +99,10 @@
       "role": "File operations",
       "transport": "stdio",
       "command": "npx",
-      "args": ["@modelcontextprotocol/server-filesystem", "/workspace"],
+      "args": [
+        "@modelcontextprotocol/server-filesystem",
+        "/workspace"
+      ],
       "tools": [
         "read_file",
         "write_file",
@@ -106,7 +114,9 @@
       "role": "Git operations",
       "transport": "stdio",
       "command": "npx",
-      "args": ["@modelcontextprotocol/server-git"],
+      "args": [
+        "@modelcontextprotocol/server-git"
+      ],
       "tools": [
         "git_status",
         "git_log",
@@ -118,7 +128,9 @@
       "role": "Entity memory",
       "transport": "stdio",
       "command": "npx",
-      "args": ["@modelcontextprotocol/server-memory"],
+      "args": [
+        "@modelcontextprotocol/server-memory"
+      ],
       "tools": [
         "create_entity",
         "get_entity",
@@ -130,7 +142,9 @@
       "role": "HTTP fetch",
       "transport": "stdio",
       "command": "npx",
-      "args": ["@modelcontextprotocol/server-fetch"],
+      "args": [
+        "@modelcontextprotocol/server-fetch"
+      ],
       "tools": [
         "fetch_url",
         "fetch_json",
@@ -139,17 +153,83 @@
     }
   },
   "orthogonal_bands": [
-    { "id": "01", "name": "Context",       "arifos": "arifos_init",           "wealth": "wealth_networth_state",   "geox": "geox_intake_context"   },
-    { "id": "02", "name": "Integrity",     "arifos": "arifos_sense",           "wealth": "wealth_audit_entropy",   "geox": "geox_qc_evidence"     },
-    { "id": "03", "name": "Bundling",      "arifos": "arifos_memory",          "wealth": "wealth_cashflow_flow",   "geox": "geox_well_bundle"      },
-    { "id": "04", "name": "Physics",        "arifos": "arifos_mind",            "wealth": "wealth_npv_reward",       "geox": "geox_petrophysics"     },
-    { "id": "05", "name": "Temporal",       "arifos": "arifos_route",           "wealth": "wealth_payback_time",    "geox": "geox_stratigraphy"     },
-    { "id": "06", "name": "Structural",     "arifos": "arifos_heart",           "wealth": "wealth_dscr_leverage",   "geox": "geox_structure"         },
-    { "id": "07", "name": "Spatial",        "arifos": "arifos_ops",             "wealth": "wealth_score_kernel",    "geox": "geox_map_context"       },
-    { "id": "08", "name": "Witness",       "arifos": "arifos_memory",          "wealth": "wealth_emv_risk",        "geox": "geox_cross_evidence"    },
-    { "id": "09", "name": "Risk",          "arifos": "arifos_heart",           "wealth": "wealth_emv_risk",        "geox": "geox_play_risk"        },
-    { "id": "10", "name": "Decision",       "arifos": "arifos_judge",           "wealth": "wealth_score_kernel",    "geox": "geox_decision_kernel"   },
-    { "id": "11", "name": "Product",       "arifos": "arifos_forge",           "wealth": "wealth_policy_audit",    "geox": "geox_forge_product"    }
+    {
+      "id": "01",
+      "name": "Context",
+      "arifos": "arifos_init",
+      "wealth": "wealth_networth_state",
+      "geox": "geox_intake_context"
+    },
+    {
+      "id": "02",
+      "name": "Integrity",
+      "arifos": "arifos_sense",
+      "wealth": "wealth_audit_entropy",
+      "geox": "geox_qc_evidence"
+    },
+    {
+      "id": "03",
+      "name": "Bundling",
+      "arifos": "arifos_memory",
+      "wealth": "wealth_cashflow_flow",
+      "geox": "geox_well_bundle"
+    },
+    {
+      "id": "04",
+      "name": "Physics",
+      "arifos": "arifos_mind",
+      "wealth": "wealth_npv_reward",
+      "geox": "geox_petrophysics"
+    },
+    {
+      "id": "05",
+      "name": "Temporal",
+      "arifos": "arifos_route",
+      "wealth": "wealth_payback_time",
+      "geox": "geox_stratigraphy"
+    },
+    {
+      "id": "06",
+      "name": "Structural",
+      "arifos": "arifos_heart",
+      "wealth": "wealth_dscr_leverage",
+      "geox": "geox_structure"
+    },
+    {
+      "id": "07",
+      "name": "Spatial",
+      "arifos": "arifos_ops",
+      "wealth": "wealth_score_kernel",
+      "geox": "geox_map_context"
+    },
+    {
+      "id": "08",
+      "name": "Witness",
+      "arifos": "arifos_memory",
+      "wealth": "wealth_emv_risk",
+      "geox": "geox_cross_evidence"
+    },
+    {
+      "id": "09",
+      "name": "Risk",
+      "arifos": "arifos_heart",
+      "wealth": "wealth_emv_risk",
+      "geox": "geox_play_risk"
+    },
+    {
+      "id": "10",
+      "name": "Decision",
+      "arifos": "arifos_judge",
+      "wealth": "wealth_score_kernel",
+      "geox": "geox_decision_kernel"
+    },
+    {
+      "id": "11",
+      "name": "Product",
+      "arifos": "arifos_forge",
+      "wealth": "wealth_policy_audit",
+      "geox": "geox_forge_product"
+    }
   ],
   "tool_counts": {
     "organ_axis": 33,

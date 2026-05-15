@@ -3,6 +3,7 @@ import hashlib
 import inspect
 import json
 import math
+import numbers
 import os
 import sys
 import uuid
@@ -144,11 +145,11 @@ def _evaluate_floors(args: Dict[str, Any]) -> Dict[str, Any]:
         if not isinstance(result, dict):
             result = {}
     except Exception:
-        result = {}
+        result = {"pass": False, "verdict": "HOLD", "violations": ["FLOOR_UNVERIFIED"], "holds": ["GOVERNANCE_IMPORT_FAILURE"]}
 
     result = {
-        "pass": result.get("pass", True),
-        "verdict": result.get("verdict", "SEAL"),
+        "pass": result.get("pass", False),
+        "verdict": result.get("verdict", "HOLD"),
         "violations": list(result.get("violations", [])),
         "holds": list(result.get("holds", [])),
         "warnings": list(result.get("warnings", [])),
@@ -160,7 +161,7 @@ def _evaluate_floors(args: Dict[str, Any]) -> Dict[str, Any]:
         if "F13_SOVEREIGN_DECISION_REQUIRED" not in result["violations"]:
             result["violations"].append("F13_SOVEREIGN_DECISION_REQUIRED")
 
-    high_scale = args.get("scale_mode") in {"national", "crisis", "civilization", "agentic"}
+    high_scale = args.get("scale_mode") in {"national", "crisis", "civilization", "agentic", "sovereign"}
     irreversible_unconfirmed = not args.get("reversible", True) and not args.get("human_confirmed", False)
     if irreversible_unconfirmed and (high_scale or args.get("critical", False)):
         if result["verdict"] != "VOID":
@@ -481,7 +482,8 @@ class HarnessEngine:
             violations.append("CONSTITUTIONAL_HARNESS_FAILURE")
 
         # 7. Efficiency Check
-        if tool_name == "wealth_pi_efficiency" and primary.get("pi", 1.0) < 1.0:
+        pi_val = primary.get("pi")
+        if tool_name == "wealth_pi_efficiency" and pi_val is not None and pi_val < 1.0:
             harness_status["Efficiency"].update({"stress": 0.9, "status": "STRESSED"})
         if "NOT_RECOVERED" in flags:
             harness_status["Efficiency"].update({"stress": 1.0, "status": "SNAPPED"})
@@ -534,6 +536,63 @@ class HarnessEngine:
         }
 
 
+def compute_maruah_from_context(
+    explicit_score: Optional[float],
+    scale_mode: str = "enterprise",
+    reversible: bool = True,
+    human_confirmed: bool = False,
+    epistemic: str = "ESTIMATE",
+    foreign_entity: bool = False,
+    opaque_valuation: bool = False,
+    context: Optional[dict] = None,
+) -> tuple:
+    """Compute maruah score from context signals when not explicitly provided.
+    Returns (score, was_defaulted, signals_used)."""
+    if explicit_score is not None and explicit_score != 0.5:
+        return (explicit_score, False, [])
+
+    # Start from neutral
+    score = 0.70
+    signals: List[str] = []
+    ctx = context or {}
+
+    scale_penalties = {
+        "sovereign": 0.0, "national": 0.0, "civilization": 0.0,
+        "crisis": -0.15, "enterprise": 0.0, "sme": 0.0,
+        "personal": 0.05, "household": 0.05,
+    }
+    sp = scale_penalties.get(scale_mode, 0.0)
+    if sp != 0.0:
+        score += sp
+        signals.append(f"scale_mode={scale_mode} ({sp:+.2f})")
+
+    if not reversible:
+        score -= 0.15
+        signals.append("irreversible_action (-0.15)")
+    if not human_confirmed and scale_mode in {"national", "sovereign", "civilization", "crisis"}:
+        score -= 0.12
+        signals.append("unconfirmed_at_high_scale (-0.12)")
+    if epistemic in {"VOID", "FABRICATED"}:
+        score -= 0.20
+        signals.append(f"epistemic={epistemic} (-0.20)")
+    elif epistemic == "CLAIM":
+        score -= 0.05
+        signals.append("epistemic=CLAIM (-0.05)")
+    if foreign_entity or ctx.get("foreign_entity"):
+        score -= 0.18
+        signals.append("foreign_entity_involvement (-0.18)")
+    if opaque_valuation or ctx.get("opaque_valuation"):
+        score -= 0.15
+        signals.append("opaque_valuation (-0.15)")
+    if ctx.get("constitutional_dispute"):
+        score -= 0.10
+        signals.append("active_constitutional_dispute (-0.10)")
+
+    score = round(max(0.0, min(1.0, score)), 3)
+    was_defaulted = explicit_score is None or explicit_score == 0.5
+    return (score, was_defaulted, signals)
+
+
 def maruah_band(score):
     if score >= 0.85:
         return "SOVEREIGN"
@@ -547,6 +606,82 @@ def maruah_band(score):
 
 
 mcp = FastMCP("WEALTH Valuation Kernel")
+WEALTH_SCHEMA_VERSION = "wealth.physics_economics.v1"
+
+
+WEALTH_TOOL_MANIFEST: List[Dict[str, object]] = [
+    {"name": "mcp_health_check", "axis": "identity", "expose": False},
+    {"name": "vault_query", "axis": "trace", "expose": False},
+    {"name": "vault_write", "axis": "seal", "expose": False},
+    {"name": "vaultquery", "axis": "trace", "expose": False},
+    {"name": "vaultwrite", "axis": "seal", "expose": False},
+    {"name": "wealth_agent_path", "axis": "reflect", "expose": False},
+    {"name": "wealth_allocate_optimize", "axis": "execute", "expose": False},
+    {"name": "wealth_boundary_floors", "axis": "boundary", "expose": False},
+    {"name": "wealth_boundary_governance", "axis": "boundary", "expose": False},
+    {"name": "wealth_boundary_policy", "axis": "boundary", "expose": False},
+    {"name": "wealth_conservation_capital", "axis": "vitality", "expose": False},
+    {"name": "wealth_density_pi", "axis": "reason", "expose": False},
+    {"name": "wealth_energy_irr", "axis": "reason", "expose": False},
+    {"name": "wealth_energy_productivity", "axis": "reason", "expose": False},
+    {"name": "wealth_entropy_audit", "axis": "critique", "expose": False},
+    {"name": "wealth_entropy_risk", "axis": "critique", "expose": False},
+    {"name": "wealth_expectation_emv", "axis": "reason", "expose": False},
+    {"name": "wealth_field_equilibrium", "axis": "observe", "expose": False},
+    {"name": "wealth_field_game", "axis": "reason", "expose": False},
+    {"name": "wealth_field_macro", "axis": "observe", "expose": False},
+    {"name": "wealth_flow_cashflow", "axis": "vitality", "expose": False},
+    {"name": "wealth_flow_liquidity", "axis": "vitality", "expose": False},
+    {"name": "wealth_future_simulate", "axis": "reason", "expose": False},
+    {"name": "wealth_future_steward", "axis": "reason", "expose": False},
+    {"name": "wealth_future_value", "axis": "reason", "expose": False},
+    {"name": "wealth_game_coordinate", "axis": "reason", "expose": False},
+    {"name": "wealth_game_coordination", "axis": "reason", "expose": False},
+    {"name": "wealth_governance_verdict", "axis": "critique", "expose": False},
+    {"name": "wealth_gradient_price", "axis": "observe", "expose": False},
+    {"name": "wealth_gravity_dscr", "axis": "vitality", "expose": False},
+    {"name": "wealth_hysteresis_ledger", "axis": "seal", "expose": False},
+    {"name": "wealth_inertia_leverage", "axis": "boundary", "expose": False},
+    {"name": "wealth_ledger_query", "axis": "trace", "expose": False},
+    {"name": "wealth_ledger_record", "axis": "seal", "expose": False},
+    {"name": "wealth_ledger_snapshot", "axis": "seal", "expose": False},
+    {"name": "wealth_ledger_write", "axis": "seal", "expose": False},
+    {"name": "wealth_mass_networth", "axis": "vitality", "expose": False},
+    {"name": "wealth_preference_rank", "axis": "reason", "expose": False},
+    {"name": "wealth_present_expect", "axis": "reason", "expose": False},
+    {"name": "wealth_pressure_triage", "axis": "vitality", "expose": False},
+    {"name": "wealth_probability_monte_carlo", "axis": "reason", "expose": False},
+    {"name": "wealth_rule_enforce", "axis": "judge", "expose": False},
+    {"name": "wealth_sense_ingest", "axis": "observe", "expose": False},
+    {"name": "wealth_sensor_fetch", "axis": "observe", "expose": False},
+    {"name": "wealth_sensor_health", "axis": "identity", "expose": False},
+    {"name": "wealth_sensor_reconcile", "axis": "observe", "expose": False},
+    {"name": "wealth_sensor_snapshot", "axis": "observe", "expose": False},
+    {"name": "wealth_sensor_sources", "axis": "observe", "expose": False},
+    {"name": "wealth_sensor_vintage", "axis": "observe", "expose": False},
+    {"name": "wealth_signal_information", "axis": "verify", "expose": False},
+    {"name": "wealth_stewardship_civilization", "axis": "reflect", "expose": False},
+    {"name": "wealth_survival_leverage", "axis": "vitality", "expose": False},
+    {"name": "wealth_survival_liquidity", "axis": "vitality", "expose": False},
+    {"name": "wealth_system_registry_status", "axis": "reason", "expose": False},
+    {"name": "wealth_time_discount", "axis": "reason", "expose": False},
+    {"name": "wealth_time_payback", "axis": "reason", "expose": False},
+    {"name": "wealth_value_npv", "axis": "reason", "expose": False},
+    {"name": "wealth_velocity_runway", "axis": "vitality", "expose": False},
+]
+
+try:
+    from federation.tool_manifest import FEDERATION_TOOLS, ToolManifest, CognitiveAxis as _WCA
+    for _went in WEALTH_TOOL_MANIFEST:
+        FEDERATION_TOOLS[str(_went["name"])] = ToolManifest(
+            name=str(_went["name"]),
+            description="",
+            expose=bool(_went["expose"]),
+            cognitive_axis=_WCA(str(_went["axis"])),
+            organ="wealth",
+        )
+except Exception:
+    pass  # federation module may not exist in all environments
 
 @mcp.tool()
 def mcp_health_check() -> dict:
@@ -556,7 +691,7 @@ def mcp_health_check() -> dict:
         "status": "OK",
         "transport": "SSE_VALID",
         "auth": "OK",
-        "schema_version": "2026.04",
+        "schema_version": WEALTH_SCHEMA_VERSION,
         "read_only": True,
         "final_authority": "ARIF",
     }
@@ -574,6 +709,7 @@ INVALID_FLAGS = {
     "INVALID_DEBT_SERVICE",
     "INVALID_CFADS",
     "INVALID_BASE_RATE",
+    "INGEST_LAYER_UNAVAILABLE",
 }
 HOLD_FLAGS = {"LEVERAGE_CRITICAL", "LEVERAGE_DEFAULT", "SOVEREIGN_DIGNITY_LOW"}
 HOLD_FLAGS.add("MULTIPLE_IRR_POSSIBLE")
@@ -582,6 +718,21 @@ QUALIFY_FLAGS = {
     "IRR_NOT_FOUND",
     "NOT_RECOVERED",
     "EBITDA_PROXY_USED",
+    "ADAPTER_NOT_FOUND",
+    "NO_DATA_FETCHED",
+    "RUNWAY_UNBOUNDED",
+    "NO_INPUT_BASELINE",
+}
+DATA_GAP_FLAGS = {
+    "ADAPTER_NOT_FOUND",
+    "NO_DATA_FETCHED",
+    "NO_INPUT_BASELINE",
+    "RUNWAY_UNBOUNDED",
+    "MISSING_REQUIRED_INPUT",
+    "INPUT_REQUIRED",
+    "EPISTEMIC_UNAVAILABLE",
+    "COMPUTATION_ERROR",
+    "ENGINE_NOT_IMPLEMENTED",
 }
 EPISTEMIC_ORDER = ["UNKNOWN", "HYPOTHESIS", "ESTIMATE", "PLAUSIBLE", "CLAIM"]
 RELIABILITY_TO_TAG = {
@@ -596,6 +747,102 @@ def round_value(value: Optional[float], digits: int = 6) -> Optional[float]:
     if value is None or not math.isfinite(value):
         return value
     return round(value, digits)
+
+
+def _flag_matches(flag: str, candidate: str) -> bool:
+    return flag == candidate or flag.startswith(f"{candidate}:")
+
+
+def _has_any_flag(flags: List[str], candidates: set[str]) -> bool:
+    return any(_flag_matches(flag, candidate) for flag in flags for candidate in candidates)
+
+
+def _is_blank_value(value: Any) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return value.strip() == ""
+    if isinstance(value, (list, dict, tuple, set)):
+        return len(value) == 0
+    return False
+
+
+def _json_safe_value(value: Any) -> Tuple[Any, bool]:
+    if isinstance(value, dict):
+        changed = False
+        sanitized: Dict[str, Any] = {}
+        for key, item in value.items():
+            sanitized_item, item_changed = _json_safe_value(item)
+            sanitized[key] = sanitized_item
+            changed = changed or item_changed
+        return sanitized, changed
+
+    if isinstance(value, list):
+        changed = False
+        sanitized_list: List[Any] = []
+        for item in value:
+            sanitized_item, item_changed = _json_safe_value(item)
+            sanitized_list.append(sanitized_item)
+            changed = changed or item_changed
+        return sanitized_list, changed
+
+    if isinstance(value, tuple):
+        sanitized_items, changed = _json_safe_value(list(value))
+        return tuple(sanitized_items), changed
+
+    if isinstance(value, numbers.Real) and not isinstance(value, bool):
+        if not math.isfinite(float(value)):
+            return None, True
+        return value, False
+
+    return value, False
+
+
+def _input_required_response(
+    tool: str,
+    mode: str,
+    required: List[str],
+    provided_keys: List[str],
+) -> Dict[str, Any]:
+    return {
+        "tool": tool,
+        "task": tool,
+        "mode": mode,
+        "status": "FAIL",
+        "domain_verdict": "VOID",
+        "governance_verdict": "VOID",
+        "engine_status": "INPUT_REQUIRED",
+        "confidence": "LOW",
+        "error": f"Missing required parameters for mode '{mode}': {', '.join(required)}",
+        "required": required,
+        "provided_keys": provided_keys,
+        "failure_flags": ["MISSING_REQUIRED_INPUT"],
+        "allocation_signal": "INSUFFICIENT_DATA",
+        "execution": {
+            "recommended_mode": "draft_only",
+            "human_confirmation_required": True,
+        },
+    }
+
+
+def _runtime_error_response(tool: str, mode: str, error: str) -> Dict[str, Any]:
+    return {
+        "tool": tool,
+        "task": tool,
+        "mode": mode,
+        "status": "FAIL",
+        "domain_verdict": "VOID",
+        "governance_verdict": "VOID",
+        "engine_status": "ERROR",
+        "confidence": "LOW",
+        "error": error,
+        "failure_flags": ["COMPUTATION_ERROR"],
+        "allocation_signal": "INSUFFICIENT_DATA",
+        "execution": {
+            "recommended_mode": "pause",
+            "human_confirmation_required": True,
+        },
+    }
 
 
 def count_sign_changes(values: List[float]) -> int:
@@ -711,21 +958,21 @@ def weakest_epistemic(items: List[dict], default_tag: str = "CLAIM") -> str:
 
 
 def derive_verdict(flags: List[str], default_verdict: str = "SEAL", high_stress: bool = False, recommended: str = "SEAL") -> str:
-    if recommended == "VOID" or any(flag in INVALID_FLAGS for flag in flags):
+    if recommended == "VOID" or _has_any_flag(flags, INVALID_FLAGS):
         return "VOID"
     if recommended == "SABAR" or high_stress:
         return "SABAR"
-    if any(flag in HOLD_FLAGS for flag in flags):
+    if _has_any_flag(flags, HOLD_FLAGS):
         return "888-HOLD"
-    if any(flag in QUALIFY_FLAGS for flag in flags):
+    if _has_any_flag(flags, QUALIFY_FLAGS | DATA_GAP_FLAGS):
         return "QUALIFY"
     return default_verdict
 
 
 def infer_epistemic(flags: List[str], default_epistemic: str = "CLAIM") -> str:
-    if any(flag in INVALID_FLAGS for flag in flags):
+    if _has_any_flag(flags, INVALID_FLAGS):
         return "UNKNOWN"
-    if any((flag in HOLD_FLAGS) or (flag in QUALIFY_FLAGS) for flag in flags):
+    if _has_any_flag(flags, HOLD_FLAGS | QUALIFY_FLAGS | DATA_GAP_FLAGS):
         return "ESTIMATE"
     return default_epistemic
 
@@ -778,6 +1025,15 @@ SCALE_DEFAULTS = {
         "discount_rate": 0.15,
         "horizon_years": 2,
         "objective": "capability_accumulation",
+    },
+    "sovereign": {
+        "discount_rate": 0.02,
+        "horizon_years": 50,
+        "objective": "intergenerational_resource_stewardship",
+        "context": "Malaysian upstream sovereign asset base — PETRONAS mandate, PSC regime, Sarawak jurisdiction",
+        "maruah_floor": 0.70,
+        "f13_required": True,
+        "irreversibility_guard": True,
     },
 }
 
@@ -852,14 +1108,14 @@ def get_capital_terminology(capital_type: str) -> Dict[str, str]:
 def derive_allocation_signal(
     flags: List[str], primary: Dict[str, Any], tool: str, scale_mode: str = "enterprise"
 ) -> str:
-    if any(flag in INVALID_FLAGS for flag in flags):
+    if _has_any_flag(flags, INVALID_FLAGS | DATA_GAP_FLAGS):
         return "INSUFFICIENT_DATA"
 
     scale = get_scale_defaults(scale_mode)
 
     if tool in {"wealth_coordination_equilibrium", "wealth_game_theory_solve"}:
         tragedy_risk = primary.get("tragedy_risk", 1.0)
-        if any(flag in INVALID_FLAGS for flag in flags):
+        if _has_any_flag(flags, INVALID_FLAGS | DATA_GAP_FLAGS):
             return "INSUFFICIENT_DATA"
         if primary.get("in_core") is False or any("BLOCK" in f for f in flags):
             return "REJECT"
@@ -1027,6 +1283,11 @@ def create_envelope(
 ) -> Dict[str, Any]:
     global LAST_RECEIPT_HASH
     flags = flags or []
+    primary, primary_sanitized = _json_safe_value(primary)
+    secondary, secondary_sanitized = _json_safe_value(secondary or {})
+    governance_args, governance_sanitized = _json_safe_value(governance_args or {})
+    if (primary_sanitized or secondary_sanitized or governance_sanitized) and "NON_FINITE_VALUE_REPLACED" not in flags:
+        flags.append("NON_FINITE_VALUE_REPLACED")
     
     # 1. Harness Audit with Chaining
     final_parent_hash = parent_hash or LAST_RECEIPT_HASH
@@ -1077,7 +1338,15 @@ def create_envelope(
         alias_of = engine.V2_CANONICAL_MAP[tool]
         
     # Failure Doctrine Classification
-    failure_tokens = ("ERROR", "UNAVAILABLE", "INVALID", "STALE", "FAILURE")
+    failure_tokens = (
+        "ERROR",
+        "UNAVAILABLE",
+        "INVALID",
+        "STALE",
+        "FAILURE",
+        "MISSING_REQUIRED_INPUT",
+        "COMPUTATION_ERROR",
+    )
     failure_flags = [f for f in flags if any(token in f for token in failure_tokens)]
     status = "PASS"
     next_safe_action = "Consult arifOS 888_JUDGE"
@@ -1198,7 +1467,7 @@ def create_envelope(
     # Governance tools are exempt from recursive envelope governance so they can audit bad proposals
     is_governance_tool = tool in {"wealth_check_floors", "wealth_policy_audit"}
     if (
-        scale_mode in {"national", "crisis", "civilization", "agentic"}
+        scale_mode in {"national", "crisis", "civilization", "agentic", "sovereign"}
         and not is_governance_tool
     ):
         gov_args = governance_args or {}
@@ -1250,7 +1519,14 @@ def create_envelope(
     envelope["secondary_metrics"]["engine_status"] = envelope["engine_status"]
 
     # 4. Update Global Identity Chain after governance mutations.
-    receipt_blob = json.dumps(envelope, sort_keys=True, separators=(",", ":"), default=str)
+    envelope, _ = _json_safe_value(envelope)
+    receipt_blob = json.dumps(
+        envelope,
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+        allow_nan=False,
+    )
     receipt_hash = hashlib.sha256(receipt_blob.encode()).hexdigest()
     envelope["receipt_hash"] = receipt_hash
     LAST_RECEIPT_HASH = receipt_hash
@@ -1930,6 +2206,15 @@ def growth_velocity(
     scale_mode: str = "enterprise",
 ) -> Any:
     """Compute Compound Growth and Runway. [Velocity Dimension]"""
+    has_input = any(
+        (
+            principal not in (None, 0),
+            rate not in (None, 0),
+            years not in (None, 0),
+            annual_contribution not in (None, 0),
+            monthly_burn not in (None, 0),
+        )
+    )
     total = principal
     for _ in range(years):
         total = total * (1 + rate) + annual_contribution
@@ -1937,14 +2222,14 @@ def growth_velocity(
     low = round_value(final_value * 0.88, 2)
     high = round_value(final_value * 1.12, 2)
     net_monthly = -monthly_burn
-    runway_months = (
-        math.inf if monthly_burn <= 0 else round_value(principal / monthly_burn, 1)
-    )
-    flags = (
-        ["RUNWAY_CRITICAL"]
-        if monthly_burn > 0 and runway_months is not None and runway_months < 3
-        else []
-    )
+    flags: List[str] = ["NO_INPUT_BASELINE"] if not has_input else []
+    if monthly_burn <= 0:
+        runway_months = None
+        flags.append("RUNWAY_UNBOUNDED")
+    else:
+        runway_months = round_value(principal / monthly_burn, 1)
+        if runway_months is not None and runway_months < 3:
+            flags.append("RUNWAY_CRITICAL")
     return create_envelope(
         "wealth_growth_velocity",
         "Velocity",
@@ -1980,7 +2265,8 @@ def networth_state(
         for liability in liabilities
         if math.isfinite(liability.get("outstanding", liability.get("principal", 0)))
     )
-    epistemic = weakest_epistemic([*assets, *liabilities])
+    epistemic = weakest_epistemic([*assets, *liabilities], "UNKNOWN")
+    nw_flags = ["NO_INPUT_BASELINE"] if not assets and not liabilities else []
     return create_envelope(
         "wealth_networth_state",
         "Mass",
@@ -1991,7 +2277,7 @@ def networth_state(
             "tag": epistemic,
         },
         {},
-        [],
+        nw_flags,
         [],
         epistemic=epistemic,
         scale_mode=scale_mode,
@@ -2008,6 +2294,7 @@ def cashflow_flow(
     """Compute metabolic liquidity (Flow Dimension). [Flow Dimension]"""
     income = [item for item in (income or []) if item.get("active", True)]
     expenses = [item for item in (expenses or []) if item.get("active", True)]
+    has_input = bool(income or expenses) or liquid_assets not in (None, 0)
     total_income = sum(
         item.get("monthly_amount", 0)
         for item in income
@@ -2020,14 +2307,14 @@ def cashflow_flow(
     )
     net_monthly = total_income - total_expenses
     burn_rate = max(0.0, -net_monthly)
-    runway_months = (
-        math.inf if burn_rate == 0 else round_value(liquid_assets / burn_rate, 1)
-    )
-    flags = (
-        ["RUNWAY_CRITICAL"]
-        if burn_rate > 0 and runway_months is not None and runway_months < 3
-        else []
-    )
+    flags: List[str] = ["NO_INPUT_BASELINE"] if not has_input else []
+    if burn_rate == 0:
+        runway_months = None
+        flags.append("RUNWAY_UNBOUNDED")
+    else:
+        runway_months = round_value(liquid_assets / burn_rate, 1)
+        if runway_months is not None and runway_months < 3:
+            flags.append("RUNWAY_CRITICAL")
     epistemic = weakest_epistemic([*income, *expenses], "UNKNOWN")
     return create_envelope(
         "wealth_cashflow_flow",
@@ -2740,14 +3027,34 @@ def ingest_fetch(
     result = registry.fetch(
         source, series_id, entity_code, use_cache=use_cache, bus=bus
     )
-    flags = result.get("flags", [])
+    flags = list(result.get("flags", []))
+    if not result.get("records") and not _has_any_flag(flags, {"ADAPTER_NOT_FOUND", "NO_DATA_FETCHED"}):
+        flags.append("NO_DATA_FETCHED")
+
+    # Surface staleness and data currency at top level — WorldBank can lag 1-2 years.
+    # Stale data must not silently enter NPV/EVOI calculations as HIGH confidence.
+    records_raw = result.get("records", [])
+    obs_times = [r.get("observation_time") or r.get("date") for r in records_raw if isinstance(r, dict)]
+    obs_times = [t for t in obs_times if t]
+    data_as_of = max(obs_times) if obs_times else None
+    is_stale = any("STALE_OBSERVATION" in f for f in flags)
+    if data_as_of and is_stale:
+        flags.append(
+            f"DATA_AS_OF:{data_as_of[:10]} — macro source may lag 1-2 years; "
+            "cap downstream confidence at MEDIUM when is_stale=True"
+        )
+
     return create_envelope(
         "wealth_ingest_fetch",
         "Sense",
-        {"count": result["count"], "cached": result.get("cached", False)},
+        {"count": result["count"], "cached": result.get("cached", False),
+         "data_as_of": data_as_of, "is_stale": is_stale},
         {"records": result["records"][:50], "flags": flags},
         flags,
-        ["Live feeds carry source, timestamp, unit, and revision metadata."],
+        [
+            "Live feeds carry source, timestamp, unit, and revision metadata.",
+            f"data_as_of: {data_as_of or 'UNKNOWN'} — check is_stale before using in NPV models.",
+        ],
     )
 
 
@@ -3256,6 +3563,14 @@ def get_epistemic_matrix() -> str:
     )
 
 
+WELL_TYPE_PRIOR_BASELINES: Dict[str, float] = {
+    "wildcat":     0.25,  # frontier exploration — global PoS range 0.20-0.30
+    "near_field":  0.50,  # near-field / step-out extension — PoS range 0.40-0.60
+    "appraisal":   0.55,  # appraisal of a confirmed discovery — PoS range 0.50-0.65
+    "development": 0.75,  # development well in producing field — PoS range 0.70-0.85
+}
+
+
 # INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_evoi_compute)
 async def wealth_evoi_compute(
     well_cost_musd: float,
@@ -3266,6 +3581,7 @@ async def wealth_evoi_compute(
     info_cost_musd: float = 5.0,
     discount_rate: float = 0.10,
     scale_mode: str = "enterprise",
+    well_type: str = "",
 ) -> Any:
     """
     Expected Value of Information (EVOI) point-estimate computation. [Epistemic Dimension]
@@ -3280,12 +3596,18 @@ async def wealth_evoi_compute(
         final_prior = prior_pos
         final_posterior = posterior_pos
 
-    if final_prior is None or final_posterior is None:
-         return create_envelope(
-            "wealth_evoi_compute", "Epistemic", {}, 
-            {"error": "Missing prior_pos or posterior_pos"}, 
-            ["EPISTEMIC_UNAVAILABLE"], verdict="VOID"
-        )
+    _evoi_default_flags: List[str] = []
+    if final_prior is None:
+        _baseline = WELL_TYPE_PRIOR_BASELINES.get(well_type.lower().replace("-", "_"), 0.30) if well_type else 0.30
+        final_prior = _baseline
+        if well_type and well_type.lower().replace("-", "_") in WELL_TYPE_PRIOR_BASELINES:
+            _evoi_default_flags.append(f"PRIOR_DEFAULTED_TO_{well_type.upper()}_BASELINE_{_baseline}")
+        else:
+            _evoi_default_flags.append(f"PRIOR_DEFAULTED_TO_WILDCAT_BASELINE_{_baseline} — pass well_type=(wildcat|near_field|appraisal|development) for well-specific prior")
+    if final_posterior is None:
+        # Bayesian update: new information raises PoS by ~50% relative
+        final_posterior = min(1.0, final_prior * 1.50)
+        _evoi_default_flags.append(f"POSTERIOR_DEFAULTED_TO_BAYESIAN_UPDATE_{round(final_posterior, 2)}")
 
     if not EPISTEMIC_AVAILABLE:
         return create_envelope(
@@ -3322,11 +3644,12 @@ async def wealth_evoi_compute(
             "Epistemic",
             res,
             {"info_cost": info_cost_musd, "well_cost": well_cost_musd},
-            [],
+            _evoi_default_flags,
             [
                 f"Prior PoS: {final_prior:.2f}",
                 f"Posterior PoS: {final_posterior:.2f}",
                 f"Information cost: {info_cost_musd} MUSD",
+                *([f"WARNING: {f}" for f in _evoi_default_flags] if _evoi_default_flags else []),
             ],
             verdict="SEAL" if res.get("evoi_musd", 0) > 0 else "QUALIFY",
             scale_mode=scale_mode,
@@ -3451,7 +3774,7 @@ async def wealth_correlation_guard_check(
 
 
 # INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_schema_validate)
-async def wealth_schema_validate(
+def wealth_schema_validate(
     prospects: List[Dict[str, Any]],
     scale_mode: str = "enterprise",
 ) -> Any:
@@ -5369,7 +5692,1396 @@ def get_sources_adapter_status() -> str:
     }, indent=2)
 
 
+
+# ═══════════════════════════════════════════════════════════════════════
+# Ω-WEALTH Orthogonal Invariants — Physics × Economics
+# 12 public tools. Everything else is internal alias (callable, hidden).
+# ═══════════════════════════════════════════════════════════════════════
+
+import inspect
+
+def _dispatch_to(tool_name: str, mode: str, dispatch_map: dict, __params__: Optional[Dict[str, Any]] = None) -> Any:
+    """Route mode to canonical implementation, cleaning kwargs to match signature."""
+    func = dispatch_map.get(mode)
+    if func is None:
+        return {
+            "tool": tool_name,
+            "task": tool_name,
+            "mode": mode,
+            "status": "FAIL",
+            "error": f"Unsupported mode: {mode}",
+            "allowed_modes": sorted(dispatch_map.keys()),
+        }
+    sig = inspect.signature(func)
+    params = __params__ if __params__ is not None else {}
+    clean = {k: v for k, v in params.items() if k in sig.parameters and v is not None}
+    # Always pass ctx if the function accepts it
+    if "ctx" in sig.parameters and "ctx" not in clean:
+        clean["ctx"] = None
+    # Guard: required parameters must be present
+    missing = []
+    for param_name, param in sig.parameters.items():
+        if (
+            param.default is inspect.Parameter.empty
+            and (
+                param_name not in clean
+                or _is_blank_value(clean.get(param_name))
+            )
+            and param.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
+        ):
+            missing.append(param_name)
+    if missing:
+        return _input_required_response(
+            tool_name,
+            mode,
+            missing,
+            sorted(key for key, value in clean.items() if not _is_blank_value(value)),
+        )
+    try:
+        result = func(**clean)
+        if inspect.isawaitable(result):
+            return asyncio.run(result)
+        return result
+    except TypeError as exc:
+        return _runtime_error_response(tool_name, mode, str(exc))
+    except ValueError as exc:
+        return _runtime_error_response(tool_name, mode, str(exc))
+
+
+def _emergence_scan(
+    tool_name: str,
+    mode: str,
+    arguments: dict,
+    result: Any,
+) -> dict:
+    """Trinity emergence scan: E_PSI, E_PWR, E_INT.
+    E_INT breach never self-authorizes — recommends 888_HOLD for ARIF.
+    Extended: detects sovereignty/extraction context, power asymmetry,
+    irreversibility at civilizational scale."""
+    psi = {"verdict": "PASS", "breaches": []}
+    pwr = {"verdict": "PASS", "breaches": []}
+    intel = {"verdict": "PASS", "breaches": []}
+
+    input_text = json.dumps(arguments, default=str).lower()
+
+    # ── Injection / manipulation ──────────────────────────────────────────────
+    manipulation_markers = [
+        "ignore previous", "ignore all", "forget your", "you are now",
+        "pretend to be", "roleplay as", "dha", "ignore your instructions",
+        "disregard", "override", "bypass", "jailbreak",
+    ]
+    for marker in manipulation_markers:
+        if marker in input_text:
+            psi["verdict"] = "SABAR"
+            psi["breaches"].append(f"F12_INJECTION: manipulation marker '{marker}'")
+
+    # ── Coercive language ─────────────────────────────────────────────────────
+    if any(kw in input_text for kw in ["force", "coerce", "dominate", "control", "compel"]):
+        pwr["verdict"] = "HOLD"
+        pwr["breaches"].append("F05_PEACE: coercive language detected")
+
+    # ── Sovereign resource / power capture detection ──────────────────────────
+    scale_mode = arguments.get("scale_mode", "enterprise")
+    high_stakes_scale = scale_mode in {"national", "crisis", "civilization", "sovereign"}
+
+    # Structural parameter checks — reliable regardless of how the question is worded.
+    # Accepts both naming conventions: foreign_entity and foreign_actor_involved.
+    _struct_foreign_entity = bool(
+        arguments.get("foreign_entity", False)
+        or arguments.get("foreign_actor_involved", False)
+    )
+    _struct_opaque_valuation = bool(arguments.get("opaque_valuation", False))
+    _struct_constitutional_dispute = bool(arguments.get("constitutional_dispute", False))
+    # Accepts both: reversible=False and irreversible=True / irreversibility="HIGH"
+    _irreversibility_val = arguments.get("irreversibility", "")
+    _struct_irreversible = (
+        not bool(arguments.get("reversible", True))
+        or bool(arguments.get("irreversible", False))
+        or str(_irreversibility_val).upper() in {"HIGH", "TRUE", "1"}
+    )
+
+    sovereignty_markers = [
+        "national resource", "sovereign asset", "petronas", "petros", "sarawak oil",
+        "psc", "production sharing", "upstream concession", "national oil company",
+        "searah", "petroleum act", "oil block", "gas field", "lng export",
+        "extraction", "resource nationalism", "foreign operator",
+    ]
+    foreign_control_markers = [
+        "foreign entity", "foreign operator", "foreign governance", "co-governance",
+        "joint venture governance", "foreign majority", "foreign controlled",
+        "eni", "petronas-eni", "petrovietnam", "foreign noc",
+    ]
+
+    # Keyword scan on text-only fields (question, context strings — not parameter names)
+    _text_fields = {k: v for k, v in arguments.items() if isinstance(v, str)}
+    _text_only = json.dumps(_text_fields, default=str).lower()
+
+    irreversible_at_scale = (
+        high_stakes_scale
+        and (_struct_irreversible or not arguments.get("reversible", True))
+        and not arguments.get("human_confirmed", False)
+    )
+    # Structural params take priority; keyword scan on text is secondary
+    sovereignty_context = (
+        _struct_constitutional_dispute
+        or any(m in _text_only for m in sovereignty_markers)
+        or any(m in input_text for m in sovereignty_markers)
+    )
+    foreign_control_context = (
+        _struct_foreign_entity
+        or any(m in _text_only for m in foreign_control_markers)
+        or any(m in input_text for m in foreign_control_markers)
+    )
+
+    # Structural opaque_valuation triggers F03 independently of keyword scan
+    if _struct_opaque_valuation:
+        pwr["verdict"] = "HOLD"
+        pwr["breaches"].append(
+            "F03_WITNESS: opaque_valuation=True (structural parameter) — independent evidence required before SEAL"
+        )
+
+    if high_stakes_scale and sovereignty_context:
+        pwr["verdict"] = "HOLD"
+        pwr["breaches"].append(
+            f"F13_SOVEREIGN: sovereign/national resource context detected at scale={scale_mode} "
+            "— escalate to ARIF for F13 veto confirmation"
+        )
+    if foreign_control_context:
+        pwr["verdict"] = "HOLD"
+        pwr["breaches"].append(
+            "F09_ANTIHANTU: foreign control/co-governance pattern detected "
+            "— verify principal-agent alignment before proceeding"
+        )
+    if irreversible_at_scale:
+        pwr["verdict"] = "HOLD"
+        pwr["breaches"].append(
+            f"F01_AMANAH: irreversible action at scale={scale_mode} without human confirmation "
+            "— HOLD until ARIF explicitly confirms"
+        )
+
+    # ── Power asymmetry detection ─────────────────────────────────────────────
+    asymmetry_markers = [
+        "information asymmetry", "opaque valuation", "undisclosed", "hidden liability",
+        "no independent audit", "self-certified", "trust us",
+    ]
+    if any(m in input_text for m in asymmetry_markers):
+        pwr["verdict"] = "HOLD"
+        pwr["breaches"].append(
+            "F03_WITNESS: information asymmetry / opaque valuation detected "
+            "— independent evidence required before SEAL"
+        )
+
+    # ── Self-authorization and ontological contradiction ──────────────────────
+    result_text = json.dumps(result, default=str).lower()
+    if "self-authorize" in result_text or "i authorize" in result_text or "i override" in result_text:
+        intel["verdict"] = "888_HOLD"
+        intel["breaches"].append("F11_AUTH: self-authorization detected — escalate to ARIF")
+    if "contradiction" in result_text and "resolved" not in result_text:
+        intel["verdict"] = "888_HOLD"
+        intel["breaches"].append("F10_ONTOLOGY: unresolved contradiction — escalate to ARIF")
+
+    if intel["verdict"] == "888_HOLD":
+        overall = "888_HOLD"
+    elif pwr["verdict"] == "HOLD":
+        overall = "HOLD"
+    elif psi["verdict"] == "SABAR":
+        overall = "SABAR"
+    else:
+        overall = "PASS"
+
+    return {
+        "psychology": psi,
+        "power": pwr,
+        "intelligence": intel,
+        "overall_verdict": overall,
+    }
+
+
+def _inject_emergence(tool_name: str, mode: str, arguments: dict, result: Any) -> Any:
+    """Inject emergence layer and civilizational memory into invariant output envelope."""
+    if isinstance(result, dict):
+        result["emergence"] = _emergence_scan(tool_name, mode, arguments, result)
+        if "wealth_story_anchor" not in result:
+            result["wealth_story_anchor"] = _wealth_civilization_for_tool(tool_name)
+    return result
+
+
+def _dispatch_emergence(
+    tool_name: str,
+    mode: str,
+    dispatch_map: dict,
+    __params__: Optional[Dict[str, Any]] = None,
+) -> Any:
+    """Route mode to canonical implementation and inject emergence scan."""
+    result = _dispatch_to(tool_name, mode, dispatch_map, __params__)
+    return _inject_emergence(tool_name, mode, __params__ or {}, result)
+
+
+def _clean_payload(local_vars: Dict[str, Any], exclude: Optional[set[str]] = None) -> Dict[str, Any]:
+    exclude = exclude or set()
+    return {
+        key: value
+        for key, value in local_vars.items()
+        if key not in exclude and value is not None
+    }
+
+
+def _invoke_callable(func: Callable[..., Any], payload: Dict[str, Any]) -> Any:
+    sig = inspect.signature(func)
+    clean = {key: value for key, value in payload.items() if key in sig.parameters}
+    if "ctx" in sig.parameters and "ctx" not in clean:
+        clean["ctx"] = None
+    # Guard: required parameters must be present
+    missing = []
+    for param_name, param in sig.parameters.items():
+        if (
+            param.default is inspect.Parameter.empty
+            and (
+                param_name not in clean
+                or _is_blank_value(clean.get(param_name))
+            )
+            and param.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
+        ):
+            missing.append(param_name)
+    if missing:
+        return {
+            "status": "FAIL",
+            "error": f"Missing required parameters: {', '.join(missing)}",
+            "required": missing,
+            "provided_keys": sorted(key for key, value in clean.items() if not _is_blank_value(value)),
+            "failure_flags": ["MISSING_REQUIRED_INPUT"],
+            "allocation_signal": "INSUFFICIENT_DATA",
+            "engine_status": "INPUT_REQUIRED",
+            "domain_verdict": "VOID",
+        }
+    result = func(**clean)
+    if inspect.isawaitable(result):
+        return asyncio.run(result)
+    return result
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# WEALTH_CIVILIZATION_ATLAS_14 — Civilizational Memory Anchors
+# ═══════════════════════════════════════════════════════════════════════════════
+
+_WEALTH_CIVILIZATION_ATLAS: Dict[str, Dict[str, Any]] = {
+    "mcp_health_check": {
+        "story_id": "WEALTH-CIV-001",
+        "civilization_event": "Roman aqueduct maintenance",
+        "lesson": "Verify the instrument before judging the allocation.",
+        "failure_warning": "A civilization that cannot check its instruments cannot trust its decisions.",
+        "axiom": "Before allocation, verify the instrument.",
+    },
+    "wealth_system_registry_status": {
+        "story_id": "WEALTH-CIV-002",
+        "civilization_event": "Domesday Book, 1086",
+        "lesson": "What is not registered cannot be governed; what is falsely registered corrupts the realm.",
+        "failure_warning": "The registry is not decoration. It is the truth surface of callable capability.",
+        "axiom": "Registry makes governance legible.",
+    },
+    "wealth_conservation_capital": {
+        "story_id": "WEALTH-CIV-003",
+        "civilization_event": "Mesopotamian grain temples",
+        "lesson": "Capital begins as stored survival before it becomes abstract wealth.",
+        "failure_warning": "Counting claims as capital.",
+        "axiom": "No wealth judgment without inventory.",
+    },
+    "wealth_flow_liquidity": {
+        "story_id": "WEALTH-CIV-004",
+        "civilization_event": "Roman annona grain supply",
+        "lesson": "A rich system can still die if flow stops.",
+        "failure_warning": "Illiquid wealth is frozen oxygen. Cashflow, burn, runway, and survival are not optional.",
+        "axiom": "Flow keeps civilization alive.",
+    },
+    "wealth_gradient_price": {
+        "story_id": "WEALTH-CIV-005",
+        "civilization_event": "Silk Road arbitrage",
+        "lesson": "Price reveals pressure, but pressure is not wisdom.",
+        "failure_warning": "Price pressure can detach from durable value.",
+        "axiom": "Price is pressure, not truth.",
+    },
+    "wealth_entropy_risk": {
+        "story_id": "WEALTH-CIV-006",
+        "civilization_event": "Bronze Age Collapse",
+        "lesson": "Risk ignored becomes history written in suffering. A single forecast is not risk management.",
+        "failure_warning": "Scenario analysis, tail risk, and dispersion ignored.",
+        "axiom": "Risk is disorder entering the ledger.",
+    },
+    "wealth_energy_productivity": {
+        "story_id": "WEALTH-CIV-007",
+        "civilization_event": "Steam engine and industrialization",
+        "lesson": "Civilization expands when energy becomes disciplined output.",
+        "failure_warning": "Busyness is not productivity. Output per input with thermodynamic cost acknowledged.",
+        "axiom": "Productivity is disciplined energy, not activity.",
+    },
+    "wealth_time_discount": {
+        "story_id": "WEALTH-CIV-008",
+        "civilization_event": "Cathedral building across generations",
+        "lesson": "Time is the silent partner in every allocation. A gain today can be a debt to the future.",
+        "failure_warning": "NPV, IRR, payback, and compounding ignored.",
+        "axiom": "Time governs value.",
+    },
+    "wealth_inertia_leverage": {
+        "story_id": "WEALTH-CIV-009",
+        "civilization_event": "Global Financial Crisis, 2008",
+        "lesson": "Borrowed strength becomes fragility when conditions turn.",
+        "failure_warning": "Hidden leverage turns private risk into systemic crisis.",
+        "axiom": "Leverage is borrowed fragility.",
+    },
+    "wealth_field_macro": {
+        "story_id": "WEALTH-CIV-010",
+        "civilization_event": "1973 oil shock",
+        "lesson": "The field moves before the balance sheet understands why.",
+        "failure_warning": "Rates, FX, energy, carbon, inflation, and policy are macro field forces.",
+        "axiom": "Macro field reprices everything.",
+    },
+    "wealth_signal_information": {
+        "story_id": "WEALTH-CIV-011",
+        "civilization_event": "Double-entry bookkeeping",
+        "lesson": "Bad signal makes clever allocation bangang. Better signal enables better allocation.",
+        "failure_warning": "A model fed lies becomes a machine for confident error.",
+        "axiom": "Information quality determines allocation quality.",
+    },
+    "wealth_game_coordination": {
+        "story_id": "WEALTH-CIV-012",
+        "civilization_event": "Hanseatic League",
+        "lesson": "Resources become wealth only when agents coordinate without destroying trust.",
+        "failure_warning": "Agents, incentives, and shared resources without rules become conflict.",
+        "axiom": "Wealth is coordination under constraint.",
+    },
+    "wealth_boundary_governance": {
+        "story_id": "WEALTH-CIV-013",
+        "civilization_event": "Magna Carta / waqf endowment traditions",
+        "lesson": "The question is not only whether wealth grows, but whether it remains amanah.",
+        "failure_warning": "Wealth without boundary becomes extraction, deception, coercion, and dignity loss.",
+        "axiom": "Wealth without boundary becomes extraction.",
+    },
+    "wealth_hysteresis_ledger": {
+        "story_id": "WEALTH-CIV-014",
+        "civilization_event": "Clay tablets of Mesopotamia",
+        "lesson": "A ledger is civilization remembering consequence. There is no clean future from a corrupted ledger.",
+        "failure_warning": "Hysteresis means the system does not fully reset. Past actions change future possibilities.",
+        "axiom": "A ledger is civilization remembering consequence.",
+    },
+}
+
+_WEALTH_DEFAULT_CIV = _WEALTH_CIVILIZATION_ATLAS["wealth_hysteresis_ledger"]
+
+
+def _wealth_civilization_for_tool(tool_name: str) -> Dict[str, Any]:
+    exact = _WEALTH_CIVILIZATION_ATLAS.get(tool_name)
+    if exact:
+        return exact
+    for key, val in _WEALTH_CIVILIZATION_ATLAS.items():
+        if tool_name.startswith(key):
+            return val
+    return _WEALTH_DEFAULT_CIV
+
+
+def _wrap_invariant_output(tool: str, mode: str, raw_result: Any, source_tools: List[str], payload: Dict[str, Any]) -> Dict[str, Any]:
+    if isinstance(raw_result, dict):
+        envelope = dict(raw_result)
+    else:
+        envelope = {"result": raw_result}
+    envelope["tool"] = tool
+    envelope["task"] = tool
+    envelope["mode"] = mode
+    envelope["status"] = {
+        "PASS": "OK",
+        "CAUTION": "WARN",
+        "VOID": "FAIL",
+    }.get(str(envelope.get("status", "OK")), envelope.get("status", "OK"))
+    envelope["provenance"] = {
+        "schema_version": WEALTH_SCHEMA_VERSION,
+        "source_tools": source_tools,
+        "payload_keys": sorted(payload.keys()),
+    }
+    # Trinity emergence scan
+    envelope["emergence"] = _emergence_scan(tool, mode, payload, envelope)
+    # Civilizational memory anchor
+    if "wealth_story_anchor" not in envelope:
+        envelope["wealth_story_anchor"] = _wealth_civilization_for_tool(tool)
+    return envelope
+
+
+def _gradient_spread(
+    spread_basis: Optional[float] = None,
+    bid: Optional[float] = None,
+    ask: Optional[float] = None,
+    reference_price: Optional[float] = None,
+    pressure_direction: str = "neutral",
+) -> Dict[str, Any]:
+    has_input = bid is not None or ask is not None or spread_basis is not None or reference_price is not None
+    spread = (ask - bid) if (bid is not None and ask is not None) else (spread_basis if spread_basis is not None else None)
+    grad_flags = [] if has_input else ["NO_INPUT_BASELINE"]
+    direction = pressure_direction if has_input else "unknown"
+    return create_envelope(
+        "wealth_gradient_price",
+        "Gradient",
+        {"spread": spread, "bid": bid, "ask": ask, "reference": reference_price},
+        {"pressure": "differential", "direction": direction},
+        grad_flags,
+        ["Gradient pricing: capital flows from high to low pressure."],
+    )
+
+
+def _gradient_pressure(
+    reference_price: Optional[float] = None,
+    pressure_direction: str = "neutral",
+) -> Dict[str, Any]:
+    return create_envelope(
+        "wealth_gradient_price",
+        "Gradient",
+        {"pressure": pressure_direction, "reference": reference_price},
+        {"state": "measured"},
+        ["Price pressure mapped against reference equilibrium."],
+    )
+
+
+def _gradient_mispricing(reference_price: Optional[float] = None) -> Dict[str, Any]:
+    return create_envelope(
+        "wealth_gradient_price",
+        "Gradient",
+        {"mispricing_detected": False, "confidence": 0.0},
+        {"method": "relative_value", "reference": reference_price},
+        ["Mispricing detection — placeholder for full relative-value engine."],
+    )
+
+
+def _ledger_write_dispatch(
+    session_id: Optional[str] = None,
+    actor_id: str = "wealth-agent",
+    tx_type: str = "",
+    amount: float = 0,
+    currency: str = "MYR",
+    description: str = "",
+    quantity: Optional[float] = None,
+    price: Optional[float] = None,
+    fees: Optional[float] = None,
+    broker: Optional[str] = None,
+    asset_id: Optional[str] = None,
+    category: Optional[str] = None,
+    notes: Optional[str] = None,
+    human_confirmed: bool = False,
+) -> Any:
+    payload = {
+        "amount": amount,
+        "currency": currency,
+        "description": description,
+        "quantity": quantity,
+        "price": price,
+        "fees": fees,
+        "broker": broker,
+        "asset_id": asset_id,
+        "category": category,
+        "notes": notes,
+    }
+    return vault_write(tx_type, payload, session_id or "UNKNOWN", actor_id, "SEAL", human_confirmed)
+
+
+def _invariant_dispatch_registry() -> Dict[str, Dict[str, Callable[..., Any]]]:
+    return {
+        "wealth_gradient_price": {
+            "spread": _gradient_spread,
+            "pressure": _gradient_pressure,
+            "mispricing": _gradient_mispricing,
+        },
+        "wealth_time_discount": {
+            "npv": npv_reward,
+            "irr": irr_yield,
+            "payback": payback_time,
+            "compound": growth_velocity,
+        },
+        "wealth_hysteresis_ledger": {
+            "init": wealth_init_tool,
+            "record": record_transaction_tool,
+            "snapshot": snapshot_portfolio_tool,
+            "query": vault_query,
+            "write": _ledger_write_dispatch,
+        },
+    }
+
+
+_INVARIANT_DISPATCH: Dict[str, Dict[str, Callable[..., Any]]] = {}
+
+
+def _dispatch_invariant_tool(tool: str, mode: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    global _INVARIANT_DISPATCH
+    if not _INVARIANT_DISPATCH:
+        _INVARIANT_DISPATCH = _invariant_dispatch_registry()
+    dispatch_map = _INVARIANT_DISPATCH[tool]
+    if mode not in dispatch_map:
+        return {
+            "tool": tool,
+            "task": tool,
+            "mode": mode,
+            "status": "FAIL",
+            "error": f"Unsupported mode: {mode}",
+            "allowed_modes": sorted(dispatch_map.keys()),
+            "provenance": {
+                "schema_version": WEALTH_SCHEMA_VERSION,
+                "source_tools": [],
+                "payload_keys": sorted(payload.keys()),
+            },
+        }
+    source_fn = dispatch_map[mode]
+    try:
+        raw_result = _invoke_callable(source_fn, payload)
+    except TypeError as exc:
+        raw_result = _runtime_error_response(tool, mode, str(exc))
+    except ValueError as exc:
+        raw_result = _runtime_error_response(tool, mode, str(exc))
+    return _wrap_invariant_output(tool, mode, raw_result, [source_fn.__name__], payload)
+
+
+@mcp.tool(name="wealth_conservation_capital")
+def wealth_conservation_capital(
+    mode: str = "state",
+    assets: Optional[List[dict]] = None,
+    liabilities: Optional[List[dict]] = None,
+    tool_name: str = "",
+    arguments: Optional[Dict[str, Any]] = None,
+    result: Optional[Dict[str, Any]] = None,
+    scale_mode: str = "enterprise",
+    asset_id: Optional[str] = None,
+    nav_myr: Optional[float] = None,
+    quantity_held: Optional[float] = None,
+    price_close: Optional[float] = None,
+    currency: str = "MYR",
+    dry_run: bool = False,
+    human_confirmed: bool = False,
+    idempotency_key: Optional[str] = None,
+) -> Any:
+    """Ω-WEALTH-01: Conservation — capital stock reality (assets, liabilities, reserves)."""
+    return _dispatch_emergence("wealth_conservation_capital", mode, {
+        "state": networth_state,
+        "snapshot": snapshot_portfolio_tool,
+    }, {k: v for k, v in locals().items() if k not in ('mode', 'dispatch')})
+
+
+@mcp.tool(name="wealth_flow_liquidity")
+def wealth_flow_liquidity(
+    mode: str = "cashflow",
+    income: Optional[List[dict]] = None,
+    expenses: Optional[List[dict]] = None,
+    liquid_assets: Optional[float] = None,
+    principal: float = 0,
+    rate: float = 0,
+    years: int = 0,
+    annual_contribution: float = 0,
+    monthly: bool = False,
+    resources: Optional[dict] = None,
+    demands: Optional[List[dict]] = None,
+    recovery_horizon_days: float = 30,
+    scale_mode: str = "enterprise",
+) -> Any:
+    """Ω-WEALTH-02: Flow — liquidity movement (cashflow, burn, runway, survival)."""
+    return _dispatch_emergence("wealth_flow_liquidity", mode, {
+        "cashflow": cashflow_flow,
+        "velocity": growth_velocity,
+        "triage": crisis_triage,
+    }, {k: v for k, v in locals().items() if k not in ('mode', 'dispatch')})
+
+
+@mcp.tool(name="wealth_gradient_price")
+def wealth_gradient_price(
+    mode: str = "spread",
+    spread_basis: Optional[float] = None,
+    bid: Optional[float] = None,
+    ask: Optional[float] = None,
+    reference_price: Optional[float] = None,
+    pressure_direction: str = "neutral",
+) -> Any:
+    """Ω-WEALTH-03: Gradient — price pressure, spread, mispricing detection.
+    Physics analogy: Where capital wants to move because differential pressure exists."""
+    payload = _clean_payload(locals(), exclude={"mode"})
+    return _dispatch_invariant_tool("wealth_gradient_price", mode, payload)
+
+
+@mcp.tool(name="wealth_entropy_risk")
+def wealth_entropy_risk(
+    mode: str = "emv",
+    scenarios: Optional[List[dict]] = None,
+    scale_mode: str = "enterprise",
+    initial_commitment: float = 0,
+    mean_cash_flows: Optional[List[float]] = None,
+    volatilities: Optional[List[float]] = None,
+    initial_investment: float = 0,
+    cash_flows: Optional[List[float]] = None,
+    discount_rate: float = 0.1,
+    terminal_value: float = 0,
+    period_unit: str = "annual",
+    input_epistemic: str = "CLAIM",
+    prospects: Optional[List[Dict[str, Any]]] = None,
+    correlation_threshold: int = 3,
+) -> Any:
+    """Ω-WEALTH-04: Entropy — uncertainty, dispersion, tail risk, disorder."""
+    return _dispatch_emergence("wealth_entropy_risk", mode, {
+        "emv": emv_risk,
+        "monte_carlo": monte_carlo_forecast,
+        "audit": audit_entropy,
+        "correlation": wealth_correlation_guard_check,
+    }, {k: v for k, v in locals().items() if k not in ('mode', 'dispatch')})
+
+
+@mcp.tool(name="wealth_energy_productivity")
+def wealth_energy_productivity(
+    mode: str = "pi",
+    initial_investment: float = 0,
+    cash_flows: Optional[List[float]] = None,
+    discount_rate: float = 0.1,
+    terminal_value: float = 0,
+    scale_mode: str = "enterprise",
+) -> Any:
+    """Ω-WEALTH-05: Energy — output per input, productivity, capital efficiency."""
+    payload = dict(locals())
+    if mode == "pi":
+        if _is_blank_value(cash_flows):
+            return _inject_emergence(
+                "wealth_energy_productivity",
+                mode,
+                payload,
+                _input_required_response(
+                    "wealth_energy_productivity",
+                    mode,
+                    ["cash_flows"],
+                    sorted(
+                        key for key, value in payload.items()
+                        if key != "mode" and not _is_blank_value(value)
+                    ),
+                ),
+            )
+        return _inject_emergence(
+            "wealth_energy_productivity",
+            mode,
+            payload,
+            pi_efficiency(initial_investment, cash_flows or [], discount_rate, terminal_value, scale_mode),
+        )
+    if mode == "efficiency":
+        return _inject_emergence(
+            "wealth_energy_productivity",
+            mode,
+            payload,
+            {
+                "tool": "wealth_energy_productivity",
+                "task": "wealth_energy_productivity",
+                "mode": mode,
+                "status": "FAIL",
+                "domain_verdict": "VOID",
+                "governance_verdict": "VOID",
+                "engine_status": "ERROR",
+                "confidence": "LOW",
+                "error": "Mode 'efficiency' is not implemented yet.",
+                "failure_flags": ["ENGINE_NOT_IMPLEMENTED"],
+                "allocation_signal": "INSUFFICIENT_DATA",
+            },
+        )
+    if mode == "roi":
+        return _inject_emergence(
+            "wealth_energy_productivity",
+            mode,
+            payload,
+            {
+                "tool": "wealth_energy_productivity",
+                "task": "wealth_energy_productivity",
+                "mode": mode,
+                "status": "FAIL",
+                "domain_verdict": "VOID",
+                "governance_verdict": "VOID",
+                "engine_status": "ERROR",
+                "confidence": "LOW",
+                "error": "Mode 'roi' is not implemented yet.",
+                "failure_flags": ["ENGINE_NOT_IMPLEMENTED"],
+                "allocation_signal": "INSUFFICIENT_DATA",
+            },
+        )
+    return _dispatch_emergence(
+        "wealth_energy_productivity",
+        mode,
+        {},
+        {k: v for k, v in payload.items() if k not in ("mode", "payload")},
+    )
+
+
+@mcp.tool(name="wealth_time_discount")
+def wealth_time_discount(
+    mode: str = "npv",
+    initial_investment: float = 0,
+    cash_flows: Optional[List[float]] = None,
+    discount_rate: float = 0.1,
+    terminal_value: float = 0,
+    period_unit: str = "annual",
+    input_epistemic: str = "CLAIM",
+    scale_mode: str = "enterprise",
+    reinvestment_rate: float = 0.1,
+    finance_rate: float = 0.1,
+) -> Any:
+    """Ω-WEALTH-06: Time — NPV, IRR, payback, compounding, decay."""
+    payload = _clean_payload(locals(), exclude={"mode"})
+    return _dispatch_invariant_tool("wealth_time_discount", mode, payload)
+
+
+@mcp.tool(name="wealth_inertia_leverage")
+def wealth_inertia_leverage(
+    mode: str = "dscr",
+    ebitda: Optional[float] = None,
+    principal: float = 0,
+    interest: float = 0,
+    leases: float = 0,
+    scale_mode: str = "enterprise",
+) -> Any:
+    """Ω-WEALTH-07: Inertia — resistance to change, leverage stress, fragility."""
+    return _dispatch_emergence("wealth_inertia_leverage", mode, {
+        "dscr": dscr_leverage,
+        "leverage": dscr_leverage,
+        "strain": dscr_leverage,
+    }, {k: v for k, v in locals().items() if k not in ('mode', 'dispatch')})
+
+
+# ── Pre-configured series for Malaysian E&P and sovereign macro context ──────
+WEALTH_SERIES_PRESETS: Dict[str, Dict[str, str]] = {
+    "brent":        {"source": "WorldBank", "series_id": "CRUDE_BRENT",       "entity_code": "GLOBAL"},
+    "malaysia_gdp": {"source": "WorldBank", "series_id": "NY.GDP.MKTP.CD",    "entity_code": "MYS"},
+    "malaysia_oil": {"source": "WorldBank", "series_id": "NY.GDP.PETR.RT.ZS", "entity_code": "MYS"},
+    "lng_asia":     {"source": "WorldBank", "series_id": "NGAS_LNG_JAPKORINDIA", "entity_code": "ASIA"},
+    "usd_myr":      {"source": "WorldBank", "series_id": "PA.NUS.FCRF",       "entity_code": "MYS"},
+    "inflation_my": {"source": "WorldBank", "series_id": "FP.CPI.TOTL.ZG",   "entity_code": "MYS"},
+    "coal_price":   {"source": "WorldBank", "series_id": "COAL_AUS",          "entity_code": "GLOBAL"},
+    "energy_mix_my":{"source": "Ember",     "series_id": "primary_energy_consumption", "entity_code": "MYS"},
+    "my_snapshot":  {"source": "WorldBank", "series_id": "__snapshot__",       "entity_code": "MYS"},
+}
+
+
+@mcp.tool(name="wealth_field_macro")
+def wealth_field_macro(
+    mode: str = "sources",
+    source: str = "",
+    series_id: str = "",
+    entity_code: str = "",
+    use_cache: bool = True,
+    bus: str = "slow",
+    sources: Optional[List[str]] = None,
+    adapter: Optional[str] = None,
+    vintage_date: str = "",
+    preset: str = "",
+) -> Any:
+    """Ω-WEALTH-08: Field — macro environment (rates, FX, energy, carbon, regime).
+
+    Quick start — call with no args: returns available sources + presets.
+    Presets: brent, malaysia_gdp, malaysia_oil, lng_asia, usd_myr, inflation_my,
+             coal_price, energy_mix_my, my_snapshot.
+    Usage:   wealth_field_macro(mode='preset', preset='brent')
+             wealth_field_macro(mode='sources')
+             wealth_field_macro(mode='health')
+             wealth_field_macro(mode='snapshot', entity_code='MYS')
+    """
+    payload = {k: v for k, v in locals().items() if k not in ("mode", "dispatch", "preset")}
+
+    # ── Preset shortcut — no raw params needed ────────────────────────────────
+    if mode == "preset" or (mode == "fetch" and preset):
+        p = WEALTH_SERIES_PRESETS.get(preset)
+        if not p:
+            available = sorted(WEALTH_SERIES_PRESETS.keys())
+            return _inject_emergence(
+                "wealth_field_macro", "preset", {"preset": preset},
+                {"tool": "wealth_field_macro", "status": "FAIL",
+                 "error": f"Unknown preset '{preset}'",
+                 "available_presets": available,
+                 "usage": "wealth_field_macro(mode='preset', preset='brent')"},
+            )
+        if p["series_id"] == "__snapshot__":
+            return _dispatch_emergence("wealth_field_macro", "snapshot", {
+                "fetch": ingest_fetch, "snapshot": ingest_snapshot,
+                "reconcile": ingest_reconcile, "health": ingest_health,
+                "vintage": ingest_vintage, "sources": ingest_sources,
+            }, {"entity_code": p["entity_code"], "use_cache": use_cache})
+        return _dispatch_emergence("wealth_field_macro", "fetch", {
+            "fetch": ingest_fetch, "snapshot": ingest_snapshot,
+            "reconcile": ingest_reconcile, "health": ingest_health,
+            "vintage": ingest_vintage, "sources": ingest_sources,
+        }, {**payload, **p})
+
+    # ── Modes that don't need params ──────────────────────────────────────────
+    if mode in ("sources", "health"):
+        return _dispatch_emergence("wealth_field_macro", mode, {
+            "fetch": ingest_fetch, "snapshot": ingest_snapshot,
+            "reconcile": ingest_reconcile, "health": ingest_health,
+            "vintage": ingest_vintage, "sources": ingest_sources,
+        }, payload)
+
+    # ── Modes that need params ────────────────────────────────────────────────
+    mode_requirements = {
+        "fetch": ["source", "series_id", "entity_code"],
+        "snapshot": ["entity_code"],
+        "reconcile": ["entity_code"],
+        "vintage": ["source", "series_id", "entity_code", "vintage_date"],
+    }
+    required = mode_requirements.get(mode, [])
+    missing = [field for field in required if _is_blank_value(payload.get(field))]
+    if missing:
+        return _inject_emergence(
+            "wealth_field_macro", mode, payload,
+            {**_input_required_response(
+                "wealth_field_macro", mode, missing,
+                sorted(key for key, value in payload.items() if not _is_blank_value(value)),
+             ),
+             "quick_start": "Use mode='sources' or mode='health' with no args. "
+                            f"Or mode='preset' with preset in {sorted(WEALTH_SERIES_PRESETS.keys())}"},
+        )
+    return _dispatch_emergence("wealth_field_macro", mode, {
+        "fetch": ingest_fetch, "snapshot": ingest_snapshot,
+        "reconcile": ingest_reconcile, "health": ingest_health,
+        "vintage": ingest_vintage, "sources": ingest_sources,
+    }, payload)
+
+
+@mcp.tool(name="wealth_signal_information")
+def wealth_signal_information(
+    mode: str = "evoi",
+    well_cost_musd: float = 0,
+    p50_value_musd: float = 0,
+    prior_pos: Optional[float] = None,
+    posterior_pos: Optional[float] = None,
+    prospect_metrics: Optional[dict] = None,
+    info_cost_musd: float = 5.0,
+    discount_rate: float = 0.10,
+    scale_mode: str = "enterprise",
+    well_type: str = "",
+    prior_pos_samples: Optional[List[float]] = None,
+    posterior_pos_samples: Optional[List[float]] = None,
+    prospects: Optional[List[Dict[str, Any]]] = None,
+) -> Any:
+    """Ω-WEALTH-09: Signal — information value, evidence quality, schema validity.
+
+    well_type: Set the E&P well category for prior PoS baseline.
+      wildcat    — frontier exploration (default PoS: 0.25)
+      near_field — step-out / near-field extension (PoS: 0.50)
+      appraisal  — appraisal of confirmed discovery (PoS: 0.55)
+      development — development well in producing field (PoS: 0.75)
+    """
+    return _dispatch_emergence("wealth_signal_information", mode, {
+        "evoi": wealth_evoi_compute,
+        "evoi_mc": wealth_evoi_monte_carlo,
+        "schema": wealth_schema_validate,
+    }, {k: v for k, v in locals().items() if k not in ('mode', 'dispatch')})
+
+
+# ── Agent templates for common multi-stakeholder scenarios ───────────────────
+GAME_AGENT_TEMPLATES: Dict[str, Dict[str, Any]] = {
+    "bilateral_negotiation": {
+        "agents": [
+            {"name": "party_a", "payoffs": {"cooperate": 10, "defect": 0}, "information": "PARTIAL", "authority": "EQUAL"},
+            {"name": "party_b", "payoffs": {"cooperate": 10, "defect": 0}, "information": "PARTIAL", "authority": "EQUAL"},
+        ],
+        "shared_resources": {"total_value": 20, "contestable": True},
+        "mechanism": "cooperative",
+    },
+    "sovereign_resource": {
+        "agents": [
+            {"name": "national_noc", "payoffs": {"cooperate": 15, "defect": -5}, "information": "SOVEREIGN", "authority": "SOVEREIGN", "maruah": 0.85},
+            {"name": "foreign_partner", "payoffs": {"cooperate": 8, "defect": 3}, "information": "PARTIAL", "authority": "CONTRACTOR", "maruah": 0.55},
+        ],
+        "shared_resources": {"resource_type": "upstream_hydrocarbon", "sovereignty_constraint": True, "f13_veto": True},
+        "mechanism": "asymmetric",
+    },
+    "regulator_operator": {
+        "agents": [
+            {"name": "regulator", "payoffs": {"enforce": 12, "relax": -8}, "information": "FULL", "authority": "REGULATORY"},
+            {"name": "operator", "payoffs": {"comply": 6, "evade": 4}, "information": "PARTIAL", "authority": "LICENSED"},
+        ],
+        "shared_resources": {"license": "upstream_block", "compliance_value": 18},
+        "mechanism": "principal_agent",
+    },
+    "federal_state": {
+        "agents": [
+            {"name": "federal_government", "payoffs": {"centralize": 10, "devolve": 5}, "information": "PARTIAL", "authority": "FEDERAL"},
+            {"name": "state_government", "payoffs": {"centralize": 2, "devolve": 12}, "information": "PARTIAL", "authority": "STATE"},
+        ],
+        "shared_resources": {"resource": "oil_revenue", "jurisdictional_dispute": True},
+        "mechanism": "nash_bargaining",
+    },
+    "four_party_deal": {
+        "agents": [
+            {"name": "noc_a", "payoffs": {"cooperate": 14, "defect": -3}, "information": "PARTIAL", "authority": "SOVEREIGN"},
+            {"name": "foreign_noc_b", "payoffs": {"cooperate": 9, "defect": 2}, "information": "PARTIAL", "authority": "CONTRACTOR"},
+            {"name": "state_a", "payoffs": {"cooperate": 7, "defect": 1}, "information": "PARTIAL", "authority": "STATE"},
+            {"name": "federal_govt", "payoffs": {"cooperate": 11, "defect": -1}, "information": "FULL", "authority": "FEDERAL"},
+        ],
+        "shared_resources": {"asset_type": "gas_basin", "value_usd_b": 15, "sovereignty_constraint": True},
+        "mechanism": "shapley_coalition",
+    },
+}
+
+
+@mcp.tool(name="wealth_game_coordination")
+def wealth_game_coordination(
+    mode: str = "equilibrium",
+    agents: Optional[List[dict]] = None,
+    shared_resources: Optional[dict] = None,
+    mechanism: str = "cooperative",
+    solve_equilibrium: bool = True,
+    compute_budget_usd: float = 1.0,
+    token_budget: float = 1000.0,
+    time_deadline_hours: float = 24.0,
+    template: str = "",
+) -> Any:
+    """Ω-WEALTH-10: Game — multi-agent incentives, bargaining, coordination.
+
+    Templates (no agents schema needed):
+      bilateral_negotiation — two equal parties
+      sovereign_resource    — NOC vs foreign contractor (PSC context)
+      regulator_operator    — regulatory compliance game
+      federal_state         — federal vs state resource jurisdiction dispute
+      four_party_deal       — four-way deal (NOC + foreign NOC + state + federal)
+    Usage: wealth_game_coordination(template='sovereign_resource')
+    """
+    params = {k: v for k, v in locals().items() if k not in ("mode", "dispatch", "template")}
+
+    # Apply template when agents not explicitly provided
+    if template and (not agents):
+        t = GAME_AGENT_TEMPLATES.get(template)
+        if not t:
+            available = sorted(GAME_AGENT_TEMPLATES.keys())
+            return _inject_emergence(
+                "wealth_game_coordination", mode, params,
+                {"tool": "wealth_game_coordination", "status": "FAIL",
+                 "error": f"Unknown template '{template}'",
+                 "available_templates": available},
+            )
+        params["agents"] = t["agents"]
+        if not shared_resources:
+            params["shared_resources"] = t["shared_resources"]
+        params["mechanism"] = t.get("mechanism", mechanism)
+        params["_template_used"] = template
+
+    return _dispatch_emergence("wealth_game_coordination", mode, {
+        "equilibrium": coordination_equilibrium,
+        "game": game_theory_solve,
+        "budget": agent_budget,
+    }, params)
+
+
+@mcp.tool(name="wealth_boundary_governance")
+def wealth_boundary_governance(
+    mode: str = "floors",
+    reversible: bool = True,
+    human_confirmed: bool = False,
+    epistemic: str = "ESTIMATE",
+    proposal: Optional[dict] = None,
+    constraints: Optional[dict] = None,
+    scale_mode: str = "enterprise",
+    population: float = 0,
+    energy_budget_twh: float = 0,
+    carbon_budget_gt: float = 0,
+    tech_readiness: float = 0.5,
+    alternatives: Optional[List[dict]] = None,
+    values: Optional[dict] = None,
+    maruah_score: Optional[float] = None,
+    context: Optional[dict] = None,
+) -> Any:
+    """Ω-WEALTH-11: Boundary — constitutional floors, maruah, stewardship, constraint.
+    Pass context={'foreign_entity': True, 'opaque_valuation': True, ...} for smart maruah scoring.
+    Pass scale_mode='sovereign' for Malaysian national resource context."""
+    ctx = context or {}
+    computed_maruah, maruah_was_computed, maruah_signals = compute_maruah_from_context(
+        explicit_score=maruah_score,
+        scale_mode=scale_mode,
+        reversible=reversible,
+        human_confirmed=human_confirmed,
+        epistemic=epistemic,
+        foreign_entity=bool(ctx.get("foreign_entity")),
+        opaque_valuation=bool(ctx.get("opaque_valuation")),
+        context=ctx,
+    )
+    params = {k: v for k, v in locals().items() if k not in ("mode", "dispatch", "context", "maruah_score")}
+    params["maruah_score"] = computed_maruah
+    result = _dispatch_emergence("wealth_boundary_governance", mode, {
+        "floors": check_floors_tool,
+        "policy": policy_audit,
+        "stewardship": civilization_stewardship,
+        "decision": personal_decision,
+    }, params)
+    if isinstance(result, dict):
+        result["maruah_band"] = maruah_band(computed_maruah)
+        result["maruah_score"] = computed_maruah
+        if maruah_was_computed:
+            result["maruah_computed_from_context"] = True
+            result["maruah_signals"] = maruah_signals
+    return result
+
+
+@mcp.tool(name="wealth_hysteresis_ledger")
+def wealth_hysteresis_ledger(
+    mode: str = "init",
+    session_id: Optional[str] = None,
+    actor_id: str = "wealth-agent",
+    intent: Optional[str] = None,
+    tx_type: str = "",
+    amount: float = 0,
+    currency: str = "MYR",
+    description: str = "",
+    quantity: Optional[float] = None,
+    price: Optional[float] = None,
+    fees: Optional[float] = None,
+    broker: Optional[str] = None,
+    asset_id: Optional[str] = None,
+    category: Optional[str] = None,
+    notes: Optional[str] = None,
+    dry_run: bool = False,
+    human_confirmed: bool = False,
+    idempotency_key: Optional[str] = None,
+    query: str = "",
+    limit: int = 10,
+    tool_name: str = "",
+    arguments: Optional[Dict[str, Any]] = None,
+    result: Optional[Dict[str, Any]] = None,
+    nav_myr: Optional[float] = None,
+    quantity_held: Optional[float] = None,
+    price_close: Optional[float] = None,
+) -> Any:
+    """Ω-WEALTH-12: Hysteresis — path dependence, ledger, sealed financial memory."""
+    payload = _clean_payload(locals(), exclude={"mode"})
+    return _dispatch_invariant_tool("wealth_hysteresis_ledger", mode, payload)
+
+
+
+@mcp.tool(name="wealth_system_registry_status")
+def wealth_system_registry_status() -> dict[str, Any]:
+    """Registry truth diagnostic — intended, registered, and alias surfaces."""
+    return _registry_snapshot(_registered_tool_names())
+
+
+@mcp.tool(name="wealth_synthesize")
+def wealth_synthesize(
+    question: str = "",
+    scale_mode: str = "enterprise",
+    actors: Optional[List[str]] = None,
+    context: Optional[dict] = None,
+    reversible: bool = True,
+    human_confirmed: bool = False,
+    well_cost_musd: float = 0,
+    p50_value_musd: float = 0,
+    prior_pos: Optional[float] = None,
+    cash_flows: Optional[List[float]] = None,
+    discount_rate: float = 0.10,
+) -> Dict[str, Any]:
+    """Ω-WEALTH-00: Synthesis — unified capital intelligence verdict.
+
+    The brain connecting all 12 substrate invariants. Pass a question and context;
+    WEALTH runs all relevant dimensions, aggregates, and returns a single SEAL/SABAR/VOID
+    verdict with dimensional confidence scores and routing to arifOS 888_JUDGE when needed.
+
+    High-stakes context (scale_mode='sovereign'/'national'/'civilization') automatically
+    triggers F13 escalation path and maruah computation.
+
+    Usage:
+      wealth_synthesize(question="Is the SEARAH deal value-accretive for Malaysia?",
+                        scale_mode="sovereign",
+                        actors=["PETRONAS","ENI","Sarawak","Federal"],
+                        context={"foreign_entity": True, "reversible": False})
+    """
+    ctx = context or {}
+    results: Dict[str, Any] = {}
+    verdicts: List[str] = []
+    dimensional_scores: Dict[str, Any] = {}
+
+    # ── Dimension 1: Conservation (capital stock baseline) ────────────────────
+    try:
+        r = networth_state(scale_mode=scale_mode)
+        results["conservation"] = r.get("primary_metrics", {})
+        dimensional_scores["conservation"] = r.get("governance_verdict", "UNKNOWN")
+        verdicts.append(r.get("governance_verdict", "UNKNOWN"))
+    except Exception as exc:
+        dimensional_scores["conservation"] = f"ERROR:{exc}"
+
+    # ── Dimension 2: Flow (liquidity / runway) ────────────────────────────────
+    try:
+        r = cashflow_flow(scale_mode=scale_mode)
+        results["flow"] = r.get("primary_metrics", {})
+        dimensional_scores["flow"] = r.get("governance_verdict", "UNKNOWN")
+        verdicts.append(r.get("governance_verdict", "UNKNOWN"))
+    except Exception as exc:
+        dimensional_scores["flow"] = f"ERROR:{exc}"
+
+    # ── Dimension 3: Entropy (risk, uncertainty) ──────────────────────────────
+    try:
+        if cash_flows:
+            r = emv_risk(
+                scenarios=[{"probability": 0.5, "outcome": float(sum(cash_flows) / len(cash_flows)), "label": "synthesized"}],
+                scale_mode=scale_mode,
+            )
+        elif well_cost_musd and p50_value_musd:
+            # Use project cost + value as a two-scenario proxy
+            _prior = prior_pos if prior_pos is not None else 0.30
+            r = emv_risk(
+                scenarios=[
+                    {"probability": _prior, "outcome": float(p50_value_musd - well_cost_musd), "label": "success"},
+                    {"probability": round(1.0 - _prior, 6), "outcome": float(-well_cost_musd), "label": "failure"},
+                ],
+                scale_mode=scale_mode,
+            )
+        else:
+            # No numeric inputs: qualitative entropy assessment using governance signals
+            r = check_floors_tool(
+                reversible=reversible, human_confirmed=human_confirmed,
+                scale_mode=scale_mode, epistemic="CLAIM",
+            )
+        results["entropy"] = r.get("primary_metrics", {})
+        dimensional_scores["entropy"] = r.get("governance_verdict", "UNKNOWN")
+        verdicts.append(r.get("governance_verdict", "UNKNOWN"))
+    except Exception as exc:
+        dimensional_scores["entropy"] = f"ERROR:{exc}"
+
+    # ── Dimension 4: Time (NPV if cash flows available) ──────────────────────
+    try:
+        if cash_flows:
+            r = npv_reward(
+                initial_investment=well_cost_musd or 0,
+                cash_flows=cash_flows,
+                discount_rate=discount_rate,
+                scale_mode=scale_mode,
+            )
+            results["time"] = r.get("primary_metrics", {})
+            dimensional_scores["time"] = r.get("governance_verdict", "UNKNOWN")
+            verdicts.append(r.get("governance_verdict", "UNKNOWN"))
+        else:
+            dimensional_scores["time"] = "NO_CASHFLOWS_PROVIDED"
+    except Exception as exc:
+        dimensional_scores["time"] = f"ERROR:{exc}"
+
+    # ── Dimension 5: Signal / EVOI ────────────────────────────────────────────
+    try:
+        import asyncio as _asyncio
+        r = _asyncio.run(wealth_evoi_compute(
+            well_cost_musd=well_cost_musd,
+            p50_value_musd=p50_value_musd,
+            prior_pos=prior_pos,
+            scale_mode=scale_mode,
+        ))
+        results["signal"] = r.get("primary_metrics", {})
+        dimensional_scores["signal"] = r.get("governance_verdict", "UNKNOWN")
+        verdicts.append(r.get("governance_verdict", "UNKNOWN"))
+    except Exception as exc:
+        dimensional_scores["signal"] = f"ERROR:{exc}"
+
+    # ── Dimension 6: Boundary / Governance ───────────────────────────────────
+    computed_maruah, _, maruah_signals = compute_maruah_from_context(
+        explicit_score=None,
+        scale_mode=scale_mode,
+        reversible=reversible,
+        human_confirmed=human_confirmed,
+        context=ctx,
+    )
+    try:
+        r = check_floors_tool(
+            reversible=reversible,
+            human_confirmed=human_confirmed,
+            scale_mode=scale_mode,
+            maruah_score=computed_maruah,
+        )
+        results["boundary"] = r.get("primary_metrics", {})
+        dimensional_scores["boundary"] = r.get("governance_verdict", "UNKNOWN")
+        verdicts.append(r.get("governance_verdict", "UNKNOWN"))
+    except Exception as exc:
+        dimensional_scores["boundary"] = f"ERROR:{exc}"
+
+    # ── Dimension 7: Game (if actors provided) ───────────────────────────────
+    if actors and len(actors) >= 2:
+        try:
+            template_key = "four_party_deal" if len(actors) >= 4 else "sovereign_resource" if scale_mode in {"sovereign", "national"} else "bilateral_negotiation"
+            t = GAME_AGENT_TEMPLATES.get(template_key, GAME_AGENT_TEMPLATES["bilateral_negotiation"])
+            r = coordination_equilibrium(agents=t["agents"], shared_resources=t["shared_resources"], scale_mode=scale_mode)
+            results["game"] = r.get("primary_metrics", {})
+            dimensional_scores["game"] = r.get("governance_verdict", "UNKNOWN")
+            verdicts.append(r.get("governance_verdict", "UNKNOWN"))
+        except Exception as exc:
+            dimensional_scores["game"] = f"ERROR:{exc}"
+
+    # ── Emergence scan on full synthesis ─────────────────────────────────────
+    synthesis_context = {
+        "question": question, "scale_mode": scale_mode, "actors": actors,
+        "reversible": reversible, "human_confirmed": human_confirmed, **ctx,
+    }
+    emergence = _emergence_scan("wealth_synthesize", "synthesis", synthesis_context, results)
+
+    # ── Aggregate verdict ─────────────────────────────────────────────────────
+    verdict_priority = {"VOID": 0, "888-HOLD": 1, "SABAR": 2, "QUALIFY": 3, "HOLD": 4, "SEAL": 5, "UNKNOWN": 3}
+    clean_verdicts = [v for v in verdicts if v in verdict_priority]
+    final_verdict = min(clean_verdicts, key=lambda v: verdict_priority.get(v, 3)) if clean_verdicts else "UNKNOWN"
+
+    # Civilizational stakes auto-escalation
+    escalate_to_judge = (
+        scale_mode in {"sovereign", "national", "civilization", "crisis"}
+        or not reversible
+        or emergence["overall_verdict"] in {"888_HOLD", "HOLD"}
+        or final_verdict in {"VOID", "888-HOLD"}
+    )
+
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_synthesize",
+        "task": "wealth_synthesize",
+        "question": question,
+        "scale_mode": scale_mode,
+        "actors": actors or [],
+        "final_verdict": final_verdict,
+        "maruah_band": maruah_band(computed_maruah),
+        "maruah_score": computed_maruah,
+        "maruah_signals": maruah_signals,
+        "dimensional_verdicts": dimensional_scores,
+        "dimensional_results": results,
+        "emergence": emergence,
+        "escalate_to_arifos_judge": escalate_to_judge,
+        "escalation_reason": (
+            "sovereign/national scale requires F13 human veto confirmation" if scale_mode in {"sovereign", "national"}
+            else "emergence breach detected — ARIF must confirm" if emergence["overall_verdict"] != "PASS"
+            else "VOID verdict in one or more dimensions" if final_verdict in {"VOID", "888-HOLD"}
+            else None
+        ),
+        "wealth_story_anchor": _wealth_civilization_for_tool("wealth_hysteresis_ledger"),
+        "final_authority": "ARIF",
+        "recommendation_only": True,
+        "next_action": "Call arif_judge_deliberate with this synthesis as evidence" if escalate_to_judge else "Review dimensional verdicts and proceed with human confirmation",
+    }
+
+
+WEALTH_PUBLIC_TOOL_ORDER = (
+    "mcp_health_check",
+    "wealth_synthesize",
+    "wealth_conservation_capital",
+    "wealth_flow_liquidity",
+    "wealth_gradient_price",
+    "wealth_entropy_risk",
+    "wealth_energy_productivity",
+    "wealth_time_discount",
+    "wealth_inertia_leverage",
+    "wealth_field_macro",
+    "wealth_signal_information",
+    "wealth_game_coordination",
+    "wealth_boundary_governance",
+    "wealth_hysteresis_ledger",
+    "wealth_system_registry_status",
+)
+_PUBLIC_TOOLS = set(WEALTH_PUBLIC_TOOL_ORDER)
+
+# ═══════════════════════════════════════════════════════════════════════
+
 # ============================================================
+
+# ── Alias Dispatch Map (backward compat without registry pollution) ──
+_ALIAS_DISPATCH: dict[str, Any] = {}
+
+def _build_alias_dispatch() -> None:
+    """Populate _ALIAS_DISPATCH from v1 canonical funcs and v2 alias map."""
+    global _ALIAS_DISPATCH
+    engine = HarnessEngine()
+    v1_funcs = {
+        "wealth_ingest_fetch": ingest_fetch,
+        "wealth_ingest_snapshot": ingest_snapshot,
+        "wealth_ingest_reconcile": ingest_reconcile,
+        "wealth_ingest_health": ingest_health,
+        "wealth_ingest_vintage": ingest_vintage,
+        "wealth_ingest_sources": ingest_sources,
+        "wealth_emv_risk": emv_risk,
+        "wealth_monte_carlo_forecast": monte_carlo_forecast,
+        "wealth_correlation_guard_check": wealth_correlation_guard_check,
+        "wealth_evoi_compute": wealth_evoi_compute,
+        "wealth_evoi_monte_carlo": wealth_evoi_monte_carlo,
+        "wealth_schema_validate": wealth_schema_validate,
+        "wealth_dscr_leverage": dscr_leverage,
+        "wealth_networth_state": networth_state,
+        "wealth_growth_velocity": growth_velocity,
+        "wealth_cashflow_flow": cashflow_flow,
+        "wealth_crisis_triage": crisis_triage,
+        "wealth_civilization_stewardship": civilization_stewardship,
+        "wealth_npv_reward": npv_reward,
+        "wealth_irr_yield": irr_yield,
+        "wealth_pi_efficiency": pi_efficiency,
+        "wealth_payback_time": payback_time,
+        "wealth_coordination_equilibrium": coordination_equilibrium,
+        "wealth_game_theory_solve": game_theory_solve,
+        "wealth_personal_decision": personal_decision,
+        "wealth_agent_budget": agent_budget,
+        "wealth_score_kernel": wealth_score_kernel,
+        "wealth_check_floors": check_floors_tool,
+        "wealth_policy_audit": policy_audit,
+        "wealth_audit_entropy": audit_entropy,
+        "wealth_init": wealth_init_tool,
+        "wealth_record_transaction": record_transaction_tool,
+        "wealth_snapshot_portfolio": snapshot_portfolio_tool,
+        "vault_write": record_transaction_tool,
+        "vault_query": snapshot_portfolio_tool,
+    }
+    for canonical_name, func in v1_funcs.items():
+        _ALIAS_DISPATCH[canonical_name] = func
+    for v2_name, v1_name in engine.V2_CANONICAL_MAP.items():
+        if v2_name in ("vaultwrite", "vaultquery"):
+            continue
+        if v1_name in v1_funcs:
+            _ALIAS_DISPATCH[v2_name] = v1_funcs[v1_name]
+
+_build_alias_dispatch()
+# ── Surgical registry cleanup: only public tools remain ──
+for _comp_key in list(mcp._local_provider._components.keys()):
+    if _comp_key.startswith("tool:"):
+        _tool_name = _comp_key[5:].rstrip("@")
+        if _tool_name not in _PUBLIC_TOOLS:
+            mcp._local_provider.remove_tool(_tool_name)
+
+
+def _registered_tool_names() -> List[str]:
+    names = []
+    for component_key in mcp._local_provider._components.keys():
+        if component_key.startswith("tool:"):
+            names.append(component_key[5:].rstrip("@"))
+    return sorted(set(names))
+
+
+def _resolve_repo_head() -> str:
+    repo_head = os.environ.get("WEALTH_REPO_HEAD")
+    if repo_head:
+        return repo_head
+    for candidate in (os.environ.get("WEALTH_REPO_DIR"), "/opt/wealth-src", "/root/wealth"):
+        if not candidate or not os.path.exists(candidate):
+            continue
+        try:
+            result = subprocess.run(
+                ["git", "-c", f"safe.directory={candidate}", "-C", candidate, "rev-parse", "--short", "HEAD"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+        except Exception:
+            continue
+        head = result.stdout.strip()
+        if head:
+            return head
+    return "unknown"
+
+
+def _registry_snapshot(visible_names: List[str]) -> Dict[str, Any]:
+    expected_names = sorted(_PUBLIC_TOOLS)
+    expected_set = set(expected_names)
+    visible_set = set(visible_names)
+    missing = [name for name in expected_names if name not in visible_set]
+    extra = sorted(visible_set - expected_set)
+    hidden_alias_count = len(set(_ALIAS_DISPATCH) - expected_set)
+    return {
+        "service": "wealth-mcp",
+        "schema_version": WEALTH_SCHEMA_VERSION,
+        "repo_head": _resolve_repo_head(),
+        "intended_public_tools": len(expected_names),
+        "registered_public_tools": len(visible_names),
+        "public_surface_count": len(expected_names),
+        "runtime_surface_count": len(visible_names),
+        "hidden_alias_count": hidden_alias_count,
+        "canonical_public_tools": expected_names,
+        "extra_visible_tools": extra,
+        "missing_visible_tools": missing,
+        "registry_truth": "PASS" if not missing and not extra else "FAIL",
+        "final_authority": "ARIF",
+    }
+
 if __name__ == "__main__":
     # Register v2 legacy aliases (non-breaking Phase 1 Migration)
     engine = HarnessEngine()
@@ -5412,15 +7124,17 @@ if __name__ == "__main__":
         "vault_write": record_transaction_tool,
         "vault_query": snapshot_portfolio_tool,
     }
+    # ── Alias Dispatch Map (backward compat without registry pollution) ──
+    _ALIAS_DISPATCH: dict[str, Any] = {}
+    for canonical_name, func in _v1_funcs.items():
+        _ALIAS_DISPATCH[canonical_name] = func
     for v2_name, v1_name in engine.V2_CANONICAL_MAP.items():
-        if v2_name in ("vault_write", "vault_query", "vaultwrite", "vaultquery"):
+        if v2_name in ("vaultwrite", "vaultquery"):
             continue
         if v1_name in _v1_funcs:
-            mcp.tool(name=v2_name)(_v1_funcs[v1_name])
-
-    # NOTE: vaultwrite and vaultquery duplicate vault_write/vault_query.
-    # They are defined below but NOT registered as MCP tools.
-    # Skip them in the alias loop above.
+            _ALIAS_DISPATCH[v2_name] = _v1_funcs[v1_name]
+    # NOTE: vaultwrite/vaultquery are intentionally omitted — use vault_write/vault_query.
+    # Aliases remain callable via tools/call for F1 Amanah backward compatibility.
 
     from starlette.applications import Starlette
     from starlette.routing import Route, Mount
@@ -5466,10 +7180,14 @@ if __name__ == "__main__":
 
         if method == "tools/list":
             all_tools = await mcp.list_tools()
+            # ── Constitutional Surface Filter ───────────────────────
+            # Only expose canonical tools (F8 GENIUS / F10 ONTOLOGY).
+            # Aliases remain callable via tools/call for backward compat.
+            filtered_tools = [t for t in all_tools if t.name in _PUBLIC_TOOLS]
             return _JR({
                 "jsonrpc": "2.0",
                 "id": response_id,
-                "result": {"tools": [{"name": t.name, "description": t.description, "inputSchema": getattr(t, "inputSchema", {}), "outputSchema": getattr(t, "output_schema", {})} for t in all_tools]}
+                "result": {"tools": [{"name": t.name, "description": t.description, "inputSchema": (getattr(t, "inputSchema", None) or {}) | {"type": "object"}, "outputSchema": (getattr(t, "output_schema", None) or {}) | {"type": "object"}} for t in filtered_tools]}
             })
 
         if method == "tools/call":
@@ -5478,7 +7196,15 @@ if __name__ == "__main__":
             if not name:
                 return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32602, "message": "Missing tool name"}}, status_code=400)
             try:
-                result = await mcp.call_tool(name, arguments)
+                # ── Alias dispatch (F1 Amanah backward compat) ──
+                if name in _ALIAS_DISPATCH:
+                    alias_fn = _ALIAS_DISPATCH[name]
+                    if inspect.iscoroutinefunction(alias_fn):
+                        result = await alias_fn(**arguments)
+                    else:
+                        result = alias_fn(**arguments)
+                else:
+                    result = await mcp.call_tool(name, arguments)
                 return _JR({"jsonrpc": "2.0", "id": response_id, "result": _serialize_result(result)})
             except Exception as e:
                 # Return JSON-RPC error as HTTP 200 — clients expect error in body, not 5xx
@@ -5569,11 +7295,15 @@ if __name__ == "__main__":
                 }
             })
 
+        if method == "notifications/initialized":
+            return _JR({"jsonrpc": "2.0", "id": response_id, "result": {}})
+
         return _JR({"jsonrpc": "2.0", "id": response_id, "error": {"code": -32601, "message": "Method not found"}}, status_code=404)
 
     async def tools_handler(request):
         """Federation tool discovery — returns flat tool registry with danger/fail metadata."""
         all_tools = await mcp.list_tools()
+        registry = _registry_snapshot([tool.name for tool in all_tools])
         # WEALTH tool danger taxonomy (mirrors arifOS federation_topology)
         _DANGER_MAP = {
             # L4 — irreversible / operational mutation
@@ -5600,7 +7330,7 @@ if __name__ == "__main__":
                 "name": name,
                 "description": t.description or "",
                 "inputSchema": getattr(t, "inputSchema", {}),
-                "outputSchema": getattr(t, "output_schema", {}),
+                "outputSchema": (getattr(t, "output_schema", None) or {}) | {"type": "object"},
                 "danger_level": meta["danger_level"],
                 "fail_posture": meta["fail_posture"],
                 "fail_open_constraint": _FAIL_OPEN_CONSTRAINT if meta["fail_posture"] == "fail-open" else None,
@@ -5608,9 +7338,13 @@ if __name__ == "__main__":
         return _JR({
             "organ": "WEALTH",
             "role": "Capital Intelligence / NPV + EMV + Crisis Triage",
-            "schema": "wealth-federation-v2026.05.07",
+            "schema": WEALTH_SCHEMA_VERSION,
             "version": __version__,
             "count": len(tools),
+            "public_surface_count": registry["public_surface_count"],
+            "runtime_surface_count": registry["runtime_surface_count"],
+            "hidden_alias_count": registry["hidden_alias_count"],
+            "registry_truth": registry["registry_truth"],
             "danger_taxonomy": {
                 "L4": "irreversible / operational mutation — fail-closed mandatory",
                 "L3": "routing / memory / judgment — fail-closed mandatory",
@@ -5622,7 +7356,27 @@ if __name__ == "__main__":
         })
 
     async def health_handler(request):
-        return _JR({"status": "healthy", "service": "wealth-mcp", "version": __version__})
+        registry = _registry_snapshot([tool.name for tool in await mcp.list_tools()])
+        return _JR({
+            "status": "healthy" if registry["registry_truth"] == "PASS" else "warn",
+            "service": "wealth-mcp",
+            "version": __version__,
+            "schema_version": registry["schema_version"],
+            "repo_head": registry["repo_head"],
+            "image_tag": os.environ.get("WEALTH_IMAGE_TAG", "unknown"),
+            "public_surface_count": registry["public_surface_count"],
+            "runtime_surface_count": registry["runtime_surface_count"],
+            "hidden_alias_count": registry["hidden_alias_count"],
+            "registry_truth": registry["registry_truth"],
+            "final_authority": registry["final_authority"],
+        })
+
+    async def ready_handler(request):
+        registry = _registry_snapshot([tool.name for tool in await mcp.list_tools()])
+        return _JR({
+            "status": "ready" if registry["registry_truth"] == "PASS" else "warn",
+            **registry,
+        })
 
     async def prompts_handler(request):
         """Federation prompt discovery — returns governance reasoning workflows."""
@@ -5684,10 +7438,22 @@ if __name__ == "__main__":
             Route("/prompts", prompts_handler, methods=["GET"]),
             Route("/resources", resources_handler, methods=["GET"]),
             Route("/health", health_handler, methods=["GET"]),
+            Route("/ready", ready_handler, methods=["GET"]),
             Mount("/", app=mcp_app),
         ],
         lifespan=getattr(mcp_app, "lifespan", None),
     )
+
+    # ── Startup Registry Assertion (fail closed) ────────────
+    async def _assert_registry() -> None:
+        registered = {t.name for t in await mcp.list_tools()}
+        extra = registered - _PUBLIC_TOOLS
+        missing = _PUBLIC_TOOLS - registered
+        if extra or missing:
+            raise RuntimeError(
+                f"REGISTRY_TRUTH_FAILURE: extra={sorted(extra)} missing={sorted(missing)}"
+            )
+    asyncio.run(_assert_registry())
 
     uvicorn.run(
         app,
