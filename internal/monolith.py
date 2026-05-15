@@ -5785,11 +5785,20 @@ def _emergence_scan(
     high_stakes_scale = scale_mode in {"national", "crisis", "civilization", "sovereign"}
 
     # Structural parameter checks — reliable regardless of how the question is worded.
-    # A caller passing foreign_entity=True triggers detection even without keywords.
-    _struct_foreign_entity = bool(arguments.get("foreign_entity", False))
+    # Accepts both naming conventions: foreign_entity and foreign_actor_involved.
+    _struct_foreign_entity = bool(
+        arguments.get("foreign_entity", False)
+        or arguments.get("foreign_actor_involved", False)
+    )
     _struct_opaque_valuation = bool(arguments.get("opaque_valuation", False))
     _struct_constitutional_dispute = bool(arguments.get("constitutional_dispute", False))
-    _struct_irreversible = not bool(arguments.get("reversible", True))
+    # Accepts both: reversible=False and irreversible=True / irreversibility="HIGH"
+    _irreversibility_val = arguments.get("irreversibility", "")
+    _struct_irreversible = (
+        not bool(arguments.get("reversible", True))
+        or bool(arguments.get("irreversible", False))
+        or str(_irreversibility_val).upper() in {"HIGH", "TRUE", "1"}
+    )
 
     sovereignty_markers = [
         "national resource", "sovereign asset", "petronas", "petros", "sarawak oil",

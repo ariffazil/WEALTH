@@ -3117,12 +3117,22 @@ def get_epistemic_matrix() -> str:
     )
 
 
+_EVOI_WELL_TYPE_PRIORS: Dict[str, float] = {
+    "wildcat":     0.25,  # frontier exploration — global PoS range 0.20-0.30
+    "near_field":  0.50,  # near-field / step-out extension — PoS range 0.40-0.60
+    "appraisal":   0.55,  # appraisal of a confirmed discovery — PoS range 0.50-0.65
+    "development": 0.75,  # development well in producing field — PoS range 0.70-0.85
+}
+
+
 @mcp.tool(name="wealth_evoi_compute")
 async def wealth_evoi_compute(
-    prior_pos: float,
-    posterior_pos: float,
     well_cost_musd: float,
     p50_value_musd: float,
+    prior_pos: Optional[float] = None,
+    posterior_pos: Optional[float] = None,
+    well_type: str = "",
+    prospect_metrics: Optional[Dict[str, Any]] = None,
     info_cost_musd: float = 5.0,
     discount_rate: float = 0.10,
     scale_mode: str = "enterprise",
@@ -3131,6 +3141,10 @@ async def wealth_evoi_compute(
     Expected Value of Information (EVOI) point-estimate computation. [Epistemic Dimension]
     EVOI = E[V | with_info] - E[V | without_info]
     Helps decide if acquiring new data (seismic, audit, research) is worth the cost.
+
+    Prior defaults by well_type when prior_pos is omitted:
+      wildcat=0.25, near_field=0.50, appraisal=0.55, development=0.75
+    Pass prospect_metrics from GEOX to auto-ingest composite_pos as prior.
     """
     if not EPISTEMIC_AVAILABLE:
         return create_envelope(
@@ -3143,25 +3157,63 @@ async def wealth_evoi_compute(
         )
 
     try:
+        default_flags: List[str] = []
+
+        # GEOX handoff: use composite_pos from prospect_metrics if provided
+        if prospect_metrics:
+            final_prior = prospect_metrics.get("composite_pos", prior_pos)
+            final_posterior = posterior_pos or (
+                min(1.0, final_prior * 1.25) if final_prior is not None else None
+            )
+        else:
+            final_prior = prior_pos
+            final_posterior = posterior_pos
+
+        # Prior fallback: well_type baseline, or generic wildcat default
+        if final_prior is None:
+            wt_key = well_type.lower().replace("-", "_") if well_type else ""
+            final_prior = _EVOI_WELL_TYPE_PRIORS.get(wt_key, 0.30)
+            if wt_key in _EVOI_WELL_TYPE_PRIORS:
+                default_flags.append(
+                    f"PRIOR_DEFAULTED_TO_{well_type.upper()}_BASELINE_{final_prior}"
+                )
+            else:
+                default_flags.append(
+                    "PRIOR_DEFAULTED_TO_WILDCAT_0.30 — pass "
+                    "well_type=(wildcat|near_field|appraisal|development) for well-specific prior"
+                )
+
+        # Posterior fallback: Bayesian update ~50% relative lift
+        if final_posterior is None:
+            final_posterior = min(1.0, final_prior * 1.50)
+            default_flags.append(
+                f"POSTERIOR_DEFAULTED_TO_BAYESIAN_UPDATE_{round(final_posterior, 2)}"
+            )
+
         res = compute_evoi(
-            prior_pos=prior_pos,
-            posterior_pos=posterior_pos,
+            prior_pos=final_prior,
+            posterior_pos=final_posterior,
             well_cost_musd=well_cost_musd,
             p50_value_musd=p50_value_musd,
             info_cost_musd=info_cost_musd,
             discount_rate=discount_rate,
         )
 
+        assumptions = [
+            f"Prior PoS: {final_prior:.2f}",
+            f"Posterior PoS: {final_posterior:.2f}",
+            f"Information cost: {info_cost_musd} MUSD",
+            f"Discount rate: {discount_rate}",
+            *([f"WARNING: {f}" for f in default_flags] if default_flags else []),
+        ]
+
         return create_envelope(
             "wealth_evoi_compute",
             "Epistemic",
             res,
             {"info_cost": info_cost_musd, "well_cost": well_cost_musd},
-            [],
-            [
-                f"Assumed information cost: {info_cost_musd} MUSD",
-                f"Discount rate: {discount_rate}",
-            ],
+            default_flags,
+            assumptions,
             verdict="SEAL" if res.get("evoi_musd", 0) > 0 else "QUALIFY",
             scale_mode=scale_mode,
         )
