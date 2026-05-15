@@ -3030,13 +3030,31 @@ def ingest_fetch(
     flags = list(result.get("flags", []))
     if not result.get("records") and not _has_any_flag(flags, {"ADAPTER_NOT_FOUND", "NO_DATA_FETCHED"}):
         flags.append("NO_DATA_FETCHED")
+
+    # Surface staleness and data currency at top level — WorldBank can lag 1-2 years.
+    # Stale data must not silently enter NPV/EVOI calculations as HIGH confidence.
+    records_raw = result.get("records", [])
+    obs_times = [r.get("observation_time") or r.get("date") for r in records_raw if isinstance(r, dict)]
+    obs_times = [t for t in obs_times if t]
+    data_as_of = max(obs_times) if obs_times else None
+    is_stale = any("STALE_OBSERVATION" in f for f in flags)
+    if data_as_of and is_stale:
+        flags.append(
+            f"DATA_AS_OF:{data_as_of[:10]} — macro source may lag 1-2 years; "
+            "cap downstream confidence at MEDIUM when is_stale=True"
+        )
+
     return create_envelope(
         "wealth_ingest_fetch",
         "Sense",
-        {"count": result["count"], "cached": result.get("cached", False)},
+        {"count": result["count"], "cached": result.get("cached", False),
+         "data_as_of": data_as_of, "is_stale": is_stale},
         {"records": result["records"][:50], "flags": flags},
         flags,
-        ["Live feeds carry source, timestamp, unit, and revision metadata."],
+        [
+            "Live feeds carry source, timestamp, unit, and revision metadata.",
+            f"data_as_of: {data_as_of or 'UNKNOWN'} — check is_stale before using in NPV models.",
+        ],
     )
 
 
@@ -3545,6 +3563,14 @@ def get_epistemic_matrix() -> str:
     )
 
 
+WELL_TYPE_PRIOR_BASELINES: Dict[str, float] = {
+    "wildcat":     0.25,  # frontier exploration — global PoS range 0.20-0.30
+    "near_field":  0.50,  # near-field / step-out extension — PoS range 0.40-0.60
+    "appraisal":   0.55,  # appraisal of a confirmed discovery — PoS range 0.50-0.65
+    "development": 0.75,  # development well in producing field — PoS range 0.70-0.85
+}
+
+
 # INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_evoi_compute)
 async def wealth_evoi_compute(
     well_cost_musd: float,
@@ -3555,6 +3581,7 @@ async def wealth_evoi_compute(
     info_cost_musd: float = 5.0,
     discount_rate: float = 0.10,
     scale_mode: str = "enterprise",
+    well_type: str = "",
 ) -> Any:
     """
     Expected Value of Information (EVOI) point-estimate computation. [Epistemic Dimension]
@@ -3571,9 +3598,12 @@ async def wealth_evoi_compute(
 
     _evoi_default_flags: List[str] = []
     if final_prior is None:
-        # Industry baseline for frontier E&P: 30% pre-drill PoS
-        final_prior = 0.30
-        _evoi_default_flags.append("PRIOR_DEFAULTED_TO_INDUSTRY_BASELINE_0.30")
+        _baseline = WELL_TYPE_PRIOR_BASELINES.get(well_type.lower().replace("-", "_"), 0.30) if well_type else 0.30
+        final_prior = _baseline
+        if well_type and well_type.lower().replace("-", "_") in WELL_TYPE_PRIOR_BASELINES:
+            _evoi_default_flags.append(f"PRIOR_DEFAULTED_TO_{well_type.upper()}_BASELINE_{_baseline}")
+        else:
+            _evoi_default_flags.append(f"PRIOR_DEFAULTED_TO_WILDCAT_BASELINE_{_baseline} — pass well_type=(wildcat|near_field|appraisal|development) for well-specific prior")
     if final_posterior is None:
         # Bayesian update: new information raises PoS by ~50% relative
         final_posterior = min(1.0, final_prior * 1.50)
@@ -5753,6 +5783,14 @@ def _emergence_scan(
     # ── Sovereign resource / power capture detection ──────────────────────────
     scale_mode = arguments.get("scale_mode", "enterprise")
     high_stakes_scale = scale_mode in {"national", "crisis", "civilization", "sovereign"}
+
+    # Structural parameter checks — reliable regardless of how the question is worded.
+    # A caller passing foreign_entity=True triggers detection even without keywords.
+    _struct_foreign_entity = bool(arguments.get("foreign_entity", False))
+    _struct_opaque_valuation = bool(arguments.get("opaque_valuation", False))
+    _struct_constitutional_dispute = bool(arguments.get("constitutional_dispute", False))
+    _struct_irreversible = not bool(arguments.get("reversible", True))
+
     sovereignty_markers = [
         "national resource", "sovereign asset", "petronas", "petros", "sarawak oil",
         "psc", "production sharing", "upstream concession", "national oil company",
@@ -5764,13 +5802,34 @@ def _emergence_scan(
         "joint venture governance", "foreign majority", "foreign controlled",
         "eni", "petronas-eni", "petrovietnam", "foreign noc",
     ]
+
+    # Keyword scan on text-only fields (question, context strings — not parameter names)
+    _text_fields = {k: v for k, v in arguments.items() if isinstance(v, str)}
+    _text_only = json.dumps(_text_fields, default=str).lower()
+
     irreversible_at_scale = (
         high_stakes_scale
-        and not arguments.get("reversible", True)
+        and (_struct_irreversible or not arguments.get("reversible", True))
         and not arguments.get("human_confirmed", False)
     )
-    sovereignty_context = any(m in input_text for m in sovereignty_markers)
-    foreign_control_context = any(m in input_text for m in foreign_control_markers)
+    # Structural params take priority; keyword scan on text is secondary
+    sovereignty_context = (
+        _struct_constitutional_dispute
+        or any(m in _text_only for m in sovereignty_markers)
+        or any(m in input_text for m in sovereignty_markers)
+    )
+    foreign_control_context = (
+        _struct_foreign_entity
+        or any(m in _text_only for m in foreign_control_markers)
+        or any(m in input_text for m in foreign_control_markers)
+    )
+
+    # Structural opaque_valuation triggers F03 independently of keyword scan
+    if _struct_opaque_valuation:
+        pwr["verdict"] = "HOLD"
+        pwr["breaches"].append(
+            "F03_WITNESS: opaque_valuation=True (structural parameter) — independent evidence required before SEAL"
+        )
 
     if high_stakes_scale and sovereignty_context:
         pwr["verdict"] = "HOLD"
@@ -6478,11 +6537,19 @@ def wealth_signal_information(
     info_cost_musd: float = 5.0,
     discount_rate: float = 0.10,
     scale_mode: str = "enterprise",
+    well_type: str = "",
     prior_pos_samples: Optional[List[float]] = None,
     posterior_pos_samples: Optional[List[float]] = None,
     prospects: Optional[List[Dict[str, Any]]] = None,
 ) -> Any:
-    """Ω-WEALTH-09: Signal — information value, evidence quality, schema validity."""
+    """Ω-WEALTH-09: Signal — information value, evidence quality, schema validity.
+
+    well_type: Set the E&P well category for prior PoS baseline.
+      wildcat    — frontier exploration (default PoS: 0.25)
+      near_field — step-out / near-field extension (PoS: 0.50)
+      appraisal  — appraisal of confirmed discovery (PoS: 0.55)
+      development — development well in producing field (PoS: 0.75)
+    """
     return _dispatch_emergence("wealth_signal_information", mode, {
         "evoi": wealth_evoi_compute,
         "evoi_mc": wealth_evoi_monte_carlo,
