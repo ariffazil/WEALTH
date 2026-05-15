@@ -41,68 +41,62 @@ WEALTH is the **capital evidence organ** — it surfaces the financial and econo
 | Field | Value |
 |-------|-------|
 | Canonical repository | `https://github.com/ariffazil/wealth` |
-| Version | `v2026.05.10-1cb75fb` |
+| Canonical branch | `main` |
+| Repo head audited | `fd14938` |
 | Governing kernel | `arifOS F1–F13` |
-| MCP tools (canonical kernel) | 48 tools (13 primitives × mode variants, each mode is a callable endpoint) |
-| MCP tools (cross-domain demo) | 6 additional tools (separate `mcp/server.py`) |
-| Capital scales | 8 (personal → household → sme → enterprise → national → crisis → civilization → agentic) |
-| Capital types | 7 (financial, temporal, cognitive, social, ecological, strategic, thermodynamic) |
-| Homepage | https://wealth.arif-fazil.com/ |
+| Runtime entrypoint | `internal/monolith.py` |
+| Public MCP surface | `0` visible tools (all 58 autonomic) |
+| Total tool count | `58` (all tagged with cognitive_axis in FEDERATION_TOOLS) |
+| Schema version | `wealth.physics_economics.v1` |
+| Health / ready | `https://wealth.arif-fazil.com/health` · `https://wealth.arif-fazil.com/ready` |
+| Homepage | `https://wealth.arif-fazil.com/` |
 
 ---
 
-## What Changed (2026-05-10)
+## Current State (2026-05-13)
 
-- WEALTH now sits behind arifOS embodiment-aware kernel and REST gating.
-- Governance attestation resolves the current model registry correctly, including `gpt-5.5-thinking`.
-- The immediate frontier is dual-runtime consolidation, thermodynamic capital accounting, and tighter GEOX coupling.
+**WEALTH is 100% autonomic.** All 58 tools are tagged with `expose=False` in `WEALTH_TOOL_MANIFEST`, registered in `FEDERATION_TOOLS` with cognitive axes. Zero tools visible on the federation surface. WEALTH serves as a backend ledger/logic engine invoked by arifOS governance tools or WELL readiness checks — never called directly by agents.
 
----
-
-## Architecture — Sovereign Pipeline Families
-
-> The MCP surface exposes **48 callable tools** — every mode and sub-mode is a first-class endpoint. The 13 canonical primitives (left column) are the architectural concept; the MCP tools are their operational surface.
-
-| Family | Stage | Purpose | Canonical Primitive | MCP Tools (48 total) |
-|--------|-------|---------|-------------------|----------------------|
-| **SENSE** | 100 | Reality ingestion | `wealth_sense_ingest` | 7 tools: `wealth_sense_ingest`, `_fetch`, `_health`, `_reconcile`, `_snapshot`, `_sources`, `_vintage` |
-| **MIND** | 200 | Epistemic modeling | `wealth_present_expect`, `wealth_future_simulate`, `wealth_info_value`, `wealth_truth_validate` | 6 tools: `wealth_mind_emv`, `_evoi`, `_evoi_mc`, `_monte_carlo`, `_schema`, `_correlation` |
-| **SURVIVAL** | 300 | Solvency & stewardship | `wealth_survival_liquidity`, `wealth_survival_leverage`, `wealth_future_steward` | 8 tools: `wealth_survival_cashflow`, `_velocity`, `_triage`, `_dscr`, `_networth`, `_leverage`, `_liquidity`, `_civilization` |
-| **REASON** | 400 | Capital discipline | `wealth_future_value`, `wealth_allocate_optimize`, `wealth_game_coordinate` | 9 tools: `wealth_reason_npv`, `_irr`, `_payback`, `_pi`, `_personal`, `_agent`, `_equilibrium`, `_game` + `wealth_npv_reward` |
-| **JUDGE** | 888 | Constitutional gating | `wealth_rule_enforce` | 4 tools: `wealth_judge_floors`, `_policy`, `_kernel`, `_entropy` |
-| **VAULT** | 999 | Immutable anchoring | `wealth_past_record` | 3 tools: `wealth_vault_init`, `_record`, `_snapshot` |
-
----
-
-## MCP Server Surfaces
-
-| Surface | File | Tools | Purpose |
-|---------|------|-------|---------|
-| **Canonical kernel** | `internal/monolith.py` | 48 MCP tools (13 primitives × mode variants) | Core valuation, risk, crisis, coordination |
-| **Boot wrapper** | `server.py` | Thin compat | Points to canonical kernel |
-| **Civilizational demo** | `mcp/server.py` | 6 tools | Markets, energy, food security domains |
-
-**Packaging rule:** `internal/monolith.py` is the canonical kernel. `server.py` preserves external boot paths. `mcp/server.py` is a separate cross-domain demo surface.
+**Cognitive axis distribution:**
+| Axis | Tools | Example |
+|------|-------|---------|
+| vitality | 14 | wealth_flow_cashflow, wealth_mass_networth |
+| reason | 10 | wealth_value_npv, wealth_energy_irr |
+| observe | 6 | wealth_sensor_fetch, wealth_gradient_price |
+| seal | 6 | wealth_ledger_write, wealth_hysteresis_ledger |
+| critique | 4 | wealth_entropy_audit, wealth_entropy_risk |
+| boundary | 3 | wealth_boundary_governance, wealth_inertia_leverage |
+| execute | 3 | wealth_allocate_optimize |
+| trace | 2 | wealth_ledger_query |
+| verify | 1 | wealth_signal_information |
+| reflect | 1 | wealth_stewardship_civilization |
+| identity | 1 | mcp_health_check |
+- `/tools`, `/ready`, and MCP `tools/list` now agree on the same public registry truth.
+- Legacy tools remain callable through compatibility routing, but they are no longer published as public MCP actions.
+- `repo_head` now resolves live as `fd14938` through the mounted repository path.
 
 ---
 
-## 13 Canonical Primitives
+## Canonical Public Surface
 
-| Primitive | Modes | Dimension | Temporal Axis |
-|-----------|-------|-----------|---------------|
-| `wealth_future_value` | `npv`, `irr`, `pi`, `payback` | Time-Discounted Projection | **Future** |
-| `wealth_present_expect` | — | Probability-Weighted EMV | **Present** |
-| `wealth_future_simulate` | — | Stochastic Projection (Monte Carlo) | **Future** |
-| `wealth_info_value` | `evoi`, `evoi_mc` | Expected Value of Information | **Future** |
-| `wealth_truth_validate` | `schema`, `correlation`, `entropy` | Epistemic Integrity | **Present** |
-| `wealth_survival_liquidity` | `cashflow`, `velocity`, `triage` | Survival Liquidity | **Present** |
-| `wealth_survival_leverage` | `dscr`, `networth` | Structural Load + Balance Sheet | **Present** |
-| `wealth_rule_enforce` | `floors`, `policy` | Governance Constraint F1–F13 | **Present** |
-| `wealth_allocate_optimize` | `kernel`, `personal`, `agent` | Capital Allocation Brain | **Future** |
-| `wealth_game_coordinate` | `equilibrium`, `game` | Multi-Agent Dynamics | **Future** |
-| `wealth_sense_ingest` | `fetch`, `snapshot`, `sources`, `health`, `vintage`, `reconcile` | Reality Intake | **Cross-temporal** |
-| `wealth_past_record` | `init`, `transaction`, `portfolio` | Memory & Audit Trail | **Past** |
-| `wealth_future_steward` | — | Long-Horizon Planetary Boundaries | **Future** |
+| Tool | Meaning |
+|------|---------|
+| `mcp_health_check` | transport and federation readiness probe |
+| `wealth_conservation_capital` | capital stock and conservation state |
+| `wealth_flow_liquidity` | liquidity movement, burn, runway, triage |
+| `wealth_gradient_price` | spread, pressure, mispricing signals |
+| `wealth_entropy_risk` | uncertainty, dispersion, tail risk |
+| `wealth_energy_productivity` | productivity and capital efficiency |
+| `wealth_time_discount` | NPV / IRR / payback under time |
+| `wealth_inertia_leverage` | structural leverage and fragility |
+| `wealth_field_macro` | external macro and source-field state |
+| `wealth_signal_information` | EVOI and schema integrity |
+| `wealth_game_coordination` | incentives, bargaining, coordination |
+| `wealth_boundary_governance` | constitutional and policy floors |
+| `wealth_hysteresis_ledger` | path dependence and ledger state |
+| `wealth_system_registry_status` | registry truth, visible count, alias count |
+
+**Compatibility rule:** legacy tools are still callable through compatibility routing on `/mcp`, but they are intentionally absent from the public discovery surface.
 
 ---
 
@@ -159,3 +153,14 @@ Human / Agent request
 
 *Capital is not money. Capital is stored choice. WEALTH prices the choice before arifOS seals it.*
 *DITEMPA BUKAN DIBERI — Epistemic capital sovereignty is forged, not given.*
+
+## Repo + MCP Stabilization
+
+Operational stabilization policy and weekly hygiene protocol:
+`docs/operations/repo-mcp-stabilization.md`
+
+Install severity-based pre-push guard:
+
+```bash
+bash scripts/hooks/install_hooks.sh
+```

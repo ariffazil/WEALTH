@@ -39,7 +39,8 @@ class GScoreEngine:
         uncertainty_sig = np.clip(params.get("volatility", 0.2) * 2.0, 0.0, 1.0)
         
         runway = params.get("runway_months", 12.0)
-        if runway == float('inf'): runway = 60.0
+        if runway is None or runway == float('inf'):
+            runway = 60.0
         survival_sig = np.clip(runway / 36.0, 0.0, 1.0)
         
         truth_sig = np.clip(params.get("trust_index", 0.5), 0.0, 1.0)
