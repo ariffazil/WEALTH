@@ -6301,7 +6301,7 @@ def wealth_gradient_price(
 @mcp.tool(name="wealth_entropy_risk")
 def wealth_entropy_risk(
     mode: str = "emv",
-    scenarios: Optional[List[dict]] = None,
+    scenarios: Optional[Any] = None,
     scale_mode: str = "enterprise",
     initial_commitment: float = 0,
     mean_cash_flows: Optional[List[float]] = None,
@@ -6314,27 +6314,67 @@ def wealth_entropy_risk(
     input_epistemic: str = "CLAIM",
     prospects: Optional[List[Dict[str, Any]]] = None,
     correlation_threshold: int = 3,
+    mode_params: Optional[Any] = None,
 ) -> Any:
-    """Ω-WEALTH-04: Entropy — uncertainty, dispersion, tail risk, disorder."""
+    """Ω-WEALTH-04: Entropy — uncertainty, dispersion, tail risk, disorder.
+    Mode routing: mode='asymmetry_map' or mode='return_classify' — pass mode_params dict."""
+    import json as _json
+    if isinstance(mode_params, str):
+        try: mode_params = _json.loads(mode_params)
+        except Exception: mode_params = {}
+    if isinstance(scenarios, str):
+        try: scenarios = _json.loads(scenarios)
+        except Exception: scenarios = []
+    _mp = mode_params or {}
+    if mode == "asymmetry_map":
+        return wealth_asymmetry_map(
+            context=_mp.get("context", ""),
+            asset_asymmetry=_mp.get("asset_asymmetry", 0.5),
+            information_asymmetry=_mp.get("information_asymmetry", 0.5),
+            power_asymmetry=_mp.get("power_asymmetry", 0.5),
+            risk_asymmetry=_mp.get("risk_asymmetry", 0.5),
+            time_asymmetry=_mp.get("time_asymmetry", 0.5),
+            mobility_asymmetry=_mp.get("mobility_asymmetry", 0.5),
+            voice_asymmetry=_mp.get("voice_asymmetry", 0.5),
+            dignity_asymmetry=_mp.get("dignity_asymmetry", 0.5),
+            network_asymmetry=_mp.get("network_asymmetry", 0.5),
+            scale_mode=_mp.get("scale_mode", scale_mode),
+        )
+    if mode == "return_classify":
+        return wealth_return_classifier(
+            return_description=_mp.get("return_description", ""),
+            source_description=_mp.get("source_description", ""),
+            value_created=_mp.get("value_created", 0.5),
+            competitive_entry_open=_mp.get("competitive_entry_open", 0.5),
+            reversible_advantage=_mp.get("reversible_advantage", 0.5),
+            political_protection=_mp.get("political_protection", 0.0),
+            inherited_lock_in=_mp.get("inherited_lock_in", 0.0),
+            coercion_factor=_mp.get("coercion_factor", 0.0),
+            scale_mode=_mp.get("scale_mode", scale_mode),
+        )
     return _dispatch_emergence("wealth_entropy_risk", mode, {
         "emv": emv_risk,
         "monte_carlo": monte_carlo_forecast,
         "audit": audit_entropy,
         "correlation": wealth_correlation_guard_check,
-    }, {k: v for k, v in locals().items() if k not in ('mode', 'dispatch')})
+    }, {k: v for k, v in locals().items() if k not in ('mode', 'dispatch', 'mode_params', '_mp', '_json')})
 
 
 @mcp.tool(name="wealth_energy_productivity")
 def wealth_energy_productivity(
     mode: str = "pi",
     initial_investment: float = 0,
-    cash_flows: Optional[List[float]] = None,
+    cash_flows: Optional[Any] = None,
     discount_rate: float = 0.1,
     terminal_value: float = 0,
     scale_mode: str = "enterprise",
 ) -> Any:
     """Ω-WEALTH-05: Energy — output per input, productivity, capital efficiency."""
-    payload = dict(locals())
+    import json as _json
+    if isinstance(cash_flows, str):
+        try: cash_flows = _json.loads(cash_flows)
+        except Exception: cash_flows = []
+    payload = {k: v for k, v in locals().items() if k != "_json"}
     if mode == "pi":
         if _is_blank_value(cash_flows):
             return _inject_emergence(
@@ -6407,7 +6447,7 @@ def wealth_energy_productivity(
 def wealth_time_discount(
     mode: str = "npv",
     initial_investment: float = 0,
-    cash_flows: Optional[List[float]] = None,
+    cash_flows: Optional[Any] = None,
     discount_rate: float = 0.1,
     terminal_value: float = 0,
     period_unit: str = "annual",
@@ -6417,7 +6457,11 @@ def wealth_time_discount(
     finance_rate: float = 0.1,
 ) -> Any:
     """Ω-WEALTH-06: Time — NPV, IRR, payback, compounding, decay."""
-    payload = _clean_payload(locals(), exclude={"mode"})
+    import json as _json
+    if isinstance(cash_flows, str):
+        try: cash_flows = _json.loads(cash_flows)
+        except Exception: cash_flows = []
+    payload = _clean_payload({k: v for k, v in locals().items() if k != "_json"}, exclude={"mode"})
     return _dispatch_invariant_tool("wealth_time_discount", mode, payload)
 
 
@@ -6678,10 +6722,29 @@ def wealth_boundary_governance(
     values: Optional[dict] = None,
     maruah_score: Optional[float] = None,
     context: Optional[dict] = None,
+    mode_params: Optional[Any] = None,
 ) -> Any:
     """Ω-WEALTH-11: Boundary — constitutional floors, maruah, stewardship, constraint.
     Pass context={'foreign_entity': True, 'opaque_valuation': True, ...} for smart maruah scoring.
-    Pass scale_mode='sovereign' for Malaysian national resource context."""
+    Pass scale_mode='sovereign' for Malaysian national resource context.
+    Mode routing: mode='legitimacy_audit' — pass mode_params dict."""
+    import json as _json
+    if isinstance(mode_params, str):
+        try: mode_params = _json.loads(mode_params)
+        except Exception: mode_params = {}
+    _mp = mode_params or {}
+    if mode == "legitimacy_audit":
+        return wealth_legitimacy_audit(
+            system_description=_mp.get("system_description", ""),
+            rules_understandable=_mp.get("rules_understandable", 0.5),
+            rules_contestable=_mp.get("rules_contestable", 0.5),
+            rules_fair_enough=_mp.get("rules_fair_enough", 0.5),
+            rules_repairable=_mp.get("rules_repairable", 0.5),
+            rules_non_humiliating=_mp.get("rules_non_humiliating", 0.5),
+            rules_non_captured=_mp.get("rules_non_captured", 0.5),
+            contestation_cost_proportionate=_mp.get("contestation_cost_proportionate", 0.5),
+            scale_mode=_mp.get("scale_mode", scale_mode),
+        )
     ctx = context or {}
     computed_maruah, maruah_was_computed, maruah_signals = compute_maruah_from_context(
         explicit_score=maruah_score,
@@ -6693,7 +6756,7 @@ def wealth_boundary_governance(
         opaque_valuation=bool(ctx.get("opaque_valuation")),
         context=ctx,
     )
-    params = {k: v for k, v in locals().items() if k not in ("mode", "dispatch", "context", "maruah_score")}
+    params = {k: v for k, v in locals().items() if k not in ("mode", "dispatch", "context", "maruah_score", "mode_params", "_mp", "_json")}
     params["maruah_score"] = computed_maruah
     result = _dispatch_emergence("wealth_boundary_governance", mode, {
         "floors": check_floors_tool,
@@ -6764,6 +6827,8 @@ def wealth_synthesize(
     prior_pos: Optional[float] = None,
     cash_flows: Optional[List[float]] = None,
     discount_rate: float = 0.10,
+    mode: str = "synthesis",
+    mode_params: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """Ω-WEALTH-00: Synthesis — unified capital intelligence verdict.
 
@@ -6780,6 +6845,25 @@ def wealth_synthesize(
                         actors=["PETRONAS","ENI","Sarawak","Federal"],
                         context={"foreign_entity": True, "reversible": False})
     """
+    import json as _json_mp
+    if isinstance(mode_params, str):
+        try: mode_params = _json_mp.loads(mode_params)
+        except Exception: mode_params = {}
+    _mp = mode_params or {}
+    if mode == "conversion_audit":
+        return wealth_conversion_architecture(
+            domain=_mp.get("domain", "unspecified"),
+            description=_mp.get("description", ""),
+            institutions_quality=_mp.get("institutions_quality", 0.5),
+            ownership_concentration=_mp.get("ownership_concentration", 0.5),
+            mobility_channels=_mp.get("mobility_channels", 0.5),
+            risk_distribution=_mp.get("risk_distribution", 0.5),
+            information_symmetry=_mp.get("information_symmetry", 0.5),
+            voice_access=_mp.get("voice_access", 0.5),
+            time_horizon=_mp.get("time_horizon", 0.5),
+            historical_damage=_mp.get("historical_damage", 0.5),
+            scale_mode=_mp.get("scale_mode", scale_mode),
+        )
     # Coerce JSON strings sent by strict MCP bridges (actors, context arrive as str)
     import json as _json
     if isinstance(actors, str):
@@ -6964,7 +7048,6 @@ def wealth_synthesize(
 # Eureka: WEALTH must audit the CONVERTER, not just the capital stock.
 # ═══════════════════════════════════════════════════════════════════════
 
-@mcp.tool(name="wealth_conversion_architecture")
 def wealth_conversion_architecture(
     domain: str = "unspecified",
     description: str = "",
@@ -7045,7 +7128,6 @@ def wealth_conversion_architecture(
     }, result)
 
 
-@mcp.tool(name="wealth_asymmetry_map")
 def wealth_asymmetry_map(
     context: str = "",
     asset_asymmetry: float = 0.5,
@@ -7120,7 +7202,6 @@ def wealth_asymmetry_map(
     }, result)
 
 
-@mcp.tool(name="wealth_return_classifier")
 def wealth_return_classifier(
     return_description: str = "",
     source_description: str = "",
@@ -7278,7 +7359,6 @@ def wealth_role_scarcity_risk(
     }, result)
 
 
-@mcp.tool(name="wealth_legitimacy_audit")
 def wealth_legitimacy_audit(
     system_description: str = "",
     rules_understandable: float = 0.5,
@@ -7529,13 +7609,14 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_boundary_governance",
     "wealth_hysteresis_ledger",
     "wealth_system_registry_status",
-    # Inequality Intelligence Kernel — forged 2026-05-16
+    # Inequality Intelligence Kernel — forged 2026-05-16, collapsed 2026-05-16 (21→17)
+    # Collapsed tools live as mode routes:
+    #   wealth_entropy_risk(mode="asymmetry_map", mode_params={...})
+    #   wealth_entropy_risk(mode="return_classify", mode_params={...})
+    #   wealth_boundary_governance(mode="legitimacy_audit", mode_params={...})
+    #   wealth_synthesize(mode="conversion_audit", mode_params={...})
     "wealth_inequality_kernel",
-    "wealth_conversion_architecture",
-    "wealth_asymmetry_map",
-    "wealth_return_classifier",
     "wealth_role_scarcity_risk",
-    "wealth_legitimacy_audit",
 )
 _PUBLIC_TOOLS = set(WEALTH_PUBLIC_TOOL_ORDER)
 
