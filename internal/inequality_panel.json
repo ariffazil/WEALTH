@@ -1,0 +1,191 @@
+{
+  "MYS": {
+    "2025": {
+      "kernel_score": 0.6612,
+      "final_verdict": "QUALIFY",
+      "binding_constraint": "role_architecture",
+      "sub_dimension_scores": {
+        "conversion": 0.7398,
+        "asymmetry": 0.6679,
+        "role_architecture": 0.6121,
+        "legitimacy": 0.6248
+      },
+      "calhoun_risk": 0.3879,
+      "legitimacy_regime": "contested",
+      "live_inputs": [
+        "future_orientation_collapse",
+        "information_symmetry",
+        "institutions_quality",
+        "mobility_channels",
+        "ownership_concentration",
+        "power_asymmetry",
+        "risk_distribution",
+        "time_horizon",
+        "voice_access",
+        "youth_unemployment"
+      ],
+      "data_years": {
+        "youth_unemployment": "2025",
+        "ownership_concentration": "2021",
+        "power_asymmetry": "2021",
+        "mobility_channels": "2021",
+        "future_orientation_collapse": "2024",
+        "information_symmetry": "2022",
+        "risk_distribution": "2024",
+        "voice_access": "2025",
+        "time_horizon": "2024"
+      },
+      "timestamp": "2026-05-16T09:34:13.472838Z"
+    }
+  },
+  "SGP": {
+    "2025": {
+      "kernel_score": 0.6352,
+      "final_verdict": "QUALIFY",
+      "binding_constraint": "role_architecture",
+      "sub_dimension_scores": {
+        "conversion": 0.705,
+        "asymmetry": 0.6351,
+        "role_architecture": 0.5872,
+        "legitimacy": 0.6135
+      },
+      "calhoun_risk": 0.4128,
+      "legitimacy_regime": "contested",
+      "live_inputs": [
+        "future_orientation_collapse",
+        "information_symmetry",
+        "institutions_quality",
+        "risk_distribution",
+        "time_horizon",
+        "voice_access",
+        "youth_unemployment"
+      ],
+      "data_years": {
+        "youth_unemployment": "2025",
+        "future_orientation_collapse": "2024",
+        "information_symmetry": "2021",
+        "risk_distribution": "2024",
+        "voice_access": "2025",
+        "time_horizon": "2024"
+      },
+      "timestamp": "2026-05-16T09:34:15.565831Z"
+    }
+  },
+  "IDN": {
+    "2025": {
+      "kernel_score": 0.7068,
+      "final_verdict": "QUALIFY",
+      "binding_constraint": "legitimacy",
+      "sub_dimension_scores": {
+        "conversion": 0.7884,
+        "asymmetry": 0.7138,
+        "role_architecture": 0.6802,
+        "legitimacy": 0.6449
+      },
+      "calhoun_risk": 0.3198,
+      "legitimacy_regime": "contested",
+      "live_inputs": [
+        "future_orientation_collapse",
+        "information_symmetry",
+        "institutions_quality",
+        "mobility_channels",
+        "ownership_concentration",
+        "power_asymmetry",
+        "risk_distribution",
+        "time_horizon",
+        "voice_access",
+        "youth_unemployment"
+      ],
+      "data_years": {
+        "youth_unemployment": "2025",
+        "ownership_concentration": "2025",
+        "power_asymmetry": "2025",
+        "mobility_channels": "2025",
+        "future_orientation_collapse": "2024",
+        "information_symmetry": "2020",
+        "risk_distribution": "2024",
+        "voice_access": "2025",
+        "time_horizon": "2024"
+      },
+      "timestamp": "2026-05-16T09:34:16.576566Z"
+    }
+  },
+  "THA": {
+    "2025": {
+      "kernel_score": 0.6886,
+      "final_verdict": "QUALIFY",
+      "binding_constraint": "legitimacy",
+      "sub_dimension_scores": {
+        "conversion": 0.7653,
+        "asymmetry": 0.7019,
+        "role_architecture": 0.6466,
+        "legitimacy": 0.6406
+      },
+      "calhoun_risk": 0.3534,
+      "legitimacy_regime": "contested",
+      "live_inputs": [
+        "future_orientation_collapse",
+        "information_symmetry",
+        "institutions_quality",
+        "mobility_channels",
+        "ownership_concentration",
+        "power_asymmetry",
+        "risk_distribution",
+        "time_horizon",
+        "voice_access",
+        "youth_unemployment"
+      ],
+      "data_years": {
+        "youth_unemployment": "2025",
+        "ownership_concentration": "2024",
+        "power_asymmetry": "2024",
+        "mobility_channels": "2024",
+        "future_orientation_collapse": "2024",
+        "information_symmetry": "2022",
+        "risk_distribution": "2024",
+        "voice_access": "2025",
+        "time_horizon": "2024"
+      },
+      "timestamp": "2026-05-16T09:34:18.509446Z"
+    }
+  },
+  "VNM": {
+    "2025": {
+      "kernel_score": 0.7067,
+      "final_verdict": "QUALIFY",
+      "binding_constraint": "legitimacy",
+      "sub_dimension_scores": {
+        "conversion": 0.7873,
+        "asymmetry": 0.7105,
+        "role_architecture": 0.6751,
+        "legitimacy": 0.6538
+      },
+      "calhoun_risk": 0.3249,
+      "legitimacy_regime": "contested",
+      "live_inputs": [
+        "future_orientation_collapse",
+        "information_symmetry",
+        "institutions_quality",
+        "mobility_channels",
+        "ownership_concentration",
+        "power_asymmetry",
+        "risk_distribution",
+        "time_horizon",
+        "voice_access",
+        "youth_unemployment"
+      ],
+      "data_years": {
+        "youth_unemployment": "2025",
+        "ownership_concentration": "2022",
+        "power_asymmetry": "2022",
+        "mobility_channels": "2022",
+        "future_orientation_collapse": "2024",
+        "information_symmetry": "2022",
+        "risk_distribution": "2024",
+        "voice_access": "2025",
+        "time_horizon": "2024"
+      },
+      "timestamp": "2026-05-16T09:34:19.480287Z"
+    }
+  }
+}

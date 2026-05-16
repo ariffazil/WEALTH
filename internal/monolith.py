@@ -7438,6 +7438,146 @@ def wealth_legitimacy_audit(
     }, result)
 
 
+# ── Inequality Intelligence: Country Presets + World Bank Live Wire ──────────
+
+INEQUALITY_COUNTRY_PRESETS: Dict[str, str] = {
+    "malaysia":     "MYS",
+    "singapore":    "SGP",
+    "indonesia":    "IDN",
+    "thailand":     "THA",
+    "vietnam":      "VNM",
+    "philippines":  "PHL",
+    "myanmar":      "MMR",
+    "cambodia":     "KHM",
+    "india":        "IND",
+    "china":        "CHN",
+    "usa":          "USA",
+    "uk":           "GBR",
+    "brazil":       "BRA",
+    "south_africa": "ZAF",
+    "nigeria":      "NGA",
+    "kenya":        "KEN",
+}
+
+# series_id → (kernel_param, normalization_fn, human-readable description)
+_IEQ_WB_INDICATORS: Dict[str, tuple] = {
+    "SL.UEM.1524.ZS":    ("youth_unemployment",           lambda v: min(v / 50.0, 1.0),                     "Youth unemployment %"),
+    "SI.POV.GINI":       ("ownership_concentration",      lambda v: max(0.0, min((v - 20.0) / 60.0, 1.0)),  "Gini coefficient"),
+    "SI.DST.10TH.10":    ("power_asymmetry",              lambda v: min(v / 60.0, 1.0),                     "Income share top 10%"),
+    "SI.DST.FRST.20":    ("mobility_channels",            lambda v: min(v / 10.0, 1.0),                     "Income share bottom 20%"),
+    "SP.DYN.TFRT.IN":    ("future_orientation_collapse",  lambda v: max(0.0, 1.0 - v / 2.1),                "Total fertility rate"),
+    "SE.ADT.LITR.ZS":    ("information_symmetry",         lambda v: min(v / 100.0, 1.0),                    "Adult literacy rate %"),
+    "NY.GDP.PCAP.KD.ZG": ("risk_distribution",            lambda v: max(0.0, min((v + 5.0) / 15.0, 1.0)),   "GDP per capita growth %"),
+    "SL.TLF.CACT.ZS":    ("voice_access",                 lambda v: min(v / 80.0, 1.0),                     "Labour force participation %"),
+    "FP.CPI.TOTL.ZG":    ("time_horizon",                 lambda v: max(0.0, 1.0 - min(v / 20.0, 1.0)),     "Inflation CPI %"),
+}
+
+
+def _fetch_inequality_inputs_from_wb(
+    country_code: str,
+    year: Optional[int] = None,
+) -> Dict[str, Any]:
+    """Fetch and normalize WB indicators into wealth_inequality_kernel params.
+    Params not covered by live WB data fall back to 0.5 (neutral default).
+    """
+    params: Dict[str, Any] = {}
+    provenance: Dict[str, Any] = {}
+    missing: List[str] = []
+    data_years: Dict[str, str] = {}
+
+    for series_id, (param_name, norm_fn, description) in _IEQ_WB_INDICATORS.items():
+        try:
+            raw = ingest_fetch("WorldBank", series_id, country_code)
+            records = raw.get("secondary_metrics", {}).get("records", [])
+            val = None
+            obs_year = None
+            for rec in records:
+                v = rec.get("value")
+                if v is not None:
+                    try:
+                        fv = float(v)
+                    except (TypeError, ValueError):
+                        continue
+                    if fv != fv:  # NaN guard
+                        continue
+                    yr_str = str(rec.get("observation_time", ""))[:4]
+                    if year is None or yr_str == str(year):
+                        val = fv
+                        obs_year = yr_str
+                        break
+            if val is not None:
+                normalized = round(max(0.0, min(norm_fn(val), 1.0)), 4)
+                params[param_name] = normalized
+                provenance[param_name] = {
+                    "series_id": series_id,
+                    "raw_value": round(val, 4),
+                    "year": obs_year,
+                    "description": description,
+                    "source": "WorldBank",
+                }
+                data_years[param_name] = obs_year
+            else:
+                missing.append(param_name)
+                provenance[param_name] = {"series_id": series_id, "status": "NO_DATA", "default": 0.5}
+        except Exception as exc:
+            missing.append(param_name)
+            provenance[param_name] = {"series_id": series_id, "status": f"ERROR:{type(exc).__name__}", "default": 0.5}
+
+    # Derive institutions_quality from literacy + LFP when WGI governance indicators unavailable
+    if "information_symmetry" in params and "voice_access" in params:
+        inst_q = round((params["information_symmetry"] + params["voice_access"]) / 2.0, 4)
+        params["institutions_quality"] = inst_q
+        provenance["institutions_quality"] = {
+            "derived_from": ["information_symmetry", "voice_access"],
+            "note": "WGI governance indicators unavailable via current adapter; proxy from literacy + LFP average",
+        }
+
+    return {
+        "params": params,
+        "data_provenance": provenance,
+        "country_code": country_code,
+        "live_inputs": sorted(params.keys()),
+        "missing_inputs": sorted(missing),
+        "data_years": data_years,
+        "claim_state": "LIVE_DATA" if params else "NO_DATA",
+    }
+
+
+def _save_inequality_panel(
+    country_code: str,
+    year: str,
+    kernel_result: Dict[str, Any],
+    wb_data: Dict[str, Any],
+) -> None:
+    """Append a kernel run to the lightweight panel DB at inequality_panel.json."""
+    import json as _pj
+    import os as _os
+    panel_path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "inequality_panel.json")
+    try:
+        try:
+            with open(panel_path, "r") as f:
+                panel = _pj.load(f)
+        except (FileNotFoundError, _pj.JSONDecodeError):
+            panel = {}
+        if country_code not in panel:
+            panel[country_code] = {}
+        panel[country_code][year] = {
+            "kernel_score":         kernel_result.get("kernel_score"),
+            "final_verdict":        kernel_result.get("final_verdict"),
+            "binding_constraint":   kernel_result.get("binding_constraint"),
+            "sub_dimension_scores": kernel_result.get("sub_dimension_scores", {}),
+            "calhoun_risk":         kernel_result.get("calhoun_risk"),
+            "legitimacy_regime":    kernel_result.get("legitimacy_regime"),
+            "live_inputs":          wb_data.get("live_inputs", []),
+            "data_years":           wb_data.get("data_years", {}),
+            "timestamp":            datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        }
+        with open(panel_path, "w") as f:
+            _pj.dump(panel, f, indent=2)
+    except Exception:
+        pass  # Panel DB failure is non-fatal — never block a kernel run
+
+
 @mcp.tool(name="wealth_inequality_kernel")
 def wealth_inequality_kernel(
     context: str = "",
@@ -7461,6 +7601,8 @@ def wealth_inequality_kernel(
     rules_non_captured: float = 0.5,
     contestation_cost_proportionate: float = 0.5,
     scale_mode: str = "civilization",
+    preset: Optional[str] = None,
+    country_code: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Ω-WEALTH-IEQ-00: Inequality Kernel — unified diagnosis across all 5
     inequality dimensions. Synthesis tool: conversion architecture + asymmetry
@@ -7469,9 +7611,38 @@ def wealth_inequality_kernel(
     The governed solution to the inequality paradox. Identifies binding constraint,
     intervention priority, and whether the system is forge-ready for change.
 
+    Pass preset='malaysia' (or any INEQUALITY_COUNTRY_PRESETS key) to wire live
+    World Bank data automatically. Or pass country_code='MYS' directly.
+
     Verdict: Bounded inequality + high mobility + universal dignity is achievable.
     Perfect equality is not. Extractive lock-in is the enemy, not inequality itself.
     """
+    # Live data wire: resolve preset → country_code → WB fetch
+    wb_data: Dict[str, Any] = {}
+    if preset or country_code:
+        resolved_code = country_code
+        if preset and not resolved_code:
+            resolved_code = INEQUALITY_COUNTRY_PRESETS.get(preset.lower())
+            if not resolved_code:
+                resolved_code = preset.upper()  # allow direct ISO codes as preset
+        if resolved_code:
+            wb_data = _fetch_inequality_inputs_from_wb(resolved_code)
+            live_params = wb_data.get("params", {})
+            institutions_quality        = live_params.get("institutions_quality",        institutions_quality)
+            ownership_concentration     = live_params.get("ownership_concentration",     ownership_concentration)
+            mobility_channels           = live_params.get("mobility_channels",           mobility_channels)
+            risk_distribution           = live_params.get("risk_distribution",           risk_distribution)
+            information_symmetry        = live_params.get("information_symmetry",        information_symmetry)
+            voice_access                = live_params.get("voice_access",                voice_access)
+            time_horizon                = live_params.get("time_horizon",                time_horizon)
+            power_asymmetry             = live_params.get("power_asymmetry",             power_asymmetry)
+            youth_unemployment          = live_params.get("youth_unemployment",          youth_unemployment)
+            future_orientation_collapse = live_params.get("future_orientation_collapse", future_orientation_collapse)
+            if not context:
+                context = f"{resolved_code} inequality assessment — live WorldBank data"
+            if domain == "civilization":
+                domain = resolved_code
+
     # Run all 5 sub-dimensions
     conv = wealth_conversion_architecture(
         domain=domain, description=description,
@@ -7588,7 +7759,20 @@ def wealth_inequality_kernel(
         },
         "scale_mode": scale_mode,
         "escalate_to_arifos_judge": final_verdict in ("VOID", "888-HOLD"),
+        # World Bank live data provenance
+        "wb_data_provenance": wb_data.get("data_provenance", {}),
+        "live_inputs": wb_data.get("live_inputs", []),
+        "missing_inputs": wb_data.get("missing_inputs", []),
+        "data_years": wb_data.get("data_years", {}),
+        "data_claim_state": wb_data.get("claim_state", "MANUAL_INPUT"),
     }
+
+    # Persist to panel DB when country is known
+    if wb_data.get("country_code"):
+        years = wb_data.get("data_years", {})
+        year_key = max(years.values()) if years else datetime.now(timezone.utc).strftime("%Y")
+        _save_inequality_panel(wb_data["country_code"], year_key, result, wb_data)
+
     return _inject_emergence("wealth_inequality_kernel", "synthesis", {
         "context": context, "domain": domain, "scale_mode": scale_mode,
     }, result)
