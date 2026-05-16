@@ -1,0 +1,88 @@
+{
+  "seal_type": "FINAL_SESSION_SEAL",
+  "timestamp": "2026-05-16T09:53:42Z",
+  "actor": "Arif Fazil / 888 Judge",
+  "session_label": "WEALTH Forge 1 + Forge 2 — 2026-05-16",
+
+  "git": {
+    "repo": "ariffazil/wealth",
+    "branch": "main",
+    "head": "d2cff76",
+    "commits_this_session": [
+      "8854a26 — collapse 21→17 tools + JSON coercion fix",
+      "7ac4a51 — Forge 2: World Bank live wire + panel DB",
+      "ad13efd — Forge 2 session seal docs",
+      "d2cff76 — repo_head fix + registry callability note"
+    ],
+    "pushed": true
+  },
+
+  "container": {
+    "name": "wealth-organ",
+    "image": "ghcr.io/ariffazil/wealth:d2cff76",
+    "port": 8082,
+    "status": "healthy",
+    "registry_truth": "PASS",
+    "public_surface_count": 17,
+    "repo_head": "d2cff76",
+    "env": {
+      "WEALTH_REPO_HEAD": "d2cff76"
+    }
+  },
+
+  "forge_1": {
+    "label": "4-collapse: 21→17 public tools",
+    "collapsed": [
+      "wealth_conversion_architecture → wealth_synthesize(mode='conversion_audit')",
+      "wealth_asymmetry_map → wealth_entropy_risk(mode='asymmetry_map')",
+      "wealth_return_classifier → wealth_entropy_risk(mode='return_classify')",
+      "wealth_legitimacy_audit → wealth_boundary_governance(mode='legitimacy_audit')"
+    ],
+    "standalone_kept": ["wealth_inequality_kernel", "wealth_role_scarcity_risk"],
+    "wire_fixes": ["JSON coercion for Optional[List/Dict] params", "_serialize_result by_alias"],
+    "math_verified": ["NPV", "MIRR", "PI", "EMV", "DSCR"],
+    "status": "SEALED"
+  },
+
+  "forge_2": {
+    "label": "World Bank live wire into inequality kernel",
+    "indicators_wired": 9,
+    "derived_params": ["institutions_quality"],
+    "country_presets": 16,
+    "panel_db": {
+      "path": "/app/internal/inequality_panel.json",
+      "countries": ["IDN", "MYS", "SGP", "THA", "VNM"],
+      "rows": 5,
+      "data_year": "2025",
+      "evidence_tag": "LIVE_DATA"
+    },
+    "status": "SEALED"
+  },
+
+  "forge_2_diagnostics_fix": {
+    "label": "repo_head + registry callability note",
+    "fixes": [
+      "repo_head: added /app to candidate paths, injected WEALTH_REPO_HEAD env var",
+      "registry_truth: added callability_note field documenting server vs bridge cache distinction"
+    ],
+    "external_bridge_note": "claude.ai bridge shows stale 14-15 tool list — server is correct at 17. Fix: disconnect and reconnect WEALTH MCP integration on claude.ai.",
+    "status": "SEALED"
+  },
+
+  "sea_baseline": {
+    "MYS": {"kernel_score": 0.6612, "verdict": "QUALIFY", "binding": "role_architecture", "calhoun": 0.3879},
+    "SGP": {"kernel_score": 0.6352, "verdict": "QUALIFY", "binding": "role_architecture", "calhoun": 0.4128},
+    "IDN": {"kernel_score": 0.7068, "verdict": "QUALIFY", "binding": "legitimacy",        "calhoun": 0.3198},
+    "THA": {"kernel_score": 0.6886, "verdict": "QUALIFY", "binding": "legitimacy",        "calhoun": 0.3534},
+    "VNM": {"kernel_score": 0.7067, "verdict": "QUALIFY", "binding": "legitimacy",        "calhoun": 0.3249}
+  },
+
+  "claim_state": "HYPOTHESIS",
+  "vault999_executed": false,
+  "vault999_reason": "ACK_IRREVERSIBLE_VAULT999_SEAL_BY_ARIF not present",
+
+  "next_forge": "FORGE_3 — expand panel to 10+ countries, Singapore paradox audit, Malaysia role_architecture deep-dive",
+
+  "final_outcome_label": "SEALED — Session closed. All forges committed, pushed, deployed.",
+  "seal_phrase": "DITEMPA BUKAN DIBERI"
+}
