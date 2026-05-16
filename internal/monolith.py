@@ -6972,7 +6972,7 @@ _PUBLIC_TOOLS = set(WEALTH_PUBLIC_TOOL_ORDER)
 _ALIAS_DISPATCH: dict[str, Any] = {}
 
 def _build_alias_dispatch() -> None:
-    """Populate _ALIAS_DISPATCH from v1 canonical funcs and v2 alias map."""
+    """Populate _ALIAS_DISPATCH from v2 canonical map only (P1-1: v1 legacy layer retired)."""
     global _ALIAS_DISPATCH
     engine = HarnessEngine()
     v1_funcs = {
@@ -7012,8 +7012,6 @@ def _build_alias_dispatch() -> None:
         "vault_write": record_transaction_tool,
         "vault_query": snapshot_portfolio_tool,
     }
-    for canonical_name, func in v1_funcs.items():
-        _ALIAS_DISPATCH[canonical_name] = func
     for v2_name, v1_name in engine.V2_CANONICAL_MAP.items():
         if v2_name in ("vaultwrite", "vaultquery"):
             continue
@@ -7124,10 +7122,8 @@ if __name__ == "__main__":
         "vault_write": record_transaction_tool,
         "vault_query": snapshot_portfolio_tool,
     }
-    # ── Alias Dispatch Map (backward compat without registry pollution) ──
+    # ── Alias Dispatch Map — v2 canonical map only (P1-1: v1 legacy layer retired) ──
     _ALIAS_DISPATCH: dict[str, Any] = {}
-    for canonical_name, func in _v1_funcs.items():
-        _ALIAS_DISPATCH[canonical_name] = func
     for v2_name, v1_name in engine.V2_CANONICAL_MAP.items():
         if v2_name in ("vaultwrite", "vaultquery"):
             continue
