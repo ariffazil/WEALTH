@@ -6755,8 +6755,8 @@ def wealth_system_registry_status() -> dict[str, Any]:
 def wealth_synthesize(
     question: str = "",
     scale_mode: str = "enterprise",
-    actors: Optional[List[str]] = None,
-    context: Optional[dict] = None,
+    actors: Optional[Any] = None,
+    context: Optional[Any] = None,
     reversible: bool = True,
     human_confirmed: bool = False,
     well_cost_musd: float = 0,
@@ -6780,6 +6780,18 @@ def wealth_synthesize(
                         actors=["PETRONAS","ENI","Sarawak","Federal"],
                         context={"foreign_entity": True, "reversible": False})
     """
+    # Coerce JSON strings sent by strict MCP bridges (actors, context arrive as str)
+    import json as _json
+    if isinstance(actors, str):
+        try:
+            actors = _json.loads(actors)
+        except (ValueError, _json.JSONDecodeError):
+            actors = []
+    if isinstance(context, str):
+        try:
+            context = _json.loads(context)
+        except (ValueError, _json.JSONDecodeError):
+            context = {}
     ctx = context or {}
     results: Dict[str, Any] = {}
     verdicts: List[str] = []
@@ -6945,6 +6957,562 @@ def wealth_synthesize(
     }
 
 
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# INEQUALITY INTELLIGENCE KERNEL — 6 tools forged 2026-05-16
+# Eureka: WEALTH must audit the CONVERTER, not just the capital stock.
+# ═══════════════════════════════════════════════════════════════════════
+
+@mcp.tool(name="wealth_conversion_architecture")
+def wealth_conversion_architecture(
+    domain: str = "unspecified",
+    description: str = "",
+    institutions_quality: float = 0.5,
+    ownership_concentration: float = 0.5,
+    mobility_channels: float = 0.5,
+    risk_distribution: float = 0.5,
+    information_symmetry: float = 0.5,
+    voice_access: float = 0.5,
+    time_horizon: float = 0.5,
+    historical_damage: float = 0.5,
+    scale_mode: str = "enterprise",
+) -> Dict[str, Any]:
+    """Ω-WEALTH-IEQ-01: Conversion Architecture — diagnose whether endowment converts
+    to inclusive capability or extractive rent. The Acemoglu converter audit.
+
+    Scores 8 conversion dimensions (0=worst, 1=best). Returns conversion_mode,
+    binding bottleneck, and intervention priority list.
+    """
+    dims = {
+        "institutions_quality": institutions_quality,
+        "ownership_concentration": 1.0 - ownership_concentration,
+        "mobility_channels": mobility_channels,
+        "risk_distribution": risk_distribution,
+        "information_symmetry": information_symmetry,
+        "voice_access": voice_access,
+        "time_horizon": time_horizon,
+        "historical_resilience": 1.0 - historical_damage,
+    }
+    scores = {k: max(0.0, min(1.0, float(v))) for k, v in dims.items()}
+    avg = sum(scores.values()) / len(scores)
+    bottleneck = min(scores, key=scores.get)
+    bottleneck_score = scores[bottleneck]
+
+    if avg >= 0.70:
+        conversion_mode = "inclusive"
+        domain_verdict = "SEAL"
+        governance_verdict = "SEAL"
+    elif avg >= 0.45:
+        conversion_mode = "mixed"
+        domain_verdict = "QUALIFY"
+        governance_verdict = "QUALIFY"
+    else:
+        conversion_mode = "extractive"
+        domain_verdict = "888-HOLD"
+        governance_verdict = "888-HOLD"
+
+    interventions = sorted(scores, key=scores.get)[:3]
+
+    result = {
+        "mcp": "WEALTH",
+        "tool": "wealth_conversion_architecture",
+        "task": "wealth_conversion_architecture",
+        "domain": domain,
+        "description": description,
+        "conversion_mode": conversion_mode,
+        "conversion_score": round(avg, 4),
+        "bottleneck_dimension": bottleneck,
+        "bottleneck_score": round(bottleneck_score, 4),
+        "dimension_scores": {k: round(v, 4) for k, v in scores.items()},
+        "priority_interventions": interventions,
+        "domain_verdict": domain_verdict,
+        "governance_verdict": governance_verdict,
+        "claim_tag": "ESTIMATE",
+        "final_authority": "ARIF",
+        "recommendation_only": True,
+        "acemoglu_signal": (
+            "Extractive institutions detected — resource endowment will compound rents, not capability."
+            if conversion_mode == "extractive"
+            else "Mixed converter — targeted institutional reform at bottleneck required."
+            if conversion_mode == "mixed"
+            else "Inclusive architecture present — endowment can convert to broad capability."
+        ),
+        "scale_mode": scale_mode,
+    }
+    return _inject_emergence("wealth_conversion_architecture", "assess", {
+        "domain": domain, "scale_mode": scale_mode,
+    }, result)
+
+
+@mcp.tool(name="wealth_asymmetry_map")
+def wealth_asymmetry_map(
+    context: str = "",
+    asset_asymmetry: float = 0.5,
+    information_asymmetry: float = 0.5,
+    power_asymmetry: float = 0.5,
+    risk_asymmetry: float = 0.5,
+    time_asymmetry: float = 0.5,
+    mobility_asymmetry: float = 0.5,
+    voice_asymmetry: float = 0.5,
+    dignity_asymmetry: float = 0.5,
+    network_asymmetry: float = 0.5,
+    scale_mode: str = "enterprise",
+) -> Dict[str, Any]:
+    """Ω-WEALTH-IEQ-02: Asymmetry Map — map all 9 inequality transmission asymmetries.
+
+    Scores 0=no asymmetry, 1=maximum asymmetry. Returns dominant asymmetry,
+    compound risk, and the axiom: inequality persists when asymmetry compounds
+    faster than mobility corrects it.
+    """
+    asym = {
+        "asset": asset_asymmetry,
+        "information": information_asymmetry,
+        "power": power_asymmetry,
+        "risk": risk_asymmetry,
+        "time": time_asymmetry,
+        "mobility": mobility_asymmetry,
+        "voice": voice_asymmetry,
+        "dignity": dignity_asymmetry,
+        "network": network_asymmetry,
+    }
+    scores = {k: max(0.0, min(1.0, float(v))) for k, v in asym.items()}
+    avg = sum(scores.values()) / len(scores)
+    dominant = max(scores, key=scores.get)
+    dominant_score = scores[dominant]
+    compound_risk = round(1.0 - (1.0 - avg) ** 2, 4)
+
+    if avg >= 0.70:
+        regime = "high_asymmetry"
+        domain_verdict = "888-HOLD"
+    elif avg >= 0.45:
+        regime = "moderate_asymmetry"
+        domain_verdict = "QUALIFY"
+    else:
+        regime = "low_asymmetry"
+        domain_verdict = "SEAL"
+
+    mobility_corrects = scores.get("mobility", 0.5)
+    compounding_wins = (avg - mobility_corrects) > 0.15
+
+    result = {
+        "mcp": "WEALTH",
+        "tool": "wealth_asymmetry_map",
+        "task": "wealth_asymmetry_map",
+        "context": context,
+        "asymmetry_scores": {k: round(v, 4) for k, v in scores.items()},
+        "average_asymmetry": round(avg, 4),
+        "dominant_asymmetry": dominant,
+        "dominant_score": round(dominant_score, 4),
+        "compound_risk": compound_risk,
+        "regime": regime,
+        "compounding_exceeds_mobility": compounding_wins,
+        "domain_verdict": domain_verdict,
+        "governance_verdict": domain_verdict,
+        "claim_tag": "ESTIMATE",
+        "final_authority": "ARIF",
+        "recommendation_only": True,
+        "axiom": "Inequality persists when asymmetry compounds faster than mobility corrects it.",
+        "scale_mode": scale_mode,
+    }
+    return _inject_emergence("wealth_asymmetry_map", "assess", {
+        "context": context, "scale_mode": scale_mode,
+    }, result)
+
+
+@mcp.tool(name="wealth_return_classifier")
+def wealth_return_classifier(
+    return_description: str = "",
+    source_description: str = "",
+    value_created: float = 0.5,
+    competitive_entry_open: float = 0.5,
+    reversible_advantage: float = 0.5,
+    political_protection: float = 0.0,
+    inherited_lock_in: float = 0.0,
+    coercion_factor: float = 0.0,
+    scale_mode: str = "enterprise",
+) -> Dict[str, Any]:
+    """Ω-WEALTH-IEQ-03: Return Classifier — distinguish productive return from
+    rent extraction, monopoly, dynastic lock-in, and predatory capture.
+
+    Not all inequality has the same moral or economic structure. This tool
+    separates what is tolerable from what is destabilizing.
+    """
+    extraction_score = (
+        (1.0 - value_created) * 0.30
+        + (1.0 - competitive_entry_open) * 0.25
+        + (1.0 - reversible_advantage) * 0.15
+        + political_protection * 0.15
+        + inherited_lock_in * 0.10
+        + coercion_factor * 0.05
+    )
+    extraction_score = max(0.0, min(1.0, extraction_score))
+
+    if extraction_score < 0.25:
+        return_type = "productive"
+        verdict_label = "Tolerable — value created, entry open, reversible"
+        domain_verdict = "SEAL"
+    elif extraction_score < 0.50:
+        return_type = "mixed"
+        verdict_label = "Caution — partial value creation, partial rent capture"
+        domain_verdict = "QUALIFY"
+    elif extraction_score < 0.75:
+        return_type = "rent_extraction"
+        verdict_label = "Extractive — income from control, monopoly, or political gatekeeping"
+        domain_verdict = "888-HOLD"
+    else:
+        return_type = "predatory"
+        verdict_label = "Predatory — coercion, dynastic lock-in, or structural humiliation"
+        domain_verdict = "VOID"
+
+    result = {
+        "mcp": "WEALTH",
+        "tool": "wealth_return_classifier",
+        "task": "wealth_return_classifier",
+        "return_description": return_description,
+        "source_description": source_description,
+        "return_type": return_type,
+        "extraction_score": round(extraction_score, 4),
+        "verdict_label": verdict_label,
+        "component_scores": {
+            "value_created": round(value_created, 4),
+            "competitive_entry_open": round(competitive_entry_open, 4),
+            "reversible_advantage": round(reversible_advantage, 4),
+            "political_protection": round(political_protection, 4),
+            "inherited_lock_in": round(inherited_lock_in, 4),
+            "coercion_factor": round(coercion_factor, 4),
+        },
+        "domain_verdict": domain_verdict,
+        "governance_verdict": domain_verdict,
+        "claim_tag": "ESTIMATE",
+        "final_authority": "ARIF",
+        "recommendation_only": True,
+        "piketty_signal": (
+            "r > g risk: if this return type dominates, capital concentrates faster than growth."
+            if return_type in ("rent_extraction", "predatory")
+            else "Productive return — supports broad growth if institutions remain inclusive."
+        ),
+        "scale_mode": scale_mode,
+    }
+    return _inject_emergence("wealth_return_classifier", "classify", {
+        "return_description": return_description, "scale_mode": scale_mode,
+    }, result)
+
+
+@mcp.tool(name="wealth_role_scarcity_risk")
+def wealth_role_scarcity_risk(
+    context: str = "",
+    youth_unemployment: float = 0.5,
+    housing_unaffordability: float = 0.5,
+    delayed_family_formation: float = 0.5,
+    weak_social_mobility: float = 0.5,
+    low_trust: float = 0.5,
+    civic_disengagement: float = 0.5,
+    status_bottleneck: float = 0.5,
+    future_orientation_collapse: float = 0.5,
+    scale_mode: str = "enterprise",
+) -> Dict[str, Any]:
+    """Ω-WEALTH-IEQ-04: Role Scarcity Risk — Calhoun-inspired social role
+    saturation assessment. Inequality is not only about material scarcity.
+    It is also about social role scarcity.
+
+    Scores 0=no risk, 1=maximum risk. Threshold warning at 0.65.
+    Above threshold, resource transfers alone cannot reverse collapse.
+    """
+    dims = {
+        "youth_unemployment": youth_unemployment,
+        "housing_unaffordability": housing_unaffordability,
+        "delayed_family_formation": delayed_family_formation,
+        "weak_social_mobility": weak_social_mobility,
+        "low_trust": low_trust,
+        "civic_disengagement": civic_disengagement,
+        "status_bottleneck": status_bottleneck,
+        "future_orientation_collapse": future_orientation_collapse,
+    }
+    scores = {k: max(0.0, min(1.0, float(v))) for k, v in dims.items()}
+    calhoun_risk = sum(scores.values()) / len(scores)
+    above_threshold = calhoun_risk >= 0.65
+
+    if calhoun_risk >= 0.75:
+        regime = "BEHAVIORAL_SINK_RISK"
+        domain_verdict = "VOID"
+        intervention_window = "CRITICAL — role architecture must be rebuilt before threshold. Resource transfers alone insufficient."
+    elif calhoun_risk >= 0.65:
+        regime = "THRESHOLD_WARNING"
+        domain_verdict = "888-HOLD"
+        intervention_window = "WARNING — approaching irreversible phase transition. Combined role + resource intervention required."
+    elif calhoun_risk >= 0.45:
+        regime = "ELEVATED_RISK"
+        domain_verdict = "QUALIFY"
+        intervention_window = "Moderate — role scarcity visible but reversible with structural investment."
+    else:
+        regime = "STABLE"
+        domain_verdict = "SEAL"
+        intervention_window = "Low risk — role architecture intact."
+
+    result = {
+        "mcp": "WEALTH",
+        "tool": "wealth_role_scarcity_risk",
+        "task": "wealth_role_scarcity_risk",
+        "context": context,
+        "calhoun_risk_score": round(calhoun_risk, 4),
+        "above_irreversibility_threshold": above_threshold,
+        "regime": regime,
+        "dimension_scores": {k: round(v, 4) for k, v in scores.items()},
+        "intervention_window": intervention_window,
+        "domain_verdict": domain_verdict,
+        "governance_verdict": domain_verdict,
+        "claim_tag": "ESTIMATE",
+        "final_authority": "ARIF",
+        "recommendation_only": True,
+        "calhoun_lesson": (
+            "Phase transition detected: behavioral sink dynamics active. "
+            "Abundance without role architecture produces civilizational despair."
+            if above_threshold
+            else "Role architecture present but stressed. Monitor future_orientation and mobility dimensions."
+        ),
+        "scale_mode": scale_mode,
+    }
+    return _inject_emergence("wealth_role_scarcity_risk", "assess", {
+        "context": context, "scale_mode": scale_mode,
+    }, result)
+
+
+@mcp.tool(name="wealth_legitimacy_audit")
+def wealth_legitimacy_audit(
+    system_description: str = "",
+    rules_understandable: float = 0.5,
+    rules_contestable: float = 0.5,
+    rules_fair_enough: float = 0.5,
+    rules_repairable: float = 0.5,
+    rules_non_humiliating: float = 0.5,
+    rules_non_captured: float = 0.5,
+    contestation_cost_proportionate: float = 0.5,
+    scale_mode: str = "enterprise",
+) -> Dict[str, Any]:
+    """Ω-WEALTH-IEQ-05: Legitimacy Audit — score whether the conversion
+    architecture is perceived as legitimate by participants.
+
+    Legitimacy is not optional. When it fails, even material redistribution
+    cannot stabilise the system. The deepest missing variable in most
+    inequality analysis.
+
+    Scores 0=worst, 1=best. Critical dimension: contestation_cost_proportionate
+    (can ordinary people challenge unfair rules at proportionate cost?).
+    """
+    dims = {
+        "understandable": rules_understandable,
+        "contestable": rules_contestable,
+        "fair_enough": rules_fair_enough,
+        "repairable": rules_repairable,
+        "non_humiliating": rules_non_humiliating,
+        "non_captured": rules_non_captured,
+        "contestation_proportionate": contestation_cost_proportionate,
+    }
+    scores = {k: max(0.0, min(1.0, float(v))) for k, v in dims.items()}
+    legitimacy_score = sum(scores.values()) / len(scores)
+    weakest = min(scores, key=scores.get)
+    weakest_score = scores[weakest]
+
+    if legitimacy_score >= 0.70:
+        regime = "legitimate"
+        domain_verdict = "SEAL"
+        risk_level = "LOW"
+    elif legitimacy_score >= 0.50:
+        regime = "contested"
+        domain_verdict = "QUALIFY"
+        risk_level = "MODERATE"
+    elif legitimacy_score >= 0.35:
+        regime = "delegitimised"
+        domain_verdict = "888-HOLD"
+        risk_level = "HIGH"
+    else:
+        regime = "failed_legitimacy"
+        domain_verdict = "VOID"
+        risk_level = "CRITICAL — phase transition risk elevated"
+
+    result = {
+        "mcp": "WEALTH",
+        "tool": "wealth_legitimacy_audit",
+        "task": "wealth_legitimacy_audit",
+        "system_description": system_description,
+        "legitimacy_score": round(legitimacy_score, 4),
+        "regime": regime,
+        "risk_level": risk_level,
+        "weakest_dimension": weakest,
+        "weakest_score": round(weakest_score, 4),
+        "dimension_scores": {k: round(v, 4) for k, v in scores.items()},
+        "domain_verdict": domain_verdict,
+        "governance_verdict": domain_verdict,
+        "claim_tag": "ESTIMATE",
+        "final_authority": "ARIF",
+        "recommendation_only": True,
+        "legitimacy_axiom": (
+            "Legitimate conversion architecture = rules that are understandable + "
+            "contestable + repairable + accessible to contest at proportionate cost."
+        ),
+        "scale_mode": scale_mode,
+    }
+    return _inject_emergence("wealth_legitimacy_audit", "audit", {
+        "system_description": system_description, "scale_mode": scale_mode,
+    }, result)
+
+
+@mcp.tool(name="wealth_inequality_kernel")
+def wealth_inequality_kernel(
+    context: str = "",
+    domain: str = "civilization",
+    description: str = "",
+    institutions_quality: float = 0.5,
+    ownership_concentration: float = 0.5,
+    mobility_channels: float = 0.5,
+    risk_distribution: float = 0.5,
+    information_symmetry: float = 0.5,
+    voice_access: float = 0.5,
+    time_horizon: float = 0.5,
+    historical_damage: float = 0.5,
+    power_asymmetry: float = 0.5,
+    dignity_asymmetry: float = 0.5,
+    network_asymmetry: float = 0.5,
+    youth_unemployment: float = 0.5,
+    housing_unaffordability: float = 0.5,
+    future_orientation_collapse: float = 0.5,
+    rules_contestable: float = 0.5,
+    rules_non_captured: float = 0.5,
+    contestation_cost_proportionate: float = 0.5,
+    scale_mode: str = "civilization",
+) -> Dict[str, Any]:
+    """Ω-WEALTH-IEQ-00: Inequality Kernel — unified diagnosis across all 5
+    inequality dimensions. Synthesis tool: conversion architecture + asymmetry
+    map + return classification + role scarcity + legitimacy audit.
+
+    The governed solution to the inequality paradox. Identifies binding constraint,
+    intervention priority, and whether the system is forge-ready for change.
+
+    Verdict: Bounded inequality + high mobility + universal dignity is achievable.
+    Perfect equality is not. Extractive lock-in is the enemy, not inequality itself.
+    """
+    # Run all 5 sub-dimensions
+    conv = wealth_conversion_architecture(
+        domain=domain, description=description,
+        institutions_quality=institutions_quality,
+        ownership_concentration=ownership_concentration,
+        mobility_channels=mobility_channels,
+        risk_distribution=risk_distribution,
+        information_symmetry=information_symmetry,
+        voice_access=voice_access,
+        time_horizon=time_horizon,
+        historical_damage=historical_damage,
+        scale_mode=scale_mode,
+    )
+    asym = wealth_asymmetry_map(
+        context=context,
+        asset_asymmetry=ownership_concentration,
+        information_asymmetry=1.0 - information_symmetry,
+        power_asymmetry=power_asymmetry,
+        risk_asymmetry=1.0 - risk_distribution,
+        time_asymmetry=1.0 - time_horizon,
+        mobility_asymmetry=1.0 - mobility_channels,
+        voice_asymmetry=1.0 - voice_access,
+        dignity_asymmetry=dignity_asymmetry,
+        network_asymmetry=network_asymmetry,
+        scale_mode=scale_mode,
+    )
+    role = wealth_role_scarcity_risk(
+        context=context,
+        youth_unemployment=youth_unemployment,
+        housing_unaffordability=housing_unaffordability,
+        delayed_family_formation=housing_unaffordability,
+        weak_social_mobility=1.0 - mobility_channels,
+        low_trust=1.0 - rules_contestable,
+        civic_disengagement=1.0 - voice_access,
+        status_bottleneck=power_asymmetry,
+        future_orientation_collapse=future_orientation_collapse,
+        scale_mode=scale_mode,
+    )
+    legit = wealth_legitimacy_audit(
+        system_description=description,
+        rules_understandable=institutions_quality,
+        rules_contestable=rules_contestable,
+        rules_fair_enough=1.0 - ownership_concentration,
+        rules_repairable=voice_access,
+        rules_non_humiliating=1.0 - dignity_asymmetry,
+        rules_non_captured=rules_non_captured,
+        contestation_cost_proportionate=contestation_cost_proportionate,
+        scale_mode=scale_mode,
+    )
+
+    # Aggregate
+    sub_verdicts = [
+        conv.get("governance_verdict", "UNKNOWN"),
+        asym.get("governance_verdict", "UNKNOWN"),
+        role.get("governance_verdict", "UNKNOWN"),
+        legit.get("governance_verdict", "UNKNOWN"),
+    ]
+    verdict_rank = {"VOID": 0, "888-HOLD": 1, "QUALIFY": 2, "SEAL": 3, "UNKNOWN": 2}
+    final_verdict = min(sub_verdicts, key=lambda v: verdict_rank.get(v, 2))
+
+    conv_score = conv.get("conversion_score", 0.5)
+    asym_score = 1.0 - asym.get("average_asymmetry", 0.5)
+    role_score = 1.0 - role.get("calhoun_risk_score", 0.5)
+    legit_score = legit.get("legitimacy_score", 0.5)
+    kernel_score = (conv_score + asym_score + role_score + legit_score) / 4.0
+
+    bottleneck_map = {
+        "conversion": conv_score,
+        "asymmetry": asym_score,
+        "role_architecture": role_score,
+        "legitimacy": legit_score,
+    }
+    binding_constraint = min(bottleneck_map, key=bottleneck_map.get)
+
+    result = {
+        "mcp": "WEALTH",
+        "tool": "wealth_inequality_kernel",
+        "task": "wealth_inequality_kernel",
+        "context": context,
+        "domain": domain,
+        "kernel_score": round(kernel_score, 4),
+        "final_verdict": final_verdict,
+        "binding_constraint": binding_constraint,
+        "sub_dimension_scores": {k: round(v, 4) for k, v in bottleneck_map.items()},
+        "sub_verdicts": {
+            "conversion_architecture": conv.get("governance_verdict"),
+            "asymmetry_map": asym.get("governance_verdict"),
+            "role_scarcity": role.get("governance_verdict"),
+            "legitimacy": legit.get("governance_verdict"),
+        },
+        "conversion_mode": conv.get("conversion_mode"),
+        "calhoun_risk": role.get("calhoun_risk_score"),
+        "above_calhoun_threshold": role.get("above_irreversibility_threshold"),
+        "legitimacy_regime": legit.get("regime"),
+        "dominant_asymmetry": asym.get("dominant_asymmetry"),
+        "priority_interventions": conv.get("priority_interventions", []),
+        "domain_verdict": final_verdict,
+        "governance_verdict": final_verdict,
+        "claim_tag": "ESTIMATE",
+        "final_authority": "ARIF",
+        "recommendation_only": True,
+        "synthesis_axiom": (
+            "Inequality is not one cause. It is a coupled system: "
+            "endowment + institutional switch + asymmetry compounding + "
+            "role scarcity + legitimacy collapse. "
+            "The target is not equality of outcome. "
+            "The target is bounded inequality with high mobility, dignity, and broad capability."
+        ),
+        "sub_tool_results": {
+            "conversion_architecture": conv,
+            "asymmetry_map": asym,
+            "role_scarcity_risk": role,
+            "legitimacy_audit": legit,
+        },
+        "scale_mode": scale_mode,
+        "escalate_to_arifos_judge": final_verdict in ("VOID", "888-HOLD"),
+    }
+    return _inject_emergence("wealth_inequality_kernel", "synthesis", {
+        "context": context, "domain": domain, "scale_mode": scale_mode,
+    }, result)
+
 WEALTH_PUBLIC_TOOL_ORDER = (
     "mcp_health_check",
     "wealth_synthesize",
@@ -6961,6 +7529,13 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_boundary_governance",
     "wealth_hysteresis_ledger",
     "wealth_system_registry_status",
+    # Inequality Intelligence Kernel — forged 2026-05-16
+    "wealth_inequality_kernel",
+    "wealth_conversion_architecture",
+    "wealth_asymmetry_map",
+    "wealth_return_classifier",
+    "wealth_role_scarcity_risk",
+    "wealth_legitimacy_audit",
 )
 _PUBLIC_TOOLS = set(WEALTH_PUBLIC_TOOL_ORDER)
 
@@ -7138,22 +7713,38 @@ if __name__ == "__main__":
     import uvicorn
 
     def _serialize_result(result):
-        """Convert FastMCP ToolResult to JSON-serializable dict."""
+        """Convert FastMCP ToolResult to MCP-spec compliant JSON dict.
+
+        to_mcp_result() has three return shapes:
+          - CallToolResult (when ToolResult.meta is not None) — has model_dump
+          - tuple (content_list, structured_dict) — when structured_content present
+          - list[ContentBlock] — when no structured_content
+
+        All paths use by_alias=True + exclude_none=True to strip annotations:null
+        and emit structuredContent (camelCase) per MCP spec.
+        """
         if result is None:
             return None
+        if hasattr(result, "to_mcp_result"):
+            mcp_r = result.to_mcp_result()
+            if hasattr(mcp_r, "model_dump"):
+                # CallToolResult — proper MCP type with aliases
+                return mcp_r.model_dump(by_alias=True, exclude_none=True)
+            # Tuple or list return — serialize manually with proper aliases
+            content_list = mcp_r[0] if isinstance(mcp_r, tuple) else mcp_r
+            structured = mcp_r[1] if isinstance(mcp_r, tuple) and len(mcp_r) > 1 else None
+            serialized = [
+                item.model_dump(by_alias=True, exclude_none=True)
+                if hasattr(item, "model_dump") else item
+                for item in (content_list or [])
+            ]
+            out: Dict[str, Any] = {"content": serialized}
+            if structured is not None:
+                out["structuredContent"] = structured
+            return out
         if hasattr(result, "model_dump"):
-            d = result.model_dump()
-            # Recursively serialize content items
-            if "content" in d and isinstance(d["content"], list):
-                serialized_content = []
-                for item in d["content"]:
-                    if hasattr(item, "model_dump"):
-                        serialized_content.append(item.model_dump())
-                    else:
-                        serialized_content.append(dict(item) if isinstance(item, dict) else str(item))
-                d["content"] = serialized_content
-            return d
-        return result  # Already serializable (dict, str, etc.)
+            return result.model_dump(by_alias=True, exclude_none=True)
+        return result
 
     async def legacy_mcp_handler(request):
         """Direct JSON-RPC handler — bypasses FastMCP Accept-header enforcement."""
