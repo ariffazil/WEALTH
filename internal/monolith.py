@@ -7879,7 +7879,18 @@ def _resolve_repo_head() -> str:
     repo_head = os.environ.get("WEALTH_REPO_HEAD")
     if repo_head:
         return repo_head
-    for candidate in (os.environ.get("WEALTH_REPO_DIR"), "/opt/wealth-src", "/root/wealth"):
+    # Check script location first (works inside Docker where code lives at /app)
+    _script_dir = os.path.dirname(os.path.abspath(__file__))
+    _app_root = os.path.dirname(_script_dir)  # one level up from internal/
+    candidates = [
+        os.environ.get("WEALTH_REPO_DIR"),
+        _app_root,           # /app (Docker container root)
+        _script_dir,         # /app/internal (fallback)
+        "/opt/wealth-src",
+        "/root/wealth",
+        "/root/WEALTH",
+    ]
+    for candidate in candidates:
         if not candidate or not os.path.exists(candidate):
             continue
         try:
@@ -7888,6 +7899,7 @@ def _resolve_repo_head() -> str:
                 check=True,
                 capture_output=True,
                 text=True,
+                timeout=3,
             )
         except Exception:
             continue
@@ -7904,6 +7916,7 @@ def _registry_snapshot(visible_names: List[str]) -> Dict[str, Any]:
     missing = [name for name in expected_names if name not in visible_set]
     extra = sorted(visible_set - expected_set)
     hidden_alias_count = len(set(_ALIAS_DISPATCH) - expected_set)
+    registry_truth = "PASS" if not missing and not extra else "FAIL"
     return {
         "service": "wealth-mcp",
         "schema_version": WEALTH_SCHEMA_VERSION,
@@ -7916,7 +7929,19 @@ def _registry_snapshot(visible_names: List[str]) -> Dict[str, Any]:
         "canonical_public_tools": expected_names,
         "extra_visible_tools": extra,
         "missing_visible_tools": missing,
-        "registry_truth": "PASS" if not missing and not extra else "FAIL",
+        "registry_truth": registry_truth,
+        # registry_truth reflects the server-side FastMCP internal registry.
+        # If an external client (e.g. claude.ai bridge) shows fewer tools,
+        # that is a CLIENT-SIDE CACHE issue — not a server failure.
+        # Fix: disconnect and reconnect the WEALTH MCP integration on the client.
+        "callability_note": (
+            "registry_truth=PASS means the server's MCP tool surface matches "
+            f"WEALTH_PUBLIC_TOOL_ORDER ({len(expected_names)} tools). "
+            "If an external agent sees fewer tools, reconnect its MCP integration "
+            "to flush the stale tool-list cache."
+        ) if registry_truth == "PASS" else (
+            f"MISMATCH: missing={missing}, extra={extra}"
+        ),
         "final_authority": "ARIF",
     }
 
