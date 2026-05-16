@@ -70,10 +70,10 @@ def _assert_no_var_kwargs(func, tool_name: str) -> None:
 # ── Registry Surface ────────────────────────────────────────────────────
 
 
-def test_mcp_surface_exactly_14_public_tools():
+def test_mcp_surface_exactly_17_public_tools():
     tool_names = {t.name for t in asyncio.run(mcp.list_tools())}
     assert tool_names == _PUBLIC_TOOLS
-    assert len(tool_names) == 15
+    assert len(tool_names) == 17
     assert "wealth_future_value" not in tool_names
     assert "vault_write" not in tool_names
 
@@ -86,6 +86,7 @@ def test_alias_dispatch_has_backward_compat_entries():
     assert "wealth_vault_record" in _ALIAS_DISPATCH
     # v2 canonical: 6 SENSE + 6 MIND + 6 SURVIVAL + 8 REASON + 4 JUDGE + 3 VAULT = 33 (+1 self-ref = 34)
     assert len(_ALIAS_DISPATCH) >= 33
+
 
 def test_all_invariants_forbid_var_kwargs():
     for tool in (
@@ -214,8 +215,8 @@ def test_hysteresis_ledger_query_emergence():
 def test_system_registry_status():
     payload = wealth_system_registry_status()
     assert payload["registry_truth"] == "PASS"
-    assert payload["intended_public_tools"] == 15
-    assert payload["registered_public_tools"] == 15
+    assert payload["intended_public_tools"] == 17
+    assert payload["registered_public_tools"] == 17
     assert payload["hidden_alias_count"] == len(_ALIAS_DISPATCH)
     assert payload["final_authority"] == "ARIF"
 

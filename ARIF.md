@@ -21,7 +21,7 @@
 ## 1. CURRENT FOCUS (INSTRUCTION POINTER)
 
 - Branch: `main` (merged from `wealth/next-horizon-refactor`).
-- 15 public MCP tools: wealth_conservation_capital through wealth_synthesize.
+- 17 public MCP tools: wealth_conservation_capital through wealth_synthesize + mcp_health_check.
 - WL-1 sealed: EVOI well_type priors (wildcat 0.25, near_field 0.50, appraisal 0.55, development 0.75). prior_pos/posterior_pos optional with Bayesian fallback.
 - WL-2 sealed: Emergence scan aliases (foreign_actor_involved, irreversible=True, irreversibility=HIGH).
 - WL-3 sealed: WorldBank staleness detection (≥2y → STALE_WARN + MEDIUM ceiling, ≥3y → STALE_CRITICAL + LOW ceiling).
