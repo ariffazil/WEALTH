@@ -1,0 +1,107 @@
+{
+  "seal_type": "REVERSIBLE",
+  "vault999_executed": false,
+  "vault999_reason": "ACK_IRREVERSIBLE_VAULT999_SEAL_BY_ARIF not present",
+  "timestamp": "2026-05-16T09:39:24Z",
+  "actor": "Arif Fazil / 888 Judge",
+  "repo_commit": "7ac4a51",
+  "repo_branch": "main",
+  "mcp_status": "healthy",
+  "registry_truth": "PASS",
+  "public_surface_count": 17,
+  "kernel_version": "Omega-WEALTH-IEQ-00",
+  "kernel_forged": "2026-05-16",
+  "panel_db": {
+    "path": "/app/internal/inequality_panel.json",
+    "row_count": 5,
+    "countries": ["IDN", "MYS", "SGP", "THA", "VNM"],
+    "data_year": "2025",
+    "evidence_tag": "LIVE_DATA"
+  },
+  "baseline_results": {
+    "MYS": {
+      "kernel_score": 0.6612,
+      "final_verdict": "QUALIFY",
+      "binding_constraint": "role_architecture",
+      "calhoun_risk": 0.3879,
+      "above_calhoun_threshold": false
+    },
+    "SGP": {
+      "kernel_score": 0.6352,
+      "final_verdict": "QUALIFY",
+      "binding_constraint": "role_architecture",
+      "calhoun_risk": 0.4128,
+      "above_calhoun_threshold": false
+    },
+    "IDN": {
+      "kernel_score": 0.7068,
+      "final_verdict": "QUALIFY",
+      "binding_constraint": "legitimacy",
+      "calhoun_risk": 0.3198,
+      "above_calhoun_threshold": false
+    },
+    "THA": {
+      "kernel_score": 0.6886,
+      "final_verdict": "QUALIFY",
+      "binding_constraint": "legitimacy",
+      "calhoun_risk": 0.3534,
+      "above_calhoun_threshold": false
+    },
+    "VNM": {
+      "kernel_score": 0.7067,
+      "final_verdict": "QUALIFY",
+      "binding_constraint": "legitimacy",
+      "calhoun_risk": 0.3249,
+      "above_calhoun_threshold": false
+    }
+  },
+  "live_indicators": [
+    "SL.UEM.1524.ZS",
+    "SI.POV.GINI",
+    "SI.DST.10TH.10",
+    "SI.DST.FRST.20",
+    "SP.DYN.TFRT.IN",
+    "SE.ADT.LITR.ZS",
+    "NY.GDP.PCAP.KD.ZG",
+    "SL.TLF.CACT.ZS",
+    "FP.CPI.TOTL.ZG"
+  ],
+  "derived_indicators": ["institutions_quality"],
+  "missing_data": [
+    "WGI_GE.EST",
+    "WGI_RL.EST",
+    "WGI_VA.EST",
+    "WGI_CC.EST",
+    "housing_affordability",
+    "dignity_asymmetry",
+    "network_asymmetry",
+    "historical_damage"
+  ],
+  "claim_state": "HYPOTHESIS",
+  "governance_state": "QUALIFY",
+  "do_not_claim": [
+    "Nobel-level discovery",
+    "empirical validation",
+    "causal proof",
+    "policy authority",
+    "autonomous country judgment"
+  ],
+  "allowed_claim": "WEALTH MCP Forge 2 has produced a live SEA baseline panel and a falsifiable inequality-kernel hypothesis requiring Forge 3 validation.",
+  "assumptions": [
+    "WorldBank data as of 2025; Gini may lag to 2021",
+    "institutions_quality proxied from literacy + LFP, not WGI",
+    "Calhoun 0.65 threshold is engineering design choice, not empirically derived",
+    "All normalization functions are linear/heuristic"
+  ],
+  "next_forge": "FORGE_3",
+  "forge3_objectives": [
+    "Expand panel to 10+ countries (USA, IND, BRA, ZAF, GBR)",
+    "Singapore paradox audit",
+    "Malaysia role_architecture deep-dive",
+    "WGI proxy gap resolution",
+    "Country cards",
+    "Validation roadmap"
+  ],
+  "final_outcome_label": "SEAL — Forge 2 Session Closed, Forge 3 Ready",
+  "seal_phrase": "DITEMPA BUKAN DIBERI"
+}
