@@ -1,22 +1,71 @@
-﻿# WEALTH — Economic & Capital Organ
+﻿# WEALTH — Capital Intelligence & Resource Stewardship
 
-> **Status:** GOVERNED | **Organ:** CAPITAL (₿) | **Authority:** arifOS
+> **Status:** OPERATIONAL | **Organ:** CAPITAL (Ω-WEALTH) | **Authority:** arifOS
+> **Domain:** `wealth.arif-fazil.com`
 
 ## 🏛️ What this repo is
-The economic organ of the federation. Manages capital allocation logic and valuation kernels.
+
+The capital intelligence and economic logic organ within the arifOS federation. WEALTH owns the financial thermodynamics layer — NPV, IRR, DSCR, EMV calculations, capital flow modeling, and resource stewardship. It operates across both Python (FastMCP kernel) and Node.js (legacy JS kernel) runtimes.
+
+**WEALTH owns the CAPITAL — the thermodynamic layer that governs how resources flow through the federation.**
+
+## 📦 Ownership
+
+- **Owns**: Financial calculations (NPV, IRR, DSCR, EMV), capital flow modeling, Supabase integration, civilizational boundary monitors.
+- **Does NOT own**: Constitutional judgment (arifOS), geoscience (GEOX).
 
 ## 🏗️ Current Structure
-- src/: Economic kernels and capital logic.
-- specs/: Valuation contracts and economic invariants.
-- rchive/: Historical monolith and legacy data.
-- 	ests/: Validation suites.
+
+```
+WEALTH/
+├── internal/
+│   └── monolith.py          # Canonical FastMCP kernel (48 MCP tools: 13 primitives × modes)
+├── server.py               # Thin backward-compat wrapper (~15 lines)
+├── mcp/
+│   └── server.py           # Cross-domain demo surface (6 tools)
+├── host/                  # Modular Python libraries
+│   ├── coordination/      # Coordination protocols
+│   ├── epistemic/         # Epistemic state
+│   ├── governance/        # Constitutional floor hooks
+│   ├── ingest/           # Data ingestion
+│   ├── kernel/           # Core kernel logic
+│   └── wealth/           # Wealth-specific logic
+├── src/                   # Legacy Node.js kernel (JS)
+├── civilizational/        # JS boundary monitors and prosperity index
+├── canon/                 # Constitutional specs
+├── archive/              # Archived files
+│   └── monolith.py.v66.backup
+├── api/                  # API definitions
+├── apps/                 # Application surfaces
+├── docs/                 # Documentation
+├── tests/                # pytest (Python) + node --test (JS)
+└── package.json          # Node.js scripts
+```
 
 ## 🚀 Verified Commands
-- `pytest`: Run economic validation suite.
+
+```bash
+# Python side
+pip install -e .
+python internal/monolith.py   # Start canonical FastMCP server
+
+# Node.js side
+npm install
+npm test                      # node --test tests/*.test.js
+npm run boot                  # node cli.js boot
+npm run check                 # node cli.js check
+npm run seal                  # node cli.js seal
+
+# Docker
+docker build -t wealth .
+```
 
 ## 🔗 Federation Loop
-- [arifOS](https://github.com/ariffazil/arifOS) (Kernel)
-- [AAA](https://github.com/ariffazil/AAA) (Body)
+
+- [arifOS](https://github.com/ariffazil/arifOS) — Kernel (constitutional judgment)
+- [GEOX](https://github.com/ariffazil/geox) — Field (economic constraints on field development)
+- [WELL](https://github.com/ariffazil/well) — Substrate (human flourishing metrics)
 
 ---
+
 *Last Verified: 2026.05.16 | 999 SEAL ALIVE*
