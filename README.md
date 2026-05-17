@@ -14,7 +14,7 @@ The capital intelligence and economic logic organ within the arifOS federation. 
 
 **WEALTH owns the CAPITAL — the thermodynamic layer that governs how resources flow through the federation.**
 
-> **MCP Surface (live test 2026-05-17):** 17 tools — 12 Ω-WEALTH primitives × modes + synthesize + IEQ tools + `mcp_health_check`. Health reports `hidden_alias_count: 34`. Source has 69 `@mcp.tool` decorators; only 17 exposed on public surface.
+> **MCP Surface (live test 2026-05-17):** 17 tools — 12 Ω-WEALTH primitives × modes + synthesize + IEQ tools + `mcp_health_check`. `wealth_boundary_governance(mode='federation_readiness')` absorbs the federation readiness audit (previously in arifOS). Health reports `hidden_alias_count: 34`. Source has 69 `@mcp.tool` decorators; only 17 exposed on public surface.
 
 ## 📦 Ownership
 
