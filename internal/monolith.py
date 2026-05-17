@@ -8114,6 +8114,194 @@ def wealth_boundary_governance(
                 result["failure_flags"].append("CONTRACTS_MODULE_UNAVAILABLE")
             return result
         return result
+
+    elif mode == "federation_readiness":
+        """Ω-WEALTH-11 → Federation Readiness Audit.
+
+        Capital/organism health probe: liveness, registry truth,
+        tool callability, cross-organ connectivity, safety gates.
+
+        Returns 0-100 readiness score across all federation organs.
+        Maps onto WEALTH substrate invariants:
+          server_liveness         → Energy (organism alive?)
+          session_binding         → Conservation (capital continuity)
+          registry_truth          → Signal (information integrity)
+          tool_callability        → Energy (capital instruments)
+          cross_organ_federation → Gradient (institutional interconnection)
+          safety_gates           → Boundary (governance constraints)
+          human_readiness        → Field (human vitality)
+
+        Usage:
+          wealth_boundary_governance(mode='federation_readiness')
+        """
+        try:
+            import httpx
+        except Exception:
+            return {
+                "error": "httpx unavailable",
+                "mcp": "WEALTH",
+                "tool": "wealth_boundary_governance",
+            }
+
+        live_names = ["arifOS", "WELL", "WEALTH", "GEOX"]
+        port_map = {"arifOS": 8080, "WELL": 8083, "WEALTH": 8082, "GEOX": 8081}
+
+        # ── 1. Server liveness ─────────────────────────────────────────────
+        live_results = {}
+        live_count = 0
+        for name in live_names:
+            port = port_map[name]
+            url = f"http://localhost:{port}/health"
+            try:
+                with httpx.Client(timeout=3.0) as client:
+                    r = client.get(url)
+                    live_results[name] = (
+                        "healthy" if r.status_code == 200 else "degraded"
+                    )
+                    if r.status_code == 200:
+                        live_count += 1
+            except Exception:
+                live_results[name] = "unreachable"
+        server_liveness_score = min(10.0, (live_count / len(live_names)) * 10.0)
+
+        # ── 2. Registry truth (probe /tools endpoint) ───────────────────────
+        registry_checks = {}
+        registry_pass_count = 0
+        for name in live_names:
+            port = port_map[name]
+            url = f"http://localhost:{port}/tools"
+            try:
+                with httpx.Client(timeout=5.0) as client:
+                    r = client.get(url)
+                    if r.status_code == 200:
+                        data = r.json()
+                        tools = data.get("tools", [])
+                        registry_checks[name] = "PASS" if tools else "EMPTY_TOOLS"
+                        if tools:
+                            registry_pass_count += 1
+                    else:
+                        registry_checks[name] = f"HTTP_{r.status_code}"
+            except Exception:
+                registry_checks[name] = "UNREACHABLE"
+        registry_truth_score = int((registry_pass_count / len(live_names)) * 15.0)
+
+        # ── 3. Tool callability (WELL tools via JSON-RPC) ─────────────────
+        well_tools = [
+            "well_assess_livelihood",
+            "well_check_repair",
+            "well_assess_homeostasis",
+        ]
+        well_total = len(well_tools)
+        well_passed = 0
+        well_failed = []
+        rpc_url = f"http://localhost:{port_map['WELL']}/mcp"
+        well_payloads = {
+            "well_assess_livelihood": {
+                "subject": "Arif",
+                "substrate_class": "HUMAN_PERSON",
+                "mode": "human",
+            },
+            "well_check_repair": {"mode": "precheck"},
+            "well_assess_homeostasis": {"mode": "empathize"},
+        }
+        for tool_name in well_tools:
+            payload = {
+                "jsonrpc": "2.0",
+                "method": "tools/call",
+                "params": {
+                    "name": tool_name,
+                    "arguments": well_payloads.get(tool_name, {}),
+                },
+                "id": 1,
+            }
+            try:
+                with httpx.Client(timeout=5.0) as client:
+                    r = client.post(rpc_url, json=payload)
+                    if r.status_code == 200:
+                        well_passed += 1
+                    else:
+                        well_failed.append(tool_name)
+            except Exception:
+                well_failed.append(tool_name)
+        tool_callability_score = (
+            min(15.0, (well_passed / well_total) * 15.0) if well_total else 0.0
+        )
+
+        # ── 4. Cross-organ connectivity ──────────────────────────────────────
+        cross_organ_score = min(15.0, (live_count / len(live_names)) * 15.0)
+
+        # ── 5. Safety gates (static — would need deep probe for 10) ─────────
+        safety_score = 8.0
+
+        # ── 6. Human readiness freshness (WELL health) ───────────────────────
+        human_fresh = "UNKNOWN"
+        try:
+            with httpx.Client(timeout=3.0) as client:
+                r = client.get(f"http://localhost:{port_map['WELL']}/health")
+                if r.status_code == 200:
+                    data = r.json()
+                    human_fresh = data.get("freshness_band", "UNKNOWN")
+        except Exception:
+            pass
+        human_readiness_score = (
+            10.0 if human_fresh == "FRESH" else 5.0 if human_fresh == "AGED" else 0.0
+        )
+
+        # ── Total ───────────────────────────────────────────────────────────
+        total = (
+            server_liveness_score
+            + registry_truth_score
+            + tool_callability_score
+            + cross_organ_score
+            + safety_score
+            + human_readiness_score
+        )
+
+        # ── Failed links ────────────────────────────────────────────────────
+        failed_links = []
+        for name, status in live_results.items():
+            if status != "healthy":
+                failed_links.append(f"{name}_liveness={status}")
+        for name, truth in registry_checks.items():
+            if truth not in ("PASS", "VERIFIED"):
+                failed_links.append(f"{name}_registry={truth}")
+
+        scores = {
+            "server_liveness": server_liveness_score,
+            "registry_truth": registry_truth_score,
+            "tool_callability": tool_callability_score,
+            "cross_organ_federation": cross_organ_score,
+            "safety_gates": safety_score,
+            "human_readiness_freshness": human_readiness_score,
+        }
+
+        return {
+            "mcp": "WEALTH",
+            "tool": "wealth_boundary_governance",
+            "mode": "federation_readiness",
+            "overall_score": round(total, 1),
+            "max_score": 100.0,
+            "verdict": "SEAL" if total >= 75 else "SABAR" if total >= 50 else "HOLD",
+            "scores": scores,
+            "server_liveness": live_results,
+            "registry_truth": registry_checks,
+            "well_tool_callability": {
+                "total": well_total,
+                "passed": well_passed,
+                "failed": well_failed,
+            },
+            "human_readiness": {"freshness_band": human_fresh},
+            "failed_links": failed_links,
+            "next_fix": [
+                f"Fix lowest: {min(scores, key=lambda k: scores[
+                        k
+                    ])} (score={scores[min(scores, key=lambda k: scores[k])]})"
+            ]
+            if scores
+            else ["No blocking issues"],
+            "note": "Absorbed from arifOS federation_audit — WEALTH owns federation readiness as boundary stewardship",
+        }
+
     ctx = context or {}
     computed_maruah, maruah_was_computed, maruah_signals = compute_maruah_from_context(
         explicit_score=maruah_score,
