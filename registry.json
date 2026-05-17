@@ -21,7 +21,7 @@
     "wealth": {
       "role": "Capital Engine (Valuation Kernel)",
       "transport": "http_sse",
-      "url": "https://wealth.fastmcp.app/sse",
+      "url": "https://wealth.arif-fazil.com/sse",
       "tools": [
         "mcp_health_check",
         "wealth_system_registry_status",

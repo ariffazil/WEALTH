@@ -7,6 +7,7 @@ import numbers
 import os
 import sys
 import uuid
+from pathlib import Path
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple, Callable
 
@@ -2335,6 +2336,29 @@ def pi_efficiency(
 def emv_risk(scenarios: List[dict], scale_mode: str = "enterprise") -> Any:
     """Compute Expected Monetary Value (Probability Density). [Entropy Dimension]"""
     measurement = measurement_emv(scenarios)
+    # Guard: if scenarios were invalid (emv=None), return a proper FAIL response
+    # rather than propagating None into create_envelope where it can cause
+    # downstream numpy/scalar type errors in the envelope chain.
+    if measurement["emv"] is None:
+        return {
+            "tool": "wealth_emv_risk",
+            "task": "wealth_emv_risk",
+            "mode": "emv",
+            "status": "FAIL",
+            "domain_verdict": "VOID",
+            "governance_verdict": "VOID",
+            "engine_status": "ERROR",
+            "confidence": "LOW",
+            "error": f"Invalid scenarios: {', '.join(measurement['flags']) or 'empty or malformed scenario list'}",
+            "failure_flags": measurement["flags"] or ["INVALID_SCENARIOS"],
+            "allocation_signal": "INSUFFICIENT_DATA",
+            "execution": {
+                "recommended_mode": "pause",
+                "human_confirmation_required": True,
+            },
+            "assumptions": measurement["assumptions"],
+            "scenario_count": len(scenarios) if isinstance(scenarios, list) else 0,
+        }
     return create_envelope(
         "wealth_emv_risk",
         "Entropy",
@@ -2552,6 +2576,21 @@ def cashflow_flow(
     scale_mode: str = "enterprise",
 ) -> Any:
     """Compute metabolic liquidity (Flow Dimension). [Flow Dimension]"""
+    # Load defaults from /app/cashflow_defaults.json if no params provided
+    if not income and not expenses and liquid_assets in (None, 0):
+        import os, json
+
+        defaults_path = os.environ.get(
+            "WEALTH_DEFAULTS_PATH", "/app/cashflow_defaults.json"
+        )
+        if os.path.exists(defaults_path):
+            try:
+                defaults = json.load(open(defaults_path))
+                income = defaults.get("income", [])
+                expenses = defaults.get("expenses", [])
+                liquid_assets = defaults.get("liquid_assets", 0)
+            except Exception:
+                pass  # Fall through to empty inputs
     income = [item for item in (income or []) if item.get("active", True)]
     expenses = [item for item in (expenses or []) if item.get("active", True)]
     has_input = bool(income or expenses) or liquid_assets not in (None, 0)
@@ -2571,10 +2610,17 @@ def cashflow_flow(
     if burn_rate == 0:
         runway_months = None
         flags.append("RUNWAY_UNBOUNDED")
+        # Stress-test: if income stops, runway = assets / expenses
+        if total_expenses > 0 and liquid_assets > 0:
+            runway_if_income_stops = round_value(liquid_assets / total_expenses, 1)
+        else:
+            runway_if_income_stops = None
     else:
         runway_months = round_value(liquid_assets / burn_rate, 1)
         if runway_months is not None and runway_months < 3:
             flags.append("RUNWAY_CRITICAL")
+        # In deficit, income-stopped scenario is same as normal runway
+        runway_if_income_stops = runway_months
     epistemic = weakest_epistemic([*income, *expenses], "UNKNOWN")
     return create_envelope(
         "wealth_cashflow_flow",
@@ -2584,7 +2630,9 @@ def cashflow_flow(
             "monthly_expenses": round_value(total_expenses, 2),
             "net_monthly": round_value(net_monthly, 2),
             "runway_months": runway_months,
+            "runway_if_income_stops": runway_if_income_stops,
             "burn_rate": round_value(burn_rate, 2),
+            "liquid_assets": liquid_assets,
             "tag": epistemic,
         },
         {"period_unit": "monthly"},
@@ -3836,6 +3884,147 @@ def get_epistemic_matrix() -> str:
             ],
         },
         indent=2,
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TREE777 WIKI RESOURCES — Federation Canonical Knowledge Tree
+# ═══════════════════════════════════════════════════════════════════════════════
+# Exposes WEALTH-domain slice of the TREE777 wiki as MCP Resources.
+# URI scheme:
+#   tree777://skills/wealth/{name}   — WEALTH skill pages
+#   tree777://wealth/concepts/{name} — Capital concept pages
+#   tree777://wealth/scars/{name}    — WEALTH scar/incident records
+# Wiki root: /root/AAA/wiki (shared across all 4 federation servers)
+# Rule: Resources grow. Tools stay bounded. Judgment remains Arif.
+# DITEMPA BUKAN DIBERI — Intelligence is forged, not given.
+
+TREE777_WIKI_ROOT = Path(os.environ.get("TREE777_WIKI_ROOT", "/root/AAA/wiki"))
+TREE777_SKILLS_DIR = TREE777_WIKI_ROOT / "skills" / "wealth"
+TREE777_CONCEPTS_DIR = TREE777_WIKI_ROOT / "concepts"
+TREE777_SCAR_DIR = TREE777_WIKI_ROOT / "scars"
+
+
+def _wealth_read_wiki_file(file_path: str | Path) -> str:
+    """Read a wiki file, returning frontmatter-stripped content."""
+    path = Path(file_path)
+    if not path.exists():
+        return f"ERROR: File not found: {path}"
+    content = path.read_text()
+    if content.startswith("---"):
+        end = content.find("\n---\n", 4)
+        if end != -1:
+            content = content[end + 5 :]
+    return content.strip()
+
+
+def _wealth_tree777_index() -> dict[str, Any]:
+    """Build the TREE777 index for WEALTH domain slice."""
+    skills = []
+    if TREE777_SKILLS_DIR.exists():
+        for f in TREE777_SKILLS_DIR.glob("*.md"):
+            skills.append({"name": f.stem, "uri": f"tree777://skills/wealth/{f.stem}"})
+
+    concepts = []
+    if TREE777_CONCEPTS_DIR.exists():
+        for f in TREE777_CONCEPTS_DIR.glob("*.md"):
+            concepts.append(
+                {"name": f.stem, "uri": f"tree777://wealth/concepts/{f.stem}"}
+            )
+
+    scars = []
+    if TREE777_SCAR_DIR.exists():
+        for f in TREE777_SCAR_DIR.glob("*.md"):
+            if "wealth" in f.stem or "capital" in f.stem or "econ" in f.stem:
+                scars.append(
+                    {"name": f.stem, "uri": f"tree777://wealth/scars/{f.stem}"}
+                )
+
+    return {
+        "domain": "wealth",
+        "skills": skills,
+        "concepts": concepts,
+        "scars": scars,
+        "total": len(skills) + len(concepts) + len(scars),
+    }
+
+
+@mcp.resource(
+    "tree777://index",
+    description=(
+        "TREE777 wiki full index. Lists all federation skills, concepts, and scars. "
+        "Use this to discover available resources across the arifOS, GEOX, WELL, and WEALTH domains."
+    ),
+)
+def wealth_tree777_index() -> str:
+    return json.dumps(_wealth_tree777_index(), indent=2)
+
+
+@mcp.resource(
+    "tree777://skills/wealth/{name}",
+    description=(
+        "Individual WEALTH skill page from the TREE777 wiki. "
+        "Returns markdown content (frontmatter-stripped) with metadata. "
+        "Example: tree777://skills/wealth/capital-conservation"
+    ),
+)
+def wealth_tree777_skill(name: str) -> str:
+    file_path = TREE777_SKILLS_DIR / f"{name}.md"
+    if not file_path.exists():
+        return json.dumps(
+            {
+                "error": f"Skill not found: {name}",
+                "uri": f"tree777://skills/wealth/{name}",
+            }
+        )
+    content = _wealth_read_wiki_file(file_path)
+    return json.dumps(
+        {"uri": f"tree777://skills/wealth/{name}", "content": content}, indent=2
+    )
+
+
+@mcp.resource(
+    "tree777://wealth/concepts/{name}",
+    description=(
+        "Capital concept page from the TREE777 wiki. "
+        "Example: tree777://wealth/concepts/TREE777"
+    ),
+)
+def wealth_tree777_concept(name: str) -> str:
+    file_path = TREE777_CONCEPTS_DIR / f"{name}.md"
+    if not file_path.exists():
+        return json.dumps(
+            {
+                "error": f"Concept not found: {name}",
+                "uri": f"tree777://wealth/concepts/{name}",
+            }
+        )
+    content = _wealth_read_wiki_file(file_path)
+    return json.dumps(
+        {"uri": f"tree777://wealth/concepts/{name}", "content": content}, indent=2
+    )
+
+
+@mcp.resource(
+    "tree777://wealth/scars/{name}",
+    description=(
+        "WEALTH scar/incident record from the TREE777 wiki. "
+        "Documents failures and lessons learned for capital operations. "
+        "Example: tree777://wealth/scars/wealth-risk-breach"
+    ),
+)
+def wealth_tree777_scar(name: str) -> str:
+    file_path = TREE777_SCAR_DIR / f"{name}.md"
+    if not file_path.exists():
+        return json.dumps(
+            {
+                "error": f"Scar not found: {name}",
+                "uri": f"tree777://wealth/scars/{name}",
+            }
+        )
+    content = _wealth_read_wiki_file(file_path)
+    return json.dumps(
+        {"uri": f"tree777://wealth/scars/{name}", "content": content}, indent=2
     )
 
 
@@ -7659,7 +7848,13 @@ def wealth_signal_information(
       appraisal  — appraisal of confirmed discovery (PoS: 0.55)
       development — development well in producing field (PoS: 0.75)
     """
-    from contracts.enrich_wealth import build_metabolic_output
+    try:
+        from contracts.enrich_wealth import build_metabolic_output
+
+        _build_ok = True
+    except Exception:
+        build_metabolic_output = None
+        _build_ok = False
 
     result = _dispatch_emergence(
         "wealth_signal_information",
@@ -7672,7 +7867,12 @@ def wealth_signal_information(
         {k: v for k, v in locals().items() if k not in ("mode", "dispatch")},
     )
     if isinstance(result, dict):
-        return build_metabolic_output(result, "wealth_signal_information")
+        if _build_ok:
+            return build_metabolic_output(result, "wealth_signal_information")
+        result["failure_flags"] = result.get("failure_flags", [])
+        if "CONTRACTS_MODULE_UNAVAILABLE" not in result["failure_flags"]:
+            result["failure_flags"].append("CONTRACTS_MODULE_UNAVAILABLE")
+        return result
     return result
 
 
@@ -7885,7 +8085,13 @@ def wealth_boundary_governance(
             mode_params = {}
     _mp = mode_params or {}
     if mode == "legitimacy_audit":
-        from contracts.enrich_wealth import build_metabolic_output
+        try:
+            from contracts.enrich_wealth import build_metabolic_output
+
+            _build_ok = True
+        except Exception:
+            build_metabolic_output = None
+            _build_ok = False
 
         result = wealth_legitimacy_audit(
             system_description=_mp.get("system_description", ""),
@@ -7901,7 +8107,12 @@ def wealth_boundary_governance(
             scale_mode=_mp.get("scale_mode", scale_mode),
         )
         if isinstance(result, dict):
-            return build_metabolic_output(result, "wealth_boundary_governance")
+            if _build_ok:
+                return build_metabolic_output(result, "wealth_boundary_governance")
+            result["failure_flags"] = result.get("failure_flags", [])
+            if "CONTRACTS_MODULE_UNAVAILABLE" not in result["failure_flags"]:
+                result["failure_flags"].append("CONTRACTS_MODULE_UNAVAILABLE")
+            return result
         return result
     ctx = context or {}
     computed_maruah, maruah_was_computed, maruah_signals = compute_maruah_from_context(
@@ -8033,7 +8244,13 @@ def wealth_synthesize(
             mode_params = {}
     _mp = mode_params or {}
     if mode == "conversion_audit":
-        from contracts.enrich_wealth import build_metabolic_output
+        try:
+            from contracts.enrich_wealth import build_metabolic_output
+
+            _build_ok = True
+        except Exception:
+            build_metabolic_output = None
+            _build_ok = False
 
         result = wealth_conversion_architecture(
             domain=_mp.get("domain", "unspecified"),
@@ -8049,7 +8266,12 @@ def wealth_synthesize(
             scale_mode=_mp.get("scale_mode", scale_mode),
         )
         if isinstance(result, dict):
-            return build_metabolic_output(result, "wealth_synthesize")
+            if _build_ok:
+                return build_metabolic_output(result, "wealth_synthesize")
+            result["failure_flags"] = result.get("failure_flags", [])
+            if "CONTRACTS_MODULE_UNAVAILABLE" not in result["failure_flags"]:
+                result["failure_flags"].append("CONTRACTS_MODULE_UNAVAILABLE")
+            return result
         return result
     # Coerce JSON strings sent by strict MCP bridges (actors, context arrive as str)
     import json as _json
@@ -9606,9 +9828,28 @@ if __name__ == "__main__":
                         ],
                         "resourceTemplates": [
                             {
-                                "uriTemplate": str(t.uriTemplate),
+                                "uriTemplate": str(
+                                    getattr(
+                                        t,
+                                        "uri_template",
+                                        getattr(t, "uriTemplate", str(t)),
+                                    )
+                                ),
                                 "name": str(
-                                    getattr(t, "name", t.uriTemplate) or t.uriTemplate
+                                    getattr(
+                                        t,
+                                        "name",
+                                        getattr(
+                                            t,
+                                            "uri_template",
+                                            getattr(t, "uriTemplate", str(t)),
+                                        ),
+                                    )
+                                    or getattr(
+                                        t,
+                                        "uri_template",
+                                        getattr(t, "uriTemplate", str(t)),
+                                    )
                                 ),
                                 "description": str(getattr(t, "description", "") or ""),
                                 "mimeType": str(
@@ -9624,6 +9865,75 @@ if __name__ == "__main__":
 
         if method == "notifications/initialized":
             return _JR({"jsonrpc": "2.0", "id": response_id, "result": {}})
+
+        if method == "resources/read":
+            uri = (params or {}).get("uri", "")
+            try:
+                result = await mcp.read_resource(uri)
+                items = (
+                    result.contents
+                    if hasattr(result, "contents")
+                    else (list(result) if hasattr(result, "__iter__") else [result])
+                )
+                contents = []
+                for item in items:
+                    text = (
+                        getattr(item, "content", None)
+                        or getattr(item, "text", None)
+                        or str(item)
+                    )
+                    mime = getattr(item, "mime_type", None) or getattr(
+                        item, "mimeType", "application/json"
+                    )
+                    contents.append({"uri": uri, "mimeType": mime, "text": text})
+                return _JR(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": response_id,
+                        "result": {"contents": contents},
+                    }
+                )
+            except Exception as e:
+                return _JR(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": response_id,
+                        "error": {
+                            "code": -32002,
+                            "message": f"Resource not found: {e}",
+                        },
+                    },
+                    status_code=404,
+                )
+
+        if method == "resources/templates/list":
+            all_templates = []
+            try:
+                all_templates = await mcp.list_resource_templates()
+            except Exception:
+                pass
+            return _JR(
+                {
+                    "jsonrpc": "2.0",
+                    "id": response_id,
+                    "result": {
+                        "resourceTemplates": [
+                            {
+                                "uriTemplate": str(
+                                    getattr(
+                                        t,
+                                        "uri_template",
+                                        getattr(t, "uriTemplate", str(t)),
+                                    )
+                                ),
+                                "name": str(getattr(t, "name", "") or ""),
+                                "description": str(getattr(t, "description", "") or ""),
+                            }
+                            for t in all_templates
+                        ]
+                    },
+                }
+            )
 
         return _JR(
             {
@@ -9783,8 +10093,23 @@ if __name__ == "__main__":
                 ],
                 "resourceTemplates": [
                     {
-                        "uriTemplate": str(t.uriTemplate),
-                        "name": str(getattr(t, "name", t.uriTemplate) or t.uriTemplate),
+                        "uriTemplate": str(
+                            getattr(
+                                t, "uri_template", getattr(t, "uriTemplate", str(t))
+                            )
+                        ),
+                        "name": str(
+                            getattr(
+                                t,
+                                "name",
+                                getattr(
+                                    t, "uri_template", getattr(t, "uriTemplate", str(t))
+                                ),
+                            )
+                            or getattr(
+                                t, "uri_template", getattr(t, "uriTemplate", str(t))
+                            )
+                        ),
                         "description": str(getattr(t, "description", "") or ""),
                     }
                     for t in all_templates

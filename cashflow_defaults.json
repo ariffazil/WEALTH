@@ -1,0 +1,48 @@
+{
+  "income": [
+    {
+      "source": "salary",
+      "monthly_amount": 18000,
+      "currency": "MYR",
+      "active": true,
+      "notes": "Gross monthly income - Arif"
+    }
+  ],
+  "expenses": [
+    {
+      "category": "housing",
+      "monthly_amount": 4500,
+      "active": true,
+      "notes": "Estimate - Arif to correct"
+    },
+    {
+      "category": "transport",
+      "monthly_amount": 1500,
+      "active": true,
+      "notes": "Estimate - Arif to correct"
+    },
+    {
+      "category": "food",
+      "monthly_amount": 2000,
+      "active": true,
+      "notes": "Estimate - Arif to correct"
+    },
+    {
+      "category": "other",
+      "monthly_amount": 3000,
+      "active": true,
+      "notes": "Variable - Arif to correct"
+    }
+  ],
+  "liquid_assets": 30000,
+  "savings_notes": "30k in ASB - Arif. ASB withdrawal: work days office hours ONLY. Not instant.",
+  "emergency_credit": 50000,
+  "emergency_credit_notes": "Credit card available for serious emergencies only. High interest cost (~18% p.a. if revolving). Last resort.",
+  "constraints": {
+    "asb_access": "work_hours_only",
+    "asb_liquidity_note": "ASB (Amanah Saham Nasional) - Malaysian unit trust. Not instant. Office hours Mon-Fri.",
+    "credit_access": "last_resort_only",
+    "credit_cost": "high_interest_revolving"
+  },
+  "notes": "Edit /root/WEALTH/cashflow_defaults.json. Real emergency buffer: 30k ASB (office hours) + 50k credit card (last resort). Net surplus: ~7k/month."
+}
