@@ -157,9 +157,9 @@ Layered atop the base Physics/Math/Linguistics agents to operationalize workflow
 
 ### Option 1: Directive-Based (Explicit)
 ```
-Human: "AGI mode: Optimize this code"     → System uses Δ lens
-Human: "ASI mode: Check team wellness"    → System uses Ω lens  
-Human: "Trinity mode: Should we merge?"   → System coordinates Δ·Ω→Ψ
+[DIRECTIVE] "AGI mode: Optimize this code"     → System uses Δ lens
+[DIRECTIVE] "ASI mode: Check team wellness"    → System uses Ω lens
+[DIRECTIVE] "Trinity mode: Should we merge?"   → System coordinates Δ·Ω→Ψ
 ```
 
 ### Option 2: Context-Aware (Automatic)
