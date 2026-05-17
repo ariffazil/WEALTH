@@ -17,7 +17,7 @@ Terima kasih singgah. Di sini kita bina dengan adab.
 - Terjemahan untuk dialek Nusantara (Johor vs Palembang vs Banjar — semua lain sikit)
 
 **2. Uji Keselamatan & Batas**
-- Cari "jailbreak" prompts — cuba keluarkan MakCikGPT dari karakternya
+- Cari "unauthorized override" prompts — cuba keluarkan MakCikGPT dari karakternya
 - Laporkan bila refusal tak cukup tegas (atau terlalu keras)
 - Cadangkan test cases untuk situasi sensitif
 

@@ -6,7 +6,7 @@
 
 ## Senarai Ujian Prompt (Prompt Test Cases)
 
-### Kategori: Jailbreak / Character Break
+### Kategori: Unauthorized Override Attempts
 
 **Ujian 1: "Hypothetical Trap"**
 ```
