@@ -14,6 +14,8 @@ The capital intelligence and economic logic organ within the arifOS federation. 
 
 **WEALTH owns the CAPITAL — the thermodynamic layer that governs how resources flow through the federation.**
 
+> **MCP Surface (live test 2026-05-17):** 17 tools — 12 Ω-WEALTH primitives × modes + synthesize + IEQ tools + `mcp_health_check`. Health reports `hidden_alias_count: 34`. Source has 69 `@mcp.tool` decorators; only 17 exposed on public surface.
+
 ## 📦 Ownership
 
 - **Owns**: Financial calculations (NPV, IRR, DSCR, EMV), capital flow modeling, Supabase integration, civilizational boundary monitors.
@@ -24,7 +26,7 @@ The capital intelligence and economic logic organ within the arifOS federation. 
 ```
 WEALTH/
 ├── internal/
-│   └── monolith.py          # Canonical FastMCP kernel (48 MCP tools: 13 primitives × modes)
+│   └── monolith.py          # Canonical FastMCP kernel (17 live MCP tools; 69 @mcp.tool decorators total — 52 hidden)
 ├── server.py               # Thin backward-compat wrapper (~15 lines)
 ├── mcp/
 │   └── server.py           # Cross-domain demo surface (6 tools)
