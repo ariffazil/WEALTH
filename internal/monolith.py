@@ -8293,13 +8293,157 @@ def wealth_boundary_governance(
             "human_readiness": {"freshness_band": human_fresh},
             "failed_links": failed_links,
             "next_fix": [
-                f"Fix lowest: {min(scores, key=lambda k: scores[
-                        k
-                    ])} (score={scores[min(scores, key=lambda k: scores[k])]})"
+                f"Fix lowest: {min(scores, key=lambda k: scores[k])} (score={
+                    scores[min(scores, key=lambda k: scores[k])]
+                })"
             ]
             if scores
             else ["No blocking issues"],
             "note": "Absorbed from arifOS federation_audit — WEALTH owns federation readiness as boundary stewardship",
+        }
+
+    elif mode == "institutional_drift":
+        """Ω-WEALTH-11 → Institutional Drift Check (Acemoglu).
+
+        Evaluates extractive vs inclusive institutional topology using
+        Acemoglu-style inclusive/extractive metrics.
+
+        Maps to WEALTH boundary invariants: access, capture, participation,
+        innovation rights, appeal path, elite chokepoints, sovereignty.
+
+        Context keys (all optional):
+          access_barriers, access_reach, dominant_node_count, control_ratio,
+          meaningful_actor_types, innovation_rights_held_by, contestable,
+          appeal_mechanism, elite_controlled_chokepoints,
+          human_veto_used_recently, system_can_override_veto
+        """
+        ctx = context or {}
+
+        # ── Heuristic evaluations ─────────────────────────────────────────
+        barriers = ctx.get("access_barriers", "unknown")
+        reach = ctx.get("access_reach", "unknown")
+        if barriers == "none" and reach == "broad":
+            inclusive_access = "high"
+        elif barriers in ("moderate", "unknown") or reach in ("moderate", "unknown"):
+            inclusive_access = "medium"
+        elif barriers == "high" or reach == "narrow":
+            inclusive_access = "low"
+        else:
+            inclusive_access = "medium"
+
+        dominant = ctx.get("dominant_node_count", "unknown")
+        control = ctx.get("control_ratio", "unknown")
+        if dominant == 1 and control == "monopoly":
+            extractive_capture = "high"
+        elif dominant in ("few", 2, 3) or control == "high":
+            extractive_capture = "medium"
+        else:
+            extractive_capture = "low"
+
+        actor_types = ctx.get("meaningful_actor_types", "unknown")
+        if isinstance(actor_types, int):
+            if actor_types <= 1:
+                participation_width = "symbolic"
+            elif actor_types <= 3:
+                participation_width = "narrow"
+            else:
+                participation_width = "broad"
+        else:
+            participation_width = "broad"
+
+        creators = ctx.get("innovation_rights_held_by", "unknown")
+        if creators == "all":
+            innovation_rights = "distributed"
+        elif creators == "few":
+            innovation_rights = "gated"
+        elif creators in ("one", "elite"):
+            innovation_rights = "captured"
+        else:
+            innovation_rights = "distributed"
+
+        contest = ctx.get("contestable", "unknown")
+        appeal = ctx.get("appeal_mechanism", "unknown")
+        if contest is True and appeal == "formal":
+            appeal_path = "present"
+        elif contest is True or appeal == "informal":
+            appeal_path = "weak"
+        elif contest is False and appeal == "none":
+            appeal_path = "absent"
+        else:
+            appeal_path = "weak"
+
+        chokepoints = ctx.get("elite_controlled_chokepoints", 0)
+        if isinstance(chokepoints, int):
+            if chokepoints >= 3:
+                elite_chokepoint = "high"
+            elif chokepoints >= 1:
+                elite_chokepoint = "medium"
+            else:
+                elite_chokepoint = "low"
+        else:
+            elite_chokepoint = "low"
+
+        veto_used = ctx.get("human_veto_used_recently", "unknown")
+        override_possible = ctx.get("system_can_override_veto", "unknown")
+        if veto_used is True and override_possible is False:
+            sovereignty = "strong"
+        elif veto_used is True or override_possible is False:
+            sovereignty = "degraded"
+        elif veto_used is False and override_possible is True:
+            sovereignty = "symbolic"
+        else:
+            sovereignty = "strong"
+
+        # ── Derive verdict ────────────────────────────────────────────────
+        extractive_signals = 0
+        signals_list: list[str] = []
+        if inclusive_access == "low":
+            extractive_signals += 1
+            signals_list.append("Low inclusive access.")
+        if extractive_capture in ("high", "medium"):
+            extractive_signals += 1
+            signals_list.append(f"Extractive capture: {extractive_capture}.")
+        if participation_width in ("narrow", "symbolic"):
+            extractive_signals += 1
+            signals_list.append(f"Participation width: {participation_width}.")
+        if innovation_rights == "captured":
+            extractive_signals += 1
+            signals_list.append("Innovation rights captured.")
+        if appeal_path == "absent":
+            extractive_signals += 1
+            signals_list.append("No appeal path.")
+        if elite_chokepoint == "high":
+            extractive_signals += 1
+            signals_list.append("High elite chokepoint risk.")
+        if sovereignty in ("degraded", "symbolic"):
+            extractive_signals += 1
+            signals_list.append(f"Sovereignty integrity: {sovereignty}.")
+
+        if extractive_signals >= 4:
+            verdict = "extractive"
+        elif extractive_signals >= 2:
+            verdict = "extractive_drift"
+        elif extractive_signals >= 1:
+            verdict = "mixed"
+        else:
+            verdict = "inclusive"
+
+        return {
+            "mcp": "WEALTH",
+            "tool": "wealth_boundary_governance",
+            "mode": "institutional_drift",
+            "verdict": verdict,
+            "extractive_signals": extractive_signals,
+            "inclusive_access": inclusive_access,
+            "extractive_capture": extractive_capture,
+            "participation_width": participation_width,
+            "innovation_rights": innovation_rights,
+            "appeal_path": appeal_path,
+            "elite_chokepoint_risk": elite_chokepoint,
+            "sovereignty_integrity": sovereignty,
+            "signals": signals_list,
+            "constitutional_floors_checked": ["F05", "F08", "F10", "F13"],
+            "note": "Acemoglu institutional drift — absorbed from arifOS topology.py into WEALTH boundary stewardship",
         }
 
     ctx = context or {}
