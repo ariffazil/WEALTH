@@ -9116,6 +9116,7 @@ def wealth_role_scarcity_risk(
     status_bottleneck: float = 0.5,
     future_orientation_collapse: float = 0.5,
     scale_mode: str = "enterprise",
+    organism_context: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Ω-WEALTH-IEQ-04: Role Scarcity Risk — Calhoun-inspired social role
     saturation assessment. Inequality is not only about material scarcity.
@@ -9123,6 +9124,26 @@ def wealth_role_scarcity_risk(
 
     Scores 0=no risk, 1=maximum risk. Threshold warning at 0.65.
     Above threshold, resource transfers alone cannot reverse collapse.
+
+    When organism_context is provided (folded from arifOS arif_anti_sink_check),
+    also evaluates 8 qualitative anti-sink dimensions at the organism/system-
+    design level — complementary to the civilizational calhoun_risk_score.
+
+    organism_context keys (all optional):
+      automation_level: "full_replacement" | "augmentation" | "unknown"
+      human_roles_remaining: "none" | "single" | "multiple"
+      distinct_human_roles: int
+      feedback_loop: "closed" | "partial" | "open" | "absent"
+      centralization: "monopoly" | "moderate" | "distributed"
+      chokepoint_count: int
+      agency_trend: "declining" | "stable" | "rising"
+      capture_trend: "rising" | "stable" | "falling"
+      participation_trend: "narrowing" | "stable" | "broadening"
+      contestable: bool
+      reversible: bool
+      abstraction_level: "high" | "moderate" | "low"
+      role_pathway: "none" | "weak" | "strong"
+      human_decision_points: int
     """
     dims = {
         "youth_unemployment": youth_unemployment,
@@ -9155,7 +9176,7 @@ def wealth_role_scarcity_risk(
         domain_verdict = "SEAL"
         intervention_window = "Low risk — role architecture intact."
 
-    result = {
+    result: Dict[str, Any] = {
         "mcp": "WEALTH",
         "tool": "wealth_role_scarcity_risk",
         "task": "wealth_role_scarcity_risk",
@@ -9178,12 +9199,186 @@ def wealth_role_scarcity_risk(
         ),
         "scale_mode": scale_mode,
     }
+
+    # ── Anti-Sink Fold (arif_anti_sink_check → WEALTH) ──────────────────────
+    if organism_context:
+        ctx = organism_context
+
+        auto_lvl = ctx.get("automation_level", "unknown")
+        human_roles = ctx.get("human_roles_remaining", "unknown")
+        if auto_lvl == "full_replacement" or human_roles == "none":
+            agency_delta = "negative"
+            agency_delta_note = "Automation fully replaces human decision points."
+        elif auto_lvl == "augmentation" or human_roles == "multiple":
+            agency_delta = "positive"
+            agency_delta_note = "Human agency preserved or amplified."
+        else:
+            agency_delta = "unknown"
+            agency_delta_note = "Insufficient context to assess agency delta."
+
+        role_count = ctx.get("distinct_human_roles", "unknown")
+        if isinstance(role_count, int):
+            if role_count <= 1:
+                role_diversity_delta = "negative"
+                role_diversity_note = "All human roles compressed into single slot."
+            elif role_count >= 3:
+                role_diversity_delta = "positive"
+                role_diversity_note = f"{role_count} distinct human roles detected."
+            else:
+                role_diversity_delta = "unknown"
+                role_diversity_note = "Role diversity context unavailable."
+        else:
+            role_diversity_delta = "unknown"
+            role_diversity_note = "Role diversity context unavailable."
+
+        fb = ctx.get("feedback_loop", "unknown")
+        if fb == "closed":
+            feedback_integrity = "strong"
+            feedback_note = "Closed feedback loop from action to consequence."
+        elif fb == "partial":
+            feedback_integrity = "partial"
+            feedback_note = "Partial feedback; some consequences are invisible."
+        elif fb in ("open", "absent"):
+            feedback_integrity = "absent"
+            feedback_note = "No observable feedback path."
+        else:
+            feedback_integrity = "absent"
+            feedback_note = "Feedback integrity unknown."
+
+        centralization = ctx.get("centralization", "unknown")
+        chokepoints = ctx.get("chokepoint_count", 0)
+        if centralization == "monopoly" or (
+            isinstance(chokepoints, int) and chokepoints >= 3
+        ):
+            topology_risk = "high"
+            topology_note = "High centralization or multiple chokepoints detected."
+        elif centralization == "moderate" or (
+            isinstance(chokepoints, int) and chokepoints >= 1
+        ):
+            topology_risk = "medium"
+            topology_note = "Moderate centralization or isolated chokepoints."
+        elif centralization == "distributed":
+            topology_risk = "low"
+            topology_note = "Distributed topology with few chokepoints."
+        else:
+            topology_risk = "low"
+            topology_note = "Topology risk unmeasured; default low."
+
+        drift_signals = 0
+        drift_notes: list[str] = []
+        if ctx.get("agency_trend") == "declining":
+            drift_signals += 1
+            drift_notes.append("Agency trend is declining.")
+        if ctx.get("capture_trend") == "rising":
+            drift_signals += 1
+            drift_notes.append("Extractive capture is rising.")
+        if ctx.get("participation_trend") == "narrowing":
+            drift_signals += 1
+            drift_notes.append("Participation width is narrowing.")
+        if drift_signals >= 2:
+            extractive_drift = "high"
+            drift_note = "; ".join(drift_notes)
+        elif drift_signals == 1:
+            extractive_drift = "medium"
+            drift_note = "; ".join(drift_notes)
+        else:
+            extractive_drift = "low"
+            drift_note = "No clear extractive drift signals."
+
+        contestable = ctx.get("contestable", "unknown")
+        reversible = ctx.get("reversible", "unknown")
+        if contestable is True and reversible is True:
+            inclusive_repair_path = "present"
+            repair_note = "System is contestable and reversible."
+        elif contestable is True or reversible is True:
+            inclusive_repair_path = "weak"
+            repair_note = "Partial repair path; contestability or reversibility only."
+        elif contestable is False and reversible is False:
+            inclusive_repair_path = "absent"
+            repair_note = "No contestability or reversibility."
+        else:
+            inclusive_repair_path = "absent"
+            repair_note = "Repair path status unknown."
+
+        abstraction = ctx.get("abstraction_level", "unknown")
+        role_pathway = ctx.get("role_pathway", "unknown")
+        if abstraction == "high" and role_pathway == "none":
+            beautiful_ones_risk = True
+            beautiful_note = "High abstraction with no human role pathway."
+        else:
+            beautiful_ones_risk = False
+            beautiful_note = "Beautiful Ones Risk not detected."
+
+        decision_pts = ctx.get("human_decision_points", "unknown")
+        if isinstance(decision_pts, int):
+            if decision_pts == 0:
+                agency_compression = "high"
+                compression_note = "Zero human decision points remain."
+            elif decision_pts <= 2:
+                agency_compression = "medium"
+                compression_note = f"Only {decision_pts} human decision points remain."
+            else:
+                agency_compression = "low"
+                compression_note = f"{decision_pts} human decision points preserved."
+        else:
+            agency_compression = "low"
+            compression_note = "Agency compression unmeasured; default low."
+
+        if (
+            extractive_drift == "high"
+            or topology_risk == "high"
+            or agency_compression == "high"
+        ):
+            anti_sink_verdict = "hold"
+            anti_sink_verdict_note = (
+                "High risk indicators detected. Human review required."
+            )
+        elif (
+            extractive_drift == "medium"
+            or topology_risk == "medium"
+            or agency_compression == "medium"
+            or beautiful_ones_risk
+        ):
+            anti_sink_verdict = "revise"
+            anti_sink_verdict_note = (
+                "Moderate risk or Beautiful Ones flag. Recommend revision."
+            )
+        else:
+            anti_sink_verdict = "pass"
+            anti_sink_verdict_note = "No significant extractive or sink indicators."
+
+        anti_sink_assessment = {
+            "verdict": anti_sink_verdict,
+            "verdict_note": anti_sink_verdict_note,
+            "agency_delta": agency_delta,
+            "agency_delta_note": agency_delta_note,
+            "role_diversity_delta": role_diversity_delta,
+            "role_diversity_note": role_diversity_note,
+            "feedback_integrity": feedback_integrity,
+            "feedback_note": feedback_note,
+            "topology_risk": topology_risk,
+            "topology_note": topology_note,
+            "extractive_drift": extractive_drift,
+            "extractive_drift_note": drift_note,
+            "inclusive_repair_path": inclusive_repair_path,
+            "repair_note": repair_note,
+            "beautiful_ones_risk": beautiful_ones_risk,
+            "beautiful_ones_note": beautiful_note,
+            "agency_compression": agency_compression,
+            "agency_compression_note": compression_note,
+            "confidence": "low",
+            "constitutional_floors_checked": ["F05", "F08", "F10", "F13"],
+            "note": "Folded from arifOS arif_anti_sink_check — WEALTH owns anti-sink diagnostics as Ω-WEALTH-11 boundary stewardship",
+        }
+        result["anti_sink_assessment"] = anti_sink_assessment
+
     return _inject_emergence(
         "wealth_role_scarcity_risk",
         "assess",
         {
             "context": context,
             "scale_mode": scale_mode,
+            "organism_context_present": organism_context is not None,
         },
         result,
     )
