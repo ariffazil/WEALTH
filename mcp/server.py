@@ -10,6 +10,12 @@ from core.shared.governed_tool import governed_tool
 
 mcp = FastMCP("WEALTH-Civilization")
 
+# ─── Named constants (F2 Truth: no unexplained coefficients) ───
+PROJECT_LIFE_YEARS: float = 10.0       # standard project evaluation window
+BRENT_BENCHMARK: float = 120.0           # USD/bbl baseline for price dignity
+HEDGE_DRAG_THRESHOLD: float = 0.15       # 15% → triggers 888_HOLD
+REFINERY_MARGIN_DANGER: float = 30.0      # USD/bbl — crisis threshold
+
 # --- Models ---
 
 class MarketAnalysis(BaseModel):
@@ -56,6 +62,13 @@ class ProspectEconomics(BaseModel):
     development_capex: float
     operating_opex: float
     oil_price_assumption: float
+    # ─── Multi-factor NOC model (new) ───
+    effective_price: float        # hedge_lock_usd if set, else oil_price
+    hedge_drag: float             # |spot - lock| / spot — F2 OBS
+    fx_impact: float             # RM conversion benefit/cost — F2 OBS
+    decline_factor: float         # production falloff multiplier
+    downstream_cost_impact: float # refinery margin squeeze (phase 2 reserved)
+    # ─── Core economics ───
     npv_10: float
     emv: float
     paradox_score: float
@@ -66,45 +79,109 @@ class ProspectEconomics(BaseModel):
 @mcp.tool()
 @governed_tool
 async def wealth_evaluate_prospect(
-    prospect_id: str, 
-    stoiip_bbl: float, 
-    capex_estimate: float = 500_000_000.0, 
-    opex_per_bbl: float = 15.0, 
+    prospect_id: str,
+    stoiip_bbl: float,
+    capex_estimate: float = 500_000_000.0,
+    opex_per_bbl: float = 15.0,
     oil_price: float = 75.0,
-    geological_chance_of_success: float = 0.3
+    geological_chance_of_success: float = 0.3,
+    # ─── Multi-factor NOC params ───
+    hedge_lock_usd: Optional[float] = None,
+    rm_usd_rate: Optional[float] = None,
+    downstream_margin_usd: Optional[float] = None,
+    production_decline_rate: Optional[float] = None,
+    lng_contract_price: Optional[float] = None,
+    prospect_type: str = "oil",  # "oil" or "gas"
 ) -> ProspectEconomics:
     """
     Evaluate prospect economics (NPV/EMV) from GEOX volumetrics.
-    Applies the WEALTH schema to calculate the Paradox and Echo of the investment.
+    Applies the WEALTH schema: Paradox, Echo, and multi-factor NOC model.
+
+    Multi-factor enhancements:
+    - hedge_lock_usd: locked revenue price vs spot exposure → hedge_drag
+    - rm_usd_rate: USD revenue × RM cost base translation
+    - downstream_margin_usd: refinery margin squeeze (phase 2 reserved)
+    - production_decline_rate: mature field falloff → decline_factor
+    - lng_contract_price: gas projects use contract vs spot spread
+    - prospect_type: routes oil vs gas pricing logic
+
+    888_HOLD trigger: hedge_drag > 15% OR emv < 0 AND paradox_score > 0.8
     """
-    # Assume a 35% recovery factor for the Energy Capacity (STOIIP)
-    recoverable_reserves = stoiip_bbl * 0.35 
-    gross_revenue = recoverable_reserves * oil_price
-    total_opex = recoverable_reserves * opex_per_bbl
-    net_cash_flow = gross_revenue - capex_estimate - total_opex
-    
-    # Simplified NPV10 (assuming flat production curve)
-    npv_10 = net_cash_flow * 0.614 # Rough discount factor for 10% over 10 yrs
-    
-    # Expected Monetary Value (EMV)
+    # ── Price effective ──
+    effective_price = hedge_lock_usd if hedge_lock_usd else oil_price
+    hedge_drag = abs(oil_price - effective_price) / oil_price if hedge_lock_usd and oil_price != effective_price else 0.0
+
+    # ── Recovery factor with decline adjustment ──
+    recovery_factor = 0.35
+    decline_factor = 1.0
+    if production_decline_rate:
+        # 4.5 = PROJECT_LIFE_YEARS × 0.45 (empirical production-curve weighting)
+        avg_decline_factor = max(0.5, 1.0 - (production_decline_rate * 4.5))
+        decline_factor = avg_decline_factor
+        recovery_factor = 0.35 * avg_decline_factor
+
+    recoverable_reserves = stoiip_bbl * recovery_factor
+
+    # ── FX conversion (USD revenue → RM cost base) ──
+    fx_impact = 0.0
+    if rm_usd_rate:
+        gross_revenue_usd = recoverable_reserves * effective_price
+        gross_revenue_rm = gross_revenue_usd * rm_usd_rate
+        capex_rm = capex_estimate * rm_usd_rate
+        total_opex_rm = recoverable_reserves * opex_per_bbl * rm_usd_rate
+        fx_impact = (rm_usd_rate - 4.5) * gross_revenue_usd / 1_000_000  # RM deviation from baseline in millions
+    else:
+        gross_revenue_rm = recoverable_reserves * effective_price
+        capex_rm = capex_estimate
+        total_opex_rm = recoverable_reserves * opex_per_bbl
+
+    net_cash_flow = gross_revenue_rm - capex_rm - total_opex_rm
+
+    # ── LNG gas spread (gas prospects only) ──
+    if prospect_type == "gas" and lng_contract_price:
+        # Contract gas earns a premium over spot; negative delta = discount
+        lng_delta = (lng_contract_price - effective_price) * recoverable_reserves * 0.3
+        net_cash_flow += lng_delta
+
+    # ── NPV10 (flat production, 10-year project life) ──
+    npv_10 = net_cash_flow * 0.614
+
+    # ── EMV ──
     emv = (npv_10 * geological_chance_of_success) - (capex_estimate * (1 - geological_chance_of_success))
-    
-    # Paradox score: High short-term money but massive capital risk
+
+    # ── Paradox ──
     paradox_score = 0.8 if (emv < 0 or capex_estimate > 1_000_000_000) else 0.2
-    
+
+    # ── Downstream cost impact (phase 2 — reserved) ──
+    downstream_cost_impact = 0.0
+    if downstream_margin_usd:
+        # When refinery margins compress, development cost rises
+        refinery_stress = max(0.0, (REFINERY_MARGIN_DANGER - downstream_margin_usd) / REFINERY_MARGIN_DANGER)
+        downstream_cost_impact = capex_estimate * refinery_stress * 0.05
+
     # WEALTH does not Seal; it only qualifies. arifOS holds the final Seal.
-    verdict = "QUALIFY" if emv > 0 and paradox_score < 0.5 else "888-HOLD"
-    
+    hold_triggered = (
+        hedge_drag > HEDGE_DRAG_THRESHOLD
+        or emv < 0
+        or paradox_score >= 0.5
+    )
+    verdict = "888-HOLD" if hold_triggered else "QUALIFY"
+
     return ProspectEconomics(
         prospect_id=prospect_id,
         stoiip_bbl=stoiip_bbl,
         development_capex=capex_estimate,
-        operating_opex=total_opex,
+        operating_opex=total_opex_rm,
         oil_price_assumption=oil_price,
+        effective_price=effective_price,
+        hedge_drag=hedge_drag,
+        fx_impact=fx_impact,
+        decline_factor=decline_factor,
+        downstream_cost_impact=downstream_cost_impact,
         npv_10=npv_10,
         emv=emv,
         paradox_score=paradox_score,
-        verdict=verdict
+        verdict=verdict,
     )
 
 # --- Domain 1: Stock Market Intelligence (WEALTH-Markets) ---
@@ -142,16 +219,67 @@ async def markets_portfolio_stress_test(
 
 @mcp.tool()
 @governed_tool
-async def energy_crisis_assess(region: str) -> CrisisAssessment:
-    """Assess energy crisis severity with F1-F13."""
+async def energy_crisis_assess(
+    region: str,
+    # ─── Oil price context (optional — multi-factor model) ───
+    brent_price_usd: Optional[float] = None,
+    domestic_production_pct: Optional[float] = None,
+    rm_usd_rate: Optional[float] = None,
+    refinery_margin_usd: Optional[float] = None,
+) -> CrisisAssessment:
+    """
+    Assess energy crisis severity with F1-F13 constitutional floors.
+
+    Multi-factor model (when params provided):
+    - price_dignity: citizen affordability under oil price stress
+    - energy_sovereignty: domestic production buffers global spikes
+    - grid_integrity: refinery margin squeeze when crude spikes
+    - transition_amanah: clean transition readiness
+    - maruah: citizen dignity under energy stress
+
+    888_HOLD trigger: price_dignity < 0.5 AND not Malaysia sovereign.
+
+    Note: hedge_drag belongs in wealth_evaluate_prospect (investment context),
+    not here (sovereignty/affordability context). Kept separate per domain scope.
+    """
+    _is_malaysia = region.upper() == "MALAYSIA"
+
+    if brent_price_usd is not None and domestic_production_pct is not None:
+        price_burden = 1.0 - domestic_production_pct
+        price_dignity = max(0.3, 1.0 - (brent_price_usd / BRENT_BENCHMARK) * price_burden)
+        energy_sovereignty = min(1.0, domestic_production_pct + (1.0 - price_burden) * 0.3)
+
+        # Bug 2 fix: refinery_stress must default to 0.0 when None (was NameError)
+        refinery_stress = max(0.0, (REFINERY_MARGIN_DANGER - refinery_margin_usd) / REFINERY_MARGIN_DANGER) \
+            if refinery_margin_usd else 0.0
+        grid_integrity = max(0.5, 0.9 - refinery_stress * 0.4)
+
+        # FX amplifier: RM weakens when USD strengthens (oil up → USD up → RM up)
+        if rm_usd_rate:
+            fx_amplifier = rm_usd_rate / 4.5
+            normalized_revenue = (brent_price_usd / 75.0) * fx_amplifier
+        else:
+            normalized_revenue = brent_price_usd / 75.0
+
+        maruah_score = price_dignity * energy_sovereignty * (1.0 - refinery_stress)
+
+        # 888_HOLD: price dignity breach + non-sovereign → escalate
+        hold_triggered = (price_dignity < 0.5 and not _is_malaysia)
+    else:
+        price_dignity = 0.7
+        energy_sovereignty = 0.8
+        grid_integrity = 0.9
+        maruah_score = 0.73
+        hold_triggered = False
+
     return CrisisAssessment(
         region=region.upper(),
-        energy_sovereignty=0.8,
-        grid_integrity=0.9,
-        price_dignity=0.7,
+        energy_sovereignty=energy_sovereignty,
+        grid_integrity=grid_integrity,
+        price_dignity=price_dignity,
         transition_amanah=0.5,
-        maruah_score=0.73,
-        hold_triggered=False
+        maruah_score=maruah_score,
+        hold_triggered=hold_triggered,
     )
 
 @mcp.tool()
@@ -201,4 +329,4 @@ def get_global_food_prices() -> str:
     return "Global food price index: 120.5 [ESTIMATE]"
 
 if __name__ == "__main__":
-    mcp.run(transport="sse", host="0.0.0.0", port=8000)
+    mcp.run(transport="sse", host="0.0.0.0", port=8082)

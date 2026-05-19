@@ -1,0 +1,38 @@
+schema_version: 1
+kind: arifos.mcp_surface
+owner_repo: WEALTH
+status: contract
+last_verified: "2026-05-19"
+runtime_surface:
+  primary_transport: streamable_http
+  primary_port: 8082
+  public_domain: https://wealth.arif-fazil.com
+authority:
+  owns:
+    - capital_viability
+    - risk_scoring
+    - emv_npv_irr_dscr
+    - portfolio_scenarios
+    - decision_memos
+  excludes:
+    - constitutional_judgment
+    - geological_truth
+    - deployment_substrate
+    - final_capital_commitment
+expected_tools_or_routes:
+  - wealth_screen_opportunity
+  - wealth_compute_viability
+  - wealth_score_risk
+  - wealth_compare_scenarios
+  - wealth_emit_investment_memo
+  - wealth_boundary_governance
+artifact_policy:
+  machine_readable: required
+  human_readable: required_for_memos
+  evidence_refs: required
+  assumption_limits: required
+hold_conditions:
+  - missing_financial_evidence
+  - large_hedge_drag
+  - irreversible_capital_action
+  - geological_assumption_not_grounded_by_geox
