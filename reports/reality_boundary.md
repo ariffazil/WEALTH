@@ -1,7 +1,7 @@
 # WEALTH MCP — Reality Boundary Declaration
 **Date:** 2026-05-07
 **Declaration:** SUBSTRATE CAPABILITIES AND LIMITS
-**Authority:** OPENCLAW (AGI operator) + ARIF (human sovereign)
+**Authority:** OPENCLAW (Agent Operator) + ARIF (Human Sovereign)
 **REPO=WEALTH**
 
 ---
