@@ -8623,10 +8623,57 @@ def wealth_synthesize(
     verdicts: List[str] = []
     dimensional_scores: Dict[str, Any] = {}
 
+    # ── Claim-state helper ────────────────────────────────────────────────────
+    # WEALTH must tag every dimensional result so agents know whether data is
+    # observed, user-supplied, estimated from defaults, or hypothetical.
+    _WEALTH_CLAIM_STATES = {
+        "conservation": "SYNTHETIC_DEFAULT",  # no assets/liabilities passed
+        "flow": "SYNTHETIC_DEFAULT",          # no income/expenses passed
+        "entropy": (
+            "USER_SUPPLIED" if (cash_flows or (well_cost_musd and p50_value_musd))
+            else "HYPOTHESIS"
+        ),
+        "time": "USER_SUPPLIED" if cash_flows else "INSUFFICIENT_CONTEXT",
+        "signal": (
+            "USER_SUPPLIED" if (well_cost_musd or p50_value_musd)
+            else "SYNTHETIC_DEFAULT"
+        ),
+        "boundary": "HYPOTHESIS",             # qualitative governance scan
+        "game": "USER_SUPPLIED" if (actors and len(actors) >= 2) else "NOT_COMPUTED",
+    }
+
+    def _tag_dimension(name: str, metrics: Dict[str, Any], gov_verdict: str) -> Dict[str, Any]:
+        """Wrap dimensional metrics with claim-state and data-source tags."""
+        cs = _WEALTH_CLAIM_STATES.get(name, "UNKNOWN")
+        if cs == "USER_SUPPLIED":
+            data_source = "user_input"
+        elif cs == "SYNTHETIC_DEFAULT":
+            data_source = "synthetic_default"
+        elif cs in ("HYPOTHESIS", "NOT_COMPUTED"):
+            data_source = "qualitative_inference"
+        elif cs == "INSUFFICIENT_CONTEXT":
+            data_source = "insufficient_context"
+        elif gov_verdict == "SEAL":
+            data_source = "live_adapter"
+        else:
+            data_source = "unknown"
+        return {
+            "_claim_state": cs,
+            "_data_source": data_source,
+            "_constitutional_note": (
+                "WEALTH is advisory-only. It computes capital thermodynamics "
+                "but NEVER adjudicates constitutional verdicts. "
+                "arifOS 888_JUDGE is the sole authority."
+            ),
+            **metrics,
+        }
+
     # ── Dimension 1: Conservation (capital stock baseline) ────────────────────
     try:
         r = networth_state(scale_mode=scale_mode)
-        results["conservation"] = r.get("primary_metrics", {})
+        results["conservation"] = _tag_dimension(
+            "conservation", r.get("primary_metrics", {}), r.get("governance_verdict", "UNKNOWN")
+        )
         dimensional_scores["conservation"] = r.get("governance_verdict", "UNKNOWN")
         verdicts.append(r.get("governance_verdict", "UNKNOWN"))
     except Exception as exc:
@@ -8635,7 +8682,9 @@ def wealth_synthesize(
     # ── Dimension 2: Flow (liquidity / runway) ────────────────────────────────
     try:
         r = cashflow_flow(scale_mode=scale_mode)
-        results["flow"] = r.get("primary_metrics", {})
+        results["flow"] = _tag_dimension(
+            "flow", r.get("primary_metrics", {}), r.get("governance_verdict", "UNKNOWN")
+        )
         dimensional_scores["flow"] = r.get("governance_verdict", "UNKNOWN")
         verdicts.append(r.get("governance_verdict", "UNKNOWN"))
     except Exception as exc:
@@ -8680,7 +8729,9 @@ def wealth_synthesize(
                 scale_mode=scale_mode,
                 epistemic="CLAIM",
             )
-        results["entropy"] = r.get("primary_metrics", {})
+        results["entropy"] = _tag_dimension(
+            "entropy", r.get("primary_metrics", {}), r.get("governance_verdict", "UNKNOWN")
+        )
         dimensional_scores["entropy"] = r.get("governance_verdict", "UNKNOWN")
         verdicts.append(r.get("governance_verdict", "UNKNOWN"))
     except Exception as exc:
@@ -8695,7 +8746,9 @@ def wealth_synthesize(
                 discount_rate=discount_rate,
                 scale_mode=scale_mode,
             )
-            results["time"] = r.get("primary_metrics", {})
+            results["time"] = _tag_dimension(
+                "time", r.get("primary_metrics", {}), r.get("governance_verdict", "UNKNOWN")
+            )
             dimensional_scores["time"] = r.get("governance_verdict", "UNKNOWN")
             verdicts.append(r.get("governance_verdict", "UNKNOWN"))
         else:
@@ -8715,7 +8768,9 @@ def wealth_synthesize(
                 scale_mode=scale_mode,
             )
         )
-        results["signal"] = r.get("primary_metrics", {})
+        results["signal"] = _tag_dimension(
+            "signal", r.get("primary_metrics", {}), r.get("governance_verdict", "UNKNOWN")
+        )
         dimensional_scores["signal"] = r.get("governance_verdict", "UNKNOWN")
         verdicts.append(r.get("governance_verdict", "UNKNOWN"))
     except Exception as exc:
@@ -8736,7 +8791,9 @@ def wealth_synthesize(
             scale_mode=scale_mode,
             maruah_score=computed_maruah,
         )
-        results["boundary"] = r.get("primary_metrics", {})
+        results["boundary"] = _tag_dimension(
+            "boundary", r.get("primary_metrics", {}), r.get("governance_verdict", "UNKNOWN")
+        )
         dimensional_scores["boundary"] = r.get("governance_verdict", "UNKNOWN")
         verdicts.append(r.get("governance_verdict", "UNKNOWN"))
     except Exception as exc:
@@ -8760,7 +8817,9 @@ def wealth_synthesize(
                 shared_resources=t["shared_resources"],
                 scale_mode=scale_mode,
             )
-            results["game"] = r.get("primary_metrics", {})
+            results["game"] = _tag_dimension(
+                "game", r.get("primary_metrics", {}), r.get("governance_verdict", "UNKNOWN")
+            )
             dimensional_scores["game"] = r.get("governance_verdict", "UNKNOWN")
             verdicts.append(r.get("governance_verdict", "UNKNOWN"))
         except Exception as exc:
@@ -8796,6 +8855,20 @@ def wealth_synthesize(
         else "UNKNOWN"
     )
 
+    # ── Advisory mapping: constitutional verdict → human-readable advisory ────
+    # WEALTH is advisory-only. It computes capital thermodynamics but NEVER
+    # adjudicates constitutional verdicts. These strings replace SEAL/HOLD/VOID.
+    _WEALTH_ADVISORY_MAP = {
+        "VOID": "insufficient_data — one or more dimensions failed or lacked input",
+        "888-HOLD": "constitutional_escalation — high stress requires arifOS 888_JUDGE",
+        "SABAR": "conditional — proceed only if stated constraints are resolved",
+        "QUALIFY": "qualified — computation valid but constraints remain",
+        "HOLD": "caution — dimensional stress detected, review before proceeding",
+        "SEAL": "computationally_valid — all dimensions computed without pipeline errors",
+        "UNKNOWN": "uncertain — some dimensions returned insufficient data",
+    }
+    advisory_assessment = _WEALTH_ADVISORY_MAP.get(final_verdict, "uncertain")
+
     # Civilizational stakes auto-escalation
     escalate_to_judge = (
         scale_mode in {"sovereign", "national", "civilization", "crisis"}
@@ -8811,7 +8884,10 @@ def wealth_synthesize(
         "question": question,
         "scale_mode": scale_mode,
         "actors": actors or [],
-        "final_verdict": final_verdict,
+        # advisory_assessment replaces constitutional verdicts for agent consumption
+        "advisory_assessment": advisory_assessment,
+        # governance_verdict kept for metabolic wrapper (build_metabolic_output)
+        # and backward compatibility — agents should prefer advisory_assessment
         "governance_verdict": final_verdict,
         "maruah_band": maruah_band(computed_maruah),
         "maruah_score": computed_maruah,
@@ -8820,7 +8896,6 @@ def wealth_synthesize(
         "dimensional_results": results,
         "emergence": emergence,
         "escalate_to_arifos_judge": escalate_to_judge,
-        "scale_mode": scale_mode,
         "escalation_reason": (
             "sovereign/national scale requires F13 human veto confirmation"
             if scale_mode in {"sovereign", "national"}
@@ -8835,6 +8910,12 @@ def wealth_synthesize(
         ),
         "final_authority": "Arif",
         "recommendation_only": True,
+        "constitutional_boundary_notice": (
+            "WEALTH is advisory-only. It computes capital thermodynamics "
+            "but NEVER adjudicates constitutional verdicts. "
+            "Use `advisory_assessment` (not `governance_verdict`) for all downstream logic. "
+            "arifOS 888_JUDGE is the sole constitutional authority."
+        ),
         "next_action": "Call arif_judge_deliberate with this synthesis as evidence"
         if escalate_to_judge
         else "Review dimensional verdicts and proceed with human confirmation",
