@@ -30,7 +30,7 @@
   "author": "Muhammad Arif bin Fazil",
   "license": "AGPL-3.0",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.9.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^3.25.0"
   }
 }
