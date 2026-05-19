@@ -25,8 +25,6 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          # GITHUB_TOKEN is auto-managed by GitHub Actions with packages:write scope.
-          # GHCR_TOKEN fallback removed — it was causing 403 Forbidden when expired.
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - id: vars
@@ -41,3 +39,6 @@ jobs:
             ghcr.io/ariffazil/wealth:${{ steps.vars.outputs.short_sha }}
             ghcr.io/ariffazil/wealth:${{ github.event.repository.default_branch }}
             ghcr.io/ariffazil/wealth:latest
+          provenance: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
