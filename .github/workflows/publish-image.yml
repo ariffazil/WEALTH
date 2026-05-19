@@ -25,7 +25,9 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN || secrets.GITHUB_TOKEN }}
+          # GITHUB_TOKEN is auto-managed by GitHub Actions with packages:write scope.
+          # GHCR_TOKEN fallback removed — it was causing 403 Forbidden when expired.
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - id: vars
         run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
