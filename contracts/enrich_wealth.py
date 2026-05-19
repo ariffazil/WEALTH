@@ -279,9 +279,11 @@ def build_metabolic_output(
                 "cross_organ_reason", "Continue capital intelligence workflow"
             ),
             "handoff_payload": {
+                # verdict kept for metabolic routing — claim_state is authoritative
                 "verdict": verdict,
                 "confidence": confidence_level.value,
                 "claim_state": claim_state.value,
+                "advisory_assessment": result.get("advisory_assessment", ""),
             },
             "blocked_organs": [],
             "blocked_reason": "",
@@ -297,6 +299,12 @@ def build_metabolic_output(
         "requires_888_judge": requires_888,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "constitution_hash": _METABOLIC_SOURCE_COMMIT,
+        "constitutional_boundary_notice": (
+            "WEALTH is advisory-only. It computes capital thermodynamics "
+            "but NEVER adjudicates constitutional verdicts. "
+            "Use `claim_state` (not `verdict`) for all downstream logic. "
+            "arifOS 888_JUDGE is the sole constitutional authority."
+        ),
         # Schema metadata
         "_schema_version": "metabolic.v1",
         "_source_commit": _METABOLIC_SOURCE_COMMIT,

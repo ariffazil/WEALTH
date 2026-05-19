@@ -12,7 +12,7 @@
     },
     "wealth": {
       "command": "curl",
-      "args": ["-s", "-H", "Authorization: Bearer ${WEALTH_BEARER_TOKEN}", "https://wealth.fastmcp.app/sse"],
+      "args": ["-s", "-H", "Authorization: Bearer ${WEALTH_BEARER_TOKEN}", "https://wealth.arif-fazil.com/sse"],
       "description": "Capital Engine — 11 canonical + 15 extended = 26 live (WEALTH organ)"
     },
     "mcp_time": {
