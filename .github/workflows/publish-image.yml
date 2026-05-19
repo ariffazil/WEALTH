@@ -1,4 +1,4 @@
-name: Publish WEALTH MCP Image
+name: WEALTH CI — Build Validation
 
 on:
   push:
@@ -7,38 +7,33 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 concurrency:
   group: wealth-image-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: docker/setup-buildx-action@v3
 
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - id: vars
         run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
+      # Build-only validation. GHCR push is handled autonomously by VPS deploy-vps.sh
+      # because GITHUB_TOKEN cannot push to GHCR packages created via PAT (403 Forbidden).
+      # The VPS pulls latest code, builds locally, pushes with gh CLI token, and restarts.
       - uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
-          push: true
+          push: false
           tags: |
             ghcr.io/ariffazil/wealth:${{ steps.vars.outputs.short_sha }}
-            ghcr.io/ariffazil/wealth:${{ github.event.repository.default_branch }}
             ghcr.io/ariffazil/wealth:latest
-          provenance: true
+          provenance: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
