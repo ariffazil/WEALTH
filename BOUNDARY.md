@@ -1,51 +1,72 @@
-# WEALTH Boundary
-
-<!--
-SOT-MANIFEST
-owner: Arif
+<!-- SOT-MANIFEST
+owner: ariffazil/wealth
 last_verified: 2026-05-19
-scope: /root/WEALTH
-epistemic_status: CONTRACT
+valid_from: 2026-05-19
+valid_until: 2026-06-19
+confidence: high
+scope: /
 -->
 
-WEALTH is the capital and resource intelligence organ. It computes viability,
-risk, allocation scenarios, and economic artifacts. It does not own Earth truth,
-constitutional law, or irreversible capital decisions.
+# BOUNDARY.md — WEALTH Capital Intelligence / Resource Thermodynamics
+
+> **DITEMPA BUKAN DIBERI** — Forged, not given.
 
 ## Owns
 
-- Capital viability calculations, EMV, NPV, IRR, DSCR, risk scoring, and
-  portfolio scenario comparison.
-- Economic/capital MCP tools, decision memo generation, and resource stewardship
-  artifacts.
-- Claim-state discipline for capital recommendations: evidence, uncertainty,
-  limits, and hold triggers.
-- Supabase-backed capital data integration when configured.
-- Capital boundary reports and economic readiness summaries.
+- **Capital Stock Reality** — Asset/liability/reserve accounting, conservation capital scoring (Ω-WEALTH-01)
+- **Liquidity Movement** — Cashflow analysis, burn rate, runway, survival scoring (Ω-WEALTH-02)
+- **Price Pressure & Mispricing** — Gradient detection, spread analysis, market asymmetry (Ω-WEALTH-03)
+- **Risk & Uncertainty** — Entropy audit, tail risk, return classification, Monte Carlo simulation (Ω-WEALTH-04)
+- **Productivity & Efficiency** — IRR, NPV, energy productivity, capital efficiency (Ω-WEALTH-05)
+- **Time Value** — Discount rates, payback, compounding, decay (Ω-WEALTH-06)
+- **Leverage & Fragility** — DSCR, inertia stress, debt service coverage (Ω-WEALTH-07)
+- **Macro Field** — Rates, FX, energy, carbon, regime snapshots (Ω-WEALTH-08)
+- **Information Value** — EVOI, signal quality, evidence grading (Ω-WEALTH-09)
+- **Game Theory** — Multi-agent coordination, bargaining, Nash approximation (Ω-WEALTH-10)
+- **Governance & Legitimacy** — Boundary audits, maruah scoring, institutional drift (Ω-WEALTH-11)
+- **Ledger & Memory** — Path dependence, sealed financial memory (Ω-WEALTH-12)
+- **Synthesis** — Cross-dimensional capital intelligence verdict (Ω-WEALTH-00)
+- **Inequality Kernel** — Role scarcity, conversion architecture, asymmetry mapping (Ω-WEALTH-IEQ)
 
 ## Does Not Own
 
-- arifOS F1-F13 law, `888_JUDGE`, `999_SEAL`, or VAULT999 authority.
-- GEOX geological truth, subsurface interpretation, or physical reserves claims.
-- AAA cockpit UX or A2A identity ownership.
-- A-FORGE deployment substrate or production rollout authority.
-- Final business commitments, trades, spend, or capital allocation decisions.
+- **Constitutional Law** — F1–F13 enforcement, verdict engine, seal authority (owned by arifOS)
+- **Earth-Truth Modeling** — Geospatial, subsurface, prospect evaluation (owned by GEOX)
+- **Operator Cockpit** — React dashboard, agent workspace UX (owned by AAA)
+- **Deployment Orchestration** — Docker compose, release assembly, infrastructure (owned by A-FORGE)
+- **MCP Schema Authority** — Canonical tool registry, governance contracts (owned by arifOS)
+- **Web Search / Crawling** — General web search, URL fetch (owned by A-FORGE or sensing layer)
 
 ## Imports From
 
-- arifOS: governance envelope rules, verdict vocabulary, memory/audit constraints,
-  and federation routing.
-- GEOX: geological evidence, prospect ranges, development assumptions, and
-  physical feasibility constraints.
-- WELL: human/substrate readiness signals when capital decisions depend on
-  operator capacity.
-- AAA: operator/session context and cockpit display requests.
-- A-FORGE: deployment/runtime status and service health substrate.
+| Source | What | Interface |
+|--------|------|-----------|
+| **arifOS** | Constitutional constraints, floor enforcement, session tokens | MCP mesh, federation probe |
+| **A-FORGE** | Deploy metadata, container runtime, build pipeline | GHCR image, compose manifests |
+| **GEOX** — *planned* | Prospect volume estimates, resource quality data | MCP mesh (future) |
+| **AAA** | Operator capital allocation intent, portfolio review requests | A2A mesh |
 
 ## Exports To
 
-- arifOS: governed capital evidence, risk scores, hold triggers, memo artifacts,
-  and audit references.
-- GEOX: economic constraints that affect field-development screening.
-- AAA: operator-visible decision memos, risk summaries, and capital dashboards.
-- A-FORGE: runtime health, image/package expectations, and deploy probes.
+| Consumer | What | Interface |
+|----------|------|-----------|
+| **arifOS** | Capital viability verdicts, risk scores, decision memos | MCP tool calls, JSON artifacts |
+| **AAA** | Decision memo viewer, portfolio dashboard data | HTTP API, static artifacts |
+| **A-FORGE** | Docker image, build context | `ghcr.io/ariffazil/wealth:<sha>` |
+
+## Known Boundary Violations (888 HOLD Queue)
+
+1. **Dual runtime** — Python (`internal/monolith.py`, 48 tools) and JS (`src/`, legacy kernel) both exist. Python is canonical; JS is legacy. JS should be deprecated or removed.
+2. **A-FORGE reimplementation** — `A-FORGE/src/tools/WealthTools.ts` reimplements WEALTH-domain logic (ROI, EMV, portfolio optimize). Should delegate to WEALTH MCP instead.
+3. **License divergence** — `pyproject.toml` declares `PROPRIETARY` but `package.json` declares `AGPL-3.0`. One license must be canonical.
+
+## Canonical Tool Surface (Live)
+
+18 tools exposed on port 8082:
+`mcp_health_check`, `wealth_conservation_capital`, `wealth_flow_liquidity`, `wealth_gradient_price`, `wealth_entropy_risk`, `wealth_energy_productivity`, `wealth_time_discount`, `wealth_inertia_leverage`, `wealth_field_macro`, `wealth_signal_information`, `wealth_game_coordination`, `wealth_boundary_governance`, `wealth_hysteresis_ledger`, `wealth_system_registry_status`, `wealth_synthesize`, `wealth_role_scarcity_risk`, `wealth_inequality_kernel`
+
+## Canonical Surfaces
+
+- **MCP Server:** FastMCP (`python internal/monolith.py`)
+- **Test:** `pytest tests/` (Python) + `node --test tests/*.test.js` (JS legacy)
+- **Docker:** `docker build -t wealth .`

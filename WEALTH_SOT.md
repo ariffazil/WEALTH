@@ -58,4 +58,6 @@
 - Commit long-term source changes to `/root/wealth`.
 - The live runtime currently comes from the mounted canonical monolith, not only the image tag.
 - Default transport is `streamable-http`; legacy aliases remain callable but are no longer the public truth surface.
-- **Doctrine count:** 12 substrate invariants + 2 diagnostics = 14 public tools.
+- **Doctrine count:** 12 substrate invariants + 2 diagnostics + 1 Institutional Entropy Scorer = 15 public tools.
+- **Recent Integration (2026-05-19):** `wealth_entropy_audit` now functions as an **Institutional Entropy Scorer**, calculating *Narrative Dissipation Velocity* ($\Xi$) to detect Extractive Sink Behavioral Overlays (Calhoun Effect).
+
