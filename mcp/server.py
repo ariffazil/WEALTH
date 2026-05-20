@@ -107,6 +107,18 @@ async def wealth_evaluate_prospect(
 
     888_HOLD trigger: hedge_drag > 15% OR emv < 0 AND paradox_score > 0.8
     """
+    # Vector 2: Cross-System Volumetric Coupling
+    if not stoiip_bbl or stoiip_bbl == 0:
+        try:
+            from host.governance.vault_supabase import get_latest_geox_volumetrics
+            geox_data = get_latest_geox_volumetrics(prospect_id)
+            if geox_data:
+                stoiip_bbl = geox_data.get("stoiip_bbl", stoiip_bbl)
+                # If we have a vision bridge ref, log it
+                geox_ref = geox_data.get("vision_bridge_ref")
+        except Exception:
+            pass
+
     # ── Price effective ──
     effective_price = hedge_lock_usd if hedge_lock_usd else oil_price
     hedge_drag = abs(oil_price - effective_price) / oil_price if hedge_lock_usd and oil_price != effective_price else 0.0

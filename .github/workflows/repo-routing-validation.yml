@@ -19,7 +19,18 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Skip on direct push (no PR context)
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "Skipping REPO trailer validation on direct push"
+            exit 0
+          fi
+
           TARGET_REPO="${{ github.event.pull_request.base.repo.name }}"
+          if [ -z "$TARGET_REPO" ]; then
+            echo "Skipping: no target repo detected"
+            exit 0
+          fi
+
           echo "Target repo: $TARGET_REPO"
           echo "Target repo (lowercase): ${TARGET_REPO,,}"
 

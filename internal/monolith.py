@@ -10,6 +10,11 @@ import uuid
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple, Callable
+from pydantic import BaseModel, Field
+import numpy_financial as npf
+import scipy.optimize as opt
+import scipy.stats as stats
+import httpx
 
 # Ensure parent directory is in path for absolute imports if needed
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -824,64 +829,64 @@ WEALTH_SCHEMA_VERSION = "wealth.physics_economics.v1"
 
 
 WEALTH_TOOL_MANIFEST: List[Dict[str, object]] = [
-    {"name": "mcp_health_check", "axis": "identity", "expose": False},
-    {"name": "vault_query", "axis": "trace", "expose": False},
-    {"name": "vault_write", "axis": "seal", "expose": False},
-    {"name": "vaultquery", "axis": "trace", "expose": False},
-    {"name": "vaultwrite", "axis": "seal", "expose": False},
-    {"name": "wealth_agent_path", "axis": "reflect", "expose": False},
-    {"name": "wealth_allocate_optimize", "axis": "execute", "expose": False},
-    {"name": "wealth_boundary_floors", "axis": "boundary", "expose": False},
-    {"name": "wealth_boundary_governance", "axis": "boundary", "expose": False},
-    {"name": "wealth_boundary_policy", "axis": "boundary", "expose": False},
-    {"name": "wealth_conservation_capital", "axis": "vitality", "expose": False},
-    {"name": "wealth_density_pi", "axis": "reason", "expose": False},
-    {"name": "wealth_energy_irr", "axis": "reason", "expose": False},
-    {"name": "wealth_energy_productivity", "axis": "reason", "expose": False},
-    {"name": "wealth_entropy_audit", "axis": "critique", "expose": False},
-    {"name": "wealth_entropy_risk", "axis": "critique", "expose": False},
-    {"name": "wealth_expectation_emv", "axis": "reason", "expose": False},
-    {"name": "wealth_field_equilibrium", "axis": "observe", "expose": False},
-    {"name": "wealth_field_game", "axis": "reason", "expose": False},
-    {"name": "wealth_field_macro", "axis": "observe", "expose": False},
-    {"name": "wealth_flow_cashflow", "axis": "vitality", "expose": False},
-    {"name": "wealth_flow_liquidity", "axis": "vitality", "expose": False},
-    {"name": "wealth_future_simulate", "axis": "reason", "expose": False},
-    {"name": "wealth_future_steward", "axis": "reason", "expose": False},
-    {"name": "wealth_future_value", "axis": "reason", "expose": False},
-    {"name": "wealth_game_coordinate", "axis": "reason", "expose": False},
-    {"name": "wealth_game_coordination", "axis": "reason", "expose": False},
-    {"name": "wealth_governance_verdict", "axis": "critique", "expose": False},
-    {"name": "wealth_gradient_price", "axis": "observe", "expose": False},
-    {"name": "wealth_gravity_dscr", "axis": "vitality", "expose": False},
-    {"name": "wealth_hysteresis_ledger", "axis": "seal", "expose": False},
-    {"name": "wealth_inertia_leverage", "axis": "boundary", "expose": False},
-    {"name": "wealth_ledger_query", "axis": "trace", "expose": False},
-    {"name": "wealth_ledger_record", "axis": "seal", "expose": False},
-    {"name": "wealth_ledger_snapshot", "axis": "seal", "expose": False},
-    {"name": "wealth_ledger_write", "axis": "seal", "expose": False},
-    {"name": "wealth_mass_networth", "axis": "vitality", "expose": False},
-    {"name": "wealth_preference_rank", "axis": "reason", "expose": False},
-    {"name": "wealth_present_expect", "axis": "reason", "expose": False},
-    {"name": "wealth_pressure_triage", "axis": "vitality", "expose": False},
-    {"name": "wealth_probability_monte_carlo", "axis": "reason", "expose": False},
-    {"name": "wealth_rule_enforce", "axis": "judge", "expose": False},
-    {"name": "wealth_sense_ingest", "axis": "observe", "expose": False},
-    {"name": "wealth_sensor_fetch", "axis": "observe", "expose": False},
-    {"name": "wealth_sensor_health", "axis": "identity", "expose": False},
-    {"name": "wealth_sensor_reconcile", "axis": "observe", "expose": False},
-    {"name": "wealth_sensor_snapshot", "axis": "observe", "expose": False},
-    {"name": "wealth_sensor_sources", "axis": "observe", "expose": False},
-    {"name": "wealth_sensor_vintage", "axis": "observe", "expose": False},
-    {"name": "wealth_signal_information", "axis": "verify", "expose": False},
-    {"name": "wealth_stewardship_civilization", "axis": "reflect", "expose": False},
-    {"name": "wealth_survival_leverage", "axis": "vitality", "expose": False},
-    {"name": "wealth_survival_liquidity", "axis": "vitality", "expose": False},
-    {"name": "wealth_system_registry_status", "axis": "reason", "expose": False},
-    {"name": "wealth_time_discount", "axis": "reason", "expose": False},
-    {"name": "wealth_time_payback", "axis": "reason", "expose": False},
-    {"name": "wealth_value_npv", "axis": "reason", "expose": False},
-    {"name": "wealth_velocity_runway", "axis": "vitality", "expose": False},
+    {"name": "mcp_health_check", "axis": "identity", "expose": True},
+    {"name": "vault_query", "axis": "trace", "expose": True},
+    {"name": "vault_write", "axis": "seal", "expose": True},
+    {"name": "vaultquery", "axis": "trace", "expose": True},
+    {"name": "vaultwrite", "axis": "seal", "expose": True},
+    {"name": "wealth_agent_path", "axis": "reflect", "expose": True},
+    {"name": "wealth_allocate_optimize", "axis": "execute", "expose": True},
+    {"name": "wealth_boundary_floors", "axis": "boundary", "expose": True},
+    {"name": "wealth_boundary_governance", "axis": "boundary", "expose": True},
+    {"name": "wealth_boundary_policy", "axis": "boundary", "expose": True},
+    {"name": "wealth_conservation_capital", "axis": "vitality", "expose": True},
+    {"name": "wealth_density_pi", "axis": "reason", "expose": True},
+    {"name": "wealth_energy_irr", "axis": "reason", "expose": True},
+    {"name": "wealth_energy_productivity", "axis": "reason", "expose": True},
+    {"name": "wealth_entropy_audit", "axis": "critique", "expose": True},
+    {"name": "wealth_entropy_risk", "axis": "critique", "expose": True},
+    {"name": "wealth_expectation_emv", "axis": "reason", "expose": True},
+    {"name": "wealth_field_equilibrium", "axis": "observe", "expose": True},
+    {"name": "wealth_field_game", "axis": "reason", "expose": True},
+    {"name": "wealth_field_macro", "axis": "observe", "expose": True},
+    {"name": "wealth_flow_cashflow", "axis": "vitality", "expose": True},
+    {"name": "wealth_flow_liquidity", "axis": "vitality", "expose": True},
+    {"name": "wealth_future_simulate", "axis": "reason", "expose": True},
+    {"name": "wealth_future_steward", "axis": "reason", "expose": True},
+    {"name": "wealth_future_value", "axis": "reason", "expose": True},
+    {"name": "wealth_game_coordinate", "axis": "reason", "expose": True},
+    {"name": "wealth_game_coordination", "axis": "reason", "expose": True},
+    {"name": "wealth_governance_verdict", "axis": "critique", "expose": True},
+    {"name": "wealth_gradient_price", "axis": "observe", "expose": True},
+    {"name": "wealth_gravity_dscr", "axis": "vitality", "expose": True},
+    {"name": "wealth_hysteresis_ledger", "axis": "seal", "expose": True},
+    {"name": "wealth_inertia_leverage", "axis": "boundary", "expose": True},
+    {"name": "wealth_ledger_query", "axis": "trace", "expose": True},
+    {"name": "wealth_ledger_record", "axis": "seal", "expose": True},
+    {"name": "wealth_ledger_snapshot", "axis": "seal", "expose": True},
+    {"name": "wealth_ledger_write", "axis": "seal", "expose": True},
+    {"name": "wealth_mass_networth", "axis": "vitality", "expose": True},
+    {"name": "wealth_preference_rank", "axis": "reason", "expose": True},
+    {"name": "wealth_present_expect", "axis": "reason", "expose": True},
+    {"name": "wealth_pressure_triage", "axis": "vitality", "expose": True},
+    {"name": "wealth_probability_monte_carlo", "axis": "reason", "expose": True},
+    {"name": "wealth_rule_enforce", "axis": "judge", "expose": True},
+    {"name": "wealth_sense_ingest", "axis": "observe", "expose": True},
+    {"name": "wealth_sensor_fetch", "axis": "observe", "expose": True},
+    {"name": "wealth_sensor_health", "axis": "identity", "expose": True},
+    {"name": "wealth_sensor_reconcile", "axis": "observe", "expose": True},
+    {"name": "wealth_sensor_snapshot", "axis": "observe", "expose": True},
+    {"name": "wealth_sensor_sources", "axis": "observe", "expose": True},
+    {"name": "wealth_sensor_vintage", "axis": "observe", "expose": True},
+    {"name": "wealth_signal_information", "axis": "verify", "expose": True},
+    {"name": "wealth_stewardship_civilization", "axis": "reflect", "expose": True},
+    {"name": "wealth_survival_leverage", "axis": "vitality", "expose": True},
+    {"name": "wealth_survival_liquidity", "axis": "vitality", "expose": True},
+    {"name": "wealth_system_registry_status", "axis": "reason", "expose": True},
+    {"name": "wealth_time_discount", "axis": "reason", "expose": True},
+    {"name": "wealth_time_payback", "axis": "reason", "expose": True},
+    {"name": "wealth_value_npv", "axis": "reason", "expose": True},
+    {"name": "wealth_velocity_runway", "axis": "vitality", "expose": True},
 ]
 
 try:
@@ -1117,13 +1122,16 @@ def derive_confidence_band(
 
 
 def npv_from_series(cashflow_series: List[float], discount_rate: float) -> float:
-    total = 0.0
-    for index, cashflow in enumerate(cashflow_series):
-        if index == 0:
-            total += cashflow
-        else:
-            total += cashflow / pow(1 + discount_rate, index)
-    return total
+    try:
+        return float(npf.npv(discount_rate, cashflow_series))
+    except Exception:
+        total = 0.0
+        for index, cashflow in enumerate(cashflow_series):
+            if index == 0:
+                total += cashflow
+            else:
+                total += cashflow / pow(1 + discount_rate, index)
+        return total
 
 
 def present_value_breakdown(
@@ -1929,34 +1937,46 @@ def measurement_irr(
     if sign_changes > 1:
         flags.extend(["NON_NORMAL_FLOWS", "MULTIPLE_IRR_POSSIBLE"])
 
-    def npv_fn(rate):
-        return npv_from_series(series, rate)
+    irr = None
+    try:
+        irr = float(npf.irr(series))
+        if not math.isfinite(irr):
+            irr = None
+    except Exception:
+        pass
 
-    brackets = bracket_roots(npv_fn)
-    roots = {
-        round_value(bisect_root(npv_fn, lower, upper), 10) for lower, upper in brackets
-    }
-    irr = next(iter(roots)) if len(roots) == 1 else None
-    if len(roots) == 0:
-        flags.append("IRR_NOT_FOUND")
+    if irr is None:
+        def npv_fn(rate):
+            return npv_from_series(series, rate)
 
-    period_count = len(series) - 1
-    pv_negative = 0.0
-    fv_positive = 0.0
-    for index, cashflow in enumerate(series):
-        if cashflow < 0:
-            pv_negative += cashflow / pow(1 + finance_rate, index)
-        elif cashflow > 0:
-            fv_positive += cashflow * pow(1 + reinvestment_rate, period_count - index)
+        brackets = bracket_roots(npv_fn)
+        roots = {
+            round_value(bisect_root(npv_fn, lower, upper), 10) for lower, upper in brackets
+        }
+        irr = next(iter(roots)) if len(roots) == 1 else None
+        if len(roots) == 0:
+            flags.append("IRR_NOT_FOUND")
+
     mirr = None
-    if pv_negative < 0 and fv_positive > 0 and period_count > 0:
-        mirr = pow(fv_positive / abs(pv_negative), 1 / period_count) - 1
+    try:
+        mirr = float(npf.mirr(series, finance_rate, reinvestment_rate))
+    except Exception:
+        period_count = len(series) - 1
+        pv_negative = 0.0
+        fv_positive = 0.0
+        for index, cashflow in enumerate(series):
+            if cashflow < 0:
+                pv_negative += cashflow / pow(1 + finance_rate, index)
+            elif cashflow > 0:
+                fv_positive += cashflow * pow(1 + reinvestment_rate, period_count - index)
+        if pv_negative < 0 and fv_positive > 0 and period_count > 0:
+            mirr = pow(fv_positive / abs(pv_negative), 1 / period_count) - 1
 
     return {
         "irr": round_value(irr, 8) if irr is not None else None,
         "mirr": round_value(mirr, 8) if mirr is not None else None,
         "sign_changes": sign_changes,
-        "period_count": period_count,
+        "period_count": len(series) - 1,
         "period_unit": period_unit,
         "assumptions": assumptions,
         "flags": flags,
@@ -2537,6 +2557,18 @@ def networth_state(
     scale_mode: str = "enterprise",
 ) -> Any:
     """Compute portfolio balance sheet (Accumulated Mass). [Mass Dimension]"""
+    # Vector 1: Hard Ledger Binding
+    if not assets and not liabilities:
+        try:
+            from host.governance.vault_supabase import query_portfolio_snapshots
+            snapshots = query_portfolio_snapshots(limit=1)
+            if snapshots:
+                latest = snapshots[0]
+                assets = latest.get("result", {}).get("assets", [])
+                liabilities = latest.get("result", {}).get("liabilities", [])
+        except Exception:
+            pass
+
     assets = assets or []
     liabilities = liabilities or []
     asset_value = sum(
@@ -2551,6 +2583,13 @@ def networth_state(
     )
     epistemic = weakest_epistemic([*assets, *liabilities], "UNKNOWN")
     nw_flags = ["NO_INPUT_BASELINE"] if not assets and not liabilities else []
+    
+    # If pulled from ledger, upgrade epistemic
+    if 'snapshots' in locals() and snapshots:
+        epistemic = "CLAIM" # Grounded in VAULT999
+        if "GROUNDED_IN_VAULT999" not in nw_flags:
+            nw_flags.append("GROUNDED_IN_VAULT999")
+
     return create_envelope(
         "wealth_networth_state",
         "Mass",
@@ -2576,6 +2615,21 @@ def cashflow_flow(
     scale_mode: str = "enterprise",
 ) -> Any:
     """Compute metabolic liquidity (Flow Dimension). [Flow Dimension]"""
+    # Vector 1: Hard Ledger Binding
+    if not income and not expenses and liquid_assets in (None, 0):
+        try:
+            from host.governance.vault_supabase import query_portfolio_snapshots
+            snapshots = query_portfolio_snapshots(limit=1)
+            if snapshots:
+                latest = snapshots[0]
+                # Try to pull from a dedicated cashflow snapshot or infer from portfolio
+                result = latest.get("result", {})
+                income = result.get("income", [])
+                expenses = result.get("expenses", [])
+                liquid_assets = result.get("liquid_assets", result.get("assets", [{}])[0].get("value", 0) if result.get("assets") else 0)
+        except Exception:
+            pass
+
     # Load defaults from /app/cashflow_defaults.json if no params provided
     if not income and not expenses and liquid_assets in (None, 0):
         import os, json
@@ -5701,16 +5755,136 @@ async def wealth_measurement_schema(
     return await wealth_schema_validate(prospects, scale_mode)
 
 
-@mcp.tool()
+@mcp.tool(name="wealth_entropy_audit", description="Calculate structural and narrative entropy coefficients for an SOE/NOC.")
 def wealth_entropy_audit(
-    initial_investment: float,
-    cash_flows: List[float],
-    discount_rate: float = 0.1,
+    revenue_trend_yoy: float,
+    ebitda_trend_yoy: float,
+    capex_trend_yoy: float,
+    dividend_payout_ratio: float,
+    reporting_interval_months: int,
+    narrative_page_count: int,
+    is_loss_year_dividend_paid: bool,
     scale_mode: str = "enterprise",
 ) -> Any:
-    """Entropy/Noise Audit — cash flow noise and multiple IRR detection.
-    Physics analogy: Entropy audit measures the thermodynamic disorder in cash flow series."""
-    return audit_entropy(initial_investment, cash_flows, discount_rate, scale_mode)
+    """
+    Computes the structural state of an institution using thermodynamic constraints.
+    Returns class labels insulated from personal or political bias.
+    """
+    # 1. Base Extraction Factor (Acemoglu Multiplier)
+    extraction_base = dividend_payout_ratio
+    if is_loss_year_dividend_paid:
+        extraction_base *= 1.618  # Asymmetric extraction weight
+        
+    # 2. Capital Starvation Delta
+    # If capex drops faster than EBITDA, capital depletion risk spikes
+    starvation_delta = max(0.0, ebitda_trend_yoy - capex_trend_yoy)
+    
+    # 3. Behavioral Sink Index (Calhoun Hyper-Grooming Flag)
+    # Long feedback loops (high interval) + high presentation volume = narrative hypertrophy
+    grooming_coefficient = (reporting_interval_months / 3.0) * (narrative_page_count / 100.0)
+    
+    # 4. Total Systemic Entropy Calculation (dS)
+    delta_S = (extraction_base * 0.4) + (starvation_delta * 0.4) + (grooming_coefficient * 0.2)
+    
+    # 5. Categorization Matrix
+    if delta_S > 0.65:
+        regime = "EXTRACTIVE_SINK_WITH_BEHAVIORAL_OVERLAY"
+        role_label = "NARRATIVE_MAXIMISER_UNDER_EXTRACTION"
+        verdict = "HOLD"
+    elif delta_S > 0.35:
+        regime = "FISCALLY_CONSTRAINED_OPERATING_ENGINE"
+        role_label = "CAPITAL_ALLOCATOR_UNDER_CONSTRAINT"
+        verdict = "QUALIFY"
+    else:
+        regime = "STRUCTURAL_OPERATING_ENGINE"
+        role_label = "SOVEREIGN_ENERGY_TRUSTEE"
+        verdict = "SEAL"
+
+    return {
+        "epoch_verdict": f"{verdict} | AUDITED",
+        "delta_S": round(float(delta_S), 4),
+        "institutional_regime": regime,
+        "role_classification": role_label,
+        "metrics": {
+            "capital_starvation": round(starvation_delta, 4),
+            "hydraulic_resistance": round(grooming_coefficient, 4)
+        },
+        "governance_verdict": verdict,
+        "scale_mode": scale_mode
+    }
+
+
+class InstitutionalEntropyInput(BaseModel):
+    """Deterministic parameter matrix for evaluating sovereign extractive friction and Calhoun-style narrative hypertrophy."""
+    extractive_pressure_index: float = Field(..., description="EPI = Total Dividends / (Net Profit + Impairment-Adjusted Operating Cashflow). Evaluates fiscal extraction pressure.", ge=0.0)
+    physical_reinvestment_ratio_slope: float = Field(..., description="The 3-year rolling directional slope of Upstream Capex over Upstream EBITDA. Negative value indicates systematic under-reinvestment.")
+    production_growth_rate: float = Field(..., description="Year-over-year percentage change in total physical hydrocarbon or core commodity output (kboe/d).")
+    narrative_hypertrophy_index: float = Field(..., description="NHI = (ESG + Sustainability Document Word Count) / (Core Engineering Capex in Millions). Measures resource dissipation into symbolic legitimacy.", ge=0.0)
+    reporting_latency_delta_days: int = Field(..., description="The change in standard information delivery intervals (e.g., shifting from quarterly reporting to half-yearly reporting loops adds +90 days).")
+
+
+@mcp.tool(name="wealth_institutional_entropy_scorer", description="Executes a thermodynamic audit on state-backed enterprises. Processes financial extraction parameters against structural and narrative entropy bounds.")
+async def wealth_institutional_entropy_scorer(matrix: InstitutionalEntropyInput) -> Dict[str, Any]:
+    """
+    Executes a thermodynamic audit on state-backed enterprises.
+    Processes financial extraction parameters against structural and narrative entropy bounds.
+    """
+    # 1. Extract Parameters from Grounding Layer
+    epi = matrix.extractive_pressure_index
+    prr_slope = matrix.physical_reinvestment_ratio_slope
+    prod_growth = matrix.production_growth_rate
+    nhi = matrix.narrative_hypertrophy_index
+    latency = matrix.reporting_latency_delta_days
+    
+    # 2. Calculate Parametric Component Scores
+    # Base Acemoglu Extraction Coefficient (0.0 to 1.0 bounded range)
+    c_acemoglu = min(1.0, epi * 0.5)
+    if epi > 1.0:
+        c_acemoglu = 1.0 # Absolute capital drainage override
+        
+    # Base Calhoun Role Displacement Coefficient
+    # Starvation of the physical body combined with increased information latency
+    c_calhoun_structural = 0.0
+    if prr_slope < 0:
+        c_calhoun_structural += 0.3
+    if prod_growth <= 0:
+        c_calhoun_structural += 0.2
+    if latency > 0:
+        c_calhoun_structural += 0.1
+        
+    # Narrative Hypertrophy Weight (Grooming Speed)
+    c_grooming = min(0.4, (nhi / 100.0) * 0.4)
+    
+    # 3. Compute Net Structural Entropy (delta_S)
+    delta_S = (c_acemoglu * 0.4) + (c_calhoun_structural * 0.4) + (c_grooming * 0.2)
+    
+    # 4. Collapse States into Deterministic Class Labels
+    if delta_S >= 0.65:
+        regime_label = "EXTRACTIVE_SINK_WITH_BEHAVIORAL_OVERLAY"
+        archetype_label = "NARRATIVE_MAXIMISER (BEAUTIFUL ONE)"
+        operational_verdict = "888_HOLD | ALERT: ACTIVE REINVESTMENT CANNIBALIZATION"
+    elif delta_S >= 0.35:
+        regime_label = "FISCALLY_CONSTRAINED_OPERATING_ENGINE"
+        archetype_label = "CAPITAL_ALLOCATOR UNDER CONSTRAINT"
+        operational_verdict = "MONITOR | RISING INTERNAL COMPLIANCE DRAG"
+    else:
+        regime_label = "STRUCTURAL_OPERATING_ENGINE"
+        archetype_label = "SOVEREIGN_ENERGY_TRUSTEE"
+        operational_verdict = "PASS | STABLE LOW-ENTROPY CONFIGURATION"
+        
+    return {
+        "timestamp_epoch": datetime.now(timezone.utc).isoformat(),
+        "systemic_entropy_delta": round(float(delta_S), 4),
+        "classification": {
+            "institutional_regime": regime_label,
+            "executive_node_archetype": archetype_label
+        },
+        "evaluation_metrics": {
+            "extractive_coefficient": round(c_acemoglu, 4),
+            "behavioral_sink_coefficient": round(c_calhoun_structural + c_grooming, 4)
+        },
+        "verdict": operational_verdict
+    }
 
 
 # --- Governance Tools (3) ---
@@ -9962,27 +10136,67 @@ def wealth_inequality_kernel(
 WEALTH_PUBLIC_TOOL_ORDER = (
     "mcp_health_check",
     "wealth_synthesize",
-    "wealth_conservation_capital",
-    "wealth_flow_liquidity",
-    "wealth_gradient_price",
-    "wealth_entropy_risk",
-    "wealth_energy_productivity",
-    "wealth_time_discount",
-    "wealth_inertia_leverage",
-    "wealth_field_macro",
-    "wealth_signal_information",
-    "wealth_game_coordination",
+    "vault_query",
+    "vault_write",
+    "vaultquery",
+    "vaultwrite",
+    "wealth_agent_path",
+    "wealth_allocate_optimize",
+    "wealth_boundary_floors",
     "wealth_boundary_governance",
+    "wealth_boundary_policy",
+    "wealth_conservation_capital",
+    "wealth_density_pi",
+    "wealth_energy_irr",
+    "wealth_energy_productivity",
+    "wealth_entropy_audit",
+    "wealth_entropy_risk",
+    "wealth_expectation_emv",
+    "wealth_field_equilibrium",
+    "wealth_field_game",
+    "wealth_field_macro",
+    "wealth_flow_cashflow",
+    "wealth_flow_liquidity",
+    "wealth_future_simulate",
+    "wealth_future_steward",
+    "wealth_future_value",
+    "wealth_game_coordinate",
+    "wealth_game_coordination",
+    "wealth_governance_verdict",
+    "wealth_gradient_price",
+    "wealth_gravity_dscr",
     "wealth_hysteresis_ledger",
+    "wealth_inertia_leverage",
+    "wealth_ledger_query",
+    "wealth_ledger_record",
+    "wealth_ledger_snapshot",
+    "wealth_ledger_write",
+    "wealth_ledger_init",
+    "wealth_mass_networth",
+    "wealth_preference_rank",
+    "wealth_present_expect",
+    "wealth_pressure_triage",
+    "wealth_probability_monte_carlo",
+    "wealth_rule_enforce",
+    "wealth_sense_ingest",
+    "wealth_sensor_fetch",
+    "wealth_sensor_health",
+    "wealth_sensor_reconcile",
+    "wealth_sensor_snapshot",
+    "wealth_sensor_sources",
+    "wealth_sensor_vintage",
+    "wealth_signal_information",
+    "wealth_stewardship_civilization",
+    "wealth_survival_leverage",
+    "wealth_survival_liquidity",
     "wealth_system_registry_status",
-    # Inequality Intelligence Kernel — forged 2026-05-16, collapsed 2026-05-16 (21→17)
-    # Collapsed tools live as mode routes:
-    #   wealth_entropy_risk(mode="asymmetry_map", mode_params={...})
-    #   wealth_entropy_risk(mode="return_classify", mode_params={...})
-    #   wealth_boundary_governance(mode="legitimacy_audit", mode_params={...})
-    #   wealth_synthesize(mode="conversion_audit", mode_params={...})
+    "wealth_time_discount",
+    "wealth_time_payback",
+    "wealth_value_npv",
+    "wealth_velocity_runway",
     "wealth_inequality_kernel",
     "wealth_role_scarcity_risk",
+    "wealth_institutional_entropy_scorer",
 )
 _PUBLIC_TOOLS = set(WEALTH_PUBLIC_TOOL_ORDER)
 

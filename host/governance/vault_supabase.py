@@ -165,14 +165,6 @@ def query_vault999(
 ) -> Dict[str, Any]:
     """
     Query the VAULT999 ledger via Supabase REST API.
-
-    Args:
-        query:       Search text (matches tool name or action)
-        limit:       Max rows to return (default 10)
-        session_id:  Optional session filter
-
-    Returns:
-        dict with records list, earth_refs, and count
     """
     loop = __import__("asyncio").get_event_loop()
     filters = {"order": "epoch.desc", "limit": str(limit)}
@@ -204,6 +196,38 @@ def query_vault999(
     }
 
 
+def query_portfolio_snapshots(
+    asset_id: Optional[str] = None,
+    limit: int = 1,
+) -> List[Dict[str, Any]]:
+    """Query the latest portfolio snapshots from Supabase."""
+    loop = __import__("asyncio").get_event_loop()
+    filters = {"order": "epoch.desc", "limit": str(limit)}
+    if asset_id:
+        filters["asset_id"] = f"eq.{asset_id}"
+    
+    rows = loop.run_until_complete(_supabase_select("arifosmcp_portfolio_snapshots", filters, limit))
+    return rows
+
+
+def get_latest_geox_volumetrics(prospect_id: str) -> Optional[Dict[str, Any]]:
+    """Query VAULT999 for the latest GEOX volumetric seal for a prospect."""
+    loop = __import__("asyncio").get_event_loop()
+    # Search for geox_volumetrics event in the global seals table
+    filters = {
+        "event_type": "eq.geox_volumetrics",
+        "order": "sealed_at.desc",
+        "limit": "1"
+    }
+    rows = loop.run_until_complete(_supabase_select("arifosmcp_vault_seals", filters, 1))
+    
+    for row in rows:
+        payload = row.get("payload", {})
+        if payload.get("prospect_id") == prospect_id or not prospect_id:
+            return payload
+    return None
+
+
 def record_transaction(
     tx_type: str,
     amount: float,
@@ -221,24 +245,6 @@ def record_transaction(
 ) -> Dict[str, Any]:
     """
     Record a financial transaction to public.wealth_transactions via Supabase REST API.
-
-    Args:
-        tx_type:        income | expense | investment | dividend | fee | other
-        amount:         Positive for inflow, negative for outflow
-        currency:       ISO 4217 code (e.g. MYR, USD)
-        description:    Human-readable transaction description
-        quantity:       Number of units (optional)
-        price:          Price per unit (optional)
-        fees:           Transaction fees (optional)
-        broker:         Broker/exchange name (optional)
-        asset_id:       Asset identifier (optional)
-        category:       Internal category tag (optional)
-        source_tool:    Name of tool that triggered this record
-        notes:          Free-text notes (optional)
-        metadata:       Additional structured data (optional)
-
-    Returns:
-        dict with tx_id, integrity, and status
     """
     epoch = _now_iso()
     integrity = _compute_integrity(
@@ -259,27 +265,70 @@ def record_transaction(
         "metadata": metadata or {},
         "epoch": datetime.now(timezone.utc).isoformat(),
         "integrity": integrity,
+        "notes": notes,
+        "description": description,
+        "broker": broker,
+        "quantity": quantity,
+        "price": price,
+        "fees": fees,
+        "category": category,
+        "source": source_tool,
     }
 
     result = {}
     try:
-        loop = __import__("asyncio").get_event_loop()
-        if loop.is_running():
-            import asyncio
+        import asyncio
 
-            result = asyncio.run(_supabase_insert("wealth_transactions", record))
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop and loop.is_running():
+            # We are in an async context, we must use a Task or a separate thread/client
+            # For simplicity in this bridge, we attempt a sync-like wait if possible,
+            # but FastMCP is usually running.
+            # Best approach for a bridge: fire and forget or use a sync client.
+            # Here we will try to use a one-off sync request for reliability in this specific tool.
+            result = _sync_supabase_insert("wealth_transactions", record)
         else:
-            result = loop.run_until_complete(
-                _supabase_insert("wealth_transactions", record)
-            )
-    except Exception:
-        _fallback_jsonl({**record, "source_tool": source_tool, "verdict": "VAULT999"})
-        return {"status": "NO_ASYNC", "integrity": integrity}
+            result = asyncio.run(_supabase_insert("wealth_transactions", record))
+    except Exception as e:
+        _fallback_jsonl({**record, "source_tool": source_tool, "verdict": "VAULT999_ERROR", "error": str(e)})
+        return {"status": "ERROR", "integrity": integrity, "error": str(e)}
 
     if result and result.get("status") == "INSERTED":
-        return {"integrity": integrity, "status": "INSERTED"}
-    _fallback_jsonl({**record, "source_tool": source_tool, "verdict": "VAULT999"})
+        return {"integrity": integrity, "status": "INSERTED", "tx_id": result.get("id")}
+    
+    _fallback_jsonl({**record, "source_tool": source_tool, "verdict": "VAULT999_FAIL"})
     return {"integrity": integrity, "status": (result or {}).get("status", "ERROR")}
+
+
+def _sync_supabase_insert(table: str, record: Dict[str, Any]) -> Dict[str, Any]:
+    """Synchronous version of supabase insert using httpx.Client."""
+    if not SUPABASE_ANON_KEY:
+        return {"status": "ERROR", "reason": "NO_KEY"}
+    
+    try:
+        with httpx.Client(
+            base_url=SUPABASE_URL,
+            headers={
+                "apikey": SUPABASE_ANON_KEY,
+                "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+                "Content-Type": "application/json",
+                "Prefer": "return=representation",
+            },
+            timeout=10.0,
+        ) as client:
+            response = client.post(f"/rest/v1/{table}", json=record)
+            if response.status_code in (200, 201):
+                res_data = response.json()
+                if isinstance(res_data, list) and len(res_data) > 0:
+                    return {**res_data[0], "status": "INSERTED"}
+                return {"status": "INSERTED"}
+            return {"status": "ERROR", "code": response.status_code, "body": response.text}
+    except Exception as e:
+        return {"status": "ERROR", "exception": str(e)}
 
 
 def snapshot_portfolio(
@@ -294,21 +343,7 @@ def snapshot_portfolio(
     currency: str = "MYR",
 ) -> Dict[str, Any]:
     """
-    Snapshot a tool computation result to public.arifosmcp_portfolio_snapshots.
-
-    Args:
-        tool_name:   Name of the WEALTH tool called
-        arguments:  Arguments passed to the tool
-        result:     Full result dict from the tool
-        scale_mode: enterprise|personal|civilization|agentic|crisis
-        asset_id:   Asset identifier (optional)
-        nav_myr:    Net asset value in MYR (optional)
-        quantity_held: Units held (optional)
-        price_close: Closing price (optional)
-        currency:   Currency code (default MYR)
-
-    Returns:
-        dict with snapshot_id, integrity, and status
+    Snapshot a tool computation result to public.arifosmcp_portfolio_snapshots via Supabase REST API.
     """
     epoch = _now_iso()
     integrity = _compute_integrity(
@@ -321,35 +356,40 @@ def snapshot_portfolio(
     )
 
     record = {
-        "snapshot_ts": datetime.now(timezone.utc).isoformat(),
-        "holdings": _safe_arg(arguments),
-        "total_value": nav_myr,
+        "tool_name": tool_name,
+        "arguments": _safe_arg(arguments),
+        "result": _safe_arg(result),
+        "scale_mode": scale_mode,
+        "asset_id": asset_id or "",
+        "nav_myr": nav_myr,
+        "quantity_held": quantity_held,
+        "price_close": price_close,
         "currency": currency,
+        "epoch": epoch,
         "integrity": integrity,
     }
 
     try:
-        loop = __import__("asyncio").get_event_loop()
-        if loop.is_running():
-            import asyncio
+        import asyncio
 
-            result_obj = asyncio.run(
-                _supabase_insert("arifosmcp_portfolio_snapshots", record)
-            )
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop and loop.is_running():
+            res = _sync_supabase_insert("arifosmcp_portfolio_snapshots", record)
         else:
-            result_obj = loop.run_until_complete(
-                _supabase_insert("arifosmcp_portfolio_snapshots", record)
-            )
-    except Exception:
-        _fallback_jsonl({"tool": tool_name, "scale_mode": scale_mode, "epoch": epoch})
-        return {"status": "NO_ASYNC", "integrity": integrity}
+            res = asyncio.run(_supabase_insert("arifosmcp_portfolio_snapshots", record))
+    except Exception as e:
+        _fallback_jsonl({**record, "verdict": "VAULT999_ERROR", "error": str(e)})
+        return {"status": "ERROR", "integrity": integrity, "error": str(e)}
 
-    if result_obj and result_obj.get("status") == "INSERTED":
-        return {"integrity": integrity, "status": "INSERTED"}
-    return {
-        "integrity": integrity,
-        "status": (result_obj or {}).get("status", "ERROR"),
-    }
+    if res and res.get("status") == "INSERTED":
+        return {"integrity": integrity, "status": "INSERTED", "snapshot_id": res.get("id")}
+
+    _fallback_jsonl({**record, "verdict": "VAULT999_FAIL"})
+    return {"integrity": integrity, "status": (res or {}).get("status", "ERROR")}
 
 
 def append_vault999(

@@ -168,25 +168,7 @@ def record_transaction(
     metadata: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
-    Record a financial transaction to arifos_vault.wealth.transactions.
-
-    Args:
-        tx_type:        income | expense | investment | dividend | fee | other
-        amount:         Positive for inflow, negative for outflow
-        currency:       ISO 4217 code (e.g. MYR, USD)
-        description:    Human-readable transaction description
-        quantity:       Number of units (optional)
-        price:          Price per unit (optional)
-        fees:           Transaction fees (optional)
-        broker:         Broker/exchange name (optional)
-        asset_id:       Asset identifier (optional, links to wealth.assets)
-        category:       Internal category tag (optional)
-        source_tool:    Name of tool that triggered this record
-        notes:          Free-text notes (optional)
-        metadata:       Additional structured data (optional)
-
-    Returns:
-        dict with tx_id, integrity, and status
+    Dual-Write Record: VAULT999 Primary (Supabase) + Witness (PostgreSQL).
     """
     epoch = _now_iso()
     integrity = _compute_integrity(
@@ -217,6 +199,9 @@ def record_transaction(
         "vault_seal": "VAULT999",
     }
 
+    # 1. WITNESS: PostgreSQL (Local)
+    pg_status = "NO_PG"
+    pg_id = None
     with _get_cursor() as cur:
         if cur is not None:
             try:
@@ -224,8 +209,8 @@ def record_transaction(
                 cur.execute(
                     """
                     INSERT INTO wealth.transactions
-                    (asset_id, tx_type, quantity, price, currency, fees, broker, tx_date, notes, source, created_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (asset_id, tx_type, quantity, price, currency, fees, broker, tx_date, notes, source, created_at, integrity)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                     """,
                     (
@@ -240,18 +225,47 @@ def record_transaction(
                         record["notes"],
                         record["source"],
                         record["created_at"],
+                        record["integrity"],
                     ),
                 )
                 row = cur.fetchone()
-                record["tx_id"] = row[0] if row else None
-                record["status"] = "INSERTED"
+                pg_id = row[0] if row else None
+                pg_status = "INSERTED"
             except Exception as e:
-                record["status"] = "ERROR"
-                record["pg_error"] = str(e)
-                _fallback_jsonl(record)
-        else:
-            record["status"] = "NO_PG_CONNECTION"
-            _fallback_jsonl(record)
+                pg_status = f"ERROR:{str(e)}"
+                _fallback_jsonl({**record, "witness_error": pg_status})
+
+    # 2. PRIMARY: Supabase (Cloud)
+    sb_status = "NO_SB"
+    sb_id = None
+    if SUPABASE_VAULT:
+        try:
+            from .vault_supabase import record_transaction as _sb_record
+            sb_res = _sb_record(
+                tx_type=tx_type,
+                amount=amount,
+                currency=currency,
+                description=description,
+                quantity=quantity,
+                price=price,
+                fees=fees,
+                broker=broker,
+                asset_id=asset_id,
+                category=category,
+                source_tool=source_tool,
+                notes=notes,
+                metadata=metadata,
+            )
+            sb_status = sb_res.get("status", "ERROR")
+            sb_id = sb_res.get("tx_id")
+        except Exception as e:
+            sb_status = f"ERROR:{str(e)}"
+
+    record["pg_status"] = pg_status
+    record["pg_id"] = pg_id
+    record["sb_status"] = sb_status
+    record["sb_id"] = sb_id
+    record["status"] = "INSERTED" if pg_status == "INSERTED" or sb_status == "INSERTED" else "FAIL"
 
     return record
 
@@ -268,21 +282,7 @@ def snapshot_portfolio(
     currency: str = "MYR",
 ) -> Dict[str, Any]:
     """
-    Snapshot a tool computation result to arifos_vault.wealth.portfolio_snapshots.
-
-    Args:
-        tool_name:   Name of the WEALTH tool called
-        arguments:  Arguments passed to the tool
-        result:     Full result dict from the tool
-        scale_mode: enterprise|personal|civilization|agentic|crisis
-        asset_id:   Asset identifier (optional)
-        nav_myr:    Net asset value in MYR (optional)
-        quantity_held: Units held (optional)
-        price_close: Closing price (optional)
-        currency:   Currency code (default MYR)
-
-    Returns:
-        dict with snapshot_id, integrity, and status
+    Dual-Write Snapshot: VAULT999 Primary (Supabase) + Witness (PostgreSQL).
     """
     epoch = _now_iso()
     integrity = _compute_integrity(
@@ -313,6 +313,9 @@ def snapshot_portfolio(
         "vault_seal": "VAULT999",
     }
 
+    # 1. WITNESS: PostgreSQL
+    pg_status = "NO_PG"
+    pg_id = None
     with _get_cursor() as cur:
         if cur is not None:
             try:
@@ -335,15 +338,39 @@ def snapshot_portfolio(
                     ),
                 )
                 row = cur.fetchone()
-                record["snapshot_id"] = row[0] if row else None
-                record["status"] = "INSERTED"
+                pg_id = row[0] if row else None
+                pg_status = "INSERTED"
             except Exception as e:
-                record["status"] = "ERROR"
-                record["pg_error"] = str(e)
-                _fallback_jsonl(record)
-        else:
-            record["status"] = "NO_PG_CONNECTION"
-            _fallback_jsonl(record)
+                pg_status = f"ERROR:{str(e)}"
+                _fallback_jsonl({**record, "witness_error": pg_status})
+
+    # 2. PRIMARY: Supabase
+    sb_status = "NO_SB"
+    sb_id = None
+    if SUPABASE_VAULT:
+        try:
+            from .vault_supabase import snapshot_portfolio as _sb_snapshot
+            sb_res = _sb_snapshot(
+                tool_name=tool_name,
+                arguments=arguments,
+                result=result,
+                scale_mode=scale_mode,
+                asset_id=asset_id,
+                nav_myr=nav_myr,
+                quantity_held=quantity_held,
+                price_close=price_close,
+                currency=currency,
+            )
+            sb_status = sb_res.get("status", "ERROR")
+            sb_id = sb_res.get("snapshot_id")
+        except Exception as e:
+            sb_status = f"ERROR:{str(e)}"
+
+    record["pg_status"] = pg_status
+    record["pg_id"] = pg_id
+    record["sb_status"] = sb_status
+    record["sb_id"] = sb_id
+    record["status"] = "INSERTED" if pg_status == "INSERTED" or sb_status == "INSERTED" else "FAIL"
 
     return record
 
