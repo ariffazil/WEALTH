@@ -827,6 +827,116 @@ def maruah_band(score):
 mcp = FastMCP("WEALTH Valuation Kernel")
 WEALTH_SCHEMA_VERSION = "wealth.physics_economics.v1"
 
+# --- Registry Lockdown Logic (Phase 1) ---
+# Generic agents should only see: health -> registry -> synthesize -> canonical organ -> specialist.
+# This whitelist defines the public L0, L1, and L2 surface. All other tools (including 34 aliases)
+# are hidden from the MCP registry but remain available as internal Python functions.
+PUBLIC_SURFACE_WHITELIST = {
+    # L0 — Kernel Surface
+    "mcp_health_check",
+    "wealth_system_registry_status",
+    "wealth_synthesize",
+    "wealth_agent_path",
+    # L1 — 12 Canonical Physics Organs
+    "wealth_conservation_capital",
+    "wealth_flow_liquidity",
+    "wealth_gradient_price",
+    "wealth_entropy_risk",
+    "wealth_energy_productivity",
+    "wealth_time_discount",
+    "wealth_inertia_leverage",
+    "wealth_field_macro",
+    "wealth_signal_information",
+    "wealth_game_coordination",
+    "wealth_boundary_governance",
+    "wealth_hysteresis_ledger",
+    # L2 — Mandatory Specialists
+    "wealth_value_npv",
+    "wealth_energy_irr",
+    "wealth_density_pi",
+    "wealth_time_payback",
+    "wealth_gravity_dscr",
+    "wealth_mass_networth",
+    "wealth_flow_cashflow",
+    "wealth_velocity_runway",
+    "wealth_expectation_emv",
+    "wealth_probability_monte_carlo",
+    "wealth_signal_evoi",
+    "wealth_entropy_audit",
+    "wealth_governance_verdict",
+    "wealth_preference_rank",
+    "wealth_ledger_query",
+    "wealth_ledger_write",
+    "wealth_inequality_kernel",
+}
+
+PUBLIC_RESOURCE_WHITELIST = {
+    # L1 — Doctrine & Ontology
+    "wealth://ontology/physics12",
+    "wealth://policy/authority-boundary",
+    "wealth://doctrine/valuation",
+    "wealth://dimensions/definitions",
+    "wealth://governance/floors",
+    # L2 — Formulas & Schemas
+    "wealth://formulas/npv",
+    "wealth://formulas/irr",
+    "wealth://formulas/emv",
+    "wealth://formulas/evoi",
+    "wealth://formulas/dscr",
+    "wealth://formulas/payback",
+    "wealth://schemas/capital-case",
+    "wealth://schemas/sovereign-deal",
+    "wealth://playbooks/project-appraisal",
+}
+
+PUBLIC_PROMPT_WHITELIST = {
+    "wealth_prompt_project_appraisal",
+    "wealth_prompt_sovereign_deal_review",
+    "wealth_prompt_personal_finance_triage",
+    "wealth_prompt_inequality_diagnosis",
+    "wealth_prompt_macro_regime_scan",
+    "wealth_prompt_governance_redteam",
+    "wealth_diagnose_portfolio",
+    "wealth_opportunity_ranking",
+}
+
+_original_mcp_tool = mcp.tool
+_original_mcp_resource = mcp.resource
+_original_mcp_prompt = mcp.prompt
+
+def controlled_mcp_tool(*args, **kwargs):
+    """Decorator wrapper that only registers tools in the PUBLIC_SURFACE_WHITELIST."""
+    explicit_name = kwargs.get("name")
+    def decorator(f):
+        tool_name = explicit_name or f.__name__
+        if tool_name in PUBLIC_SURFACE_WHITELIST:
+            return _original_mcp_tool(*args, **kwargs)(f)
+        return f
+    return decorator
+
+def controlled_mcp_resource(uri, **kwargs):
+    """Decorator wrapper that only registers resources in the PUBLIC_RESOURCE_WHITELIST."""
+    def decorator(f):
+        if uri in PUBLIC_RESOURCE_WHITELIST:
+            return _original_mcp_resource(uri, **kwargs)(f)
+        return f
+    return decorator
+
+def controlled_mcp_prompt(*args, **kwargs):
+    """Decorator wrapper that only registers prompts in the PUBLIC_PROMPT_WHITELIST."""
+    explicit_name = kwargs.get("name")
+    def decorator(f):
+        prompt_name = explicit_name or f.__name__
+        if prompt_name in PUBLIC_PROMPT_WHITELIST:
+            return _original_mcp_prompt(*args, **kwargs)(f)
+        return f
+    return decorator
+
+# Patch the mcp instance to use our controlled decorators
+mcp.tool = controlled_mcp_tool
+mcp.resource = controlled_mcp_resource
+mcp.prompt = controlled_mcp_prompt
+
 
 WEALTH_TOOL_MANIFEST: List[Dict[str, object]] = [
     {"name": "mcp_health_check", "axis": "identity", "expose": True},
@@ -3139,11 +3249,19 @@ def coordination_equilibrium(
     scale_mode: str = "enterprise",
 ) -> Any:
     """Multi-agent resource coordination and equilibrium analysis. [Coordination Dimension]"""
-    # Normalize agents to LP schema
-    lp_agents = _normalize_coordination_agents(agents, list(shared_resources.keys()))
+    # Filter shared_resources to only include numeric constraints for the LP solver
+    # Metadata like 'resource_type': 'upstream_hydrocarbon' should not be passed to the solver
+    numeric_resources = {k: v for k, v in shared_resources.items() if isinstance(v, (int, float, bool))}
+    # Convert bool to int for LP solver compatibility
+    numeric_resources = {k: (int(v) if isinstance(v, bool) else v) for k, v in numeric_resources.items()}
+    
+    resource_keys = list(numeric_resources.keys())
+    
+    # Normalize agents to LP schema using only numeric resource keys
+    lp_agents = _normalize_coordination_agents(agents, resource_keys)
 
-    lp_result = lp_allocate(lp_agents, shared_resources)
-    commons = commons_risk(lp_agents, shared_resources)
+    lp_result = lp_allocate(lp_agents, numeric_resources)
+    commons = commons_risk(lp_agents, numeric_resources)
 
     # === Epistemic Correlation Guard ===
     correlation_report = {"action": "PASS"}
@@ -6021,23 +6139,111 @@ def wealth_preference_rank(
 
 @mcp.tool()
 def wealth_agent_path(
-    compute_budget_usd: float = 1.0,
-    token_budget: float = 1000.0,
-    time_deadline_hours: float = 1.0,
-    expected_value_of_information: float = 0.0,
-    actions: Optional[List[dict]] = None,
+    task_description: str,
     scale_mode: str = "agentic",
-) -> Any:
-    """Resource-Constrained Agent Path — optimal action sequence.
-    Physics analogy: Agent path is the least-action trajectory through resource space."""
-    return agent_budget(
-        compute_budget_usd,
-        token_budget,
-        time_deadline_hours,
-        expected_value_of_information,
-        actions or [],
-        scale_mode,
-    )
+    context: Optional[dict] = None,
+) -> dict[str, Any]:
+    """Sovereign Intent Router — classifies tasks into L1/L2 physics-economic paths.
+    
+    Physics analogy: Calculates the least-action trajectory through the WEALTH substrate.
+    Provides agents with a 'Path Contract' to reduce tool-choice entropy.
+    """
+    desc = task_description.lower()
+    
+    # Intent Classification Logic
+    if any(k in desc for k in ["npv", "irr", "payback", "valuation", "investment"]):
+        intent = "project_appraisal"
+        path = [
+            "wealth_time_discount",
+            "wealth_value_npv",
+            "wealth_energy_irr",
+            "wealth_boundary_governance",
+            "wealth_synthesize"
+        ]
+    elif any(k in desc for k in ["cash", "liquidity", "runway", "burn"]):
+        intent = "survival_audit"
+        path = [
+            "wealth_flow_liquidity",
+            "wealth_flow_cashflow",
+            "wealth_velocity_runway",
+            "wealth_mass_networth",
+            "wealth_synthesize"
+        ]
+    elif any(k in desc for k in ["debt", "leverage", "dscr", "fragility"]):
+        intent = "structural_load_assessment"
+        path = [
+            "wealth_inertia_leverage",
+            "wealth_gravity_dscr",
+            "wealth_mass_networth",
+            "wealth_boundary_governance"
+        ]
+    elif any(k in desc for k in ["game", "nash", "equilibrium", "negotiation", "coordination"]):
+        intent = "multi_agent_coordination"
+        path = [
+            "wealth_game_coordination",
+            "wealth_field_equilibrium",
+            "wealth_field_game",
+            "wealth_synthesize"
+        ]
+    elif any(k in desc for k in ["info", "evoi", "data value", "uncertainty"]):
+        intent = "information_audit"
+        path = [
+            "wealth_signal_information",
+            "wealth_signal_evoi",
+            "wealth_entropy_audit",
+            "wealth_synthesize"
+        ]
+    else:
+        intent = "general_synthesis"
+        path = ["wealth_synthesize"]
+
+    # Enhanced Intent Router with Prompts and Resources
+    if intent == "project_appraisal":
+        recommended_prompt = "wealth_prompt_project_appraisal"
+        recommended_resources = [
+            "wealth://doctrine/valuation",
+            "wealth://formulas/npv",
+            "wealth://schemas/capital-case",
+            "wealth://playbooks/project-appraisal"
+        ]
+    elif intent == "survival_audit":
+        recommended_prompt = "wealth_diagnose_portfolio"
+        recommended_resources = [
+            "wealth://formulas/dscr",
+            "wealth://ontology/physics12"
+        ]
+    elif intent == "structural_load_assessment":
+        recommended_prompt = "wealth_prompt_personal_finance_triage"
+        recommended_resources = [
+            "wealth://formulas/dscr",
+            "wealth://policy/authority-boundary"
+        ]
+    elif intent == "multi_agent_coordination":
+        recommended_prompt = "wealth_prompt_sovereign_deal_review"
+        recommended_resources = [
+            "wealth://schemas/sovereign-deal",
+            "wealth://ontology/physics12"
+        ]
+    elif intent == "information_audit":
+        recommended_prompt = "wealth_opportunity_ranking"
+        recommended_resources = [
+            "wealth://formulas/evoi",
+            "wealth://epistemic/uncertainty-matrix"
+        ]
+    else:
+        recommended_prompt = "wealth_synthesize"
+        recommended_resources = ["wealth://ontology/physics12"]
+
+    return {
+        "intent": intent,
+        "recommended_path": path,
+        "recommended_prompt": recommended_prompt,
+        "recommended_resources": recommended_resources,
+        "requires_arifos_judge": True if scale_mode != "personal" else False,
+        "physics_organs": [p for p in path if "wealth_" in p and "_" not in p[7:]],
+        "final_authority": "ARIF",
+        "advisory_status": "VALID"
+    }
 
 
 # --- Sensor / Data Intake Tools (6) ---
@@ -6211,14 +6417,14 @@ def wealth_ledger_snapshot(
 
 
 # ============================================================
-# V3 Prompts (12 Reasoning Workflows)
+# V3 Prompts (Reasoning Workflows)
 # ============================================================
 
 
 @mcp.prompt()
-def wealth_appraise_project() -> str:
+def wealth_prompt_project_appraisal() -> str:
     """Full project valuation under governance: compute value, energy, density, time."""
-    return """## wealth_appraise_project — Full Project Valuation
+    return """## wealth_prompt_project_appraisal — Full Project Valuation
 
 Call these tools in sequence:
 
@@ -6226,7 +6432,7 @@ Call these tools in sequence:
 2. **wealth_energy_irr** — Compute Internal Rate of Return / MIRR
 3. **wealth_density_pi** — Compute Profitability Index
 4. **wealth_time_payback** — Compute Payback Period
-5. **wealth_boundary_floors** — Check F1-F13 constitutional compliance
+5. **wealth_boundary_governance** — Check F1-F13 constitutional compliance
 
 Combine the results into a valuation summary. The allocation signal
 from each tool indicates ACCEPT/REJECT/MARGINAL — synthesize them
@@ -6234,84 +6440,79 @@ into a final recommendation for Arif (F13 SOVEREIGN)."""
 
 
 @mcp.prompt()
-def wealth_judge_allocation() -> str:
-    """Governed capital allocation decision: verdict + floors + policy."""
-    return """## wealth_judge_allocation — Governed Allocation Decision
+def wealth_prompt_sovereign_deal_review() -> str:
+    """High-stakes sovereign resource deal audit (F13)."""
+    return """## wealth_prompt_sovereign_deal_review — Sovereign Deal Audit
 
 Call these tools in sequence:
 
-1. **wealth_governance_verdict** — Compute the sovereign allocation verdict
-2. **wealth_boundary_floors** — Verify F1-F13 constitutional compliance
-3. **wealth_boundary_policy** — Audit against configurable policy constraints
+1. **wealth_boundary_governance** — Check maruah and F13 floors
+2. **wealth_game_coordination** — Analyze contractor/NOC incentive alignment
+3. **wealth_signal_information** — Verify EVOI of the underlying resource data
+4. **wealth_synthesize** — Aggregate all signals for a sovereign verdict
 
-Synthesize the governance verdict, floor status, and policy audit into
-an allocation recommendation. The final decision rests with Arif (F13)."""
+Flag any irreversibility (F1) or maruah loss to Arif immediately."""
 
 
 @mcp.prompt()
-def wealth_run_survival_audit() -> str:
-    """Complete survival health check: flow, velocity, gravity, mass, pressure."""
-    return """## wealth_run_survival_audit — Complete Survival Health Check
+def wealth_prompt_personal_finance_triage() -> str:
+    """Personal wealth health check and emergency triage."""
+    return """## wealth_prompt_personal_finance_triage — Personal Health Check
 
 Call these tools in sequence:
 
-1. **wealth_flow_cashflow** — Metabolic liquidity rate
-2. **wealth_velocity_runway** — Compound growth and runway
-3. **wealth_gravity_dscr** — Debt service coverage ratio
-4. **wealth_mass_networth** — Balance sheet net worth
-5. **wealth_pressure_triage** — Emergency pressure relief (if in crisis)
+1. **wealth_mass_networth** — Invariant capital mass (Net Worth)
+2. **wealth_flow_cashflow** — Metabolic liquidity flow
+3. **wealth_velocity_runway** — Survival runway under current burn
+4. **wealth_preference_rank** — utility potential sorting for cost reduction
 
-Summarize the survival posture. Flag any REJECT signals for immediate
-escalation to Arif."""
+Provide a survival probability and recommend specific cost/debt
+optimizations."""
 
 
 @mcp.prompt()
-def wealth_run_information_audit() -> str:
-    """Information value + noise assessment: EVOI, entropy, schema."""
-    return """## wealth_run_information_audit — Information Value and Noise Assessment
+def wealth_prompt_inequality_diagnosis() -> str:
+    """Analyze capital concentration and systemic inequality risk."""
+    return """## wealth_prompt_inequality_diagnosis — Systemic Inequality Audit
 
 Call these tools in sequence:
 
-1. **wealth_signal_evoi** — Expected Value of Information (point estimate)
-2. **wealth_signal_evoi_mc** — EVOI Monte Carlo (distributional)
-3. **wealth_entropy_audit** — Cash flow noise and signal quality
-4. **wealth_measurement_schema** — Epistemic schema integrity
+1. **wealth_inequality_kernel** — Measure Gini and concentration gradients
+2. **wealth_flow_liquidity** — Check capital mobility channels
+3. **wealth_boundary_governance** — Assess social stability (peace2)
 
-Assess whether additional information is worth its cost. Recommend
-PROCEED, HOLD, or DO_NOT_DRILL to Arif."""
+Diagnose whether capital concentration is approaching systemic
+instability thresholds."""
 
 
 @mcp.prompt()
-def wealth_run_macro_snapshot() -> str:
+def wealth_prompt_macro_regime_scan() -> str:
     """Full market/macro data intake: fetch, snapshot, reconcile."""
-    return """## wealth_run_macro_snapshot — Full Macro Data Intake
+    return """## wealth_prompt_macro_regime_scan — Macro Field Scan
 
 Call these tools in sequence:
 
-1. **wealth_sensor_fetch** — Fetch live data series
-2. **wealth_sensor_snapshot** — Cross-source snapshot for geography
-3. **wealth_sensor_reconcile** — Cross-source divergence detection
-4. **wealth_sensor_health** — Adapter and instrument health metrics
-5. **wealth_sensor_sources** — Available data source inventory
+1. **wealth_field_macro** — Sense external economic field
+2. **wealth_gradient_price** — Detect market potential gradients (spreads)
+3. **wealth_synthesize** — Reconcile external signals with internal state
 
-Compile a data quality report. Flag any source divergences or stale
-adapters for remedial action."""
+Produce a macro regime report highlighting price pressures and
+external field shifts."""
 
 
 @mcp.prompt()
-def wealth_run_game_coordination() -> str:
-    """Multi-agent coordination analysis: game theory + equilibrium."""
-    return """## wealth_run_game_coordination — Multi-Agent Coordination Analysis
+def wealth_prompt_governance_redteam() -> str:
+    """Stress test a proposal against the 9-Harness constraints."""
+    return """## wealth_prompt_governance_redteam — 9-Harness Stress Test
 
 Call these tools in sequence:
 
-1. **wealth_field_game** — Game theory solver (LP, Shapley, Core, Nash)
-2. **wealth_field_equilibrium** — Coordination equilibrium analysis
-3. **wealth_preference_rank** — Personal utility ranking under constraints
-4. **wealth_agent_path** — Resource-constrained agent budget path
+1. **wealth_entropy_audit** — Thermodynamic noise and disorder
+2. **wealth_boundary_governance** — F1-F13 floor compliance
+3. **wealth_governance_verdict** — Final allocation judgment
 
-Synthesize the equilibrium, tragedy risk, and preference rankings into
-a coordinated allocation strategy. Flag any CORE_BLOCK or TRAGEDY_OF_COMMONS."""
+Attempt to 'break' the proposal by identifying hidden entropy or
+boundary violations."""
 
 
 @mcp.prompt()
@@ -6358,54 +6559,6 @@ Call these tools in sequence:
 
 Rank all prospects by EMV, adjust for information value, and flag
 high-entropy (uncertain) prospects for additional due diligence."""
-
-
-@mcp.prompt()
-def wealth_allocation_rebalance() -> str:
-    """Propose rebalancing: verdict + preference + policy."""
-    return """## wealth_allocation_rebalance — Proposed Portfolio Rebalancing
-
-Call these tools in sequence:
-
-1. **wealth_governance_verdict** — Current allocation governance verdict
-2. **wealth_preference_rank** — Preference-ranked alternatives
-3. **wealth_boundary_policy** — Policy constraint audit
-
-Propose a rebalancing plan that respects governance verdicts,
-preference rankings, and policy boundaries. Present to Arif for
-sovereign approval."""
-
-
-@mcp.prompt()
-def wealth_governance_full_audit() -> str:
-    """F1-F13 full audit: floors + policy + entropy."""
-    return """## wealth_governance_full_audit — Full Constitutional Audit (F1-F13)
-
-Call these tools in sequence:
-
-1. **wealth_boundary_floors** — F1-F13 floor check
-2. **wealth_boundary_policy** — Policy constraint audit
-3. **wealth_entropy_audit** — Noise and disorder assessment
-
-Produce a full constitutional compliance report. Every violation and
-HOLD must be documented. The final audit is sealed to VAULT999 for
-immutable traceability."""
-
-
-@mcp.prompt()
-def wealth_record_governed_event() -> str:
-    """Governed vault write with full audit trail: record + snapshot + floors."""
-    return """## wealth_record_governed_event — Governed Vault Write
-
-Call these tools in sequence:
-
-1. **wealth_ledger_record** — Record the transaction to VAULT999
-2. **wealth_ledger_snapshot** — Snapshot the resulting portfolio state
-3. **wealth_boundary_floors** — Verify post-event floor compliance
-
-The vault write (Step 1) is irreversible. Ensure ack_irreversible is
-confirmed by the human operator before proceeding. The snapshot (Step 2)
-preserves the post-event state for audit. Step 3 closes the governance loop."""
 
 
 # ============================================================
@@ -6702,8 +6855,9 @@ def get_formula_payback() -> str:
 # --- Ontology (3) ---
 
 
-@mcp.resource("wealth://ontology/physics_economics_map")
+@mcp.resource("wealth://ontology/physics12")
 def get_ontology_physics_map() -> str:
+    """The 12-Organ Physics-Economics Orthogonal Map."""
     return json.dumps(
         {
             "value_npv": {
@@ -6719,88 +6873,123 @@ def get_ontology_physics_map() -> str:
                 "economics": "Profitability Index",
             },
             "time_payback": {
-                "physics": "Characteristic time constant",
+                "physics": "Temporal recovery constant",
                 "economics": "Payback Period",
             },
-            "expectation_emv": {
-                "physics": "Center of probability mass",
-                "economics": "Expected Monetary Value",
-            },
-            "probability_monte_carlo": {
-                "physics": "Phase space sampling",
-                "economics": "Stochastic simulation",
-            },
-            "signal_evoi": {
-                "physics": "Signal-to-noise gain",
-                "economics": "Expected Value of Information",
-            },
-            "coupling_correlation": {
-                "physics": "Phase-lock between oscillators",
-                "economics": "Portfolio correlation risk",
+            "mass_networth": {
+                "physics": "Conserved capital mass",
+                "economics": "Net Worth / Balance Sheet",
             },
             "flow_cashflow": {
-                "physics": "Mass flow rate",
-                "economics": "Cash flow / metabolic liquidity",
-            },
-            "velocity_runway": {
-                "physics": "First derivative of position",
-                "economics": "Growth rate / runway",
+                "physics": "Metabolic liquidity flow",
+                "economics": "Cash Flow / Burn Rate",
             },
             "gravity_dscr": {
-                "physics": "Structural load capacity",
-                "economics": "Debt Service Coverage Ratio",
+                "physics": "Structural load / gravitational tension",
+                "economics": "Debt Service Coverage Ratio (DSCR)",
             },
-            "mass_networth": {
-                "physics": "Invariant mass",
-                "economics": "Net worth / balance sheet",
+            "gradient_price": {
+                "physics": "Potential gradient / arbitrage pressure",
+                "economics": "Price Spreads / Market Signals",
             },
-            "pressure_triage": {
-                "physics": "Pressure gradient",
-                "economics": "Crisis resource allocation",
+            "entropy_risk": {
+                "physics": "Thermodynamic disorder / uncertainty",
+                "economics": "Expected Monetary Value (EMV) / Risk",
             },
-            "stewardship_civilization": {
-                "physics": "Negentropic capacity",
-                "economics": "Civilization continuity",
+            "signal_evoi": {
+                "physics": "Information signal / resolution power",
+                "economics": "Expected Value of Information (EVOI)",
             },
-            "measurement_schema": {
-                "physics": "Measurement calibration",
-                "economics": "Epistemic schema validation",
+            "field_macro": {
+                "physics": "External field / macro regime",
+                "economics": "Macro Context / Externalities",
             },
-            "entropy_audit": {
-                "physics": "Thermodynamic disorder",
-                "economics": "Noise / fragility audit",
+            "game_coordination": {
+                "physics": "Interaction field / coordination manifold",
+                "economics": "Game Theory / Cooperative Bargaining",
             },
-            "boundary_floors": {
-                "physics": "Boundary conditions",
-                "economics": "F1-F13 constitutional floors",
+            "boundary_governance": {
+                "physics": "System boundary / containment wall",
+                "economics": "F1-F13 Constitutional Floors / Maruah",
             },
-            "boundary_policy": {
-                "physics": "Constraint surface",
-                "economics": "Policy constraint audit",
-            },
-            "governance_verdict": {
-                "physics": "Wavefunction collapse",
-                "economics": "Allocation verdict",
-            },
-            "field_game": {
-                "physics": "Coupled agent fields",
-                "economics": "Game theory / Nash equilibrium",
-            },
-            "field_equilibrium": {
-                "physics": "Free energy minimum",
-                "economics": "Coordination equilibrium",
-            },
-            "preference_rank": {
-                "physics": "Potential energy sorting",
-                "economics": "Personal utility ranking",
-            },
-            "agent_path": {
-                "physics": "Least-action trajectory",
-                "economics": "Resource-constrained agent budget",
+            "hysteresis_ledger": {
+                "physics": "Path dependence / state memory",
+                "economics": "Ledger / Immutable Transaction History",
             },
         },
         indent=2,
     )
+
+
+@mcp.resource("wealth://policy/authority-boundary")
+def get_authority_boundary() -> str:
+    """Read-only context for WEALTH advisory-only status vs arifOS Judge."""
+    return json.dumps(
+        {
+            "boundary_type": "Epistemic/Constitutional",
+            "rule": "WEALTH computes, arifOS judges, Arif decides.",
+            "authority_levels": {
+                "WEALTH_ADVISORY": "Informational calculation only. No binding force.",
+                "ARIFOS_888_JUDGE": "Constitutional adjudication. Can HOLD or VOID actions.",
+                "ARIF_F13_SOVEREIGN": "Final authority. Can SEAL or OVERRIDE any result.",
+            },
+            "axiom": "Mathematical correctness != Constitutional legitimacy.",
+        },
+        indent=2,
+    )
+
+
+@mcp.resource("wealth://schemas/capital-case")
+def get_capital_case_schema() -> str:
+    """Schema for a standardized capital investment case."""
+    return json.dumps(
+        {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "initial_investment": {"type": "number"},
+                "cash_flows": {"type": "array", "items": {"type": "number"}},
+                "discount_rate": {"type": "number", "default": 0.1},
+                "risk_scenarios": {"type": "array", "items": {"type": "object"}},
+                "metadata": {"type": "object"},
+            },
+            "required": ["initial_investment", "cash_flows"],
+        },
+        indent=2,
+    )
+
+
+@mcp.resource("wealth://schemas/sovereign-deal")
+def get_sovereign_deal_schema() -> str:
+    """Schema for high-stakes sovereign resource deals (F13)."""
+    return json.dumps(
+        {
+            "type": "object",
+            "properties": {
+                "sovereign_entity": {"type": "string"},
+                "foreign_partner": {"type": "string"},
+                "asset_description": {"type": "string"},
+                "maruah_impact": {"type": "number", "minimum": 0, "maximum": 1},
+                "irreversibility": {"type": "boolean", "default": True},
+                "local_participation_pct": {"type": "number"},
+            },
+            "required": ["sovereign_entity", "foreign_partner", "maruah_impact"],
+        },
+        indent=2,
+    )
+
+
+@mcp.resource("wealth://playbooks/project-appraisal")
+def get_project_appraisal_playbook() -> str:
+    """Standardized playbook for appraising capital projects."""
+    return """# Playbook: Capital Project Appraisal
+
+1. **Ingest Phase**: Gather initial capex and 10-year cash flow projections.
+2. **Value Calculation**: Run `wealth_value_npv` and `wealth_energy_irr`.
+3. **Stress Testing**: Run `wealth_expectation_emv` with p10/p50/p90 scenarios.
+4. **Boundary Check**: Run `wealth_boundary_governance` to ensure F1/F4 compliance.
+5. **Synthesis**: Run `wealth_synthesize` to combine all signals for Arif.
+"""
 
 
 @mcp.resource("wealth://ontology/dimensions")
@@ -8705,17 +8894,27 @@ def wealth_hysteresis_ledger(
 
 
 @mcp.tool(name="wealth_system_registry_status")
-def wealth_system_registry_status() -> dict[str, Any]:
+async def wealth_system_registry_status() -> dict[str, Any]:
     """Registry truth diagnostic — intended, registered, and alias surfaces."""
-    return _registry_snapshot(_registered_tool_names())
+    all_tools = await mcp.list_tools()
+    all_resources = await mcp.list_resources()
+    all_prompts = await mcp.list_prompts()
+    
+    snapshot = _registry_snapshot([t.name for t in all_tools])
+    snapshot["registered_resources"] = [str(r.uri) for r in all_resources]
+    snapshot["registered_prompts"] = [p.name for p in all_prompts]
+    snapshot["resource_count"] = len(all_resources)
+    snapshot["prompt_count"] = len(all_prompts)
+    
+    return snapshot
 
 
 @mcp.tool(name="wealth_synthesize")
 def wealth_synthesize(
     question: str = "",
     scale_mode: str = "enterprise",
-    actors: Optional[Any] = None,
-    context: Optional[Any] = None,
+    actors: Optional[List[str]] = None,
+    context: Optional[dict] = None,
     reversible: bool = True,
     human_confirmed: bool = False,
     well_cost_musd: float = 0,
@@ -8724,22 +8923,14 @@ def wealth_synthesize(
     cash_flows: Optional[List[float]] = None,
     discount_rate: float = 0.10,
     mode: str = "synthesis",
-    mode_params: Optional[Any] = None,
+    mode_params: Optional[dict] = None,
 ) -> Dict[str, Any]:
     """Ω-WEALTH-00: Synthesis — unified capital intelligence verdict.
 
-    The brain connecting all 12 substrate invariants. Pass a question and context;
-    WEALTH runs all relevant dimensions, aggregates, and returns a single SEAL/SABAR/VOID
-    verdict with dimensional confidence scores and routing to arifOS 888_JUDGE when needed.
-
-    High-stakes context (scale_mode='sovereign'/'national'/'civilization') automatically
-    triggers F13 escalation path and maruah computation.
-
-    Usage:
-      wealth_synthesize(question="Is the SEARAH deal value-accretive for Malaysia?",
-                        scale_mode="sovereign",
-                        actors=["PETRONAS","ENI","Sarawak","Federal"],
-                        context={"foreign_entity": True, "reversible": False})
+    The brain connecting all 12 substrate invariants. Returns an advisory-only
+    capital intelligence verdict (SEAL/SABAR/VOID) with dimensional confidence scores.
+    
+    Rule: WEALTH computes, arifOS judges, Arif decides.
     """
     import json as _json_mp
 
@@ -10134,69 +10325,43 @@ def wealth_inequality_kernel(
 
 
 WEALTH_PUBLIC_TOOL_ORDER = (
+    # L0 — Kernel Surface
     "mcp_health_check",
-    "wealth_synthesize",
-    "vault_query",
-    "vault_write",
-    "vaultquery",
-    "vaultwrite",
-    "wealth_agent_path",
-    "wealth_allocate_optimize",
-    "wealth_boundary_floors",
-    "wealth_boundary_governance",
-    "wealth_boundary_policy",
-    "wealth_conservation_capital",
-    "wealth_density_pi",
-    "wealth_energy_irr",
-    "wealth_energy_productivity",
-    "wealth_entropy_audit",
-    "wealth_entropy_risk",
-    "wealth_expectation_emv",
-    "wealth_field_equilibrium",
-    "wealth_field_game",
-    "wealth_field_macro",
-    "wealth_flow_cashflow",
-    "wealth_flow_liquidity",
-    "wealth_future_simulate",
-    "wealth_future_steward",
-    "wealth_future_value",
-    "wealth_game_coordinate",
-    "wealth_game_coordination",
-    "wealth_governance_verdict",
-    "wealth_gradient_price",
-    "wealth_gravity_dscr",
-    "wealth_hysteresis_ledger",
-    "wealth_inertia_leverage",
-    "wealth_ledger_query",
-    "wealth_ledger_record",
-    "wealth_ledger_snapshot",
-    "wealth_ledger_write",
-    "wealth_ledger_init",
-    "wealth_mass_networth",
-    "wealth_preference_rank",
-    "wealth_present_expect",
-    "wealth_pressure_triage",
-    "wealth_probability_monte_carlo",
-    "wealth_rule_enforce",
-    "wealth_sense_ingest",
-    "wealth_sensor_fetch",
-    "wealth_sensor_health",
-    "wealth_sensor_reconcile",
-    "wealth_sensor_snapshot",
-    "wealth_sensor_sources",
-    "wealth_sensor_vintage",
-    "wealth_signal_information",
-    "wealth_stewardship_civilization",
-    "wealth_survival_leverage",
-    "wealth_survival_liquidity",
     "wealth_system_registry_status",
+    "wealth_synthesize",
+    "wealth_agent_path",
+    # L1 — 12 Canonical Physics Organs
+    "wealth_conservation_capital",
+    "wealth_flow_liquidity",
+    "wealth_gradient_price",
+    "wealth_entropy_risk",
+    "wealth_energy_productivity",
     "wealth_time_discount",
-    "wealth_time_payback",
+    "wealth_inertia_leverage",
+    "wealth_field_macro",
+    "wealth_signal_information",
+    "wealth_game_coordination",
+    "wealth_boundary_governance",
+    "wealth_hysteresis_ledger",
+    # L2 — Mandatory Specialists
     "wealth_value_npv",
+    "wealth_energy_irr",
+    "wealth_density_pi",
+    "wealth_time_payback",
+    "wealth_gravity_dscr",
+    "wealth_mass_networth",
+    "wealth_flow_cashflow",
     "wealth_velocity_runway",
+    "wealth_expectation_emv",
+    "wealth_probability_monte_carlo",
+    "wealth_signal_evoi",
+    "wealth_entropy_audit",
+    "wealth_governance_verdict",
+    "wealth_preference_rank",
+    "wealth_ledger_query",
+    "wealth_ledger_write",
+    # Domain Specialist (Civilization)
     "wealth_inequality_kernel",
-    "wealth_role_scarcity_risk",
-    "wealth_institutional_entropy_scorer",
 )
 _PUBLIC_TOOLS = set(WEALTH_PUBLIC_TOOL_ORDER)
 
