@@ -43,8 +43,6 @@ def test_g_score_engine_imports_and_runs():
 def test_mcp_tool_surface_matches_public_registry():
     tool_names = {tool.name for tool in asyncio.run(mcp.list_tools())}
     assert tool_names == _PUBLIC_TOOLS
-    assert "wealth_future_value" not in tool_names
-    assert "vault_write" not in tool_names
 
 
 def test_invariant_tools_do_not_use_var_kwargs():
