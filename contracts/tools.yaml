@@ -1,6 +1,9 @@
 # WEALTH Capital Intelligence Tool Registry
 # SOT: ariffazil/wealth — Resource Thermodynamics
 # Last verified: 2026-05-19
+#
+# NOTE: This file is auto-generated from WEALTH_PUBLIC_TOOL_ORDER in internal/monolith.py.
+#       The canonical runtime source of truth is internal/monolith.py.
 
 schema_version: "2026.05.19"
 organ: WEALTH
@@ -12,145 +15,446 @@ health_endpoint: http://localhost:8082/health
 floor_enforcement: delegated-to-arifos
 physics_boundary: wealth.physics_economics.v1
 
- tools:
+# Canonical public tool surface (63 tools)
+tools:
+
   mcp_health_check:
-    category: registry
+    category: wealth
     owner_repo: ariffazil/wealth
     runtime_surface: internal/monolith.py
     tests_present: true
     status: sealed
-    description: Universal health check for federation stability
-
-  wealth_conservation_capital:
-    category: wealth_capital
-    owner_repo: ariffazil/wealth
-    runtime_surface: internal/monolith.py
-    tests_present: true
-    status: sealed
-    description: Ω-WEALTH-01 — capital stock reality (assets, liabilities, reserves)
-
-  wealth_flow_liquidity:
-    category: wealth_capital
-    owner_repo: ariffazil/wealth
-    runtime_surface: internal/monolith.py
-    tests_present: true
-    status: sealed
-    description: Ω-WEALTH-02 — liquidity movement (cashflow, burn, runway)
-
-  wealth_gradient_price:
-    category: wealth_market
-    owner_repo: ariffazil/wealth
-    runtime_surface: internal/monolith.py
-    tests_present: true
-    status: sealed
-    description: Ω-WEALTH-03 — price pressure, spread, mispricing detection
-
-  wealth_entropy_risk:
-    category: wealth_market
-    owner_repo: ariffazil/wealth
-    runtime_surface: internal/monolith.py
-    tests_present: true
-    status: sealed
-    description: Ω-WEALTH-04 — uncertainty, dispersion, tail risk
-
-  wealth_energy_productivity:
-    category: wealth_productivity
-    owner_repo: ariffazil/wealth
-    runtime_surface: internal/monolith.py
-    tests_present: true
-    status: sealed
-    description: Ω-WEALTH-05 — output per input, capital efficiency
-
-  wealth_time_discount:
-    category: wealth_productivity
-    owner_repo: ariffazil/wealth
-    runtime_surface: internal/monolith.py
-    tests_present: true
-    status: sealed
-    description: Ω-WEALTH-06 — NPV, IRR, payback, compounding
-
-  wealth_inertia_leverage:
-    category: wealth_productivity
-    owner_repo: ariffazil/wealth
-    runtime_surface: internal/monolith.py
-    tests_present: true
-    status: sealed
-    description: Ω-WEALTH-07 — leverage stress, fragility, DSCR
-
-  wealth_field_macro:
-    category: wealth_macro
-    owner_repo: ariffazil/wealth
-    runtime_surface: internal/monolith.py
-    tests_present: true
-    status: sealed
-    description: Ω-WEALTH-08 — macro environment (rates, FX, energy, carbon)
-
-  wealth_signal_information:
-    category: wealth_macro
-    owner_repo: ariffazil/wealth
-    runtime_surface: internal/monolith.py
-    tests_present: true
-    status: sealed
-    description: Ω-WEALTH-09 — information value, evidence quality
-
-  wealth_game_coordination:
-    category: wealth_macro
-    owner_repo: ariffazil/wealth
-    runtime_surface: internal/monolith.py
-    tests_present: true
-    status: sealed
-    description: Ω-WEALTH-10 — multi-agent incentives, bargaining
-
-  wealth_boundary_governance:
-    category: wealth_governance
-    owner_repo: ariffazil/wealth
-    runtime_surface: internal/monolith.py
-    tests_present: true
-    status: sealed
-    description: Ω-WEALTH-11 — constitutional floors, maruah, stewardship
-
-  wealth_hysteresis_ledger:
-    category: wealth_governance
-    owner_repo: ariffazil/wealth
-    runtime_surface: internal/monolith.py
-    tests_present: true
-    status: sealed
-    description: Ω-WEALTH-12 — path dependence, sealed financial memory
-
-  wealth_system_registry_status:
-    category: registry
-    owner_repo: ariffazil/wealth
-    runtime_surface: internal/monolith.py
-    tests_present: true
-    status: sealed
-    description: Registry truth diagnostic
 
   wealth_synthesize:
-    category: wealth_synthesis
+    category: wealth
     owner_repo: ariffazil/wealth
     runtime_surface: internal/monolith.py
     tests_present: true
     status: sealed
-    description: Ω-WEALTH-00 — unified capital intelligence verdict
 
-  wealth_role_scarcity_risk:
-    category: wealth_inequality
+  vault_query:
+    category: wealth
     owner_repo: ariffazil/wealth
     runtime_surface: internal/monolith.py
     tests_present: true
     status: sealed
-    description: Ω-WEALTH-IEQ-04 — Calhoun-inspired social role saturation
+
+  vault_write:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  vaultquery:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  vaultwrite:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_agent_path:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_allocate_optimize:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_boundary_floors:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_boundary_governance:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_boundary_policy:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_conservation_capital:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_density_pi:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_energy_irr:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_energy_productivity:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_entropy_audit:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_entropy_risk:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_expectation_emv:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_field_equilibrium:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_field_game:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_field_macro:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_flow_cashflow:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_flow_liquidity:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_future_simulate:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_future_steward:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_future_value:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_game_coordinate:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_game_coordination:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_governance_verdict:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_gradient_price:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_gravity_dscr:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_hysteresis_ledger:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_inertia_leverage:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_ledger_query:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_ledger_record:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_ledger_snapshot:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_ledger_write:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_ledger_init:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_mass_networth:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_preference_rank:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_present_expect:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_pressure_triage:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_probability_monte_carlo:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_rule_enforce:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_sense_ingest:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_sensor_fetch:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_sensor_health:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_sensor_reconcile:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_sensor_snapshot:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_sensor_sources:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_sensor_vintage:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_signal_information:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_stewardship_civilization:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_survival_leverage:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_survival_liquidity:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_system_registry_status:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_time_discount:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_time_payback:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_value_npv:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_velocity_runway:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
 
   wealth_inequality_kernel:
-    category: wealth_inequality
+    category: wealth
     owner_repo: ariffazil/wealth
     runtime_surface: internal/monolith.py
     tests_present: true
     status: sealed
-    description: Ω-WEALTH-IEQ-00 — unified inequality diagnosis
 
-# Deprecated / legacy surfaces
-legacy:
-  - surface: src/ (JavaScript kernel)
-    status: deprecated
-    note: Python internal/monolith.py is canonical; JS src/ is legacy
+  wealth_role_scarcity_risk:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
+
+  wealth_institutional_entropy_scorer:
+    category: wealth
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py
+    tests_present: true
+    status: sealed
