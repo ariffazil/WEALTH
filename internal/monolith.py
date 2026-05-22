@@ -904,33 +904,43 @@ _original_mcp_tool = mcp.tool
 _original_mcp_resource = mcp.resource
 _original_mcp_prompt = mcp.prompt
 
+
 def controlled_mcp_tool(*args, **kwargs):
     """Decorator wrapper that only registers tools in the PUBLIC_SURFACE_WHITELIST."""
     explicit_name = kwargs.get("name")
+
     def decorator(f):
         tool_name = explicit_name or f.__name__
         if tool_name in PUBLIC_SURFACE_WHITELIST:
             return _original_mcp_tool(*args, **kwargs)(f)
         return f
+
     return decorator
+
 
 def controlled_mcp_resource(uri, **kwargs):
     """Decorator wrapper that only registers resources in the PUBLIC_RESOURCE_WHITELIST."""
+
     def decorator(f):
         if uri in PUBLIC_RESOURCE_WHITELIST:
             return _original_mcp_resource(uri, **kwargs)(f)
         return f
+
     return decorator
+
 
 def controlled_mcp_prompt(*args, **kwargs):
     """Decorator wrapper that only registers prompts in the PUBLIC_PROMPT_WHITELIST."""
     explicit_name = kwargs.get("name")
+
     def decorator(f):
         prompt_name = explicit_name or f.__name__
         if prompt_name in PUBLIC_PROMPT_WHITELIST:
             return _original_mcp_prompt(*args, **kwargs)(f)
         return f
+
     return decorator
+
 
 # Patch the mcp instance to use our controlled decorators
 mcp.tool = controlled_mcp_tool
@@ -2056,12 +2066,14 @@ def measurement_irr(
         pass
 
     if irr is None:
+
         def npv_fn(rate):
             return npv_from_series(series, rate)
 
         brackets = bracket_roots(npv_fn)
         roots = {
-            round_value(bisect_root(npv_fn, lower, upper), 10) for lower, upper in brackets
+            round_value(bisect_root(npv_fn, lower, upper), 10)
+            for lower, upper in brackets
         }
         irr = next(iter(roots)) if len(roots) == 1 else None
         if len(roots) == 0:
@@ -2078,7 +2090,9 @@ def measurement_irr(
             if cashflow < 0:
                 pv_negative += cashflow / pow(1 + finance_rate, index)
             elif cashflow > 0:
-                fv_positive += cashflow * pow(1 + reinvestment_rate, period_count - index)
+                fv_positive += cashflow * pow(
+                    1 + reinvestment_rate, period_count - index
+                )
         if pv_negative < 0 and fv_positive > 0 and period_count > 0:
             mirr = pow(fv_positive / abs(pv_negative), 1 / period_count) - 1
 
@@ -2671,6 +2685,7 @@ def networth_state(
     if not assets and not liabilities:
         try:
             from host.governance.vault_supabase import query_portfolio_snapshots
+
             snapshots = query_portfolio_snapshots(limit=1)
             if snapshots:
                 latest = snapshots[0]
@@ -2693,10 +2708,10 @@ def networth_state(
     )
     epistemic = weakest_epistemic([*assets, *liabilities], "UNKNOWN")
     nw_flags = ["NO_INPUT_BASELINE"] if not assets and not liabilities else []
-    
+
     # If pulled from ledger, upgrade epistemic
-    if 'snapshots' in locals() and snapshots:
-        epistemic = "CLAIM" # Grounded in VAULT999
+    if "snapshots" in locals() and snapshots:
+        epistemic = "CLAIM"  # Grounded in VAULT999
         if "GROUNDED_IN_VAULT999" not in nw_flags:
             nw_flags.append("GROUNDED_IN_VAULT999")
 
@@ -2729,6 +2744,7 @@ def cashflow_flow(
     if not income and not expenses and liquid_assets in (None, 0):
         try:
             from host.governance.vault_supabase import query_portfolio_snapshots
+
             snapshots = query_portfolio_snapshots(limit=1)
             if snapshots:
                 latest = snapshots[0]
@@ -2736,7 +2752,12 @@ def cashflow_flow(
                 result = latest.get("result", {})
                 income = result.get("income", [])
                 expenses = result.get("expenses", [])
-                liquid_assets = result.get("liquid_assets", result.get("assets", [{}])[0].get("value", 0) if result.get("assets") else 0)
+                liquid_assets = result.get(
+                    "liquid_assets",
+                    result.get("assets", [{}])[0].get("value", 0)
+                    if result.get("assets")
+                    else 0,
+                )
         except Exception:
             pass
 
@@ -3251,12 +3272,16 @@ def coordination_equilibrium(
     """Multi-agent resource coordination and equilibrium analysis. [Coordination Dimension]"""
     # Filter shared_resources to only include numeric constraints for the LP solver
     # Metadata like 'resource_type': 'upstream_hydrocarbon' should not be passed to the solver
-    numeric_resources = {k: v for k, v in shared_resources.items() if isinstance(v, (int, float, bool))}
+    numeric_resources = {
+        k: v for k, v in shared_resources.items() if isinstance(v, (int, float, bool))
+    }
     # Convert bool to int for LP solver compatibility
-    numeric_resources = {k: (int(v) if isinstance(v, bool) else v) for k, v in numeric_resources.items()}
-    
+    numeric_resources = {
+        k: (int(v) if isinstance(v, bool) else v) for k, v in numeric_resources.items()
+    }
+
     resource_keys = list(numeric_resources.keys())
-    
+
     # Normalize agents to LP schema using only numeric resource keys
     lp_agents = _normalize_coordination_agents(agents, resource_keys)
 
@@ -5873,7 +5898,10 @@ async def wealth_measurement_schema(
     return await wealth_schema_validate(prospects, scale_mode)
 
 
-@mcp.tool(name="wealth_entropy_audit", description="Calculate structural and narrative entropy coefficients for an SOE/NOC.")
+@mcp.tool(
+    name="wealth_entropy_audit",
+    description="Calculate structural and narrative entropy coefficients for an SOE/NOC.",
+)
 def wealth_entropy_audit(
     revenue_trend_yoy: float,
     ebitda_trend_yoy: float,
@@ -5892,18 +5920,24 @@ def wealth_entropy_audit(
     extraction_base = dividend_payout_ratio
     if is_loss_year_dividend_paid:
         extraction_base *= 1.618  # Asymmetric extraction weight
-        
+
     # 2. Capital Starvation Delta
     # If capex drops faster than EBITDA, capital depletion risk spikes
     starvation_delta = max(0.0, ebitda_trend_yoy - capex_trend_yoy)
-    
+
     # 3. Behavioral Sink Index (Calhoun Hyper-Grooming Flag)
     # Long feedback loops (high interval) + high presentation volume = narrative hypertrophy
-    grooming_coefficient = (reporting_interval_months / 3.0) * (narrative_page_count / 100.0)
-    
+    grooming_coefficient = (reporting_interval_months / 3.0) * (
+        narrative_page_count / 100.0
+    )
+
     # 4. Total Systemic Entropy Calculation (dS)
-    delta_S = (extraction_base * 0.4) + (starvation_delta * 0.4) + (grooming_coefficient * 0.2)
-    
+    delta_S = (
+        (extraction_base * 0.4)
+        + (starvation_delta * 0.4)
+        + (grooming_coefficient * 0.2)
+    )
+
     # 5. Categorization Matrix
     if delta_S > 0.65:
         regime = "EXTRACTIVE_SINK_WITH_BEHAVIORAL_OVERLAY"
@@ -5925,24 +5959,47 @@ def wealth_entropy_audit(
         "role_classification": role_label,
         "metrics": {
             "capital_starvation": round(starvation_delta, 4),
-            "hydraulic_resistance": round(grooming_coefficient, 4)
+            "hydraulic_resistance": round(grooming_coefficient, 4),
         },
         "governance_verdict": verdict,
-        "scale_mode": scale_mode
+        "scale_mode": scale_mode,
     }
 
 
 class InstitutionalEntropyInput(BaseModel):
     """Deterministic parameter matrix for evaluating sovereign extractive friction and Calhoun-style narrative hypertrophy."""
-    extractive_pressure_index: float = Field(..., description="EPI = Total Dividends / (Net Profit + Impairment-Adjusted Operating Cashflow). Evaluates fiscal extraction pressure.", ge=0.0)
-    physical_reinvestment_ratio_slope: float = Field(..., description="The 3-year rolling directional slope of Upstream Capex over Upstream EBITDA. Negative value indicates systematic under-reinvestment.")
-    production_growth_rate: float = Field(..., description="Year-over-year percentage change in total physical hydrocarbon or core commodity output (kboe/d).")
-    narrative_hypertrophy_index: float = Field(..., description="NHI = (ESG + Sustainability Document Word Count) / (Core Engineering Capex in Millions). Measures resource dissipation into symbolic legitimacy.", ge=0.0)
-    reporting_latency_delta_days: int = Field(..., description="The change in standard information delivery intervals (e.g., shifting from quarterly reporting to half-yearly reporting loops adds +90 days).")
+
+    extractive_pressure_index: float = Field(
+        ...,
+        description="EPI = Total Dividends / (Net Profit + Impairment-Adjusted Operating Cashflow). Evaluates fiscal extraction pressure.",
+        ge=0.0,
+    )
+    physical_reinvestment_ratio_slope: float = Field(
+        ...,
+        description="The 3-year rolling directional slope of Upstream Capex over Upstream EBITDA. Negative value indicates systematic under-reinvestment.",
+    )
+    production_growth_rate: float = Field(
+        ...,
+        description="Year-over-year percentage change in total physical hydrocarbon or core commodity output (kboe/d).",
+    )
+    narrative_hypertrophy_index: float = Field(
+        ...,
+        description="NHI = (ESG + Sustainability Document Word Count) / (Core Engineering Capex in Millions). Measures resource dissipation into symbolic legitimacy.",
+        ge=0.0,
+    )
+    reporting_latency_delta_days: int = Field(
+        ...,
+        description="The change in standard information delivery intervals (e.g., shifting from quarterly reporting to half-yearly reporting loops adds +90 days).",
+    )
 
 
-@mcp.tool(name="wealth_institutional_entropy_scorer", description="Executes a thermodynamic audit on state-backed enterprises. Processes financial extraction parameters against structural and narrative entropy bounds.")
-async def wealth_institutional_entropy_scorer(matrix: InstitutionalEntropyInput) -> Dict[str, Any]:
+@mcp.tool(
+    name="wealth_institutional_entropy_scorer",
+    description="Executes a thermodynamic audit on state-backed enterprises. Processes financial extraction parameters against structural and narrative entropy bounds.",
+)
+async def wealth_institutional_entropy_scorer(
+    matrix: InstitutionalEntropyInput,
+) -> Dict[str, Any]:
     """
     Executes a thermodynamic audit on state-backed enterprises.
     Processes financial extraction parameters against structural and narrative entropy bounds.
@@ -5953,13 +6010,13 @@ async def wealth_institutional_entropy_scorer(matrix: InstitutionalEntropyInput)
     prod_growth = matrix.production_growth_rate
     nhi = matrix.narrative_hypertrophy_index
     latency = matrix.reporting_latency_delta_days
-    
+
     # 2. Calculate Parametric Component Scores
     # Base Acemoglu Extraction Coefficient (0.0 to 1.0 bounded range)
     c_acemoglu = min(1.0, epi * 0.5)
     if epi > 1.0:
-        c_acemoglu = 1.0 # Absolute capital drainage override
-        
+        c_acemoglu = 1.0  # Absolute capital drainage override
+
     # Base Calhoun Role Displacement Coefficient
     # Starvation of the physical body combined with increased information latency
     c_calhoun_structural = 0.0
@@ -5969,13 +6026,13 @@ async def wealth_institutional_entropy_scorer(matrix: InstitutionalEntropyInput)
         c_calhoun_structural += 0.2
     if latency > 0:
         c_calhoun_structural += 0.1
-        
+
     # Narrative Hypertrophy Weight (Grooming Speed)
     c_grooming = min(0.4, (nhi / 100.0) * 0.4)
-    
+
     # 3. Compute Net Structural Entropy (delta_S)
     delta_S = (c_acemoglu * 0.4) + (c_calhoun_structural * 0.4) + (c_grooming * 0.2)
-    
+
     # 4. Collapse States into Deterministic Class Labels
     if delta_S >= 0.65:
         regime_label = "EXTRACTIVE_SINK_WITH_BEHAVIORAL_OVERLAY"
@@ -5989,19 +6046,19 @@ async def wealth_institutional_entropy_scorer(matrix: InstitutionalEntropyInput)
         regime_label = "STRUCTURAL_OPERATING_ENGINE"
         archetype_label = "SOVEREIGN_ENERGY_TRUSTEE"
         operational_verdict = "PASS | STABLE LOW-ENTROPY CONFIGURATION"
-        
+
     return {
         "timestamp_epoch": datetime.now(timezone.utc).isoformat(),
         "systemic_entropy_delta": round(float(delta_S), 4),
         "classification": {
             "institutional_regime": regime_label,
-            "executive_node_archetype": archetype_label
+            "executive_node_archetype": archetype_label,
         },
         "evaluation_metrics": {
             "extractive_coefficient": round(c_acemoglu, 4),
-            "behavioral_sink_coefficient": round(c_calhoun_structural + c_grooming, 4)
+            "behavioral_sink_coefficient": round(c_calhoun_structural + c_grooming, 4),
         },
-        "verdict": operational_verdict
+        "verdict": operational_verdict,
     }
 
 
@@ -6144,12 +6201,12 @@ def wealth_agent_path(
     context: Optional[dict] = None,
 ) -> dict[str, Any]:
     """Sovereign Intent Router — classifies tasks into L1/L2 physics-economic paths.
-    
+
     Physics analogy: Calculates the least-action trajectory through the WEALTH substrate.
     Provides agents with a 'Path Contract' to reduce tool-choice entropy.
     """
     desc = task_description.lower()
-    
+
     # Intent Classification Logic
     if any(k in desc for k in ["npv", "irr", "payback", "valuation", "investment"]):
         intent = "project_appraisal"
@@ -6158,7 +6215,7 @@ def wealth_agent_path(
             "wealth_value_npv",
             "wealth_energy_irr",
             "wealth_boundary_governance",
-            "wealth_synthesize"
+            "wealth_synthesize",
         ]
     elif any(k in desc for k in ["cash", "liquidity", "runway", "burn"]):
         intent = "survival_audit"
@@ -6167,7 +6224,7 @@ def wealth_agent_path(
             "wealth_flow_cashflow",
             "wealth_velocity_runway",
             "wealth_mass_networth",
-            "wealth_synthesize"
+            "wealth_synthesize",
         ]
     elif any(k in desc for k in ["debt", "leverage", "dscr", "fragility"]):
         intent = "structural_load_assessment"
@@ -6175,15 +6232,18 @@ def wealth_agent_path(
             "wealth_inertia_leverage",
             "wealth_gravity_dscr",
             "wealth_mass_networth",
-            "wealth_boundary_governance"
+            "wealth_boundary_governance",
         ]
-    elif any(k in desc for k in ["game", "nash", "equilibrium", "negotiation", "coordination"]):
+    elif any(
+        k in desc
+        for k in ["game", "nash", "equilibrium", "negotiation", "coordination"]
+    ):
         intent = "multi_agent_coordination"
         path = [
             "wealth_game_coordination",
             "wealth_field_equilibrium",
             "wealth_field_game",
-            "wealth_synthesize"
+            "wealth_synthesize",
         ]
     elif any(k in desc for k in ["info", "evoi", "data value", "uncertainty"]):
         intent = "information_audit"
@@ -6191,7 +6251,7 @@ def wealth_agent_path(
             "wealth_signal_information",
             "wealth_signal_evoi",
             "wealth_entropy_audit",
-            "wealth_synthesize"
+            "wealth_synthesize",
         ]
     else:
         intent = "general_synthesis"
@@ -6204,31 +6264,31 @@ def wealth_agent_path(
             "wealth://doctrine/valuation",
             "wealth://formulas/npv",
             "wealth://schemas/capital-case",
-            "wealth://playbooks/project-appraisal"
+            "wealth://playbooks/project-appraisal",
         ]
     elif intent == "survival_audit":
         recommended_prompt = "wealth_diagnose_portfolio"
         recommended_resources = [
             "wealth://formulas/dscr",
-            "wealth://ontology/physics12"
+            "wealth://ontology/physics12",
         ]
     elif intent == "structural_load_assessment":
         recommended_prompt = "wealth_prompt_personal_finance_triage"
         recommended_resources = [
             "wealth://formulas/dscr",
-            "wealth://policy/authority-boundary"
+            "wealth://policy/authority-boundary",
         ]
     elif intent == "multi_agent_coordination":
         recommended_prompt = "wealth_prompt_sovereign_deal_review"
         recommended_resources = [
             "wealth://schemas/sovereign-deal",
-            "wealth://ontology/physics12"
+            "wealth://ontology/physics12",
         ]
     elif intent == "information_audit":
         recommended_prompt = "wealth_opportunity_ranking"
         recommended_resources = [
             "wealth://formulas/evoi",
-            "wealth://epistemic/uncertainty-matrix"
+            "wealth://epistemic/uncertainty-matrix",
         ]
     else:
         recommended_prompt = "wealth_synthesize"
@@ -6242,7 +6302,7 @@ def wealth_agent_path(
         "requires_arifos_judge": True if scale_mode != "personal" else False,
         "physics_organs": [p for p in path if "wealth_" in p and "_" not in p[7:]],
         "final_authority": "ARIF",
-        "advisory_status": "VALID"
+        "advisory_status": "VALID",
     }
 
 
@@ -6262,46 +6322,41 @@ def wealth_sensor_fetch(
     return ingest_fetch(source, series_id, entity_code, use_cache, bus)
 
 
-@mcp.tool()
-def wealth_sensor_snapshot(
+def _sensor_snapshot(
     entity_code: str,
     sources: Optional[List[str]] = None,
 ) -> Any:
-    """Cross-Source Macro Snapshot — multi-sensor state observation.
+    """[INTERNAL] Cross-Source Macro Snapshot — multi-sensor state observation.
     Physics analogy: A snapshot is the state vector of all sensors at time t."""
     return ingest_snapshot(entity_code, sources)
 
 
-@mcp.tool()
-def wealth_sensor_reconcile(
+def _sensor_reconcile(
     entity_code: str,
 ) -> Any:
-    """Sensor Divergence Detection — cross-source consistency check.
+    """[INTERNAL] Sensor Divergence Detection — cross-source consistency check.
     Physics analogy: Reconciliation detects measurement divergence across parallel instruments."""
     return ingest_reconcile(entity_code)
 
 
-@mcp.tool()
-def wealth_sensor_health(
+def _sensor_health(
     adapter: Optional[str] = None,
 ) -> Any:
-    """Instrument Health Metrics — latency, cache age, freshness.
+    """[INTERNAL] Instrument Health Metrics — latency, cache age, freshness.
     Physics analogy: Health monitors the calibration state of each sensing instrument."""
     return ingest_health(adapter)
 
 
-@mcp.tool()
-def wealth_sensor_vintage(
+def _sensor_vintage(
     source: str, series_id: str, entity_code: str, vintage_date: str
 ) -> Any:
-    """Historical Measurement State — fetch data as known at a specific date.
+    """[INTERNAL] Historical Measurement State — fetch data as known at a specific date.
     Physics analogy: Vintage preserves the wavefunction collapse at a past measurement time."""
     return ingest_vintage(source, series_id, entity_code, vintage_date)
 
 
-@mcp.tool()
-def wealth_sensor_sources() -> Any:
-    """Sensor Inventory — list available data sources and adapter status.
+def _sensor_sources() -> Any:
+    """[INTERNAL] Sensor Inventory — list available data sources and adapter status.
     Physics analogy: Source inventory is the instrument manifest."""
     return ingest_sources()
 
@@ -8932,13 +8987,13 @@ async def wealth_system_registry_status() -> dict[str, Any]:
     all_tools = await mcp.list_tools()
     all_resources = await mcp.list_resources()
     all_prompts = await mcp.list_prompts()
-    
+
     snapshot = _registry_snapshot([t.name for t in all_tools])
     snapshot["registered_resources"] = [str(r.uri) for r in all_resources]
     snapshot["registered_prompts"] = [p.name for p in all_prompts]
     snapshot["resource_count"] = len(all_resources)
     snapshot["prompt_count"] = len(all_prompts)
-    
+
     return snapshot
 
 
@@ -8962,7 +9017,7 @@ def wealth_synthesize(
 
     The brain connecting all 12 substrate invariants. Returns an advisory-only
     capital intelligence verdict (SEAL/SABAR/VOID) with dimensional confidence scores.
-    
+
     Rule: WEALTH computes, arifOS judges, Arif decides.
     """
     import json as _json_mp
@@ -9026,21 +9081,25 @@ def wealth_synthesize(
     # observed, user-supplied, estimated from defaults, or hypothetical.
     _WEALTH_CLAIM_STATES = {
         "conservation": "SYNTHETIC_DEFAULT",  # no assets/liabilities passed
-        "flow": "SYNTHETIC_DEFAULT",          # no income/expenses passed
+        "flow": "SYNTHETIC_DEFAULT",  # no income/expenses passed
         "entropy": (
-            "USER_SUPPLIED" if (cash_flows or (well_cost_musd and p50_value_musd))
+            "USER_SUPPLIED"
+            if (cash_flows or (well_cost_musd and p50_value_musd))
             else "HYPOTHESIS"
         ),
         "time": "USER_SUPPLIED" if cash_flows else "INSUFFICIENT_CONTEXT",
         "signal": (
-            "USER_SUPPLIED" if (well_cost_musd or p50_value_musd)
+            "USER_SUPPLIED"
+            if (well_cost_musd or p50_value_musd)
             else "SYNTHETIC_DEFAULT"
         ),
-        "boundary": "HYPOTHESIS",             # qualitative governance scan
+        "boundary": "HYPOTHESIS",  # qualitative governance scan
         "game": "USER_SUPPLIED" if (actors and len(actors) >= 2) else "NOT_COMPUTED",
     }
 
-    def _tag_dimension(name: str, metrics: Dict[str, Any], gov_verdict: str) -> Dict[str, Any]:
+    def _tag_dimension(
+        name: str, metrics: Dict[str, Any], gov_verdict: str
+    ) -> Dict[str, Any]:
         """Wrap dimensional metrics with claim-state and data-source tags."""
         cs = _WEALTH_CLAIM_STATES.get(name, "UNKNOWN")
         if cs == "USER_SUPPLIED":
@@ -9070,7 +9129,9 @@ def wealth_synthesize(
     try:
         r = networth_state(scale_mode=scale_mode)
         results["conservation"] = _tag_dimension(
-            "conservation", r.get("primary_metrics", {}), r.get("governance_verdict", "UNKNOWN")
+            "conservation",
+            r.get("primary_metrics", {}),
+            r.get("governance_verdict", "UNKNOWN"),
         )
         dimensional_scores["conservation"] = r.get("governance_verdict", "UNKNOWN")
         verdicts.append(r.get("governance_verdict", "UNKNOWN"))
@@ -9128,7 +9189,9 @@ def wealth_synthesize(
                 epistemic="CLAIM",
             )
         results["entropy"] = _tag_dimension(
-            "entropy", r.get("primary_metrics", {}), r.get("governance_verdict", "UNKNOWN")
+            "entropy",
+            r.get("primary_metrics", {}),
+            r.get("governance_verdict", "UNKNOWN"),
         )
         dimensional_scores["entropy"] = r.get("governance_verdict", "UNKNOWN")
         verdicts.append(r.get("governance_verdict", "UNKNOWN"))
@@ -9145,7 +9208,9 @@ def wealth_synthesize(
                 scale_mode=scale_mode,
             )
             results["time"] = _tag_dimension(
-                "time", r.get("primary_metrics", {}), r.get("governance_verdict", "UNKNOWN")
+                "time",
+                r.get("primary_metrics", {}),
+                r.get("governance_verdict", "UNKNOWN"),
             )
             dimensional_scores["time"] = r.get("governance_verdict", "UNKNOWN")
             verdicts.append(r.get("governance_verdict", "UNKNOWN"))
@@ -9167,7 +9232,9 @@ def wealth_synthesize(
             )
         )
         results["signal"] = _tag_dimension(
-            "signal", r.get("primary_metrics", {}), r.get("governance_verdict", "UNKNOWN")
+            "signal",
+            r.get("primary_metrics", {}),
+            r.get("governance_verdict", "UNKNOWN"),
         )
         dimensional_scores["signal"] = r.get("governance_verdict", "UNKNOWN")
         verdicts.append(r.get("governance_verdict", "UNKNOWN"))
@@ -9190,7 +9257,9 @@ def wealth_synthesize(
             maruah_score=computed_maruah,
         )
         results["boundary"] = _tag_dimension(
-            "boundary", r.get("primary_metrics", {}), r.get("governance_verdict", "UNKNOWN")
+            "boundary",
+            r.get("primary_metrics", {}),
+            r.get("governance_verdict", "UNKNOWN"),
         )
         dimensional_scores["boundary"] = r.get("governance_verdict", "UNKNOWN")
         verdicts.append(r.get("governance_verdict", "UNKNOWN"))
@@ -9216,7 +9285,9 @@ def wealth_synthesize(
                 scale_mode=scale_mode,
             )
             results["game"] = _tag_dimension(
-                "game", r.get("primary_metrics", {}), r.get("governance_verdict", "UNKNOWN")
+                "game",
+                r.get("primary_metrics", {}),
+                r.get("governance_verdict", "UNKNOWN"),
             )
             dimensional_scores["game"] = r.get("governance_verdict", "UNKNOWN")
             verdicts.append(r.get("governance_verdict", "UNKNOWN"))
