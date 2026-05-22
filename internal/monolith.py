@@ -6417,6 +6417,39 @@ def wealth_ledger_snapshot(
 
 
 # ============================================================
+# ORGAN_GOVERNANCE: arifOS F1-F13 Wrapper
+# Patch mcp.call_tool to intercept all tool execution.
+# ============================================================
+
+try:
+    from organ_governance import check_governance as _check_governance
+
+    _original_call_tool = mcp.call_tool
+
+    async def _governance_call_tool(name, arguments=None, **kwargs):
+        """Wrap mcp.call_tool with arifOS governance pre-check."""
+        if arguments is None:
+            arguments = {}
+        verdict, error = _check_governance(name, arguments)
+        if error is not None:
+            return {
+                "tool": name,
+                "governance_status": verdict,
+                "error_code": "ORGAN_GOVERNANCE_BLOCKED",
+                "message": f"arifOS {verdict}: governance check blocked execution",
+                "guard": "ORGAN_GOVERNANCE",
+                "floor": "F1-F13",
+            }
+        return await _original_call_tool(name, arguments, **kwargs)
+
+    mcp.call_tool = _governance_call_tool
+    print("[GOVERNANCE] WEALTH governance wrapper active — arifOS F1-F13")
+
+except Exception as e:
+    print(f"[GOVERNANCE] WEALTH governance wrapper failed to load: {e}")
+
+
+# ============================================================
 # V3 Prompts (Reasoning Workflows)
 # ============================================================
 
