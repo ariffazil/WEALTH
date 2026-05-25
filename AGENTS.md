@@ -40,7 +40,7 @@ cd /root/WEALTH
 
 # Python side
 pip install -e .
-python internal/monolith.py   # Start canonical FastMCP server (port 8082)
+python internal/monolith.py   # Start canonical FastMCP server (default port 8082; live VPS: 18082)
 pytest tests/ -q              # Python tests
 
 # Node.js side (legacy JS kernel)

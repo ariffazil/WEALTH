@@ -30,7 +30,7 @@
 | Runtime surface count | `14` |
 | Hidden legacy aliases | `68` |
 | Final authority | `ARIF` |
-| Caddy upstream | `127.0.0.1:8082` |
+| Caddy upstream | `127.0.0.1:18082` |
 
 ## Canonical Public Tool Surface
 **Diagnostics (2)**

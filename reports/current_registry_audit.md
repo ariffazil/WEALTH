@@ -1,7 +1,7 @@
 # WEALTH MCP — Registry Audit Report
 **Date:** 2026-05-07
 **Auditor:** OPENCLAW
-**Source:** HTTP endpoint (localhost:8082/mcp) — ground truth for running process
+**Source:** HTTP endpoint (localhost:18082/mcp) — ground truth for running process
 **Secondary:** Python import analysis (discrepancy noted)
 **REPO=WEALTH**
 

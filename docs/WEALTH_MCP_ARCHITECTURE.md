@@ -382,9 +382,9 @@ Resources are registered alongside existing `@mcp.resource()` decorators (alread
 
 1. Copy updated `monolith.py` to container
 2. Restart `wealth-organ`
-3. `curl http://127.0.0.1:8082/mcp` → `tools/list` should show ~32 tools
-4. `curl http://127.0.0.1:8082/mcp` → `prompts/list` should show ~8 prompts
-5. `curl http://127.0.0.1:8082/mcp` → `resources/list` should show ~20 resources
+3. `curl http://127.0.0.1:18082/mcp` → `tools/list` should show ~32 tools
+4. `curl http://127.0.0.1:18082/mcp` → `prompts/list` should show ~8 prompts
+5. `curl http://127.0.0.1:18082/mcp` → `resources/list` should show ~20 resources
 6. Run `openclaw doctor --non-interactive` → WEALTH handshake should still pass
 7. Git commit with message: `WEALTH MCP: physics-inspired naming + tools/prompts/resources restructure`
 
