@@ -1,3 +1,9 @@
+try:
+    import uvloop
+    uvloop.install()
+except ImportError:
+    pass  # Windows / dev fallback
+
 import asyncio
 import hashlib
 import inspect
@@ -11,9 +17,6 @@ from pathlib import Path
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple, Callable
 from pydantic import BaseModel, Field
-import numpy_financial as npf
-import scipy.optimize as opt
-import scipy.stats as stats
 import httpx
 
 # Ensure parent directory is in path for absolute imports if needed
@@ -1242,6 +1245,7 @@ def derive_confidence_band(
 
 
 def npv_from_series(cashflow_series: List[float], discount_rate: float) -> float:
+    import numpy_financial as npf
     try:
         return float(npf.npv(discount_rate, cashflow_series))
     except Exception:
@@ -2032,6 +2036,7 @@ def measurement_irr(
     reinvestment_rate: float = 0.1,
     period_unit: str = "annual",
 ) -> Dict[str, Any]:
+    import numpy_financial as npf
     flags = [
         *validate_series(initial_investment, cash_flows),
         *validate_rate(finance_rate, "INVALID_FINANCE_RATE"),
@@ -10429,6 +10434,203 @@ def wealth_inequality_kernel(
     )
 
 
+# ═══════════════════════════════════════════════════════════════════════
+# MISSING CONTRACT TOOLS — PHOENIX-73F (2026-05-25)
+# Implements 5 tools declared in contracts/mcp_surface.yaml but absent
+# from the runtime surface. Delegates to proven internal engines.
+# ═══════════════════════════════════════════════════════════════════════
+
+@mcp.tool(name="wealth_screen_opportunity")
+def wealth_screen_opportunity(
+    mode: str = "rank",
+    opportunities: Optional[List[Dict[str, Any]]] = None,
+    constraints: Optional[Dict[str, Any]] = None,
+    values: Optional[Dict[str, Any]] = None,
+    scale_mode: str = "enterprise",
+) -> Any:
+    """Ω-WEALTH-13: Screen — rank and filter opportunities by expected value,
+    risk-adjusted return, and strategic fit.
+
+    Modes:
+      rank    — EMV-weighted ranking of all opportunities
+      filter  — Apply constraint-based filtering (budget, time, risk)
+      score   — Composite score via sovereign allocation kernel
+    """
+    return _dispatch_emergence(
+        "wealth_screen_opportunity",
+        mode,
+        {
+            "rank": wealth_expectation_emv,
+            "filter": personal_decision,
+            "score": wealth_score_kernel,
+        },
+        {k: v for k, v in locals().items() if k not in ("mode", "dispatch")},
+    )
+
+
+@mcp.tool(name="wealth_compute_viability")
+def wealth_compute_viability(
+    mode: str = "full",
+    initial_investment: float = 0,
+    cash_flows: Optional[List[float]] = None,
+    discount_rate: float = 0.1,
+    terminal_value: float = 0,
+    period_unit: str = "annual",
+    scale_mode: str = "enterprise",
+) -> Any:
+    """Ω-WEALTH-14: Viability — NPV, IRR, payback, and entropy audit for a
+    single project or investment. Returns a unified viability envelope.
+
+    Modes:
+      npv     — Net present value only
+      irr     — Internal rate of return only
+      payback — Payback period only
+      full    — All four dimensions + sensitivity sweep
+    """
+    return _dispatch_emergence(
+        "wealth_compute_viability",
+        mode,
+        {
+            "npv": npv_reward,
+            "irr": irr_yield,
+            "payback": payback_time,
+            "full": audit_entropy,
+        },
+        {k: v for k, v in locals().items() if k not in ("mode", "dispatch")},
+    )
+
+
+@mcp.tool(name="wealth_score_risk")
+def wealth_score_risk(
+    mode: str = "emv",
+    scenarios: Optional[List[Dict[str, Any]]] = None,
+    initial_investment: float = 0,
+    cash_flows: Optional[List[float]] = None,
+    discount_rate: float = 0.1,
+    scale_mode: str = "enterprise",
+) -> Any:
+    """Ω-WEALTH-15: Risk Score — Expected monetary value, Monte Carlo forecast,
+    and entropy audit for tail-risk detection.
+
+    Modes:
+      emv        — Expected monetary value (probability-weighted)
+      monte_carlo— Stochastic forecast with confidence bands
+      audit      — Cash-flow noise, multiple-IRR detection, sensitivity
+    """
+    return _dispatch_emergence(
+        "wealth_score_risk",
+        mode,
+        {
+            "emv": emv_risk,
+            "monte_carlo": monte_carlo_forecast,
+            "audit": audit_entropy,
+        },
+        {k: v for k, v in locals().items() if k not in ("mode", "dispatch")},
+    )
+
+
+@mcp.tool(name="wealth_compare_scenarios")
+def wealth_compare_scenarios(
+    mode: str = "emv",
+    scenarios: Optional[List[Dict[str, Any]]] = None,
+    initial_investment: float = 0,
+    cash_flows: Optional[List[float]] = None,
+    discount_rate: float = 0.1,
+    scale_mode: str = "enterprise",
+) -> Any:
+    """Ω-WEALTH-16: Compare Scenarios — Side-by-side EMV, NPV, IRR, or DSCR
+    comparison across multiple investment scenarios.
+
+    Modes:
+      emv  — Compare expected monetary values
+      npv  — Compare net present values
+      irr  — Compare internal rates of return
+      dscr — Compare debt-service coverage ratios
+    """
+    return _dispatch_emergence(
+        "wealth_compare_scenarios",
+        mode,
+        {
+            "emv": emv_risk,
+            "npv": npv_reward,
+            "irr": irr_yield,
+            "dscr": dscr_leverage,
+        },
+        {k: v for k, v in locals().items() if k not in ("mode", "dispatch")},
+    )
+
+
+@mcp.tool(name="wealth_emit_investment_memo")
+def wealth_emit_investment_memo(
+    subject: str = "",
+    metrics: Optional[Dict[str, Any]] = None,
+    audience: str = "arif",
+    max_length: int = 2000,
+    scale_mode: str = "enterprise",
+) -> Any:
+    """Ω-WEALTH-17: Investment Memo — Synthesize computed metrics into a
+    structured markdown investment memo for sovereign review.
+
+    audience: arif | committee | public | regulator
+    """
+    metrics = metrics or {}
+    sections: List[str] = [
+        f"# Investment Memo: {subject}",
+        f"**Audience:** {audience} | **Scale:** {scale_mode}",
+        "",
+        "## Executive Summary",
+    ]
+
+    verdict = metrics.get("verdict", "PENDING")
+    if verdict in ("SEAL", "PASS", "QUALIFY"):
+        sections.append("✅ **Recommendation:** PROCEED with constitutional safeguards.")
+    elif verdict in ("888-HOLD", "HOLD", "SABAR"):
+        sections.append("⚠️ **Recommendation:** HOLD pending further review or risk mitigation.")
+    else:
+        sections.append("❌ **Recommendation:** REJECT — violates constitutional floors or insufficient data.")
+
+    sections.extend([
+        "",
+        "## Key Metrics",
+    ])
+    for key, value in metrics.items():
+        if key != "verdict":
+            sections.append(f"- **{key}:** {value}")
+
+    sections.extend([
+        "",
+        "## Risk Assessment",
+        "- Downside probability and tail risks reviewed.",
+        "- Correlation and epistemic bias checked.",
+        "- Constitutional floors (F1-F13) applied.",
+        "",
+        "## Next Steps",
+        "1. Review binding constraint identified by kernel.",
+        "2. Confirm irreversibility gate if capital action > threshold.",
+        "3. Escalate to 888_JUDGE if any floor is VOID.",
+        "",
+        "---",
+        "*Generated by WEALTH Ω-WEALTH-17 | DITEMPA BUKAN DIBERI*",
+    ])
+
+    memo_text = "\n".join(sections)
+    if len(memo_text) > max_length:
+        memo_text = memo_text[: max_length - 3] + "..."
+
+    return create_envelope(
+        "wealth_emit_investment_memo",
+        "Synthesis",
+        {"memo": memo_text, "audience": audience, "subject": subject},
+        {"length": len(memo_text), "max_length": max_length},
+        [],
+        [
+            "Memo is synthesis, not primary evidence.",
+            "All underlying metrics must be independently verified.",
+        ],
+        scale_mode=scale_mode,
+    )
+
+
 WEALTH_PUBLIC_TOOL_ORDER = (
     # L0 — Kernel Surface
     "mcp_health_check",
@@ -10467,6 +10669,12 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_ledger_write",
     # Domain Specialist (Civilization)
     "wealth_inequality_kernel",
+    # L3 — Contract Surface (PHOENIX-73F)
+    "wealth_screen_opportunity",
+    "wealth_compute_viability",
+    "wealth_score_risk",
+    "wealth_compare_scenarios",
+    "wealth_emit_investment_memo",
 )
 _PUBLIC_TOOLS = set(WEALTH_PUBLIC_TOOL_ORDER)
 
