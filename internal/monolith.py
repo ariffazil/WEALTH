@@ -6477,7 +6477,7 @@ def wealth_ledger_snapshot(
 # ============================================================
 
 try:
-    from organ_governance import check_governance as _check_governance
+    from .organ_governance import check_governance as _check_governance
 
     _original_call_tool = mcp.call_tool
 
