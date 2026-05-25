@@ -28,6 +28,10 @@ build/
 
 # Environment files
 .env
+
+# Backup files (any pattern)
+*.bak*
+*.backup*
 .env.local
 
 # Backup files
