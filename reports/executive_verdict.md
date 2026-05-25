@@ -23,7 +23,7 @@
 | `/resources` (federation) | 404 | Returns 28 resources |
 | `initialize` capabilities | `tools` only | `tools` + `prompts` + `resources` |
 
-✅ **Docker container updated and restarted.** Running at `wealth://localhost:8082`.
+✅ **Docker container updated and restarted.** Running at `wealth://localhost:18082` (live VPS; Docker internal: 8082).
 
 ✅ **Phase 1 complete:** All MCP primitives now accessible via HTTP.
 

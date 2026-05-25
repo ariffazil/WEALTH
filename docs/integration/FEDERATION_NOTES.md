@@ -17,10 +17,10 @@
 
 ```bash
 # This fails (405 Method Not Allowed):
-curl -X POST http://localhost:8082/mcp -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
+curl -X POST http://localhost:18082/mcp -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
 
 # This also fails (406 Not Acceptable):
-curl -H "Accept: application/json" http://localhost:8082/mcp
+curl -H "Accept: application/json" http://localhost:18082/mcp
 ```
 
 **Why it matters:** arifOS has no SSE client implementation. Federation calls from arifOS to WEALTH fail silently or return error.

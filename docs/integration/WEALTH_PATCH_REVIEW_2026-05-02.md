@@ -125,6 +125,6 @@ CLAIM: `/root/WEALTH` is on `feat/wealth-mcp-session`; no WEALTH source patch wa
 
 ## Notes
 
-The diagnostic targets `http://127.0.0.1:8082` from the host. Production bridge code still uses Docker DNS `wealth-organ:8082` when running inside the arifOS container/network.
+The diagnostic targets `http://127.0.0.1:18082` from the host (live VPS). Production bridge code still uses Docker DNS `wealth-organ:8082` when running inside the arifOS container/network.
 
 DITEMPA BUKAN DIBERI — 999 SEAL ALIVE

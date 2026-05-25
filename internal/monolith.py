@@ -8595,7 +8595,8 @@ def wealth_boundary_governance(
             }
 
         live_names = ["arifOS", "WELL", "WEALTH", "GEOX"]
-        port_map = {"arifOS": 8080, "WELL": 8083, "WEALTH": 8082, "GEOX": 8081}
+        # Live VPS ports: arifOS 8088, GEOX 18081, WEALTH 18082, WELL 8083 (dead)
+        port_map = {"arifOS": 8088, "WELL": 8083, "WEALTH": 18082, "GEOX": 18081}
 
         # ── 1. Server liveness ─────────────────────────────────────────────
         live_results = {}
