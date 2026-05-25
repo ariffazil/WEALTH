@@ -2,7 +2,14 @@ schema_version: 1
 kind: arifos.mcp_surface
 owner_repo: WEALTH
 status: contract
-last_verified: "2026-05-19"
+last_verified: "2026-05-25"
+implementation_status:
+  wealth_screen_opportunity: implemented
+  wealth_compute_viability: implemented
+  wealth_score_risk: implemented
+  wealth_compare_scenarios: implemented
+  wealth_emit_investment_memo: implemented
+  wealth_boundary_governance: implemented
 runtime_surface:
   primary_transport: streamable_http
   primary_port: 8082
