@@ -14,6 +14,11 @@ epistemic_status: CLAIM
 [![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?style=flat-square)](https://www.python.org/)
 [![arifOS](https://img.shields.io/badge/arifOS-F1%E2%80%93F13_Governed-FF6B00?style=flat-square)](https://github.com/ariffazil/arifos)
 
+> ⚠️ **CANONICAL AUTHORITY NOTICE:**
+> WEALTH is the **capital intelligence organ**, not a constitutional authority.
+> The sovereign constitution and F1-F13 floors live in `ariffazil/arifOS`.
+> For live federation status, see `ariffazil/arifOS/FEDERATION_STATUS.md`.
+
 > **In one sentence:** WEALTH is the financial brain of the federation — when any agent or decision needs a capital computation (NPV, cash flow, risk, game theory, civilizational boundary), WEALTH is the governed engine that runs it.
 
 **Status:** OPERATIONAL | **Organ:** CAPITAL (Ω-WEALTH)
