@@ -19,7 +19,9 @@ epistemic_status: CLAIM
 **Status:** OPERATIONAL | **Organ:** CAPITAL (Ω-WEALTH)
 **Domain:** `wealth.arif-fazil.com`
 **MCP endpoint:** `https://wealth.arif-fazil.com/mcp`
-**Port:** 8082
+**Port:** 18082 (organ-standard; aligns with GEOX 18081)
+**Governance wrapper:** ACTIVE ✅ (`[GOVERNANCE] WEALTH governance wrapper active — arifOS F1-F13`)
+**systemd service:** `wealth-organ.service` (enabled, running)
 
 ---
 
