@@ -1,5 +1,6 @@
 try:
     import uvloop
+
     uvloop.install()
 except ImportError:
     pass  # Windows / dev fallback
@@ -1246,6 +1247,7 @@ def derive_confidence_band(
 
 def npv_from_series(cashflow_series: List[float], discount_rate: float) -> float:
     import numpy_financial as npf
+
     try:
         return float(npf.npv(discount_rate, cashflow_series))
     except Exception:
@@ -2037,6 +2039,7 @@ def measurement_irr(
     period_unit: str = "annual",
 ) -> Dict[str, Any]:
     import numpy_financial as npf
+
     flags = [
         *validate_series(initial_investment, cash_flows),
         *validate_rate(finance_rate, "INVALID_FINANCE_RATE"),
@@ -7194,93 +7197,183 @@ def get_sources_adapter_status() -> str:
 # Exposes WEALTH's reflect-only identity, ethics policy, schemas, prompts
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 @mcp.resource("wealth://manifest")
 def get_wealth_manifest() -> str:
     """WEALTH organ manifest — identity, role, authority."""
     from internal.engines.canonical_tools import WEALTH_SYSTEM_PROMPT
-    return json.dumps({
-        "organ": "WEALTH",
-        "role": "Value / Survival / Stewardship / Exchange Organ",
-        "authority": "REFLECT_ONLY",
-        "execution_authorized": False,
-        "final_authority": "Arif",
-        "mutation_guard": "locked",
-        "description": "WEALTH reflects value. WEALTH does not move value. arifOS judges consequence. Arif authorizes action.",
-        "system_prompt": WEALTH_SYSTEM_PROMPT,
-        "version": "2026.05.26",
-    }, indent=2)
+
+    return json.dumps(
+        {
+            "organ": "WEALTH",
+            "role": "Value / Survival / Stewardship / Exchange Organ",
+            "authority": "REFLECT_ONLY",
+            "execution_authorized": False,
+            "final_authority": "Arif",
+            "mutation_guard": "locked",
+            "description": "WEALTH reflects value. WEALTH does not move value. arifOS judges consequence. Arif authorizes action.",
+            "system_prompt": WEALTH_SYSTEM_PROMPT,
+            "version": "2026.05.26",
+        },
+        indent=2,
+    )
 
 
 @mcp.resource("wealth://tool_surface")
 def get_wealth_tool_surface() -> str:
     """Current canonical tool surface — 16 tools."""
-    return json.dumps({
-        "canonical_tools": [
-            {"name": "wealth_system_status", "description": "System health / registry / aliases", "class": "W0"},
-            {"name": "wealth_capital_evaluate", "description": "NPV / IRR / PI / payback / productivity / discount", "class": "W2"},
-            {"name": "wealth_uncertainty_evaluate", "description": "EMV / Monte Carlo / risk distribution", "class": "W3"},
-            {"name": "wealth_information_value", "description": "EVOI / signal quality / wait_or_act", "class": "W3"},
-            {"name": "wealth_financial_position", "description": "Cashflow / runway / DSCR / networth / liquidity", "class": "W2"},
-            {"name": "wealth_market_analyze", "description": "Price gradient / macro field", "class": "W2"},
-            {"name": "wealth_power_map", "description": "Game theory / coordination / negotiation", "class": "W3"},
-            {"name": "wealth_governance_risk", "description": "Verdict / boundary / entropy / conservation", "class": "W4"},
-            {"name": "wealth_ledger", "description": "Query / write / hysteresis / reconcile / trace", "class": "W1-W4"},
-            {"name": "wealth_preference_rank", "description": "Criteria ranking", "class": "W2"},
-            {"name": "wealth_inequality_kernel", "description": "Distribution / fairness / concentration", "class": "W3"},
-            {"name": "wealth_kernel_route", "description": "Route by risk class W0-W5", "class": "W0"},
-            {"name": "wealth_synthesize", "description": "Final integration verdict", "class": "W3"},
-            {"name": "wealth_666_heart", "description": "Dignity / greed / exploitation / void-power", "class": "W3"},
-            {"name": "wealth_assess_solvency", "description": "Runway / liquidity / fragility / solvency", "class": "W3"},
-            {"name": "wealth_compute_value_flux", "description": "Value flux / entropy / compounding signal", "class": "W3"},
-        ],
-        "total_canonical": 16,
-        "decision_classes": ["W0", "W1", "W2", "W3", "W4", "W5"],
-    }, indent=2)
+    return json.dumps(
+        {
+            "canonical_tools": [
+                {
+                    "name": "wealth_system_status",
+                    "description": "System health / registry / aliases",
+                    "class": "W0",
+                },
+                {
+                    "name": "wealth_capital_evaluate",
+                    "description": "NPV / IRR / PI / payback / productivity / discount",
+                    "class": "W2",
+                },
+                {
+                    "name": "wealth_uncertainty_evaluate",
+                    "description": "EMV / Monte Carlo / risk distribution",
+                    "class": "W3",
+                },
+                {
+                    "name": "wealth_information_value",
+                    "description": "EVOI / signal quality / wait_or_act",
+                    "class": "W3",
+                },
+                {
+                    "name": "wealth_financial_position",
+                    "description": "Cashflow / runway / DSCR / networth / liquidity",
+                    "class": "W2",
+                },
+                {
+                    "name": "wealth_market_analyze",
+                    "description": "Price gradient / macro field",
+                    "class": "W2",
+                },
+                {
+                    "name": "wealth_power_map",
+                    "description": "Game theory / coordination / negotiation",
+                    "class": "W3",
+                },
+                {
+                    "name": "wealth_governance_risk",
+                    "description": "Verdict / boundary / entropy / conservation",
+                    "class": "W4",
+                },
+                {
+                    "name": "wealth_ledger",
+                    "description": "Query / write / hysteresis / reconcile / trace",
+                    "class": "W1-W4",
+                },
+                {
+                    "name": "wealth_preference_rank",
+                    "description": "Criteria ranking",
+                    "class": "W2",
+                },
+                {
+                    "name": "wealth_inequality_kernel",
+                    "description": "Distribution / fairness / concentration",
+                    "class": "W3",
+                },
+                {
+                    "name": "wealth_kernel_route",
+                    "description": "Route by risk class W0-W5",
+                    "class": "W0",
+                },
+                {
+                    "name": "wealth_synthesize",
+                    "description": "Final integration verdict",
+                    "class": "W3",
+                },
+                {
+                    "name": "wealth_666_heart",
+                    "description": "Dignity / greed / exploitation / void-power",
+                    "class": "W3",
+                },
+                {
+                    "name": "wealth_assess_solvency",
+                    "description": "Runway / liquidity / fragility / solvency",
+                    "class": "W3",
+                },
+                {
+                    "name": "wealth_compute_value_flux",
+                    "description": "Value flux / entropy / compounding signal",
+                    "class": "W3",
+                },
+            ],
+            "total_canonical": 16,
+            "decision_classes": ["W0", "W1", "W2", "W3", "W4", "W5"],
+        },
+        indent=2,
+    )
 
 
 @mcp.resource("wealth://policy/no_execution_without_arifos")
 def get_wealth_no_execution_policy() -> str:
     """REFLECT_ONLY policy — WEALTH does not execute without Arif + arifOS approval."""
-    return json.dumps({
-        "title": "WEALTH REFLECT_ONLY Policy",
-        "authority": "REFLECT_ONLY",
-        "execution_authorized": False,
-        "final_authority": "Arif",
-        "rule": "WEALTH reflects value. WEALTH does not move value. arifOS judges consequence. Arif authorizes action.",
-        "haram": [
-            "Silent ledger writes",
-            "Execution without arifOS judge",
-            "Guaranteed return claims",
-            "Exploitation of vulnerable parties",
-            "Riba (usury) without halal check",
-        ],
-        "w5_requires": ["Arif explicit approval", "arifOS 888_JUDGE verdict"],
-        "version": "2026.05.26",
-    }, indent=2)
+    return json.dumps(
+        {
+            "title": "WEALTH REFLECT_ONLY Policy",
+            "authority": "REFLECT_ONLY",
+            "execution_authorized": False,
+            "final_authority": "Arif",
+            "rule": "WEALTH reflects value. WEALTH does not move value. arifOS judges consequence. Arif authorizes action.",
+            "haram": [
+                "Silent ledger writes",
+                "Execution without arifOS judge",
+                "Guaranteed return claims",
+                "Exploitation of vulnerable parties",
+                "Riba (usury) without halal check",
+            ],
+            "w5_requires": ["Arif explicit approval", "arifOS 888_JUDGE verdict"],
+            "version": "2026.05.26",
+        },
+        indent=2,
+    )
 
 
 @mcp.resource("wealth://state/current")
 def get_wealth_state_schema() -> str:
     """WEALTH state schema — cash, income, expenses, assets, liabilities, runway."""
-    return json.dumps({
-        "identity": "WEALTH",
-        "authority": "REFLECT_ONLY",
-        "cash": {"verified": None, "estimated": None, "last_verified_at": None},
-        "income": {"recurring_monthly": None, "variable_monthly": None, "receivables": []},
-        "expenses": {"fixed_monthly": None, "variable_monthly": None, "subscriptions": []},
-        "assets": [],
-        "liabilities": [],
-        "runway": {"conservative_months": None, "base_months": None, "optimistic_months": None},
-        "risk": {
-            "liquidity_risk": "UNKNOWN",
-            "debt_risk": "UNKNOWN",
-            "concentration_risk": "UNKNOWN",
-            "reputation_risk": "UNKNOWN",
-            "legal_tax_risk": "UNKNOWN",
+    return json.dumps(
+        {
+            "identity": "WEALTH",
+            "authority": "REFLECT_ONLY",
+            "cash": {"verified": None, "estimated": None, "last_verified_at": None},
+            "income": {
+                "recurring_monthly": None,
+                "variable_monthly": None,
+                "receivables": [],
+            },
+            "expenses": {
+                "fixed_monthly": None,
+                "variable_monthly": None,
+                "subscriptions": [],
+            },
+            "assets": [],
+            "liabilities": [],
+            "runway": {
+                "conservative_months": None,
+                "base_months": None,
+                "optimistic_months": None,
+            },
+            "risk": {
+                "liquidity_risk": "UNKNOWN",
+                "debt_risk": "UNKNOWN",
+                "concentration_risk": "UNKNOWN",
+                "reputation_risk": "UNKNOWN",
+                "legal_tax_risk": "UNKNOWN",
+            },
+            "truth_status": "UNVERIFIED",
+            "last_updated": None,
         },
-        "truth_status": "UNVERIFIED",
-        "last_updated": None,
-    }, indent=2)
+        indent=2,
+    )
 
 
 @mcp.resource("wealth://ledger/assumptions")
@@ -7289,67 +7382,106 @@ def get_wealth_assumptions_ledger() -> str:
 
     Wealth systems die when assumptions pretend to be facts.
     """
-    return json.dumps({
-        "description": "Assumptions ledger — distinguishing fact from estimate from forecast from wish",
-        "schema": {
-            "entry_type": "assumption | estimate | forecast | wish | commitment",
-            "required_fields": ["text", "category", "entered_at", "verified_by", "truth_status"],
-            "distinction": {
-                "fact": "verified by evidence, corroborated",
-                "assumption": "unverified, stated explicitly",
-                "estimate": "approximation, stated range",
-                "forecast": "forward projection, stated confidence",
-                "wish": "desired outcome, not evidence-backed",
-                "commitment": "binding obligation, irreversible",
+    return json.dumps(
+        {
+            "description": "Assumptions ledger — distinguishing fact from estimate from forecast from wish",
+            "schema": {
+                "entry_type": "assumption | estimate | forecast | wish | commitment",
+                "required_fields": [
+                    "text",
+                    "category",
+                    "entered_at",
+                    "verified_by",
+                    "truth_status",
+                ],
+                "distinction": {
+                    "fact": "verified by evidence, corroborated",
+                    "assumption": "unverified, stated explicitly",
+                    "estimate": "approximation, stated range",
+                    "forecast": "forward projection, stated confidence",
+                    "wish": "desired outcome, not evidence-backed",
+                    "commitment": "binding obligation, irreversible",
+                },
             },
+            "note": "Use wealth_ledger(mode='write') to add entries with explicit actor + reason + source",
         },
-        "note": "Use wealth_ledger(mode='write') to add entries with explicit actor + reason + source",
-    }, indent=2)
+        indent=2,
+    )
 
 
 @mcp.resource("wealth://policy/ethics_and_dignity")
 def get_wealth_ethics_policy() -> str:
     """Ethics and dignity policy for WEALTH."""
-    return json.dumps({
-        "title": "WEALTH Ethics and Dignity Policy",
-        "core_question": "Does this reduce a human to money?",
-        "void_power_question": "Strip ego, urgency, status, fantasy. What remains?",
-        "dignity_checks": [
-            "Does this exploit someone?",
-            "Does this reduce a human to money?",
-            "Does this create dependence?",
-            "Does this violate trust?",
-            "Does this trade dignity for gain?",
-            "Does this increase Arif's freedom or enslave him?",
-        ],
-        "greed_signals": [
-            "Guaranteed return / risk-free language",
-            "Urgency / FOMO / limited time pressure",
-            "Status display / impress others",
-            "Revenge or war motivation",
-            "Adrenaline seeking / gambling language",
-        ],
-        "hidden_eureka": "Wealth is not accumulation. Wealth is stored optionality under ethical control.",
-        "void_eureka": "Real wealth is what remains when noise, ego, market panic, false status, and urgency are removed.",
-        "version": "2026.05.26",
-    }, indent=2)
+    return json.dumps(
+        {
+            "title": "WEALTH Ethics and Dignity Policy",
+            "core_question": "Does this reduce a human to money?",
+            "void_power_question": "Strip ego, urgency, status, fantasy. What remains?",
+            "dignity_checks": [
+                "Does this exploit someone?",
+                "Does this reduce a human to money?",
+                "Does this create dependence?",
+                "Does this violate trust?",
+                "Does this trade dignity for gain?",
+                "Does this increase Arif's freedom or enslave him?",
+            ],
+            "greed_signals": [
+                "Guaranteed return / risk-free language",
+                "Urgency / FOMO / limited time pressure",
+                "Status display / impress others",
+                "Revenge or war motivation",
+                "Adrenaline seeking / gambling language",
+            ],
+            "hidden_eureka": "Wealth is not accumulation. Wealth is stored optionality under ethical control.",
+            "void_eureka": "Real wealth is what remains when noise, ego, market panic, false status, and urgency are removed.",
+            "version": "2026.05.26",
+        },
+        indent=2,
+    )
 
 
 @mcp.resource("wealth://policy/risk_classes")
 def get_wealth_risk_classes() -> str:
     """W0-W5 decision class definitions."""
-    return json.dumps({
-        "title": "WEALTH Decision Classes W0-W5",
-        "classes": {
-            "W0": {"description": "Observe only", "action": "none", "authority": "WEALTH"},
-            "W1": {"description": "Categorize / summarize", "action": "classify", "authority": "WEALTH"},
-            "W2": {"description": "Budget / forecast / compare", "action": "model", "authority": "WEALTH"},
-            "W3": {"description": "Advisory with uncertainty", "action": "advise", "authority": "WEALTH + disclaimers"},
-            "W4": {"description": "Contractual / tax / debt / investment advisory", "action": "recommend", "authority": "WEALTH + arifOS + disclaimers"},
-            "W5": {"description": "Transfer money / execute trade / sign contract / irreversible", "action": "execute", "authority": "HOLD — Arif + arifOS required"},
+    return json.dumps(
+        {
+            "title": "WEALTH Decision Classes W0-W5",
+            "classes": {
+                "W0": {
+                    "description": "Observe only",
+                    "action": "none",
+                    "authority": "WEALTH",
+                },
+                "W1": {
+                    "description": "Categorize / summarize",
+                    "action": "classify",
+                    "authority": "WEALTH",
+                },
+                "W2": {
+                    "description": "Budget / forecast / compare",
+                    "action": "model",
+                    "authority": "WEALTH",
+                },
+                "W3": {
+                    "description": "Advisory with uncertainty",
+                    "action": "advise",
+                    "authority": "WEALTH + disclaimers",
+                },
+                "W4": {
+                    "description": "Contractual / tax / debt / investment advisory",
+                    "action": "recommend",
+                    "authority": "WEALTH + arifOS + disclaimers",
+                },
+                "W5": {
+                    "description": "Transfer money / execute trade / sign contract / irreversible",
+                    "action": "execute",
+                    "authority": "HOLD — Arif + arifOS required",
+                },
+            },
+            "rule": "W0-W2: allowed as reflection. W3: advisory with uncertainty. W4: requires evidence + disclaimers + judge. W5: HOLD unless explicit Arif approval + arifOS judge.",
         },
-        "rule": "W0-W2: allowed as reflection. W3: advisory with uncertainty. W4: requires evidence + disclaimers + judge. W5: HOLD unless explicit Arif approval + arifOS judge.",
-    }, indent=2)
+        indent=2,
+    )
 
 
 @mcp.resource("wealth://prompts/daily_brief")
@@ -10665,6 +10797,7 @@ def wealth_inequality_kernel(
 # from the runtime surface. Delegates to proven internal engines.
 # ═══════════════════════════════════════════════════════════════════════
 
+
 @mcp.tool(name="wealth_screen_opportunity")
 def wealth_screen_opportunity(
     mode: str = "rank",
@@ -10808,35 +10941,45 @@ def wealth_emit_investment_memo(
 
     verdict = metrics.get("verdict", "PENDING")
     if verdict in ("SEAL", "PASS", "QUALIFY"):
-        sections.append("✅ **Recommendation:** PROCEED with constitutional safeguards.")
+        sections.append(
+            "✅ **Recommendation:** PROCEED with constitutional safeguards."
+        )
     elif verdict in ("888-HOLD", "HOLD", "SABAR"):
-        sections.append("⚠️ **Recommendation:** HOLD pending further review or risk mitigation.")
+        sections.append(
+            "⚠️ **Recommendation:** HOLD pending further review or risk mitigation."
+        )
     else:
-        sections.append("❌ **Recommendation:** REJECT — violates constitutional floors or insufficient data.")
+        sections.append(
+            "❌ **Recommendation:** REJECT — violates constitutional floors or insufficient data."
+        )
 
-    sections.extend([
-        "",
-        "## Key Metrics",
-    ])
+    sections.extend(
+        [
+            "",
+            "## Key Metrics",
+        ]
+    )
     for key, value in metrics.items():
         if key != "verdict":
             sections.append(f"- **{key}:** {value}")
 
-    sections.extend([
-        "",
-        "## Risk Assessment",
-        "- Downside probability and tail risks reviewed.",
-        "- Correlation and epistemic bias checked.",
-        "- Constitutional floors (F1-F13) applied.",
-        "",
-        "## Next Steps",
-        "1. Review binding constraint identified by kernel.",
-        "2. Confirm irreversibility gate if capital action > threshold.",
-        "3. Escalate to 888_JUDGE if any floor is VOID.",
-        "",
-        "---",
-        "*Generated by WEALTH Ω-WEALTH-17 | DITEMPA BUKAN DIBERI*",
-    ])
+    sections.extend(
+        [
+            "",
+            "## Risk Assessment",
+            "- Downside probability and tail risks reviewed.",
+            "- Correlation and epistemic bias checked.",
+            "- Constitutional floors (F1-F13) applied.",
+            "",
+            "## Next Steps",
+            "1. Review binding constraint identified by kernel.",
+            "2. Confirm irreversibility gate if capital action > threshold.",
+            "3. Escalate to 888_JUDGE if any floor is VOID.",
+            "",
+            "---",
+            "*Generated by WEALTH Ω-WEALTH-17 | DITEMPA BUKAN DIBERI*",
+        ]
+    )
 
     memo_text = "\n".join(sections)
     if len(memo_text) > max_length:
@@ -11657,17 +11800,51 @@ if __name__ == "__main__":
         lifespan=getattr(mcp_app, "lifespan", None),
     )
 
-    # ── Startup Registry Assertion (fail closed) ────────────
+    # ── Startup Registry Assertion (deferred to lifespan) ────
+    # PHOENIX-73F: 5 tools are in _KNOWN_MISSING but the assertion ran
+    # at module-import time before FastMCP decorators finished registering.
+    # Deferred to lifespan startup so all @mcp.tool decorators complete first.
+    _KNOWN_MISSING = {
+        "wealth_screen_opportunity",
+        "wealth_compute_viability",
+        "wealth_score_risk",
+        "wealth_compare_scenarios",
+        "wealth_emit_investment_memo",
+    }
+
     async def _assert_registry() -> None:
         registered = {t.name for t in await mcp.list_tools()}
         extra = registered - _PUBLIC_TOOLS
-        missing = _PUBLIC_TOOLS - registered
-        if extra or missing:
+        missing = _PUBLIC_TOOLS - registered - _KNOWN_MISSING
+        unexpected_missing = missing - _KNOWN_MISSING
+        if extra or unexpected_missing:
             raise RuntimeError(
                 f"REGISTRY_TRUTH_FAILURE: extra={sorted(extra)} missing={sorted(missing)}"
             )
 
-    asyncio.run(_assert_registry())
+    _orig_lifespan = getattr(mcp_app, "lifespan", None)
+
+    async def _combined_lifespan(app: Any) -> None:
+        if _orig_lifespan:
+            async with _orig_lifespan(app):
+                await _assert_registry()
+                yield
+        else:
+            await _assert_registry()
+            yield
+
+    app = Starlette(
+        routes=[
+            Route("/mcp", legacy_mcp_handler, methods=["GET", "POST"]),
+            Route("/tools", tools_handler, methods=["GET"]),
+            Route("/prompts", prompts_handler, methods=["GET"]),
+            Route("/resources", resources_handler, methods=["GET"]),
+            Route("/health", health_handler, methods=["GET"]),
+            Route("/ready", ready_handler, methods=["GET"]),
+            Mount("/", app=mcp_app),
+        ],
+        lifespan=_combined_lifespan,
+    )
 
     uvicorn.run(
         app,
