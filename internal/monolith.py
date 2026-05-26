@@ -11420,7 +11420,7 @@ if __name__ == "__main__":
                     "jsonrpc": "2.0",
                     "id": response_id,
                     "result": {
-                        "protocolVersion": "2025-11-25",
+                        "protocolVersion": "2024-11-05",
                         "capabilities": {
                             "tools": {"listChanged": True},
                             "prompts": {"listChanged": True},
