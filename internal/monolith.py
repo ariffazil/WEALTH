@@ -7189,6 +7189,231 @@ def get_sources_adapter_status() -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
+# NEW RESOURCES — Arif's Canonical 13 (aligned with identity spec)
+# Exposes WEALTH's reflect-only identity, ethics policy, schemas, prompts
+# ═══════════════════════════════════════════════════════════════════════════
+
+@mcp.resource("wealth://manifest")
+def get_wealth_manifest() -> str:
+    """WEALTH organ manifest — identity, role, authority."""
+    from internal.engines.canonical_tools import WEALTH_SYSTEM_PROMPT
+    return json.dumps({
+        "organ": "WEALTH",
+        "role": "Value / Survival / Stewardship / Exchange Organ",
+        "authority": "REFLECT_ONLY",
+        "execution_authorized": False,
+        "final_authority": "Arif",
+        "mutation_guard": "locked",
+        "description": "WEALTH reflects value. WEALTH does not move value. arifOS judges consequence. Arif authorizes action.",
+        "system_prompt": WEALTH_SYSTEM_PROMPT,
+        "version": "2026.05.26",
+    }, indent=2)
+
+
+@mcp.resource("wealth://tool_surface")
+def get_wealth_tool_surface() -> str:
+    """Current canonical tool surface — 16 tools."""
+    return json.dumps({
+        "canonical_tools": [
+            {"name": "wealth_system_status", "description": "System health / registry / aliases", "class": "W0"},
+            {"name": "wealth_capital_evaluate", "description": "NPV / IRR / PI / payback / productivity / discount", "class": "W2"},
+            {"name": "wealth_uncertainty_evaluate", "description": "EMV / Monte Carlo / risk distribution", "class": "W3"},
+            {"name": "wealth_information_value", "description": "EVOI / signal quality / wait_or_act", "class": "W3"},
+            {"name": "wealth_financial_position", "description": "Cashflow / runway / DSCR / networth / liquidity", "class": "W2"},
+            {"name": "wealth_market_analyze", "description": "Price gradient / macro field", "class": "W2"},
+            {"name": "wealth_power_map", "description": "Game theory / coordination / negotiation", "class": "W3"},
+            {"name": "wealth_governance_risk", "description": "Verdict / boundary / entropy / conservation", "class": "W4"},
+            {"name": "wealth_ledger", "description": "Query / write / hysteresis / reconcile / trace", "class": "W1-W4"},
+            {"name": "wealth_preference_rank", "description": "Criteria ranking", "class": "W2"},
+            {"name": "wealth_inequality_kernel", "description": "Distribution / fairness / concentration", "class": "W3"},
+            {"name": "wealth_kernel_route", "description": "Route by risk class W0-W5", "class": "W0"},
+            {"name": "wealth_synthesize", "description": "Final integration verdict", "class": "W3"},
+            {"name": "wealth_666_heart", "description": "Dignity / greed / exploitation / void-power", "class": "W3"},
+            {"name": "wealth_assess_solvency", "description": "Runway / liquidity / fragility / solvency", "class": "W3"},
+            {"name": "wealth_compute_value_flux", "description": "Value flux / entropy / compounding signal", "class": "W3"},
+        ],
+        "total_canonical": 16,
+        "decision_classes": ["W0", "W1", "W2", "W3", "W4", "W5"],
+    }, indent=2)
+
+
+@mcp.resource("wealth://policy/no_execution_without_arifos")
+def get_wealth_no_execution_policy() -> str:
+    """REFLECT_ONLY policy — WEALTH does not execute without Arif + arifOS approval."""
+    return json.dumps({
+        "title": "WEALTH REFLECT_ONLY Policy",
+        "authority": "REFLECT_ONLY",
+        "execution_authorized": False,
+        "final_authority": "Arif",
+        "rule": "WEALTH reflects value. WEALTH does not move value. arifOS judges consequence. Arif authorizes action.",
+        "haram": [
+            "Silent ledger writes",
+            "Execution without arifOS judge",
+            "Guaranteed return claims",
+            "Exploitation of vulnerable parties",
+            "Riba (usury) without halal check",
+        ],
+        "w5_requires": ["Arif explicit approval", "arifOS 888_JUDGE verdict"],
+        "version": "2026.05.26",
+    }, indent=2)
+
+
+@mcp.resource("wealth://state/current")
+def get_wealth_state_schema() -> str:
+    """WEALTH state schema — cash, income, expenses, assets, liabilities, runway."""
+    return json.dumps({
+        "identity": "WEALTH",
+        "authority": "REFLECT_ONLY",
+        "cash": {"verified": None, "estimated": None, "last_verified_at": None},
+        "income": {"recurring_monthly": None, "variable_monthly": None, "receivables": []},
+        "expenses": {"fixed_monthly": None, "variable_monthly": None, "subscriptions": []},
+        "assets": [],
+        "liabilities": [],
+        "runway": {"conservative_months": None, "base_months": None, "optimistic_months": None},
+        "risk": {
+            "liquidity_risk": "UNKNOWN",
+            "debt_risk": "UNKNOWN",
+            "concentration_risk": "UNKNOWN",
+            "reputation_risk": "UNKNOWN",
+            "legal_tax_risk": "UNKNOWN",
+        },
+        "truth_status": "UNVERIFIED",
+        "last_updated": None,
+    }, indent=2)
+
+
+@mcp.resource("wealth://ledger/assumptions")
+def get_wealth_assumptions_ledger() -> str:
+    """Assumptions ledger — critical for truth separation.
+
+    Wealth systems die when assumptions pretend to be facts.
+    """
+    return json.dumps({
+        "description": "Assumptions ledger — distinguishing fact from estimate from forecast from wish",
+        "schema": {
+            "entry_type": "assumption | estimate | forecast | wish | commitment",
+            "required_fields": ["text", "category", "entered_at", "verified_by", "truth_status"],
+            "distinction": {
+                "fact": "verified by evidence, corroborated",
+                "assumption": "unverified, stated explicitly",
+                "estimate": "approximation, stated range",
+                "forecast": "forward projection, stated confidence",
+                "wish": "desired outcome, not evidence-backed",
+                "commitment": "binding obligation, irreversible",
+            },
+        },
+        "note": "Use wealth_ledger(mode='write') to add entries with explicit actor + reason + source",
+    }, indent=2)
+
+
+@mcp.resource("wealth://policy/ethics_and_dignity")
+def get_wealth_ethics_policy() -> str:
+    """Ethics and dignity policy for WEALTH."""
+    return json.dumps({
+        "title": "WEALTH Ethics and Dignity Policy",
+        "core_question": "Does this reduce a human to money?",
+        "void_power_question": "Strip ego, urgency, status, fantasy. What remains?",
+        "dignity_checks": [
+            "Does this exploit someone?",
+            "Does this reduce a human to money?",
+            "Does this create dependence?",
+            "Does this violate trust?",
+            "Does this trade dignity for gain?",
+            "Does this increase Arif's freedom or enslave him?",
+        ],
+        "greed_signals": [
+            "Guaranteed return / risk-free language",
+            "Urgency / FOMO / limited time pressure",
+            "Status display / impress others",
+            "Revenge or war motivation",
+            "Adrenaline seeking / gambling language",
+        ],
+        "hidden_eureka": "Wealth is not accumulation. Wealth is stored optionality under ethical control.",
+        "void_eureka": "Real wealth is what remains when noise, ego, market panic, false status, and urgency are removed.",
+        "version": "2026.05.26",
+    }, indent=2)
+
+
+@mcp.resource("wealth://policy/risk_classes")
+def get_wealth_risk_classes() -> str:
+    """W0-W5 decision class definitions."""
+    return json.dumps({
+        "title": "WEALTH Decision Classes W0-W5",
+        "classes": {
+            "W0": {"description": "Observe only", "action": "none", "authority": "WEALTH"},
+            "W1": {"description": "Categorize / summarize", "action": "classify", "authority": "WEALTH"},
+            "W2": {"description": "Budget / forecast / compare", "action": "model", "authority": "WEALTH"},
+            "W3": {"description": "Advisory with uncertainty", "action": "advise", "authority": "WEALTH + disclaimers"},
+            "W4": {"description": "Contractual / tax / debt / investment advisory", "action": "recommend", "authority": "WEALTH + arifOS + disclaimers"},
+            "W5": {"description": "Transfer money / execute trade / sign contract / irreversible", "action": "execute", "authority": "HOLD — Arif + arifOS required"},
+        },
+        "rule": "W0-W2: allowed as reflection. W3: advisory with uncertainty. W4: requires evidence + disclaimers + judge. W5: HOLD unless explicit Arif approval + arifOS judge.",
+    }, indent=2)
+
+
+@mcp.resource("wealth://prompts/daily_brief")
+def get_wealth_daily_brief_prompt() -> str:
+    return """Produce a daily wealth brief:
+1. Cash position (verified vs estimated)
+2. Runway (conservative / base / optimistic)
+3. Income expected (recurring + variable)
+4. Obligations due
+5. Top leaks (where is value escaping?)
+6. Top opportunities (where is value compounding?)
+7. Risk flags
+8. One reversible action
+9. One thing not to do
+
+End with recommended_mode: OBSERVE | CONSERVE | DEPLOY | REPAIR | HOLD"""
+
+
+@mcp.resource("wealth://prompts/greed_check")
+def get_wealth_greed_check_prompt() -> str:
+    return """Examine whether this financial action is driven by:
+- Fear / scarcity panic
+- Greed / FOMO
+- Status / impress others
+- Revenge / war
+- Vanity / validation seeking
+- Service / stewardship
+
+Do not shame Arif.
+Return a mirror, not a moral lecture.
+
+Output: likely_driver, greed_signals[], verdict (PROCEED | PROCEED_WITH_GUARDS | HOLD)"""
+
+
+@mcp.resource("wealth://prompts/void")
+def get_wealth_void_prompt() -> str:
+    return """Strip the proposal of ego, urgency, status, and fantasy.
+What remains?
+
+If nothing remains: recommend HOLD.
+If durable value remains: identify the smallest reversible next step.
+
+Return: void_score (0-1), stripped_elements[], void_verdict, next_action"""
+
+
+@mcp.resource("wealth://prompts/runway_audit")
+def get_wealth_runway_audit_prompt() -> str:
+    return """Audit financial runway.
+Separate: verified cash, estimated cash, expected income, recurring burn,
+discretionary burn, debt obligations, unknown liabilities.
+
+Return: conservative/base/optimistic runway, flag assumptions explicitly."""
+
+
+@mcp.resource("wealth://prompts/deal_memo")
+def get_wealth_deal_memo_prompt() -> str:
+    return """Evaluate this opportunity as a deal memo.
+Assess: upside, downside, evidence level, reversibility, liquidity impact,
+reputation impact, legal/tax unknowns, dignity risk, opportunity cost.
+
+Output: Five Seals, wealth_verdict, recommended_mode, next_action
+End with: PROCEED_TO_JUDGE | HOLD | NEED_MORE_EVIDENCE"""
+
+
 # Ω-WEALTH Orthogonal Invariants — Physics × Economics
 # 12 public tools. Everything else is internal alias (callable, hidden).
 # ═══════════════════════════════════════════════════════════════════════
