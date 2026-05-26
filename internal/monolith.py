@@ -11192,8 +11192,10 @@ def _registry_snapshot(visible_names: List[str]) -> Dict[str, Any]:
     # mismatch = whether they differ (could indicate cache/bridge issues)
     external_visible_tools = visible_names  # Client-reported surface
     server_registered_tools = expected_names  # Server's intended surface
-    mismatch = bool(missing or extra)
-    missing_from_external_client = missing  # What server has but client doesn't see
+    mismatch = bool(unexpected_missing or extra)
+    missing_from_external_client = (
+        unexpected_missing  # What server has but client doesn't see
+    )
 
     return {
         "service": "wealth-mcp",
@@ -11206,7 +11208,7 @@ def _registry_snapshot(visible_names: List[str]) -> Dict[str, Any]:
         "hidden_alias_count": hidden_alias_count,
         "canonical_public_tools": expected_names,
         "extra_visible_tools": extra,
-        "missing_visible_tools": missing,
+        "missing_visible_tools": unexpected_missing,
         "registry_truth": registry_truth,
         # Fix #8: Structured mismatch detection (Arif 2026-05-16)
         "external_visible_tools": external_visible_tools,
@@ -11224,7 +11226,7 @@ def _registry_snapshot(visible_names: List[str]) -> Dict[str, Any]:
             "to flush the stale tool-list cache."
         )
         if registry_truth == "PASS"
-        else (f"MISMATCH: missing={missing}, extra={extra}"),
+        else (f"MISMATCH: missing={unexpected_missing}, extra={extra}"),
         "final_authority": "ARIF",
     }
 
