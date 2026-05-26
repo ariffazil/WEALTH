@@ -1,1 +1,10 @@
-* @ariffazil
+# CODEOWNERS — automation and governance surfaces require Arif's review
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# All automation and governance files — protected
+/.github/                          @ariffazil
+/.github/workflows/                @ariffazil
+/.github/dependabot.yml            @ariffazil
+/.github/workflows.CANONICAL.yml   @ariffazil
+/.github/repo-policy.yml           @ariffazil
+/.github/CODEOWNERS                @ariffazil
