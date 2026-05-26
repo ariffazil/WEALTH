@@ -271,7 +271,7 @@ else:
 
 if _ENGINES_IMPORTED:
 
-    def wealth_capital_evaluate_tool(
+    def wealth_capital_evaluate_tool(  # pyright: ignore[reportRedeclaration]
         mode: str = "npv",
         initial_investment: float = 0,
         cash_flows: Optional[List[float]] = None,
@@ -532,7 +532,7 @@ else:
 
 if _ENGINES_IMPORTED:
     # @mcp.tool(name="wealth_uncertainty_evaluate")
-    def wealth_uncertainty_evaluate(
+    def wealth_uncertainty_evaluate(  # pyright: ignore[reportRedeclaration]
         mode: str = "emv",
         scenarios: Optional[List[dict]] = None,
         scale_mode: str = "enterprise",
@@ -722,7 +722,7 @@ if _ENGINES_IMPORTED:
     )
 
     # @mcp.tool(name="wealth_information_value")
-    async def wealth_information_value(
+    async def wealth_information_value(  # pyright: ignore[reportRedeclaration]
         mode: str = "evoi",
         well_cost_musd: float = 0,
         p50_value_musd: float = 0,
@@ -885,7 +885,7 @@ else:
 
 if _ENGINES_IMPORTED:
     # @mcp.tool(name="wealth_financial_position")
-    def wealth_financial_position(
+    def wealth_financial_position(  # pyright: ignore[reportRedeclaration]
         mode: str = "cashflow",
         income: Optional[List[dict]] = None,
         expenses: Optional[List[dict]] = None,
@@ -1113,7 +1113,7 @@ else:
 
 if _ENGINES_IMPORTED:
     # @mcp.tool(name="wealth_market_analyze")
-    def wealth_market_analyze(
+    def wealth_market_analyze(  # pyright: ignore[reportRedeclaration]
         mode: str = "price_gradient",
         scale_mode: str = "enterprise",
         # WAJIB mandatory
@@ -1206,7 +1206,7 @@ else:
 
 if _ENGINES_IMPORTED:
     # @mcp.tool(name="wealth_power_map")
-    def wealth_power_map(
+    def wealth_power_map(  # pyright: ignore[reportRedeclaration]
         mode: str = "coordination_game",
         agents: Optional[List[dict]] = None,
         shared_resources: Optional[dict] = None,
@@ -1404,7 +1404,7 @@ else:
 
 if _ENGINES_IMPORTED:
     # @mcp.tool(name="wealth_governance_risk")
-    def wealth_governance_risk(
+    def wealth_governance_risk(  # pyright: ignore[reportRedeclaration]
         mode: str = "verdict",
         proposal: Optional[dict] = None,
         constraints: Optional[dict] = None,
@@ -1590,7 +1590,7 @@ else:
 
 if _ENGINES_IMPORTED:
     # @mcp.tool(name="wealth_ledger")
-    def wealth_ledger(
+    def wealth_ledger(  # pyright: ignore[reportRedeclaration]
         mode: str = "query",
         scope: Optional[str] = None,
         filters: Optional[dict] = None,
@@ -1768,7 +1768,7 @@ else:
 
 if _ENGINES_IMPORTED:
     # @mcp.tool(name="wealth_preference_rank")
-    def wealth_preference_rank(
+    def wealth_preference_rank(  # pyright: ignore[reportRedeclaration]
         options: Optional[List[dict]] = None,
         criteria: Optional[List[str]] = None,
         weights: Optional[dict] = None,
@@ -1868,7 +1868,7 @@ else:
 
 if _ENGINES_IMPORTED:
     # @mcp.tool(name="wealth_inequality_kernel")
-    def wealth_inequality_kernel(
+    def wealth_inequality_kernel(  # pyright: ignore[reportRedeclaration]
         preset: str = "malaysia",
         domain: str = "unspecified",
         description: str = "",
@@ -1972,7 +1972,7 @@ else:
 
 if _ENGINES_IMPORTED:
     # @mcp.tool(name="wealth_kernel_route")
-    def wealth_kernel_route(
+    def wealth_kernel_route(  # pyright: ignore[reportRedeclaration]
         question: str = "",
         intent: str = "",
         entity_scope: str = "unknown",
@@ -2152,7 +2152,7 @@ else:
 
 if _ENGINES_IMPORTED:
     # @mcp.tool(name="wealth_synthesize")
-    def wealth_synthesize(
+    def wealth_synthesize(  # pyright: ignore[reportRedeclaration]
         question: str = "",
         scale_mode: str = "enterprise",
         actors: Optional[List[str]] = None,
@@ -2276,7 +2276,7 @@ else:
 
 if _ENGINES_IMPORTED:
 
-    def wealth_666_heart(
+    def wealth_666_heart(  # pyright: ignore[reportRedeclaration]
         mode: str = "dignity",
         action_description: str = "",
         actors: Optional[List[str]] = None,
@@ -2738,7 +2738,7 @@ else:
 
 if _ENGINES_IMPORTED:
 
-    def wealth_assess_solvency(
+    def wealth_assess_solvency(  # pyright: ignore[reportRedeclaration]
         cash_verified: float = 0,
         cash_estimated: float = 0,
         monthly_income_recurring: float = 0,
@@ -2930,7 +2930,7 @@ else:
 
 if _ENGINES_IMPORTED:
 
-    def wealth_compute_value_flux(
+    def wealth_compute_value_flux(  # pyright: ignore[reportRedeclaration]
         income_velocity: float = 0,
         expense_velocity: float = 0,
         asset_growth_rate: float = 0,

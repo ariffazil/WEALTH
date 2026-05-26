@@ -1,0 +1,12 @@
+{
+  "include": ["internal"],
+  "exclude": ["node_modules", "__pycache__", ".venv", "venv"],
+  "typeCheckingMode": "basic",
+  "reportMissingImports": true,
+  "reportMissingTypeStubs": false,
+  "reportUnknownMemberType": false,
+  "reportAttributeAccessIssue": false,
+  "reportFunctionMemberAccess": false,
+  "reportRedeclaration": false,
+  "pythonVersion": "3.12"
+}
