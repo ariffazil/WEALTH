@@ -2,57 +2,91 @@ name: Weekly Repo Hygiene
 
 on:
   schedule:
-    - cron: "30 2 * * 1"
+    - cron: "30 2 * * 1"  # Monday 02:30 UTC (10:30 MYT)
   workflow_dispatch:
 
 permissions:
   contents: read
-  pull-requests: write
+  pull-requests: read
   issues: write
+
+concurrency:
+  group: wealth-hygiene
+  cancel-in-progress: true
 
 jobs:
   hygiene:
+    name: 📊 Automation Health Digest
     runs-on: ubuntu-latest
     steps:
-      - name: Build hygiene report
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build automation health digest
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
 
-          open_prs=$(gh pr list --repo "$REPO" --state open --json number,title,updatedAt,headRefName --jq 'length')
-          stale_prs=$(gh pr list --repo "$REPO" --state open --json number,title,updatedAt,headRefName --jq '[.[] | select((now - (.updatedAt | fromdateiso8601)) > (14*24*3600))]')
+          open_prs=$(gh pr list --repo "$REPO" --state open --json number --jq 'length')
+          stale_prs=$(gh pr list --repo "$REPO" --state open \
+            --json number,title,updatedAt,headRefName \
+            --jq '[.[] | select((now - (.updatedAt | fromdateiso8601)) > (14*24*3600))]')
           stale_pr_count=$(echo "$stale_prs" | jq 'length')
+          dep_prs=$(gh pr list --repo "$REPO" --state open --author "dependabot[bot]" \
+            --json number --jq 'length')
+
+          failed_runs=$(gh run list --repo "$REPO" --status failure \
+            --created "$(date -d '7 days ago' '+%Y-%m-%d')" \
+            --json workflowName,createdAt \
+            --jq '[.[] | {name: .workflowName, time: .createdAt}]' \
+            2>/dev/null || echo "[]")
+          failed_count=$(echo "$failed_runs" | jq 'length')
+
+          verdict="✅ HEALTHY"
+          [ "$failed_count" -gt 2 ] && verdict="⚠️ ACTION NEEDED"
+          [ "$stale_pr_count" -gt 5 ] && verdict="⚠️ ACTION NEEDED"
 
           report_file=report.md
           {
-            echo "## Weekly Repo Hygiene"
+            echo "## 🔬 Automation Health Digest — $(date '+%Y-%m-%d')"
             echo
-            echo "- Open PRs: $open_prs"
-            echo "- Stale PRs (>14d no update): $stale_pr_count"
+            echo "**Overall:** $verdict"
             echo
-            echo "### Stale PR Candidates"
-            if [ "$stale_pr_count" -eq 0 ]; then
-              echo "- None"
-            else
-              echo "$stale_prs" | jq -r '.[] | "- #\(.number) \(.title) (branch: \(.headRefName), updated: \(.updatedAt))"'
+            echo "### CI Health (Last 7 Days)"
+            echo "- Failed workflow runs: $failed_count"
+            if [ "$failed_count" -gt 0 ]; then
+              echo "$failed_runs" | jq -r '.[] | "  - \(.name) — \(.time)"' | head -10
             fi
             echo
+            echo "### PR Metrics"
+            echo "- Open PRs: $open_prs"
+            echo "- Stale PRs (>14d no update): $stale_pr_count"
+            echo "- Open Dependabot PRs: $dep_prs"
+            echo
+            if [ "$stale_pr_count" -gt 0 ]; then
+              echo "### Stale PR Candidates"
+              echo "$stale_prs" | jq -r \
+                '.[] | "- #\(.number) \(.title) (updated: \(.updatedAt | split("T")[0]))"' 
+              echo
+            fi
             echo "### Checklist"
-            echo "- [ ] Close or supersede stale PRs"
-            echo "- [ ] Archive dead branches"
-            echo "- [ ] Review failed workflows"
-            echo "- [ ] Review secret/token hygiene"
-            echo "- [ ] Review MCP routing and overlap"
+            echo "- [ ] No forbidden workflows present"
+            echo "- [ ] Dependabot PRs reviewed/merged"
+            echo "- [ ] Dead branches pruned"
+            echo "- [ ] CI failures root-caused"
           } > "$report_file"
 
           issue_title="Weekly Repo Hygiene"
-          existing=$(gh issue list --repo "$REPO" --state open --search "in:title $issue_title" --json number --jq '.[0].number // empty')
+          existing=$(gh issue list --repo "$REPO" --state open \
+            --search "in:title $issue_title" --json number --jq '.[0].number // empty')
           if [ -n "$existing" ]; then
             gh issue comment "$existing" --repo "$REPO" --body-file "$report_file"
             echo "Updated issue #$existing"
           else
+            gh issue create --repo "$REPO" --title "$issue_title" \
+              --body-file "$report_file" --label "maintenance" 2>/dev/null || \
             gh issue create --repo "$REPO" --title "$issue_title" --body-file "$report_file"
             echo "Created hygiene issue"
           fi
