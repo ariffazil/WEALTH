@@ -11185,7 +11185,14 @@ def _registry_snapshot(visible_names: List[str]) -> Dict[str, Any]:
     # PHOENIX-73F: 5 contract tools are known-missing from registration.
     # Health check PASSES if only these known tools are absent.
     unexpected_missing = [n for n in all_missing if n not in _KNOWN_MISSING]
-    registry_truth = "PASS" if not unexpected_missing and not extra else "FAIL"
+    # PHOENIX-73F FIX: surface count mismatch (38 intended / 33 runtime) means
+    # external cache is stale even when all missing tools are in _KNOWN_MISSING.
+    # Report DEGRADED_EXTERNAL_CACHE so clients know to reconnect and flush.
+    has_stale_cache = len(expected_names) != len(visible_names)
+    if has_stale_cache and not unexpected_missing and not extra:
+        registry_truth = "DEGRADED_EXTERNAL_CACHE"
+    else:
+        registry_truth = "PASS" if not unexpected_missing and not extra else "FAIL"
 
     # Fix #8: Structured mismatch detection for external vs server tool visibility
     # external_visible_tools = what external clients report seeing
