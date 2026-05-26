@@ -12,6 +12,7 @@ import json
 import math
 import numbers
 import os
+import subprocess
 import sys
 import uuid
 from pathlib import Path
@@ -2287,7 +2288,7 @@ def measurement_dscr(
     dscr = (
         None
         if any(flag in INVALID_FLAGS for flag in flags)
-        else numerator / denominator
+        else numerator / denominator  # type: ignore[operator]
     )
     if dscr is not None and dscr < 1.0:
         flags.append("LEVERAGE_DEFAULT")
@@ -2653,7 +2654,7 @@ def growth_velocity(
     )
     total = principal
     for _ in range(years):
-        total = total * (1 + rate) + annual_contribution
+        total = total * (1 + rate) + annual_contribution  # type: ignore[operator]
     final_value = round_value(total, 2)
     low = round_value(final_value * 0.88, 2)
     high = round_value(final_value * 1.12, 2)
