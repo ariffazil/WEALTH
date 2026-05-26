@@ -1,8 +1,8 @@
 <!-- SOT-MANIFEST
 owner: Arif
-last_verified: 2026-05-22
-valid_from: 2026-05-22
-valid_until: 2026-06-22
+last_verified: 2026-05-26
+valid_from: 2026-05-26
+valid_until: 2026-06-26
 confidence: high
 scope: /root/WEALTH
 epistemic_status: CLAIM
@@ -63,12 +63,12 @@ Every capital question maps to one or more of these 12 thermodynamic dimensions:
 
 ---
 
-## 17 Live MCP Tools
+## 38 Live MCP Tools
 
 ```
-Public MCP surface:           17 tools
-Internal aliases / deprecated: 52 (present in source, not exposed)
-Total @mcp.tool decorators:   69
+Public MCP surface:           38 tools
+Internal aliases / hidden:    34 (registered, not exposed)
+Total @mcp.tool decorators:   72
 ```
 
 | Tool | Ω | What It Does |
@@ -128,8 +128,8 @@ The canonical kernel lives in **`internal/monolith.py`**:
 
 ```
 internal/
-└── monolith.py    ← ~10,974 lines — ALL 17 live tools + all Ω logic
-                     This is THE kernel. One file by design.
+└── monolith.py    ← ~11,871 lines — ALL 38 live tools + all Ω logic
+                      This is THE kernel. One file by design.
 ```
 
 The 12 Ω-dimensions are deeply mathematically coupled (NPV feeds IRR feeds risk entropy). Splitting them creates circular imports and breaks the physics invariants. The monolith is intentional architecture, not technical debt.
@@ -266,7 +266,7 @@ For any capital question, call `wealth_synthesize` first. Pass a `question` and 
 result = await wealth_synthesize(
     question="Is this offshore development project value-accretive for Malaysia?",
     scale_mode="sovereign",
-    actors=["PETRONAS", "Partner", "Federal", "State"],
+    actors=["NOC", "Partner", "Federal", "State"],
     context={"foreign_entity": True, "reversible": False}
 )
 ```
@@ -302,5 +302,5 @@ Full architecture documentation and Ω-dimension theory:
 
 ---
 
-*Last Verified: 2026-05-22 | 999 SEAL ALIVE*
+*Last Verified: 2026-05-26 | 999 SEAL ALIVE*
 **DITEMPA BUKAN DIBERI — Intelligence is forged, not given.**
