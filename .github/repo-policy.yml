@@ -1,0 +1,49 @@
+# .github/repo-policy.yml
+# ================================================================
+# arifOS Federation — Per-Repo Policy Declaration
+# Maintained by: arifOS Forge Agent Ω
+# Authority: F4 CLARITY — entropy reduction, explicit exception tracking
+# ================================================================
+#
+# PURPOSE: Declare this repo's automation tier and required checks.
+# Exceptions must be named here, not scattered in memory.
+#
+# HOW TO USE:
+#   1. This file is the SOVEREIGN declaration of this repo's CI policy
+#   2. repo-hygiene-weekly compares actual required checks vs this file
+#   3. Drift = mismatch between declared tier/checks and actual GitHub config
+#   4. Any exception must be marked as "exception: true" with reason
+#
+# TIER DEFINITIONS:
+#   core      — CI + secrets + routing + hygiene. Standard for all organs.
+#   package   — core + publish validation. For repos that publish artifacts.
+#   site      — core + site/build checks. For static site repos.
+#   infra     — core + deploy guard + uptime. For repos that deploy to VPS.
+#   experimental — CI only. Low risk, fast iteration.
+#
+# ================================================================
+
+repo_policy:
+  repo: "WEALTH"
+  tier: "core"
+  owner: "ariffazil"
+  last_verified: "2026-05-26"
+  verified_by: "arifOS Forge Agent Ω"
+
+# Required status checks — must match GitHub branch protection exactly
+# Any check NOT listed here but present in GitHub = drift
+# Any check listed here but NOT in GitHub = drift
+required_checks:
+  - name: "Repo Routing Validation"
+    check_name: "Repo Routing Validation"
+    purpose: "REPO trailer enforcement on every commit"
+    tier: core
+    required: true
+
+  - name: "WEALTH CI"
+    check_name: "WEALTH CI"
+    purpose: "Capital intelligence tests + import smoke test"
+    tier: core
+    required: true
+
+exceptions: []
