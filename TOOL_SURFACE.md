@@ -19,18 +19,20 @@
 
 ---
 
-## Known Canonical Public Tools (from `contracts/mcp_surface.yaml`)
+## Ghost Tool Registry (Phase 2 — 2026-05-27)
 
-| Tool Name | Class | Notes |
-|-----------|-------|-------|
-| `wealth_boundary_governance` | `CANONICAL_PUBLIC` | ✅ Found in monolith.py |
-| `wealth_screen_opportunity` | `CANONICAL_PUBLIC` | ⚠️ Contract says should exist; not found in monolith.py |
-| `wealth_compute_viability` | `CANONICAL_PUBLIC` | ⚠️ Contract says should exist; not found in monolith.py |
-| `wealth_score_risk` | `CANONICAL_PUBLIC` | ⚠️ Contract says should exist; not found in monolith.py |
-| `wealth_compare_scenarios` | `CANONICAL_PUBLIC` | ⚠️ Contract says should exist; not found in monolith.py |
-| `wealth_emit_investment_memo` | `CANONICAL_PUBLIC` | ⚠️ Contract says should exist; not found in monolith.py |
+| Tool Name | Source Status | Decision | Absorbed By | Canonical Path |
+|-----------|-------------|----------|------------|---------------|
+| `wealth_screen_opportunity` | EXISTS in monolith.py, NOT in whitelist | **RETIRED** | `wealth_deal_frame` | Use `wealth_deal_frame` |
+| `wealth_compute_viability` | EXISTS in monolith.py, NOT in whitelist | **RETIRED** | `wealth_deal_frame` | Use `wealth_deal_frame` |
+| `wealth_score_risk` | EXISTS in monolith.py, NOT in whitelist | **RETIRED** | `wealth_deal_frame` | Use `wealth_deal_frame` |
+| `wealth_compare_scenarios` | EXISTS in monolith.py, NOT in whitelist | **RETIRED** | `wealth_deal_frame` | Use `wealth_deal_frame(scenarios=[...])` |
+| `wealth_emit_investment_memo` | EXISTS in monolith.py, NOT in whitelist | **RETIRED** | `wealth_deal_frame` | `wealth_deal_frame` emits structured memo |
 
-> ⚠️ **Contract gap:** 5 tools listed in `mcp_surface.yaml` contract do not exist in `internal/monolith.py`. Either they have different internal names, or the contract is ahead of implementation.
+> ✅ **All 5 ghost tools exist in `internal/monolith.py` as `@mcp.tool(name="...")` decorated functions.**
+> They are **GHOST** (filtered by `PUBLIC_SURFACE_WHITELIST`) — not missing, intentionally not exposed.
+> **Phase 2 decision:** Retire all 5 as absorbed by `wealth_deal_frame` (Ω-DEAL-00). Single canonical composite replaces 5 standalone dispatchers.
+> Reason: `wealth_deal_frame` handles all use cases via `scenarios`, `extract_emv`, and structured memo output. One path, not six.
 
 ---
 

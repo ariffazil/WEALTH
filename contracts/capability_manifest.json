@@ -423,46 +423,51 @@
       "capability_id": "ghost.screen_opportunity",
       "legacy_tools": [],
       "new_engine": null,
-      "status": "ghost",
+      "status": "retired_absorbed",
+      "absorbed_by": "wealth_deal_frame",
       "must_pass_tests": [],
       "delete_allowed": false,
-      "notes": "PHOENIX-73F: Declared in WEALTH_PUBLIC_TOOL_ORDER but not registered. Ghost."
+      "notes": "Phase 2 (2026-05-27): RETIRED. Existed in source but not in PUBLIC_SURFACE_WHITELIST. Absorbed by wealth_deal_frame(scenarios=[...]) which handles ranking/filtering/scoring via single composite. One canonical path, not six."
     },
     {
       "capability_id": "ghost.compute_viability",
       "legacy_tools": [],
       "new_engine": null,
-      "status": "ghost",
+      "status": "retired_absorbed",
+      "absorbed_by": "wealth_deal_frame",
       "must_pass_tests": [],
       "delete_allowed": false,
-      "notes": "PHOENIX-73F: Declared in WEALTH_PUBLIC_TOOL_ORDER but not registered. Ghost."
+      "notes": "Phase 2 (2026-05-27): RETIRED. Existed in source but not in PUBLIC_SURFACE_WHITELIST. Absorbed by wealth_deal_frame which computes NPV/IRR/payback/entropy as part of full composite evaluation."
     },
     {
       "capability_id": "ghost.score_risk",
       "legacy_tools": [],
       "new_engine": null,
-      "status": "ghost",
+      "status": "retired_absorbed",
+      "absorbed_by": "wealth_deal_frame",
       "must_pass_tests": [],
       "delete_allowed": false,
-      "notes": "PHOENIX-73F: Declared in WEALTH_PUBLIC_TOOL_ORDER but not registered. Ghost."
+      "notes": "Phase 2 (2026-05-27): RETIRED. Existed in source but not in PUBLIC_SURFACE_WHITELIST. Absorbed by wealth_deal_frame which computes EMV/Monte Carlo/entropy as part of full composite evaluation."
     },
     {
       "capability_id": "ghost.compare_scenarios",
       "legacy_tools": [],
       "new_engine": null,
-      "status": "ghost",
+      "status": "retired_absorbed",
+      "absorbed_by": "wealth_deal_frame",
       "must_pass_tests": [],
       "delete_allowed": false,
-      "notes": "PHOENIX-73F: Declared in WEALTH_PUBLIC_TOOL_ORDER but not registered. Ghost."
+      "notes": "Phase 2 (2026-05-27): RETIRED. Existed in source but not in PUBLIC_SURFACE_WHITELIST. Absorbed by wealth_deal_frame(scenarios=[...]) which runs EMV across multiple scenarios. Single canonical composite replaces standalone scenario comparison."
     },
     {
       "capability_id": "ghost.emit_investment_memo",
       "legacy_tools": [],
       "new_engine": null,
-      "status": "ghost",
+      "status": "retired_absorbed",
+      "absorbed_by": "wealth_deal_frame",
       "must_pass_tests": [],
       "delete_allowed": false,
-      "notes": "PHOENIX-73F: Declared in WEALTH_PUBLIC_TOOL_ORDER but not registered. Ghost."
+      "notes": "Phase 2 (2026-05-27): RETIRED. Existed in source but not in PUBLIC_SURFACE_WHITELIST. Absorbed by wealth_deal_frame which already emits structured investment memo as part of its output. No standalone tool needed."
     }
   ],
   "alias_layer": {
