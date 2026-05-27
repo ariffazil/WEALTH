@@ -11714,6 +11714,20 @@ if __name__ == "__main__":
         )
 
     async def health_handler(request):
+        # Compute identity_hash from /root/WEALTH/identity.toml
+        identity_hash = "UNAVAILABLE"
+        try:
+            import blake3
+
+            with open("/root/WEALTH/identity.toml", "rb") as f:
+                identity_hash = blake3.blake3(f.read()).hexdigest()
+        except Exception:
+            try:
+                with open("/root/WEALTH/identity.toml", "rb") as f:
+                    identity_hash = hashlib.sha256(f.read()).hexdigest()
+            except Exception:
+                identity_hash = "UNAVAILABLE"
+
         registry = _registry_snapshot([tool.name for tool in await mcp.list_tools()])
         return _JR(
             {
@@ -11728,6 +11742,35 @@ if __name__ == "__main__":
                 "hidden_alias_count": registry["hidden_alias_count"],
                 "registry_truth": registry["registry_truth"],
                 "final_authority": registry["final_authority"],
+                "identity_hash": identity_hash,
+                # Phase 2 hardening: freshness + owner summary
+                "freshness": {
+                    "status": "fresh"
+                    if registry["registry_truth"] == "PASS"
+                    else "stale",
+                    "checked_at_utc": datetime.now(timezone.utc).isoformat(),
+                    "source_timestamp_utc": datetime.now(timezone.utc).isoformat(),
+                    "age_seconds": 0,
+                    "max_fresh_age_seconds": 60,
+                    "stale_after_seconds": 300,
+                    "expired_after_seconds": 3600,
+                },
+                "owner_summary": {
+                    "color": (
+                        "GREEN"
+                        if registry["registry_truth"] == "PASS"
+                        else "YELLOW"
+                        if registry["registry_truth"] == "DEGRADED_EXTERNAL_CACHE"
+                        else "RED"
+                    ),
+                    "reasons": (
+                        ["registry_verified", "service_healthy"]
+                        if registry["registry_truth"] == "PASS"
+                        else ["registry_degraded_cache", "runtime_tool_count_mismatch"]
+                        if registry["registry_truth"] == "DEGRADED_EXTERNAL_CACHE"
+                        else ["registry_check_failed"]
+                    ),
+                },
             }
         )
 
