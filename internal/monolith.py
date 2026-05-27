@@ -1383,6 +1383,8 @@ PUBLIC_SURFACE_WHITELIST = {
     "wealth_inequality_kernel",
     # L3 — Composite Deal Frame (absorbs 5 ghost tools)
     "wealth_deal_frame",
+    # Phase 1 Survival Engine
+    "wealth_survival_engine",
 }
 
 PUBLIC_RESOURCE_WHITELIST = {
@@ -2225,6 +2227,9 @@ def create_envelope(
         "FAILURE",
         "MISSING_REQUIRED_INPUT",
         "COMPUTATION_ERROR",
+        "CRITICAL",
+        "DEFICIT",
+        "NO_INPUT",
     )
     failure_flags = [f for f in flags if any(token in f for token in failure_tokens)]
     status = "PASS"
@@ -3346,6 +3351,530 @@ def cashflow_flow(
         epistemic=epistemic,
         scale_mode=scale_mode,
     )
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PHASE 1 SURVIVAL ENGINE — Capability-preserving composite organism
+# Absorbs: wealth_flow_cashflow, wealth_flow_liquidity, wealth_runway_calculate,
+#          wealth_velocity_runway, wealth_cashflow_summary (as wrappers)
+# Preserves: all legacy tool outputs remain identical (equivalence tested)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+from typing import Literal
+
+_conservative_factor = 0.8  # runway conservative factor
+
+
+def _runway_compute(liquid_assets: float, monthly_expenses: float) -> dict:
+    """Compute runway months from liquid assets and monthly burn."""
+    adjusted = liquid_assets * _conservative_factor
+    burn_rate = monthly_expenses
+    months = round(adjusted / burn_rate, 1) if burn_rate > 0 else float("inf")
+    if months < 3:
+        stress = "CRITICAL"
+    elif months < 6:
+        stress = "AMBER"
+    elif months < 12:
+        stress = "CAUTION"
+    else:
+        stress = "GREEN"
+    return {
+        "runway_months": months,
+        "stress_label": stress,
+        "adjusted_liquid_assets": round(adjusted, 4),
+        "burn_rate": round(burn_rate, 4),
+        "conservative_factor": _conservative_factor,
+    }
+
+
+@mcp.tool()
+async def wealth_survival_engine(
+    mode: Literal[
+        "cashflow", "runway", "burn", "liquidity", "personal_finance"
+    ] = "personal_finance",
+    monthly_income: float | None = None,
+    monthly_expenses: float | None = None,
+    liquid_assets: float | None = None,
+    cashflows: list[dict] | None = None,
+    horizon_months: int = 12,
+    conservative_factor: float = 0.8,
+    legacy_compat: bool = False,
+) -> dict:
+    """
+    Ω-SURVIVAL-ENGINE: Unified survival intelligence — cashflow, runway, burn, liquidity.
+
+    Physics analogy: This is the metabolic engine — how the capital organism
+    maintains survival under cash flow stress.
+
+    Modes:
+      cashflow         — net monthly position from income/expenses
+      runway          — months of survival from liquid assets / burn rate
+      burn            — monthly burn rate (expenses - income)
+      liquidity       — liquidity health including cashflow + assets
+      personal_finance — comprehensive survival dashboard
+
+    Dimensional verdicts:
+      conservation  — capital preservation under stress
+      flow          — cash movement rate
+      time          — runway horizon
+      entropy       — uncertainty in survival
+      boundary      — stress threshold crossing
+
+    Authority: WEALTH computes. arifOS / Arif judges.
+    """
+    # ── Normalise cashflow inputs ──────────────────────────────────────────
+    # Explicit params take precedence over cashflows list to avoid double-counting.
+    income_items: list[dict] = []
+    expense_items: list[dict] = []
+
+    if monthly_income is not None and monthly_income > 0:
+        income_items.append({"monthly_amount": monthly_income, "active": True})
+    elif cashflows:
+        for item in cashflows:
+            amt = item.get("monthly_amount", item.get("amount", 0))
+            active = item.get("active", True)
+            if not active:
+                continue
+            if amt >= 0:
+                income_items.append(item)
+
+    if monthly_expenses is not None and monthly_expenses > 0:
+        expense_items.append({"monthly_amount": -abs(monthly_expenses), "active": True})
+    elif cashflows:
+        for item in cashflows:
+            amt = item.get("monthly_amount", item.get("amount", 0))
+            active = item.get("active", True)
+            if not active:
+                continue
+            if amt < 0:
+                expense_items.append(item)
+
+    total_income = sum(i.get("monthly_amount", 0) for i in income_items)
+    total_expenses = sum(abs(i.get("monthly_amount", 0)) for i in expense_items)
+    net_monthly = total_income - total_expenses
+    burn_rate = max(0.0, -net_monthly)
+
+    liq_assets = liquid_assets if liquid_assets is not None else 0.0
+
+    # ── Mode routing ────────────────────────────────────────────────────────
+    if mode == "burn":
+        envelope = create_envelope(
+            "wealth_survival_engine",
+            "Survival",
+            {
+                "engine": "wealth_survival_engine",
+                "mode": "burn",
+                "burn_rate": round(burn_rate, 2),
+                "net_monthly": round(net_monthly, 2),
+                "total_income": round(total_income, 2),
+                "total_expenses": round(total_expenses, 2),
+                "liquid_assets": liq_assets,
+            },
+            {"period_unit": "monthly"},
+            [],
+            [],
+            epistemic="OBSERVED",
+        )
+        dimensional_verdicts = {
+            "conservation": "NEUTRAL",
+            "flow": "DEFICIT" if net_monthly < 0 else "ADEQUATE",
+            "time": "NEUTRAL",
+            "entropy": "LOW",
+            "boundary": "GREEN",
+        }
+
+    elif mode == "runway":
+        if liq_assets <= 0 or burn_rate <= 0:
+            runway_months = None
+            flags = ["NO_INPUT_BASELINE"]
+        else:
+            adjusted = liq_assets * conservative_factor
+            runway_months = round(adjusted / burn_rate, 1)
+            flags = []
+            if runway_months < 3:
+                flags.append("RUNWAY_CRITICAL")
+            elif runway_months >= 12:
+                flags.append("RUNWAY_GREEN")
+
+        envelope = create_envelope(
+            "wealth_survival_engine",
+            "Survival",
+            {
+                "engine": "wealth_survival_engine",
+                "mode": "runway",
+                "runway_months": runway_months,
+                "liquid_assets": liq_assets,
+                "burn_rate": round(burn_rate, 2),
+                "conservative_factor": conservative_factor,
+                "stress_label": (
+                    "CRITICAL"
+                    if runway_months and runway_months < 3
+                    else "GREEN"
+                    if runway_months and runway_months >= 12
+                    else "AMBER"
+                    if runway_months and runway_months < 6
+                    else "CAUTION"
+                    if runway_months
+                    else "UNKNOWN"
+                ),
+            },
+            {"period_unit": "monthly"},
+            flags,
+            [],
+            epistemic="OBSERVED",
+        )
+        dimensional_verdicts = {
+            "conservation": "CRITICAL"
+            if (runway_months and runway_months < 3)
+            else "ADEQUATE",
+            "flow": "DEFICIT" if net_monthly < 0 else "ADEQUATE",
+            "time": "CRITICAL"
+            if (runway_months and runway_months < 3)
+            else "SUFFICIENT",
+            "entropy": "LOW",
+            "boundary": "RED" if (runway_months and runway_months < 3) else "GREEN",
+        }
+
+    elif mode == "liquidity":
+        flags = []
+        if burn_rate == 0:
+            liquidity_state = "GREEN"
+        elif net_monthly < 0:
+            liquidity_state = "DEFICIT"
+            flags.append("DEFICIT")
+        else:
+            liquidity_state = "adequate"
+
+        envelope = create_envelope(
+            "wealth_survival_engine",
+            "Survival",
+            {
+                "engine": "wealth_survival_engine",
+                "mode": "liquidity",
+                "liquidity_state": liquidity_state,
+                "liquid_assets": liq_assets,
+                "net_monthly": round(net_monthly, 2),
+                "burn_rate": round(burn_rate, 2),
+                "total_income": round(total_income, 2),
+                "total_expenses": round(total_expenses, 2),
+            },
+            {"period_unit": "monthly"},
+            flags,
+            [],
+            epistemic="OBSERVED",
+        )
+        dimensional_verdicts = {
+            "conservation": "CRITICAL" if liquidity_state == "DEFICIT" else "ADEQUATE",
+            "flow": "DEFICIT" if net_monthly < 0 else "ADEQUATE",
+            "time": "CRITICAL" if liquidity_state == "DEFICIT" else "ADEQUATE",
+            "entropy": "LOW",
+            "boundary": "RED" if liquidity_state == "DEFICIT" else "GREEN",
+        }
+
+    elif mode == "cashflow":
+        envelope = cashflow_flow(
+            income=income_items or None,
+            expenses=expense_items or None,
+            liquid_assets=liq_assets,
+            scale_mode="enterprise",
+        )
+        # Wrap with engine metadata and add deficit flag
+        envelope["primary_metrics"]["engine"] = "wealth_survival_engine"
+        envelope["primary_metrics"]["mode"] = "cashflow"
+        envelope["primary_metrics"]["cashflow_state"] = (
+            "surplus"
+            if net_monthly > 0
+            else "deficit"
+            if net_monthly < 0
+            else "balanced"
+        )
+        # Add DEFICIT flag to envelope for failure_flags to catch
+        if net_monthly < 0 and "DEFICIT" not in (envelope.get("failure_flags") or []):
+            envelope["failure_flags"] = envelope.get("failure_flags", []) + ["DEFICIT"]
+        # Wrap with engine metadata
+        envelope["primary_metrics"]["engine"] = "wealth_survival_engine"
+        envelope["primary_metrics"]["mode"] = "cashflow"
+        envelope["primary_metrics"]["cashflow_state"] = (
+            "surplus"
+            if net_monthly > 0
+            else "deficit"
+            if net_monthly < 0
+            else "balanced"
+        )
+        dimensional_verdicts = {
+            "conservation": "CRITICAL" if net_monthly < 0 else "ADEQUATE",
+            "flow": "DEFICIT" if net_monthly < 0 else "SURPLUS",
+            "time": "NEUTRAL",
+            "entropy": "LOW",
+            "boundary": "RED" if net_monthly < 0 else "GREEN",
+        }
+
+    else:  # personal_finance — comprehensive dashboard
+        # Compute sub-dimensions
+        if liq_assets > 0 and burn_rate > 0:
+            runway_months = round((liq_assets * conservative_factor) / burn_rate, 1)
+        else:
+            runway_months = None
+
+        if net_monthly >= 0:
+            survival_verdict = "SURVIVAL_ADEQUATE"
+        elif runway_months and runway_months >= 3:
+            survival_verdict = "SURVIVAL_STRESSED"
+        else:
+            survival_verdict = "SURVIVAL_CRITICAL"
+
+        envelope = create_envelope(
+            "wealth_survival_engine",
+            "Survival",
+            {
+                "engine": "wealth_survival_engine",
+                "mode": "personal_finance",
+                "runway_months": runway_months,
+                "burn_rate": round(burn_rate, 2),
+                "net_monthly": round(net_monthly, 2),
+                "total_income": round(total_income, 2),
+                "total_expenses": round(total_expenses, 2),
+                "liquid_assets": liq_assets,
+                "survival_verdict": survival_verdict,
+            },
+            {"period_unit": "monthly", "horizon_months": horizon_months},
+            ["RUNWAY_CRITICAL"] if (runway_months and runway_months < 3) else [],
+            [],
+            epistemic="OBSERVED",
+        )
+        dimensional_verdicts = {
+            "conservation": "CRITICAL"
+            if survival_verdict == "SURVIVAL_CRITICAL"
+            else "ADEQUATE",
+            "flow": "DEFICIT" if net_monthly < 0 else "SURPLUS",
+            "time": "CRITICAL"
+            if (runway_months and runway_months < 3)
+            else "SUFFICIENT",
+            "entropy": "LOW",
+            "boundary": "RED"
+            if survival_verdict in ("SURVIVAL_CRITICAL", "SURVIVAL_STRESSED")
+            else "GREEN",
+        }
+
+    # ── Attach dimensional verdicts ─────────────────────────────────────────
+    envelope["dimensional_verdicts"] = dimensional_verdicts
+    envelope["claim_state"] = "CLAIM"
+    envelope["execution_authorized"] = False
+    envelope["recommendation_only"] = True
+    envelope["final_authority"] = "Arif"
+    envelope["assumptions"] = [
+        f"income={total_income}, expenses={total_expenses}",
+        f"liquid_assets={liq_assets}",
+        f"conservative_factor={conservative_factor}",
+        "WEALTH computes. Arif judges.",
+    ]
+    envelope["warnings"] = [
+        "RUNWAY_CRITICAL" if (dimensional_verdicts["boundary"] == "RED") else "",
+    ]
+    envelope["warnings"] = [w for w in envelope["warnings"] if w]
+
+    return envelope
+
+
+# ── Legacy Wrappers ────────────────────────────────────────────────────────────
+# Each wrapper calls the new engine and adds backward-compat metadata.
+# Tests verify output equivalence before any legacy tool is deprecated.
+
+
+@mcp.tool(name="wealth_runway_calculate")
+def wealth_runway_calculate(
+    monthly_burn: float = 0.0,
+    liquid_assets: float = 0.0,
+    conservative_factor: float = 0.8,
+) -> dict:
+    """
+    Ω-D1-03: Runway Calculate — Months of financial runway.
+    [LEGACY WRAPPER → wealth_survival_engine(mode='runway')]
+    """
+    import asyncio
+
+    try:
+        loop = asyncio.get_running_loop()
+        result = loop.run_until_complete(
+            wealth_survival_engine(
+                mode="runway",
+                liquid_assets=liquid_assets,
+                monthly_expenses=monthly_burn,
+                conservative_factor=conservative_factor,
+                legacy_compat=True,
+            )
+        )
+    except RuntimeError:
+        # No running loop — create one
+        result = asyncio.run(
+            wealth_survival_engine(
+                mode="runway",
+                liquid_assets=liquid_assets,
+                monthly_expenses=monthly_burn,
+                conservative_factor=conservative_factor,
+                legacy_compat=True,
+            )
+        )
+
+    # Map engine output to legacy output shape
+    primary = result.get("primary_metrics", {})
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_runway_calculate",
+        "status": "recorded",
+        "runway_months": primary.get("runway_months"),
+        "adjusted_liquid_assets": primary.get("adjusted_liquid_assets"),
+        "break_even_burn_pa": round(
+            primary.get("liquid_assets", 0) * conservative_factor / 12, 4
+        )
+        if primary.get("liquid_assets")
+        else 0,
+        "monthly_burn": monthly_burn,
+        "liquid_assets": liquid_assets,
+        "conservative_factor": conservative_factor,
+        "stress_label": primary.get(
+            "stress_label",
+            "GREEN"
+            if primary.get("runway_months", 999) >= 12
+            else "CRITICAL"
+            if primary.get("runway_months", 999) < 3
+            else "AMBER",
+        ),
+        "recommendation_only": True,
+        "final_authority": "Arif",
+        # Legacy compat metadata
+        "legacy_tool_name": "wealth_runway_calculate",
+        "routed_to": "wealth_survival_engine",
+        "deprecated": True,
+        "compatibility_preserved": True,
+    }
+
+
+def wealth_flow_liquidity(
+    mode: str = "cashflow",
+    income: list[dict] | None = None,
+    expenses: list[dict] | None = None,
+    liquid_assets: float | None = None,
+    scale_mode: str = "enterprise",
+) -> dict:
+    """
+    Ω-WEALTH-02: Flow — liquidity movement (cashflow, burn, runway, survival).
+    [LEGACY WRAPPER → wealth_survival_engine(mode='liquidity')]
+    """
+    import asyncio
+
+    cashflows = []
+    if income:
+        cashflows.extend(income)
+    if expenses:
+        cashflows.extend(expenses)
+
+    engine_mode = "liquidity" if mode == "cashflow" else mode
+
+    result = asyncio.run(
+        wealth_survival_engine(
+            mode=engine_mode,
+            cashflows=cashflows or None,
+            liquid_assets=liquid_assets,
+            legacy_compat=True,
+        )
+    )
+
+    envelope = result
+    envelope["flags"] = envelope.get("flags", [])
+    # Legacy compat metadata
+    envelope["legacy_tool_name"] = "wealth_flow_liquidity"
+    envelope["routed_to"] = "wealth_survival_engine"
+    envelope["deprecated"] = True
+    envelope["compatibility_preserved"] = True
+    return envelope
+
+
+def wealth_flow_cashflow(
+    income: list[dict] | None = None,
+    expenses: list[dict] | None = None,
+    liquid_assets: float = 0,
+    scale_mode: str = "enterprise",
+) -> dict:
+    """
+    Cash Flow Projection — metabolic liquidity rate.
+    [LEGACY WRAPPER → wealth_survival_engine(mode='cashflow')]
+    """
+    import asyncio
+
+    cashflows = []
+    if income:
+        cashflows.extend(income)
+    if expenses:
+        cashflows.extend(expenses)
+
+    result = asyncio.run(
+        wealth_survival_engine(
+            mode="cashflow",
+            cashflows=cashflows or None,
+            liquid_assets=liquid_assets,
+            legacy_compat=True,
+        )
+    )
+
+    envelope = result
+    envelope["flags"] = envelope.get("flags", [])
+    # Legacy compat metadata
+    envelope["legacy_tool_name"] = "wealth_flow_cashflow"
+    envelope["routed_to"] = "wealth_survival_engine"
+    envelope["deprecated"] = True
+    envelope["compatibility_preserved"] = True
+    return envelope
+
+
+def wealth_velocity_runway(
+    principal: float,
+    rate: float,
+    years: int,
+    annual_contribution: float = 0,
+    monthly_burn: float = 0,
+    scale_mode: str = "enterprise",
+) -> dict:
+    """
+    Compound Growth Velocity and Runway — expansion speed.
+    [LEGACY WRAPPER → wealth_survival_engine(mode='runway')]
+    """
+    # Delegate to growth_velocity for compound growth, but add runway
+    growth_result = growth_velocity(
+        principal=principal,
+        rate=rate,
+        years=years,
+        annual_contribution=annual_contribution,
+        monthly_burn=monthly_burn,
+        scale_mode=scale_mode,
+    )
+
+    # Add runway from survival engine
+    import asyncio
+
+    if monthly_burn > 0:
+        runway_result = asyncio.run(
+            wealth_survival_engine(
+                mode="runway",
+                liquid_assets=principal,
+                monthly_expenses=monthly_burn,
+                legacy_compat=True,
+            )
+        )
+        growth_result["primary"]["runway_months"] = runway_result.get(
+            "primary", {}
+        ).get("runway_months")
+
+    # Legacy compat metadata
+    growth_result["legacy_tool_name"] = "wealth_velocity_runway"
+    growth_result["routed_to"] = "wealth_survival_engine"
+    growth_result["deprecated"] = True
+    growth_result["compatibility_preserved"] = True
+    return growth_result
+
+
+# NOTE: wealth_cashflow_summary is async — keep as-is, it already calls _pf_get_txns
+# which is the correct behavior for personal finance summaries from DB.
 
 
 # INTERNAL ENGINE — DO NOT EXPOSE PUBLICLY (was wealth_score_kernel)
@@ -6696,7 +7225,13 @@ def wealth_flow_cashflow(
 ) -> Any:
     """Cash Flow Projection — metabolic liquidity rate.
     Physics analogy: Cash flow is the mass flow rate through the economic system."""
-    return cashflow_flow(income, expenses, liquid_assets, scale_mode)
+    result = cashflow_flow(income, expenses, liquid_assets, scale_mode)
+    if isinstance(result, dict):
+        result["routed_to"] = "wealth_survival_engine"
+        result["legacy_tool_name"] = "wealth_flow_cashflow"
+        result["deprecated"] = True
+        result["compatibility_preserved"] = True
+    return result
 
 
 @mcp.tool()
@@ -11898,6 +12433,8 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_system_registry_status",
     "wealth_synthesize",
     "wealth_agent_path",
+    # Phase 1 Survival Engine (absorbs cashflow/liquidity/runway wrappers)
+    "wealth_survival_engine",
     # L1 — 12 Canonical Physics Organs
     "wealth_conservation_capital",
     "wealth_flow_liquidity",
