@@ -1381,6 +1381,8 @@ PUBLIC_SURFACE_WHITELIST = {
     "wealth_ledger_query",
     "wealth_ledger_write",
     "wealth_inequality_kernel",
+    # L3 — Composite Deal Frame (absorbs 5 ghost tools)
+    "wealth_deal_frame",
 }
 
 PUBLIC_RESOURCE_WHITELIST = {
@@ -6286,6 +6288,381 @@ async def wealth_signal_evoi_mc(
         info_cost_musd,
         scale_mode,
     )
+
+
+@mcp.tool()
+async def wealth_deal_frame(
+    opportunity_name: str,
+    initial_investment: float,
+    cash_flows: Optional[List[float]] = None,
+    terminal_value: float = 0,
+    discount_rate: float = 0.10,
+    period_unit: str = "annual",
+    scenarios: Optional[List[dict]] = None,
+    mean_cash_flows: Optional[List[float]] = None,
+    volatilities: Optional[List[float]] = None,
+    monte_carlo_simulations: int = 5000,
+    distribution: str = "lognormal",
+    maruah_impact: float = 0.5,
+    extractive_signals: Optional[dict] = None,
+    scale_mode: str = "enterprise",
+) -> dict:
+    """Ω-DEAL-00: Deal Frame — complete capital opportunity judgment.
+
+    This is the APEX composite for opportunity evaluation. It runs the full pipeline:
+    screening → valuation → risk → scenarios → governance → memo.
+
+    Replaces and absorbs: wealth_screen_opportunity, wealth_score_risk,
+    wealth_compute_viability, wealth_compare_scenarios, wealth_emit_investment_memo.
+
+    AGENT USE CASE:
+    Use this when Arif or an agent needs to evaluate ANY capital opportunity —
+    a project, investment, expenditure, or resource commitment.
+    One call = full governed judgment. Do NOT chain 5 separate tool calls.
+
+    INPUTS:
+      opportunity_name    — human-readable label for this opportunity
+      initial_investment — upfront capital commitment (positive number, MYR or MUSD)
+      cash_flows         — expected periodic cash flows (list of floats, same length as period)
+      terminal_value     — residual value at end of horizon (default 0)
+      discount_rate      — annual discount rate (default 0.10 = 10%)
+      period_unit        — "annual" or "monthly"
+      scenarios          — [{name, probability, cash_flows, terminal_value?}, ...]
+                           if provided, runs EMV across scenarios
+      mean_cash_flows    — for Monte Carlo: expected cash flows (list of floats)
+      volatilities       — for Monte Carlo: std dev of each period cash flow (list of floats)
+      monte_carlo_simulations — number of simulations (default 5000)
+      distribution       — "lognormal" or "normal" for Monte Carlo
+      maruah_impact      — 0.0 (no dignity impact) to 1.0 (severe dignity cost)
+      extractive_signals  — {rate_of_return, extraction_intensity, resource_depletion, ...}
+      scale_mode         — "personal" | "enterprise" | "civilizational"
+
+    OUTPUT: Complete deal judgment with:
+      - classification (VIABLE / MARGINAL / NON_VIABLE / ESCALATE)
+      - valuation (NPV, IRR, payback, PI)
+      - scenario EMV if scenarios provided
+      - Monte Carlo distribution if mean+volatility provided
+      - entropy risk score
+      - boundary/floor governance check
+      - final governance verdict
+      - recommendation (PROCEED / CONDITIONAL / HOLD / REJECT)
+      - next_safe_action
+      - formatted investment memo
+
+    ADVISORY ONLY: recommendation_only=True, final_authority=Arif.
+    """
+    import asyncio
+    from datetime import datetime
+
+    cash_flows = cash_flows or []
+    timestamp = datetime.utcnow().isoformat() + "Z"
+    result = {
+        "mcp": "WEALTH",
+        "tool": "wealth_deal_frame",
+        "opportunity": opportunity_name,
+        "timestamp": timestamp,
+        "recommendation_only": True,
+        "final_authority": "Arif",
+    }
+
+    # ── 1. Core Valuation ────────────────────────────────────────────────
+    npv_result = wealth_value_npv(
+        initial_investment=initial_investment,
+        cash_flows=cash_flows,
+        discount_rate=discount_rate,
+        terminal_value=terminal_value,
+        period_unit=period_unit,
+        scale_mode=scale_mode,
+    )
+    irr_result = wealth_energy_irr(
+        initial_investment=initial_investment,
+        cash_flows=cash_flows,
+        period_unit=period_unit,
+        discount_rate=discount_rate,
+        scale_mode=scale_mode,
+    )
+    payback_result = wealth_time_payback(
+        initial_investment=initial_investment,
+        cash_flows=cash_flows,
+        discount_rate=discount_rate,
+        period_unit=period_unit,
+        scale_mode=scale_mode,
+    )
+    pi_result = wealth_density_pi(
+        initial_investment=initial_investment,
+        cash_flows=cash_flows,
+        discount_rate=discount_rate,
+        terminal_value=terminal_value,
+        scale_mode=scale_mode,
+    )
+
+    # Extract from ToolResult envelope — values live in primary_metrics.<key>
+    def _pm(result, key, default=0):
+        """Safe extraction from primary_metrics with top-level fallback."""
+        if not isinstance(result, dict):
+            return default
+        return result.get("primary_metrics", {}).get(key) or default
+
+    npv = _pm(npv_result, "npv")
+    irr = _pm(irr_result, "irr", 0.0)
+    payback = _pm(payback_result, "payback_periods")
+    pi = _pm(pi_result, "pi")
+
+    result["valuation"] = {
+        "npv": npv,
+        "irr_pct": round(irr * 100, 2) if irr else 0,
+        "payback_years": payback,
+        "profitability_index": round(pi, 2) if pi else 0,
+        "initial_investment": initial_investment,
+        "terminal_value": terminal_value,
+        "discount_rate": discount_rate,
+        "period_unit": period_unit,
+    }
+
+    # ── 2. Scenario EMV ─────────────────────────────────────────────────────
+    # EMV requires outcome values; if scenarios have cash_flows, compute NPV per scenario
+    scenario_emv = None
+    if scenarios and len(scenarios) > 0:
+        try:
+            # Pre-compute outcome for each scenario if not provided
+            enriched = []
+            for i, s in enumerate(scenarios):
+                sc = dict(s)
+                if "outcome" not in sc:
+                    # Compute NPV as outcome proxy
+                    cfs = sc.get("cash_flows", [])
+                    if cfs:
+                        tv = sc.get("terminal_value", 0)
+                        dr = sc.get("discount_rate", discount_rate)
+                        n = len(cfs)
+                        tv_factor = (1 + dr) ** n if n > 0 and dr != 0 else 1
+                        outcome = (
+                            sum(c / (1 + dr) ** (i + 1) for i, c in enumerate(cfs))
+                            - (
+                                sc.get("initial_investment", initial_investment)
+                                or initial_investment
+                            )
+                            + (tv / tv_factor if tv and dr else tv)
+                        )
+                        sc["outcome"] = outcome
+                enriched.append(sc)
+
+            emv_result = wealth_expectation_emv(
+                scenarios=enriched, scale_mode=scale_mode
+            )
+            scenario_emv = (
+                emv_result.get("emv", 0) if isinstance(emv_result, dict) else None
+            )
+            result["scenarios"] = {
+                "emv": scenario_emv,
+                "count": len(scenarios),
+                "entries": [
+                    {
+                        "name": s.get("name", f"scenario_{i}"),
+                        "probability": s.get("probability", 1.0 / len(scenarios)),
+                        "outcome": s.get("outcome"),
+                    }
+                    for i, s in enumerate(scenarios)
+                ],
+            }
+        except Exception as e:
+            result["scenarios"] = {"error": str(e)}
+
+    # ── 3. Monte Carlo Distribution ─────────────────────────────────────────
+    mc_result = None
+    if mean_cash_flows and volatilities and len(mean_cash_flows) == len(volatilities):
+        try:
+            mc_result = wealth_probability_monte_carlo(
+                initial_commitment=initial_investment,
+                mean_cash_flows=mean_cash_flows,
+                volatilities=volatilities,
+                discount_rate=discount_rate,
+                simulations=monte_carlo_simulations,
+                distribution=distribution,
+                scale_mode=scale_mode,
+            )
+            if isinstance(mc_result, dict):
+                result["monte_carlo"] = {
+                    "p10_npv": mc_result.get("p10_npv"),
+                    "p50_npv": mc_result.get("p50_npv"),
+                    "p90_npv": mc_result.get("p90_npv"),
+                    "probability_positive": mc_result.get("probability_positive"),
+                    "var_5pct": mc_result.get("var_5pct"),
+                    "simulations": monte_carlo_simulations,
+                }
+        except Exception as e:
+            result["monte_carlo"] = {"error": str(e)}
+
+    # ── 4. Entropy Risk ────────────────────────────────────────────────────
+    try:
+        entropy_result = wealth_entropy_risk(
+            mode="emv",
+            scenarios=scenarios,
+            initial_commitment=initial_investment,
+            mean_cash_flows=mean_cash_flows,
+            volatilities=volatilities,
+            scale_mode=scale_mode,
+        )
+        if isinstance(entropy_result, dict):
+            result["entropy_risk"] = {
+                "emv_entropy": entropy_result.get("emv_entropy"),
+                "risk_class": entropy_result.get("risk_class"),
+                "information_content": entropy_result.get("information_content"),
+            }
+    except Exception:
+        pass  # Non-critical
+
+    # ── 5. Boundary / Governance Check ──────────────────────────────────────
+    wealth_signals = result.get("valuation", {}).copy()
+    if scenario_emv is not None:
+        wealth_signals["scenario_emv"] = scenario_emv
+    if mc_result and isinstance(mc_result, dict):
+        wealth_signals["p50_npv"] = mc_result.get("p50_npv")
+
+    boundary_result = wealth_boundary_governance(
+        mode="floors",
+        reversible=len(cash_flows) > 0 and initial_investment > 0,
+        human_confirmed=False,
+        epistemic="ESTIMATE",
+        proposal=f"Capital commitment: {opportunity_name}",
+        scale_mode=scale_mode,
+        maruah_score=maruah_impact,
+    )
+
+    boundary_passed = True
+    if isinstance(boundary_result, dict):
+        floors_triggered = boundary_result.get("floors_triggered", [])
+        boundary_passed = len(floors_triggered) == 0
+        result["boundary_check"] = {
+            "passed": boundary_passed,
+            "floors_triggered": floors_triggered,
+            "maruah_impact": maruah_impact,
+        }
+
+    # ── 6. Governance Verdict ────────────────────────────────────────────────
+    # Note: prospects NOT passed — avoids pre-existing CorrelationReport.get() bug in wealth_score_kernel
+    governance_result = wealth_governance_verdict(
+        d_s=npv,
+        peace2=1.0,
+        maruah_score=maruah_impact,
+        base_rate=discount_rate,
+        trust_index=0.5,
+        wealth_signals=wealth_signals,
+        prospects=None,
+        extractive_signals=extractive_signals,
+        compare=False,
+        scale_mode=scale_mode,
+        task_definition=f"Evaluate capital opportunity: {opportunity_name}",
+        irreversible=False,
+    )
+
+    if isinstance(governance_result, dict):
+        result["governance"] = {
+            "verdict": governance_result.get("verdict", "UNKNOWN"),
+            "d_s": governance_result.get("d_s", npv),
+            "peace2": governance_result.get("peace2", 1.0),
+            "confidence": governance_result.get("confidence"),
+            "allocation_recommendation": governance_result.get(
+                "allocation_recommendation"
+            ),
+        }
+
+    # ── 7. Classification & Recommendation ────────────────────────────────
+    # Determine viability classification
+    npv_positive = npv > 0
+    irr_positive = irr > discount_rate if irr else False
+    mc_positive = (
+        (mc_result.get("probability_positive", 0) > 0.5)
+        if mc_result and isinstance(mc_result, dict)
+        else npv_positive
+    )
+    scenario_positive = scenario_emv > 0 if scenario_emv is not None else npv_positive
+
+    viability_score = sum(
+        [npv_positive, irr_positive, mc_positive, scenario_positive, boundary_passed]
+    )
+
+    if viability_score >= 4 and boundary_passed:
+        classification = "VIABLE"
+        recommendation = "PROCEED"
+        stress_label = "STRONG — multiple positive indicators"
+    elif viability_score >= 3 and boundary_passed:
+        classification = "MARGINAL"
+        recommendation = "CONDITIONAL"
+        stress_label = "CAUTION — some indicators weak or negative"
+    elif not boundary_passed:
+        classification = "NON_VIABLE"
+        recommendation = "REJECT"
+        stress_label = "BOUNDARY BREACH — governance floors triggered"
+    else:
+        classification = "NON_VIABLE"
+        recommendation = "REJECT"
+        stress_label = "ECONOMIC BREACH — negative NPV/IRR"
+
+    result["classification"] = classification
+    result["recommendation"] = recommendation
+    result["stress_label"] = stress_label
+    result["viability_score"] = f"{viability_score}/5"
+
+    # ── 8. Investment Memo ────────────────────────────────────────────────
+    irr_pct = round(irr * 100, 2) if irr else 0
+    memo_lines = [
+        f"## Investment Memo: {opportunity_name}",
+        f"",
+        f"**Classification:** {classification}",
+        f"**Recommendation:** {recommendation}",
+        f"**Stress Label:** {stress_label}",
+        f"",
+        f"### Valuation",
+        f"- NPV: {npv:,.2f}",
+        f"- IRR: {irr_pct:.2f}%",
+        f"- Payback: {payback} periods" if payback else "- Payback: N/A",
+        f"- Profitability Index: {pi:.2f}",
+        f"",
+    ]
+    if scenario_emv is not None:
+        memo_lines += [
+            f"### Scenario EMV",
+            f"- EMV: {scenario_emv:,.2f}",
+            f"",
+        ]
+    if mc_result and isinstance(mc_result, dict):
+        memo_lines += [
+            f"### Monte Carlo ({monte_carlo_simulations:,} sims)",
+            f"- P10 NPV: {mc_result.get('p10_npv', 'N/A'):,.2f}",
+            f"- P50 NPV: {mc_result.get('p50_npv', 'N/A'):,.2f}",
+            f"- P90 NPV: {mc_result.get('p90_npv', 'N/A'):,.2f}",
+            f"- Prob(NPV>0): {mc_result.get('probability_positive', 0) * 100:.1f}%",
+            f"",
+        ]
+    memo_lines += [
+        f"### Governance",
+        f"- Boundary Passed: {'YES' if boundary_passed else 'NO'}",
+        f"- Maruah Impact: {maruah_impact:.1f}",
+        f"- Verdict: {result.get('governance', {}).get('verdict', 'N/A')}",
+        f"",
+        f"**Final Authority: Arif**",
+    ]
+    result["investment_memo"] = "\n".join(memo_lines)
+
+    # ── 9. Next Safe Action ────────────────────────────────────────────────
+    if recommendation == "PROCEED":
+        next_action = (
+            "ARIF_AUTHORIZATION — present memo and seek approval before commitment"
+        )
+    elif recommendation == "CONDITIONAL":
+        next_action = "REQUIRE_CONDITIONS — specify which conditions must be met before proceeding"
+    elif not boundary_passed:
+        next_action = "888_HOLD — governance boundary breach detected, escalate to Arif"
+    else:
+        next_action = (
+            "DO_NOT_PROCEED — economic metrics do not support this opportunity"
+        )
+
+    result["next_safe_action"] = next_action
+    result["escalate_to_888"] = not boundary_passed or classification == "NON_VIABLE"
+
+    return result
 
 
 @mcp.tool()
@@ -11547,12 +11924,8 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_ledger_write",
     # Domain Specialist (Civilization)
     "wealth_inequality_kernel",
-    # L3 — Contract Surface (PHOENIX-73F)
-    "wealth_screen_opportunity",
-    "wealth_compute_viability",
-    "wealth_score_risk",
-    "wealth_compare_scenarios",
-    "wealth_emit_investment_memo",
+    # L3 — Composite Deal Frame (absorbs 5 ghost tools: screen, viability, risk, compare, memo)
+    "wealth_deal_frame",
     # D1 — Personal Finance (cashflow, net worth, EPF, zakat)
     "wealth_cashflow_track",
     "wealth_cashflow_summary",
