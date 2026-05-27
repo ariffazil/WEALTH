@@ -6451,7 +6451,9 @@ async def wealth_deal_frame(
                 scenarios=enriched, scale_mode=scale_mode
             )
             scenario_emv = (
-                emv_result.get("emv", 0) if isinstance(emv_result, dict) else None
+                emv_result.get("primary_metrics", {}).get("emv")
+                if isinstance(emv_result, dict)
+                else None
             )
             result["scenarios"] = {
                 "emv": scenario_emv,
@@ -6465,6 +6467,7 @@ async def wealth_deal_frame(
                     for i, s in enumerate(scenarios)
                 ],
             }
+            result["valuation"]["scenario_emv"] = scenario_emv
         except Exception as e:
             result["scenarios"] = {"error": str(e)}
 
@@ -6482,12 +6485,11 @@ async def wealth_deal_frame(
                 scale_mode=scale_mode,
             )
             if isinstance(mc_result, dict):
+                pm = mc_result.get("primary_metrics", {}) or {}
                 result["monte_carlo"] = {
-                    "p10_npv": mc_result.get("p10_npv"),
-                    "p50_npv": mc_result.get("p50_npv"),
-                    "p90_npv": mc_result.get("p90_npv"),
-                    "probability_positive": mc_result.get("probability_positive"),
-                    "var_5pct": mc_result.get("var_5pct"),
+                    "probability_positive": pm.get("probability_positive_nrv"),
+                    "var_5pct": pm.get("expected_shortfall_5pct"),
+                    "upside_potential_95pct": pm.get("upside_potential_95pct"),
                     "simulations": monte_carlo_simulations,
                 }
         except Exception as e:
@@ -6627,12 +6629,16 @@ async def wealth_deal_frame(
             f"",
         ]
     if mc_result and isinstance(mc_result, dict):
+
+        def _mc_f(v):
+            return f"{v:,.2f}" if isinstance(v, (int, float)) else str(v)
+
+        mc = result.get("monte_carlo", {})
         memo_lines += [
             f"### Monte Carlo ({monte_carlo_simulations:,} sims)",
-            f"- P10 NPV: {mc_result.get('p10_npv', 'N/A'):,.2f}",
-            f"- P50 NPV: {mc_result.get('p50_npv', 'N/A'):,.2f}",
-            f"- P90 NPV: {mc_result.get('p90_npv', 'N/A'):,.2f}",
-            f"- Prob(NPV>0): {mc_result.get('probability_positive', 0) * 100:.1f}%",
+            f"- Prob(NPV>0): {(mc.get('probability_positive') or 0) * 100:.1f}%",
+            f"- VaR 5%: {_mc_f(mc.get('var_5pct'))}",
+            f"- Upside 95%: {_mc_f(mc.get('upside_potential_95pct'))}",
             f"",
         ]
     memo_lines += [
