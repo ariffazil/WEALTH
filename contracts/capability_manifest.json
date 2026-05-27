@@ -1,0 +1,536 @@
+{
+  "manifest_version": "1.0.0",
+  "created": "2026-05-27",
+  "authority": "ARIF",
+  "schema_version": "wealth.physics_economics.v1",
+  "description": "Genotype map of all WEALTH capabilities. No capability may be deleted unless explicitly approved by Arif. This manifest is the source of truth for capability preservation.",
+  "total_runtime_tools": 43,
+  "total_aliases": 34,
+  "total_ghost_tools": 5,
+  "total_capabilities": 82,
+  "invariants": {
+    "no_public_capability_removed": true,
+    "capability_count_after_must_gte_before": true,
+    "deletion_requires_arif_ack": true
+  },
+  "capabilities": [
+    {
+      "capability_id": "health.mcp",
+      "legacy_tools": ["mcp_health_check"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["health_check_ok", "transport_sse_valid", "auth_ok"],
+      "delete_allowed": false,
+      "notes": "Federation heartbeat. Always preserved."
+    },
+    {
+      "capability_id": "registry.status",
+      "legacy_tools": ["wealth_system_registry_status"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["registry_returns_43_tools", "registry_truth_pass"],
+      "delete_allowed": false,
+      "notes": "Canonical truth of registry. Always preserved."
+    },
+    {
+      "capability_id": "synthesis.advisory",
+      "legacy_tools": ["wealth_synthesize"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["synthesis_returns_envelope", "final_authority_arif"],
+      "delete_allowed": false,
+      "notes": "Central advisory brain. Advisory only, not final verdict."
+    },
+    {
+      "capability_id": "agent.path",
+      "legacy_tools": ["wealth_agent_path"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["agent_path_returns_envelope"],
+      "delete_allowed": false,
+      "notes": "Agent path planning."
+    },
+    {
+      "capability_id": "survival.cashflow",
+      "legacy_tools": ["wealth_flow_cashflow"],
+      "new_engine": "wealth_survival_engine",
+      "status": "wrapper",
+      "must_pass_tests": ["legacy_cashflow_wrapper_equivalence"],
+      "delete_allowed": false,
+      "notes": "Absorbed into wealth_survival_engine(mode='cashflow'). Legacy wrapper preserved."
+    },
+    {
+      "capability_id": "survival.liquidity",
+      "legacy_tools": ["wealth_flow_liquidity"],
+      "new_engine": "wealth_survival_engine",
+      "status": "wrapper",
+      "must_pass_tests": ["legacy_liquidity_wrapper_equivalence"],
+      "delete_allowed": false,
+      "notes": "Absorbed into wealth_survival_engine(mode='liquidity'). Legacy wrapper preserved."
+    },
+    {
+      "capability_id": "survival.cashflow_track",
+      "legacy_tools": ["wealth_cashflow_track"],
+      "new_engine": "wealth_survival_engine",
+      "status": "preserved",
+      "must_pass_tests": ["cashflow_track_recorded"],
+      "delete_allowed": false,
+      "notes": "Direct DB insert. Not absorbed — standalone tool preserved."
+    },
+    {
+      "capability_id": "survival.cashflow_summary",
+      "legacy_tools": ["wealth_cashflow_summary"],
+      "new_engine": "wealth_survival_engine",
+      "status": "wrapper",
+      "must_pass_tests": ["legacy_cashflow_summary_wrapper_equivalence"],
+      "delete_allowed": false,
+      "notes": "Absorbed into wealth_survival_engine(mode='cashflow'). Legacy wrapper preserved."
+    },
+    {
+      "capability_id": "survival.runway",
+      "legacy_tools": ["wealth_runway_calculate"],
+      "new_engine": "wealth_survival_engine",
+      "status": "wrapper",
+      "must_pass_tests": ["legacy_runway_wrapper_equivalence", "runway_critical", "runway_green", "runway_missing_inputs"],
+      "delete_allowed": false,
+      "notes": "Absorbed into wealth_survival_engine(mode='runway'). Legacy wrapper preserved."
+    },
+    {
+      "capability_id": "survival.velocity_runway",
+      "legacy_tools": ["wealth_velocity_runway"],
+      "new_engine": "wealth_survival_engine",
+      "status": "wrapper",
+      "must_pass_tests": ["legacy_velocity_runway_wrapper_equivalence"],
+      "delete_allowed": false,
+      "notes": "Absorbed into wealth_survival_engine(mode='runway'). Legacy wrapper preserved."
+    },
+    {
+      "capability_id": "survival.burn",
+      "legacy_tools": [],
+      "new_engine": "wealth_survival_engine",
+      "status": "internal_mode",
+      "must_pass_tests": ["burn_rate_computed"],
+      "delete_allowed": false,
+      "notes": "Internal mode of wealth_survival_engine. Computed from cashflow data."
+    },
+    {
+      "capability_id": "survival.personal_finance",
+      "legacy_tools": [],
+      "new_engine": "wealth_survival_engine",
+      "status": "internal_mode",
+      "must_pass_tests": ["personal_finance_comprehensive"],
+      "delete_allowed": false,
+      "notes": "Default mode of wealth_survival_engine. Aggregates all survival dimensions."
+    },
+    {
+      "capability_id": "balance.conservation_capital",
+      "legacy_tools": ["wealth_conservation_capital"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["conservation_capital_envelope"],
+      "delete_allowed": false,
+      "notes": "Balance sheet conservation. Not targeted in Phase 1."
+    },
+    {
+      "capability_id": "balance.mass_networth",
+      "legacy_tools": ["wealth_mass_networth"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["mass_networth_envelope"],
+      "delete_allowed": false,
+      "notes": "Net worth mass. Not targeted in Phase 1."
+    },
+    {
+      "capability_id": "balance.net_worth_snapshot",
+      "legacy_tools": ["wealth_net_worth_snapshot"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["net_worth_snapshot_envelope"],
+      "delete_allowed": false,
+      "notes": "Personal finance net worth. Not targeted in Phase 1."
+    },
+    {
+      "capability_id": "valuation.npv",
+      "legacy_tools": ["wealth_value_npv"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["npv_computes_correctly"],
+      "delete_allowed": false,
+      "notes": "NPV valuation. Phase 2 target."
+    },
+    {
+      "capability_id": "valuation.irr",
+      "legacy_tools": ["wealth_energy_irr"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["irr_computes_correctly"],
+      "delete_allowed": false,
+      "notes": "IRR valuation. Phase 2 target."
+    },
+    {
+      "capability_id": "valuation.pi",
+      "legacy_tools": ["wealth_density_pi"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["pi_computes_correctly"],
+      "delete_allowed": false,
+      "notes": "Profitability index. Phase 2 target."
+    },
+    {
+      "capability_id": "valuation.payback",
+      "legacy_tools": ["wealth_time_payback"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["payback_computes_correctly"],
+      "delete_allowed": false,
+      "notes": "Payback period. Phase 2 target."
+    },
+    {
+      "capability_id": "valuation.discount",
+      "legacy_tools": ["wealth_time_discount"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["time_discount_computes"],
+      "delete_allowed": false,
+      "notes": "Time discount rate. Phase 2 target."
+    },
+    {
+      "capability_id": "valuation.productivity",
+      "legacy_tools": ["wealth_energy_productivity"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["productivity_computes"],
+      "delete_allowed": false,
+      "notes": "Energy productivity. Phase 2 target."
+    },
+    {
+      "capability_id": "uncertainty.emv",
+      "legacy_tools": ["wealth_expectation_emv"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["emv_requires_scenarios"],
+      "delete_allowed": false,
+      "notes": "Expected Monetary Value. Phase 2 target."
+    },
+    {
+      "capability_id": "uncertainty.monte_carlo",
+      "legacy_tools": ["wealth_probability_monte_carlo"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["monte_carlo_requires_inputs"],
+      "delete_allowed": false,
+      "notes": "Monte Carlo simulation. Phase 2 target."
+    },
+    {
+      "capability_id": "uncertainty.entropy_risk",
+      "legacy_tools": ["wealth_entropy_risk"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["entropy_risk_computes"],
+      "delete_allowed": false,
+      "notes": "Entropy risk. Phase 2 target."
+    },
+    {
+      "capability_id": "uncertainty.entropy_audit",
+      "legacy_tools": ["wealth_entropy_audit"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["entropy_audit_computes"],
+      "delete_allowed": false,
+      "notes": "Entropy audit. Phase 2 target."
+    },
+    {
+      "capability_id": "market.gradient_price",
+      "legacy_tools": ["wealth_gradient_price"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["gradient_price_spread"],
+      "delete_allowed": false,
+      "notes": "Price gradient. Phase 2 target."
+    },
+    {
+      "capability_id": "market.fx_rate",
+      "legacy_tools": ["wealth_fx_rate"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["fx_rate_returns_rate"],
+      "delete_allowed": false,
+      "notes": "FX rate. Phase 2 target."
+    },
+    {
+      "capability_id": "market.commodity_price",
+      "legacy_tools": ["wealth_commodity_price"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["commodity_price_returns"],
+      "delete_allowed": false,
+      "notes": "Commodity price. Phase 2 target."
+    },
+    {
+      "capability_id": "market.macro_indicator",
+      "legacy_tools": ["wealth_macro_indicator"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["macro_indicator_returns"],
+      "delete_allowed": false,
+      "notes": "Macro indicator. Phase 2 target."
+    },
+    {
+      "capability_id": "market.field_macro",
+      "legacy_tools": ["wealth_field_macro"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["field_macro_sources"],
+      "delete_allowed": false,
+      "notes": "Macro field sensor. Phase 2 target."
+    },
+    {
+      "capability_id": "leverage.dscr",
+      "legacy_tools": ["wealth_gravity_dscr"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["dscr_requires_debt_service"],
+      "delete_allowed": false,
+      "notes": "DSCR. Phase 2 target."
+    },
+    {
+      "capability_id": "leverage.inertia",
+      "legacy_tools": ["wealth_inertia_leverage"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["inertia_leverage_computes"],
+      "delete_allowed": false,
+      "notes": "Leverage inertia. Phase 2 target."
+    },
+    {
+      "capability_id": "signal.evoi",
+      "legacy_tools": ["wealth_signal_evoi"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["evoi_requires_pos"],
+      "delete_allowed": false,
+      "notes": "EVOI signal. Phase 2 target."
+    },
+    {
+      "capability_id": "signal.information",
+      "legacy_tools": ["wealth_signal_information"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["signal_information_computes"],
+      "delete_allowed": false,
+      "notes": "Information quality. Phase 2 target."
+    },
+    {
+      "capability_id": "allocation.preference_rank",
+      "legacy_tools": ["wealth_preference_rank"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["preference_rank_requires_alternatives"],
+      "delete_allowed": false,
+      "notes": "Preference ranking. Phase 2 target."
+    },
+    {
+      "capability_id": "allocation.deal_frame",
+      "legacy_tools": ["wealth_deal_frame"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["deal_frame_requires_inputs"],
+      "delete_allowed": false,
+      "notes": "Deal framing. Phase 2 target."
+    },
+    {
+      "capability_id": "allocation.game_coordination",
+      "legacy_tools": ["wealth_game_coordination"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["game_coordination_requires_agents"],
+      "delete_allowed": false,
+      "notes": "Game coordination. Phase 2 target."
+    },
+    {
+      "capability_id": "governance.verdict",
+      "legacy_tools": ["wealth_governance_verdict"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["verdict_fail_closed"],
+      "delete_allowed": false,
+      "notes": "Pre-verdict advisory. Must not become autonomous judge. Phase 2 target."
+    },
+    {
+      "capability_id": "governance.boundary",
+      "legacy_tools": ["wealth_boundary_governance"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["boundary_returns_seal"],
+      "delete_allowed": false,
+      "notes": "Strong constitutional boundary tool. Always preserved."
+    },
+    {
+      "capability_id": "ledger.query",
+      "legacy_tools": ["wealth_ledger_query"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["ledger_query_returns_records"],
+      "delete_allowed": false,
+      "notes": "Ledger query. Preserved."
+    },
+    {
+      "capability_id": "ledger.write",
+      "legacy_tools": ["wealth_ledger_write"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["ledger_write_requires_ack"],
+      "delete_allowed": false,
+      "notes": "Gated irreversible append. Requires ack_irreversible=True. Preserved."
+    },
+    {
+      "capability_id": "civilization.inequality",
+      "legacy_tools": ["wealth_inequality_kernel"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["inequality_kernel_computes"],
+      "delete_allowed": false,
+      "notes": "Inequality kernel. Phase 2 target."
+    },
+    {
+      "capability_id": "hysteresis.ledger",
+      "legacy_tools": ["wealth_hysteresis_ledger"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["hysteresis_ledger_session_init"],
+      "delete_allowed": false,
+      "notes": "Civilizational memory. Always preserved."
+    },
+    {
+      "capability_id": "epf.projection",
+      "legacy_tools": ["wealth_epf_project"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["epf_projection_computes"],
+      "delete_allowed": false,
+      "notes": "EPF projection. Phase 2 target."
+    },
+    {
+      "capability_id": "zakat.calculate",
+      "legacy_tools": ["wealth_zakat_calculate"],
+      "new_engine": null,
+      "status": "preserved",
+      "must_pass_tests": ["zakat_requires_nisab"],
+      "delete_allowed": false,
+      "notes": "Zakat calculation. Phase 2 target."
+    },
+    {
+      "capability_id": "ghost.screen_opportunity",
+      "legacy_tools": [],
+      "new_engine": null,
+      "status": "ghost",
+      "must_pass_tests": [],
+      "delete_allowed": false,
+      "notes": "PHOENIX-73F: Declared in WEALTH_PUBLIC_TOOL_ORDER but not registered. Ghost."
+    },
+    {
+      "capability_id": "ghost.compute_viability",
+      "legacy_tools": [],
+      "new_engine": null,
+      "status": "ghost",
+      "must_pass_tests": [],
+      "delete_allowed": false,
+      "notes": "PHOENIX-73F: Declared in WEALTH_PUBLIC_TOOL_ORDER but not registered. Ghost."
+    },
+    {
+      "capability_id": "ghost.score_risk",
+      "legacy_tools": [],
+      "new_engine": null,
+      "status": "ghost",
+      "must_pass_tests": [],
+      "delete_allowed": false,
+      "notes": "PHOENIX-73F: Declared in WEALTH_PUBLIC_TOOL_ORDER but not registered. Ghost."
+    },
+    {
+      "capability_id": "ghost.compare_scenarios",
+      "legacy_tools": [],
+      "new_engine": null,
+      "status": "ghost",
+      "must_pass_tests": [],
+      "delete_allowed": false,
+      "notes": "PHOENIX-73F: Declared in WEALTH_PUBLIC_TOOL_ORDER but not registered. Ghost."
+    },
+    {
+      "capability_id": "ghost.emit_investment_memo",
+      "legacy_tools": [],
+      "new_engine": null,
+      "status": "ghost",
+      "must_pass_tests": [],
+      "delete_allowed": false,
+      "notes": "PHOENIX-73F: Declared in WEALTH_PUBLIC_TOOL_ORDER but not registered. Ghost."
+    }
+  ],
+  "alias_layer": {
+    "description": "Backward-compatible aliases. These are internal dispatch mappings, not public tools.",
+    "total_aliases": 34,
+    "aliases": [
+      {"alias": "wealth_sense_fetch", "canonical": "wealth_ingest_fetch"},
+      {"alias": "wealth_sense_snapshot", "canonical": "wealth_ingest_snapshot"},
+      {"alias": "wealth_sense_reconcile", "canonical": "wealth_ingest_reconcile"},
+      {"alias": "wealth_sense_health", "canonical": "wealth_ingest_health"},
+      {"alias": "wealth_sense_vintage", "canonical": "wealth_ingest_vintage"},
+      {"alias": "wealth_sense_sources", "canonical": "wealth_ingest_sources"},
+      {"alias": "wealth_mind_emv", "canonical": "wealth_emv_risk"},
+      {"alias": "wealth_mind_monte_carlo", "canonical": "wealth_monte_carlo_forecast"},
+      {"alias": "wealth_mind_correlation", "canonical": "wealth_correlation_guard_check"},
+      {"alias": "wealth_mind_evoi", "canonical": "wealth_evoi_compute"},
+      {"alias": "wealth_mind_evoi_mc", "canonical": "wealth_evoi_monte_carlo"},
+      {"alias": "wealth_mind_schema", "canonical": "wealth_schema_validate"},
+      {"alias": "wealth_survival_dscr", "canonical": "wealth_dscr_leverage"},
+      {"alias": "wealth_survival_networth", "canonical": "wealth_networth_state"},
+      {"alias": "wealth_survival_velocity", "canonical": "wealth_growth_velocity"},
+      {"alias": "wealth_survival_cashflow", "canonical": "wealth_cashflow_flow"},
+      {"alias": "wealth_survival_triage", "canonical": "wealth_crisis_triage"},
+      {"alias": "wealth_survival_civilization", "canonical": "wealth_civilization_stewardship"},
+      {"alias": "wealth_reason_npv", "canonical": "wealth_npv_reward"},
+      {"alias": "wealth_npv_reward", "canonical": "wealth_npv_reward"},
+      {"alias": "wealth_reason_irr", "canonical": "wealth_irr_yield"},
+      {"alias": "wealth_reason_pi", "canonical": "wealth_pi_efficiency"},
+      {"alias": "wealth_reason_payback", "canonical": "wealth_payback_time"},
+      {"alias": "wealth_reason_equilibrium", "canonical": "wealth_coordination_equilibrium"},
+      {"alias": "wealth_reason_game", "canonical": "wealth_game_theory_solve"},
+      {"alias": "wealth_reason_personal", "canonical": "wealth_personal_decision"},
+      {"alias": "wealth_reason_agent", "canonical": "wealth_agent_budget"},
+      {"alias": "wealth_judge_kernel", "canonical": "wealth_score_kernel"},
+      {"alias": "wealth_judge_floors", "canonical": "wealth_check_floors"},
+      {"alias": "wealth_judge_policy", "canonical": "wealth_policy_audit"},
+      {"alias": "wealth_judge_entropy", "canonical": "wealth_audit_entropy"},
+      {"alias": "wealth_vault_init", "canonical": "wealth_init"},
+      {"alias": "wealth_vault_record", "canonical": "wealth_record_transaction"},
+      {"alias": "wealth_vault_snapshot", "canonical": "wealth_snapshot_portfolio"}
+    ]
+  },
+  "phase1_survival_engine": {
+    "engine_id": "wealth_survival_engine",
+    "modes": ["cashflow", "runway", "burn", "liquidity", "personal_finance"],
+    "absorbs_capabilities": [
+      "survival.cashflow",
+      "survival.liquidity",
+      "survival.cashflow_summary",
+      "survival.runway",
+      "survival.velocity_runway",
+      "survival.burn",
+      "survival.personal_finance"
+    ],
+    "preserved_legacy_tools": [
+      "wealth_flow_cashflow",
+      "wealth_flow_liquidity",
+      "wealth_cashflow_summary",
+      "wealth_runway_calculate",
+      "wealth_velocity_runway"
+    ],
+    "legacy_wrapper_equivalence_required": true
+  },
+  "migration_rules": {
+    "no_capability_amnesia": "No tool may be deleted until its capability is proven preserved by tests, aliases, documentation, and migration receipts.",
+    "alias_preservation": "Old tool names become wrappers. capability_preserved=true.",
+    "deletion_requires_arif": "ARIF_ACK_DELETE_CAPABILITY:<capability_id> required for any deletion.",
+    "public_tool_count_may_decrease": "capability_count_after must not decrease.",
+    "golden_test_required": "Legacy tool output must equal new engine output within tolerance before wrapper removal."
+  }
+}
