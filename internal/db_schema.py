@@ -18,7 +18,9 @@ import asyncpg
 
 _pool: Optional[asyncpg.Pool] = None
 
-WEALTH_PG_URL = "postgresql://arifos_admin@localhost:5432/arifos"
+WEALTH_PG_URL = (
+    "postgresql://arifos_admin:ArifPostgresVault2026!@localhost:5432/vault999"
+)
 # Override via env var if different
 import os
 

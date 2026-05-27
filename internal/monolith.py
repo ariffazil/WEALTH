@@ -80,32 +80,49 @@ except Exception as exc:
 
 
 # --------------------------------------------------------------------------- #
-# D1 Personal Finance & D3 Market Data modules — tools register via FastMCP
+# D1 Personal Finance & D3 Market Data — INLINED after controlled wrapper
+# FastMCP mcp.tool is now patched with controlled wrapper (whitelist-only).
+# These tools ARE in PUBLIC_SURFACE_WHITELIST so they register normally.
+# db_schema is a pure utility — no FastMCP coupling.
 # --------------------------------------------------------------------------- #
-# These imports trigger @mcp.tool decorator registration in those modules.
-# Guards ensure the server still starts even if these modules fail to import.
-# --------------------------------------------------------------------------- #
-try:
-    # Personal Finance — D1: cashflow_track, cashflow_summary, runway_calculate,
-    #                       net_worth_snapshot, epf_project, zakat_calculate
-    from internal import personal_finance as _pf_module
 
-    _PF_AVAILABLE = True
-    _PF_IMPORT_ERROR = None
-except Exception as exc:
-    _PF_AVAILABLE = False
-    _PF_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
 
-try:
-    # Market Data — D3: fx_rate, commodity_price, macro_indicator
-    from internal import market_data as _md_module
+# Lazy helpers for async DB operations (import at call time to avoid top-level asyncio)
+async def _init_db_schema():
+    from .db_schema import init_schema
 
-    _MD_AVAILABLE = True
-    _MD_IMPORT_ERROR = None
-except Exception as exc:
-    _MD_AVAILABLE = False
-    _MD_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
+    await init_schema()
 
+
+async def _txns(owner, start_dt, end_dt, category, limit):
+    from .db_schema import get_transactions
+
+    return await get_transactions(owner, start_dt, end_dt, category, limit)
+
+
+async def _assets(owner):
+    from .db_schema import get_assets
+
+    return await get_assets(owner)
+
+
+async def _liabs(owner):
+    from .db_schema import get_liabilities
+
+    return await get_liabilities(owner)
+
+
+async def _epf(owner):
+    from .db_schema import get_latest_epf
+
+    return await get_latest_epf(owner)
+
+
+__version__ = "2026.05.02"
+"""WEALTH v2026.04.29 - Sovereign Pipeline OS with Expanded Resource Lattice."""
+
+__version__ = "2026.05.02"
+"""WEALTH v2026.04.29 - Sovereign Pipeline OS with Expanded Resource Lattice."""
 
 __version__ = "2026.05.02"
 """WEALTH v2026.04.29 - Sovereign Pipeline OS with Expanded Resource Lattice."""
@@ -859,6 +876,469 @@ def maruah_band(score):
 
 mcp = FastMCP("WEALTH Valuation Kernel")
 WEALTH_SCHEMA_VERSION = "wealth.physics_economics.v1"
+
+# --------------------------------------------------------------------------- #
+# D1 PERSONAL FINANCE — 6 tools (inline, after mcp is defined)
+# db_schema.py provides async PostgreSQL helpers; we call via run_until_complete
+# --------------------------------------------------------------------------- #
+
+from datetime import date as _date, datetime
+
+
+async def _pf_init_db():
+    from .db_schema import init_schema
+
+    await init_schema()
+
+
+async def _pf_get_txns(owner, start_dt, end_dt, category, limit):
+    from .db_schema import get_transactions
+
+    return await get_transactions(owner, start_dt, end_dt, category, limit)
+
+
+async def _pf_get_assets(owner):
+    from .db_schema import get_assets
+
+    return await get_assets(owner)
+
+
+async def _pf_get_liabs(owner):
+    from .db_schema import get_liabilities
+
+    return await get_liabilities(owner)
+
+
+async def _pf_get_epf(owner):
+    from .db_schema import get_latest_epf
+
+    return await get_latest_epf(owner)
+
+
+@mcp.tool(name="wealth_cashflow_track")
+async def wealth_cashflow_track(
+    owner: str = "arif",
+    txn_date: str = None,
+    description: str = "",
+    category: str = "expense",
+    subcategory: str = None,
+    amount: float = 0.0,
+    currency: str = "MYR",
+) -> dict:
+    """Ω-D1-01: Cashflow Track — Record a financial transaction."""
+    parsed = txn_date or _date.today().isoformat()
+    parsed_date = datetime.strptime(parsed, "%Y-%m-%d").date()
+    await _pf_init_db()
+    from .db_schema import upsert_transaction
+
+    txn_id = await upsert_transaction(
+        owner=owner,
+        date=parsed_date,
+        description=description,
+        category=category,
+        amount=amount,
+        currency=currency,
+        subcategory=subcategory,
+    )
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_cashflow_track",
+        "status": "recorded",
+        "transaction_id": txn_id,
+        "date": str(parsed_date),
+        "description": description,
+        "category": category,
+        "amount": amount,
+        "currency": currency,
+        "recommendation_only": True,
+        "final_authority": "Arif",
+    }
+
+
+@mcp.tool(name="wealth_cashflow_summary")
+async def wealth_cashflow_summary(
+    owner: str = "arif",
+    start_date: str = None,
+    end_date: str = None,
+    category: str = None,
+) -> dict:
+    """Ω-D1-02: Cashflow Summary — Aggregate transactions by category."""
+    today = _date.today()
+    start_str = start_date or today.replace(day=1).isoformat()
+    end_str = end_date or today.isoformat()
+    start_dt = datetime.strptime(start_str, "%Y-%m-%d").date()
+    end_dt = datetime.strptime(end_str, "%Y-%m-%d").date()
+    await _pf_init_db()
+    txns = await _pf_get_txns(owner, start_dt, end_dt, category, 5000)
+    inflows = sum(float(t["amount"]) for t in txns if float(t["amount"]) > 0)
+    outflows = sum(float(t["amount"]) for t in txns if float(t["amount"]) < 0)
+    by_cat: dict = {}
+    for t in txns:
+        c = str(t["category"])
+        by_cat[c] = by_cat.get(c, 0.0) + float(t["amount"])
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_cashflow_summary",
+        "owner": owner,
+        "period": {"start": start_str, "end": end_str},
+        "transaction_count": len(txns),
+        "inflows": round(inflows, 4),
+        "outflows": round(outflows, 4),
+        "net": round(inflows + outflows, 4),
+        "by_category": {k: round(v, 4) for k, v in by_cat.items()},
+        "recommendation_only": True,
+        "final_authority": "Arif",
+    }
+
+
+@mcp.tool(name="wealth_runway_calculate")
+def wealth_runway_calculate(
+    monthly_burn: float = 0.0,
+    liquid_assets: float = 0.0,
+    conservative_factor: float = 0.8,
+) -> dict:
+    """Ω-D1-03: Runway Calculate — Months of financial runway."""
+    adjusted = liquid_assets * conservative_factor
+    months = round(adjusted / monthly_burn, 1) if monthly_burn > 0 else float("inf")
+    break_even_pa = (adjusted / 12) if adjusted > 0 else 0.0
+    if months < 3:
+        stress = "CRITICAL — less than 3 months runway"
+    elif months < 6:
+        stress = "AMBER — 3–6 months, build buffer"
+    elif months < 12:
+        stress = "CAUTION — 6–12 months"
+    else:
+        stress = "GREEN — 12+ months runway"
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_runway_calculate",
+        "months_runway": months,
+        "adjusted_liquid_assets": round(adjusted, 4),
+        "break_even_burn_pa": round(break_even_pa, 4),
+        "monthly_burn": monthly_burn,
+        "liquid_assets": liquid_assets,
+        "conservative_factor": conservative_factor,
+        "stress_label": stress,
+        "recommendation_only": True,
+        "final_authority": "Arif",
+    }
+
+
+@mcp.tool(name="wealth_net_worth_snapshot")
+async def wealth_net_worth_snapshot(
+    owner: str = "arif",
+    include_EPF: bool = True,
+) -> dict:
+    """Ω-D1-04: Net Worth Snapshot — Assets minus Liabilities."""
+    await _pf_init_db()
+    assets = await _pf_get_assets(owner)
+    liabs = await _pf_get_liabs(owner)
+    epf = await _pf_get_epf(owner) if include_EPF else None
+    total_assets = sum(float(a["current_value"]) for a in assets)
+    total_liab = sum(float(l["outstanding"]) for l in liabs)
+    by_class: dict = {}
+    for a in assets:
+        c = str(a["asset_class"])
+        by_class[c] = by_class.get(c, 0.0) + float(a["current_value"])
+    epf_total = 0.0
+    epf_date = None
+    if epf and include_EPF:
+        epf_total = float(epf["total"])
+        epf_date = str(epf["snapshot_date"])
+        total_assets += epf_total
+        by_class["epf"] = by_class.get("epf", 0.0) + epf_total
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_net_worth_snapshot",
+        "owner": owner,
+        "total_assets": round(total_assets, 4),
+        "total_liabilities": round(total_liab, 4),
+        "net_worth": round(total_assets - total_liab, 4),
+        "asset_breakdown": {k: round(v, 4) for k, v in by_class.items()},
+        "liability_breakdown": {
+            str(l["liability_class"]): round(float(l["outstanding"]), 4) for l in liabs
+        },
+        "epf_total": round(epf_total, 4),
+        "epf_date": epf_date,
+        "recommendation_only": True,
+        "final_authority": "Arif",
+    }
+
+
+@mcp.tool(name="wealth_epf_project")
+def wealth_epf_project(
+    current_account_1: float = 0.0,
+    current_account_2: float = 0.0,
+    monthly_contribution: float = 0.0,
+    current_age: int = 30,
+    target_age: int = 55,
+    annual_rate: float = 0.0515,
+    employer_match: float = 0.0,
+) -> dict:
+    """Ω-D1-05: EPF Project — Project EPF accumulation to target age."""
+    current = current_account_1 + current_account_2
+    years = max(0, target_age - current_age)
+    months = years * 12
+    total_monthly = monthly_contribution + employer_match
+    r_month = annual_rate / 12
+    fv_current = current * ((1 + r_month) ** months) if r_month > 0 else current
+    fv_annuity = (
+        total_monthly * (((1 + r_month) ** months - 1) / r_month)
+        if r_month > 0
+        else total_monthly * months
+    )
+    projected = fv_current + fv_annuity
+    total_contrib = current + (total_monthly * months)
+    total_growth = projected - total_contrib
+
+    def epf_rate(age):
+        if age < 50:
+            return 0.0515
+        if age < 55:
+            return 0.0520
+        if age < 60:
+            return 0.0530
+        return 0.0540
+
+    blended = (
+        sum(epf_rate(current_age + y) for y in range(years)) / years
+        if years > 0
+        else annual_rate
+    )
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_epf_project",
+        "current_balance": current,
+        "projected_total": round(projected, 4),
+        "total_contributions": round(total_contrib, 4),
+        "total_growth": round(total_growth, 4),
+        "age_55_value": round(projected, 4),
+        "years_to_target": years,
+        "monthly_contribution": monthly_contribution,
+        "employer_match": employer_match,
+        "blended_annual_rate": round(blended, 4),
+        "recommendation_only": True,
+        "final_authority": "Arif",
+    }
+
+
+NISAB_MYR = 14254.0
+ZAKAT_RATE = 0.025
+
+
+@mcp.tool(name="wealth_zakat_calculate")
+async def wealth_zakat_calculate(
+    owner: str = "arif",
+    year: int = None,
+    total_wealth: float = None,
+    currency: str = "MYR",
+) -> dict:
+    """Ω-D1-06: Zakat Calculate — Malaysian 2.5%% zakat above nisab."""
+    year = year or _date.today().year
+    await _pf_init_db()
+    if total_wealth is None:
+        assets = await _pf_get_assets(owner)
+        liabs = await _pf_get_liabs(owner)
+        epf = await _pf_get_epf(owner)
+        total_a = sum(float(a["current_value"]) for a in assets)
+        total_l = sum(float(l["outstanding"]) for l in liabs)
+        if epf:
+            total_a += float(epf["total"])
+        wealth = total_a - total_l
+    else:
+        wealth = total_wealth
+    zakatable = max(0.0, wealth - NISAB_MYR)
+    zakat_amount = zakatable * ZAKAT_RATE
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_zakat_calculate",
+        "owner": owner,
+        "year": year,
+        "total_wealth": round(wealth, 4),
+        "nisab_threshold_myr": NISAB_MYR,
+        "is_nisab_achieved": wealth >= NISAB_MYR,
+        "zakatable_wealth": round(zakatable, 4),
+        "zakat_rate": ZAKAT_RATE,
+        "zakat_amount": round(zakat_amount, 4),
+        "currency": currency,
+        "recommendation_only": True,
+        "final_authority": "Arif",
+    }
+
+
+# --------------------------------------------------------------------------- #
+# D3 MARKET DATA — 3 tools (inline, after mcp is defined)
+# --------------------------------------------------------------------------- #
+
+_TIMEOUT = httpx.Timeout(10.0, connect=5.0)
+
+
+@mcp.tool(name="wealth_fx_rate")
+def wealth_fx_rate(
+    base: str = "USD",
+    targets: str = "MYR,SGD,GBP,EUR,JPY,CNY,AUD",
+    as_of_date: str = None,
+) -> dict:
+    """Ω-D3-01: FX Rate — Live FX via Frankfurter API (no key required)."""
+    target_list = [t.strip() for t in targets.split(",")]
+    params = {"base": base.upper()}
+    if as_of_date:
+        params["date"] = as_of_date
+    try:
+        with httpx.Client(timeout=_TIMEOUT) as client:
+            resp = client.get("https://api.frankfurter.dev/v1/latest", params=params)
+            resp.raise_for_status()
+            data = resp.json()
+        rates = data.get("rates", {})
+        result = {
+            f"{base.upper()}/{t.upper()}": round(rates.get(t, float("nan")), 4)
+            for t in target_list
+            if t.upper() != base.upper()
+        }
+        return {
+            "mcp": "WEALTH",
+            "tool": "wealth_fx_rate",
+            "base": base.upper(),
+            "date": data.get("date") or as_of_date,
+            "rates": result,
+            "provider": "Frankfurter API",
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    except httpx.HTTPError as e:
+        return {
+            "mcp": "WEALTH",
+            "tool": "wealth_fx_rate",
+            "status": "error",
+            "message": str(e),
+            "base": base.upper(),
+            "targets": target_list,
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+
+
+@mcp.tool(name="wealth_commodity_price")
+def wealth_commodity_price(
+    commodity: str = "brent_crude",
+    unit: str = "usd_per_bbl",
+    as_of_date: str = None,
+) -> dict:
+    """Ω-D3-02: Commodity Price — Approximate market prices (replace with live feed)."""
+    APPROX = {
+        "brent_crude": {"price": 78.50, "unit": "USD/bbl", "source": "EIA estimate"},
+        "lng_asia": {
+            "price": 10.20,
+            "unit": "USD/MMBtu",
+            "source": "SLRChina estimate",
+        },
+        "coal_api2": {
+            "price": 113.00,
+            "unit": "USD/tonne",
+            "source": "ICE API2 assessment",
+        },
+        "gold": {"price": 2340.00, "unit": "USD/troy_oz", "source": "LBMA PM fix"},
+        "malaysia_rsd": {
+            "price": 82.00,
+            "unit": "USD/bbl",
+            "source": "Miri/Bintulu estimate",
+        },
+    }
+    info = APPROX.get(commodity.lower().strip())
+    if not info:
+        return {
+            "mcp": "WEALTH",
+            "tool": "wealth_commodity_price",
+            "status": "unsupported",
+            "commodity": commodity,
+            "supported": list(APPROX.keys()),
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_commodity_price",
+        "commodity": commodity,
+        "price": info["price"],
+        "unit": unit,
+        "price_unit": info["unit"],
+        "date": as_of_date or _date.today().isoformat(),
+        "source": info["source"],
+        "recommendation_only": True,
+        "final_authority": "Arif",
+    }
+
+
+@mcp.tool(name="wealth_macro_indicator")
+def wealth_macro_indicator(
+    indicator: str = "usd_myr",
+    country: str = "MYS",
+    as_of_date: str = None,
+) -> dict:
+    """Ω-D3-03: Macro Indicator — GDP, inflation, rates via World Bank API."""
+    indicator = indicator.lower().strip()
+    result = {
+        "mcp": "WEALTH",
+        "tool": "wealth_macro_indicator",
+        "indicator": indicator,
+        "country": country,
+        "date": as_of_date or _date.today().isoformat(),
+        "recommendation_only": True,
+        "final_authority": "Arif",
+    }
+    try:
+        with httpx.Client(timeout=_TIMEOUT) as client:
+            if indicator == "usd_myr":
+                r = client.get(
+                    "https://api.frankfurter.dev/v1/latest",
+                    params={"base": "USD", "symbols": "MYR"},
+                )
+                r.raise_for_status()
+                d = r.json()
+                result["value"] = round(d["rates"]["MYR"], 4)
+                result["source"] = "Frankfurter API"
+            elif indicator in ("inflation_my", "gdp_growth_my"):
+                code_map = {
+                    "inflation_my": "FP.CPI.TOTL.ZG",
+                    "gdp_growth_my": "NY.GDP.MKTP.KD.ZG",
+                }
+                r = client.get(
+                    f"https://api.worldbank.org/v2/country/{country}/indicator/{code_map[indicator]}",
+                    params={"format": "json", "per_page": 1, "date": "2020:2025"},
+                )
+                r.raise_for_status()
+                items = r.json()
+                if isinstance(items, list) and len(items) > 1 and items[1]:
+                    entry = items[1][0]
+                    result["value"] = entry.get("value")
+                    result["year"] = entry.get("date")
+                    result["source"] = "World Bank"
+            elif indicator == "interest_rate_my":
+                result["value"] = 3.00
+                result["source"] = "Bank Negara Malaysia OPR (public release)"
+                result["note"] = "Verify against latest BNM statistical release"
+            elif indicator in ("brent", "opec_basket", "coal_api2"):
+                STATIC = {"brent": 78.50, "opec_basket": 76.80, "coal_api2": 113.00}
+                result["value"] = STATIC.get(indicator)
+                result["source"] = "approximate — replace with live feed"
+            else:
+                result["status"] = "unsupported"
+                result["supported"] = [
+                    "usd_myr",
+                    "inflation_my",
+                    "gdp_growth_my",
+                    "brent",
+                    "interest_rate_my",
+                ]
+    except Exception as e:
+        result["status"] = "error"
+        result["message"] = str(e)
+    return result
+
+
+# --------------------------------------------------------------------------- #
+# Remove lazy-load approach (tools now inline above)
+# --------------------------------------------------------------------------- #
 
 # --- Registry Lockdown Logic (Phase 1) ---
 # Generic agents should only see: health -> registry -> synthesize -> canonical organ -> specialist.
