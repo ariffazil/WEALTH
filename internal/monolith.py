@@ -79,6 +79,34 @@ except Exception as exc:
             }
 
 
+# --------------------------------------------------------------------------- #
+# D1 Personal Finance & D3 Market Data modules — tools register via FastMCP
+# --------------------------------------------------------------------------- #
+# These imports trigger @mcp.tool decorator registration in those modules.
+# Guards ensure the server still starts even if these modules fail to import.
+# --------------------------------------------------------------------------- #
+try:
+    # Personal Finance — D1: cashflow_track, cashflow_summary, runway_calculate,
+    #                       net_worth_snapshot, epf_project, zakat_calculate
+    from internal import personal_finance as _pf_module
+
+    _PF_AVAILABLE = True
+    _PF_IMPORT_ERROR = None
+except Exception as exc:
+    _PF_AVAILABLE = False
+    _PF_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
+
+try:
+    # Market Data — D3: fx_rate, commodity_price, macro_indicator
+    from internal import market_data as _md_module
+
+    _MD_AVAILABLE = True
+    _MD_IMPORT_ERROR = None
+except Exception as exc:
+    _MD_AVAILABLE = False
+    _MD_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
+
+
 __version__ = "2026.05.02"
 """WEALTH v2026.04.29 - Sovereign Pipeline OS with Expanded Resource Lattice."""
 
@@ -1957,6 +1985,7 @@ def measurement_npv(
             "period_unit": period_unit,
             "assumptions": assumptions,
             "flags": flags,
+            "confidence_band": None,  # KeyError fix: always present even on validation failure
         }
 
     series = build_cashflow_series(initial_investment, cash_flows, terminal_value)
@@ -11044,6 +11073,17 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_score_risk",
     "wealth_compare_scenarios",
     "wealth_emit_investment_memo",
+    # D1 — Personal Finance (cashflow, net worth, EPF, zakat)
+    "wealth_cashflow_track",
+    "wealth_cashflow_summary",
+    "wealth_runway_calculate",
+    "wealth_net_worth_snapshot",
+    "wealth_epf_project",
+    "wealth_zakat_calculate",
+    # D3 — Market Data (FX, commodities, macro)
+    "wealth_fx_rate",
+    "wealth_commodity_price",
+    "wealth_macro_indicator",
 )
 _PUBLIC_TOOLS = set(WEALTH_PUBLIC_TOOL_ORDER)
 
