@@ -14,6 +14,7 @@ from host.ingest.schema import DataRecord
 # Ember yearly full release (long format) — stable enough for MVP
 # Users can override with EMBER_CSV_URL env var if the URL changes.
 import os
+
 DEFAULT_EMBER_URL = "https://storage.googleapis.com/emb-prod-bkt-publicdata/public-downloads/yearly_full_release_long_format.csv"
 EMBER_CSV_URL = os.environ.get("EMBER_CSV_URL", DEFAULT_EMBER_URL)
 
@@ -41,7 +42,7 @@ def fetch_electricity_data(
     records = []
     for row in rows:
         row_year = row.get("Year", "")
-        row_country = row.get("Country code", "")
+        row_country = row.get("ISO 3 code", "")
         row_variable = row.get("Variable", "")
 
         if entity_code and row_country.upper() != entity_code.upper():
@@ -87,8 +88,14 @@ def fetch_demand(entity_code: str, year: Optional[int] = None) -> List[DataRecor
 
 
 def fetch_generation(entity_code: str, year: Optional[int] = None) -> List[DataRecord]:
-    return fetch_electricity_data(entity_code=entity_code, year=year, variable="Generation")
+    return fetch_electricity_data(
+        entity_code=entity_code, year=year, variable="Generation"
+    )
 
 
-def fetch_carbon_intensity(entity_code: str, year: Optional[int] = None) -> List[DataRecord]:
-    return fetch_electricity_data(entity_code=entity_code, year=year, variable="CO2 intensity")
+def fetch_carbon_intensity(
+    entity_code: str, year: Optional[int] = None
+) -> List[DataRecord]:
+    return fetch_electricity_data(
+        entity_code=entity_code, year=year, variable="CO2 intensity"
+    )
