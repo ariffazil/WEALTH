@@ -131,8 +131,12 @@ def _is_observation_stale(
 ) -> bool:
     if not observation_time:
         return True
+    # Handle year-only format "YYYY" (WorldBank returns e.g. "2024" for annual GDP)
+    normalized = observation_time.strip()
+    if normalized.isdigit() and len(normalized) == 4:
+        normalized = f"{normalized}-12-31"
     try:
-        obs_raw = datetime.fromisoformat(observation_time.replace("Z", "+00:00"))
+        obs_raw = datetime.fromisoformat(normalized.replace("Z", "+00:00"))
         # Ensure UTC-aware for comparison with datetime.now(timezone.utc)
         if obs_raw.tzinfo is None:
             obs = obs_raw.replace(tzinfo=timezone.utc)
