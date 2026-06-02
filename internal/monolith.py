@@ -11024,17 +11024,22 @@ def wealth_synthesize(
         # know the EMV/parametric result is conditional on assumptions
         # that don't hold. Same library used by GEOX/WELL internally.
         if cash_flows and len(cash_flows) >= 3:
+            _saf_summary = None
+            _saf_skipped = None
             try:
                 from core.shared.saf_stats import stat_assumptions as _saf_assumptions
                 from core.shared.saf_stats.sandbox import get_data_root as _saf_get_root
                 import pandas as _pd_saf
                 import uuid as _uuid_saf
+                from pathlib import (
+                    Path as _Path,
+                )  # FIX-2026-06-02: was undefined → NameError
 
                 _saf_root = _Path(
                     os.environ.get("WEALTH_SAF_DATA_ROOT", "/tmp/wealth_saf")
                 )
                 _saf_root.mkdir(parents=True, exist_ok=True)
-                _os.environ.setdefault("SAF_DATA_ROOT", str(_saf_root))
+                os.environ.setdefault("SAF_DATA_ROOT", str(_saf_root))
                 _saf_csv = _saf_root / f"synth_{_uuid_saf.uuid4().hex[:10]}.csv"
                 _pd_saf.DataFrame({"value": [float(x) for x in cash_flows]}).to_csv(
                     _saf_csv, index=False
@@ -11071,13 +11076,9 @@ def wealth_synthesize(
                         "parametric EMV/NPV result is conditional. "
                         "Consider non-parametric method or bootstrap."
                     )
-                # Stash on entropy dimension for downstream consumers
-                results.setdefault("entropy", {})
-                results["entropy"].setdefault("_saf_assumptions", _saf_summary)
             except Exception as _saf_exc:
                 # Stat embed is optional; never break the main flow
-                results.setdefault("entropy", {})
-                results["entropy"]["_saf_embed_skipped"] = str(_saf_exc)[:120]
+                _saf_skipped = str(_saf_exc)[:120]
 
         if cash_flows:
             r = emv_risk(
@@ -11121,6 +11122,16 @@ def wealth_synthesize(
             r.get("primary_metrics", {}),
             r.get("governance_verdict", "UNKNOWN"),
         )
+        # FIX-2026-06-02: _tag_dimension replaces the entropy dict, losing the eureka forge
+        # _saf_assumptions / _saf_embed_skipped we set above. Re-attach them so downstream
+        # consumers (cockpit, observatory) can see the normality check.
+        try:
+            if "_saf_summary" in dir() and _saf_summary is not None:
+                results["entropy"]["_saf_assumptions"] = _saf_summary
+            if "_saf_skipped" in dir() and _saf_skipped is not None:
+                results["entropy"]["_saf_embed_skipped"] = _saf_skipped
+        except Exception:
+            pass
         dimensional_scores["entropy"] = r.get("governance_verdict", "UNKNOWN")
         verdicts.append(r.get("governance_verdict", "UNKNOWN"))
     except Exception as exc:
