@@ -1,0 +1,151 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# WEALTH Sentinel Pre-Merge Gate
+# Q1: Did capital-critical paths change?
+# Q2: Financial invariants intact (no hardcoded financials, audit trail)?
+# Q3: Tests pass?
+# ═══════════════════════════════════════════════════════════════════════════
+name: "🛡️ WEALTH Sentinel"
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  merge_group:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── Q1: Critical path changes? ────────────────────────────────────────
+  q1-critical-paths:
+    name: "Q1 — Critical Paths"
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.scan.outputs.critical_changed }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed critical paths
+        id: scan
+        run: |
+          CRITICAL_PATHS=(
+            "internal/monolith.py"
+            "server.py"
+            "wealthmcp/tools/"
+            "wealthmcp/core/"
+            "pyproject.toml"
+          )
+
+          CRITICAL_CHANGED="no"
+
+          for path in "${CRITICAL_PATHS[@]}"; do
+            if ! git diff --exit-code "origin/main...HEAD" -- "$path" > /dev/null 2>&1; then
+              CRITICAL_CHANGED="yes"
+              echo "  - ${path} (MODIFIED)"
+            fi
+          done
+
+          echo "critical_changed=$CRITICAL_CHANGED" >> "$GITHUB_OUTPUT"
+
+          if [[ "$CRITICAL_CHANGED" == "yes" ]]; then
+            echo "::notice::Q1 ALERT: Capital-critical paths modified"
+          else
+            echo "::notice::Q1 PASS: No capital-critical paths modified"
+          fi
+
+  # ─── Q2: Financial invariants? ─────────────────────────────────────────
+  q2-financial-invariants:
+    name: "Q2 — Financial Invariants"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check financial invariants
+        run: |
+          VIOLATIONS=""
+
+          # Hardcoded discount rates (must be parameterized)
+          DISCOUNT_HITS=$(git diff origin/main...HEAD -- '*.py' | grep '^+' | grep -E "discount_rate\s*=\s*0\.[0-9]|wacc\s*=\s*0\.[0-9]" | grep -v "default\|arg\|param\|config\|test_\|#\|#" | grep -v "^++" || true)
+          if [[ -n "$DISCOUNT_HITS" ]]; then
+            VIOLATIONS="${VIOLATIONS}\n  - Hardcoded discount rate/WACC (must be a parameter, not a literal)"
+          fi
+
+          # Allocation without audit ref
+          ALLOC_HITS=$(git diff origin/main...HEAD -- '*.py' | grep '^+' | grep -iE "allocat|transfer|disburs" | grep -v "audit_ref\|session_id\|evidence\|test_\|#" | grep -v "^++" || true)
+          if [[ -n "$ALLOC_HITS" ]]; then
+            VIOLATIONS="${VIOLATIONS}\n  - Capital allocation without audit_ref (every allocation needs a trace)"
+          fi
+
+          # Geophysics compute leaking into capital organ
+          GEO_HITS=$(git diff origin/main...HEAD -- '*.py' | grep '^+' | grep -iE "Archie|PHIE|Vsh|porosity_fraction|sw_calculat" | grep -v "^++" || true)
+          if [[ -n "$GEO_HITS" ]]; then
+            VIOLATIONS="${VIOLATIONS}\n  - Geophysics compute in WEALTH (delegate to GEOX organ)"
+          fi
+
+          if [[ -n "$VIOLATIONS" ]]; then
+            echo "::error::Q2 FINANCIAL INVARIANT VIOLATION:$VIOLATIONS"
+            printf "Violations:$VIOLATIONS\n"
+            exit 1
+          else
+            echo "::notice::Q2 PASS: Financial invariants intact"
+          fi
+
+  # ─── Q3: Tests pass? ───────────────────────────────────────────────────
+  q3-tests:
+    name: "Q3 — Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --extra dev 2>/dev/null || pip install -e ".[dev]"
+
+      - name: Test
+        run: uv run pytest tests/ -q --tb=short 2>/dev/null || pytest tests/ -q --tb=short
+
+  # ─── Final gate ────────────────────────────────────────────────────────
+  sentinel-gate:
+    name: "✅ Sentinel Gate"
+    needs: [q1-critical-paths, q2-financial-invariants, q3-tests]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Gate verdict
+        run: |
+          Q1="${{ needs.q1-critical-paths.result }}"
+          Q2="${{ needs.q2-financial-invariants.result }}"
+          Q3="${{ needs.q3-tests.result }}"
+
+          echo "Q1 (critical paths):        $Q1"
+          echo "Q2 (financial invariants):  $Q2"
+          echo "Q3 (tests):                 $Q3"
+
+          if [[ "$Q2" != "success" || "$Q3" != "success" ]]; then
+            echo "::error::SENTINEL BLOCK — PR cannot merge"
+            exit 1
+          fi
+
+          if [[ "${{ needs.q1-critical-paths.outputs.changed }}" == "yes" ]]; then
+            echo "::warning::SENTINEL PASS WITH ALERT — capital-critical paths changed, review carefully"
+          fi
+
+          echo "✅ SENTINEL PASS"
