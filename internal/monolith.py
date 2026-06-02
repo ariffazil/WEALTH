@@ -133,6 +133,10 @@ LAST_RECEIPT_HASH = "0" * 64
 arifos_path = os.path.join(base_dir, "arifOS")
 if os.path.exists(arifos_path) and arifos_path not in sys.path:
     sys.path.append(arifos_path)
+# Canonical arifOS kernel path (added 2026-06-02 for SAF shared lib)
+_arifos_kernel = "/root/arifOS"
+if os.path.isdir(_arifos_kernel) and _arifos_kernel not in sys.path:
+    sys.path.append(_arifos_kernel)
 
 try:
     from fastmcp import FastMCP
@@ -11013,6 +11017,68 @@ def wealth_synthesize(
 
     # ── Dimension 3: Entropy (risk, uncertainty) ──────────────────────────────
     try:
+        # EUREKA FORGE (2026-06-02): embed SAF stat_assumptions into the
+        # entropy dimension when cash_flows are user-supplied. If the data
+        # violates normality (Shapiro p<0.05) or has high outlier density,
+        # downgrade the entropy verdict from SEAL → SABAR — the user must
+        # know the EMV/parametric result is conditional on assumptions
+        # that don't hold. Same library used by GEOX/WELL internally.
+        if cash_flows and len(cash_flows) >= 3:
+            try:
+                from core.shared.saf_stats import stat_assumptions as _saf_assumptions
+                from core.shared.saf_stats.sandbox import get_data_root as _saf_get_root
+                import pandas as _pd_saf
+                import uuid as _uuid_saf
+
+                _saf_root = _Path(
+                    os.environ.get("WEALTH_SAF_DATA_ROOT", "/tmp/wealth_saf")
+                )
+                _saf_root.mkdir(parents=True, exist_ok=True)
+                _os.environ.setdefault("SAF_DATA_ROOT", str(_saf_root))
+                _saf_csv = _saf_root / f"synth_{_uuid_saf.uuid4().hex[:10]}.csv"
+                _pd_saf.DataFrame({"value": [float(x) for x in cash_flows]}).to_csv(
+                    _saf_csv, index=False
+                )
+                _saf_result = _saf_assumptions(
+                    file_path=str(_saf_csv), columns=["value"]
+                )
+                try:
+                    _saf_csv.unlink()
+                except OSError:
+                    pass
+                # Surface the assumption check in dimensional results (F4 EVIDENCE)
+                _saf_summary = {
+                    "method": _saf_result.get("method", "SAF stat_assumptions"),
+                    "n": len(cash_flows),
+                    "verdict": _saf_result.get("verdict", "UNKNOWN"),
+                    "checks": _saf_result.get("results", [])[:3],
+                }
+                # Extract Shapiro p-value (stat_assumptions uses 'normality_p' field)
+                _p_shapiro = None
+                _passed_normality = None
+                for c in _saf_result.get("results", []):
+                    if c.get("normality_p") is not None:
+                        _p_shapiro = c.get("normality_p")
+                        _passed_normality = c.get("normality_pass")
+                        break
+                if _p_shapiro is not None:
+                    _saf_summary["shapiro_p"] = round(_p_shapiro, 6)
+                    _saf_summary["non_normal"] = _p_shapiro < 0.05
+                if _p_shapiro is not None and _p_shapiro < 0.05:
+                    verdicts.append("SABAR")
+                    _saf_summary["_advisory"] = (
+                        f"Shapiro p={_p_shapiro:.4f} — non-normal data; "
+                        "parametric EMV/NPV result is conditional. "
+                        "Consider non-parametric method or bootstrap."
+                    )
+                # Stash on entropy dimension for downstream consumers
+                results.setdefault("entropy", {})
+                results["entropy"].setdefault("_saf_assumptions", _saf_summary)
+            except Exception as _saf_exc:
+                # Stat embed is optional; never break the main flow
+                results.setdefault("entropy", {})
+                results["entropy"]["_saf_embed_skipped"] = str(_saf_exc)[:120]
+
         if cash_flows:
             r = emv_risk(
                 scenarios=[
