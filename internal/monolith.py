@@ -206,16 +206,36 @@ async def _arifos_vault_seal_http(
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             resp = await client.post(
-                "http://localhost:8088/tools/arif_vault_seal",
-                json={"payload": json.dumps(body), "ack_irreversible": False, "witness_type": "ai"},
+                "http://localhost:8088/mcp",
+                headers={"Mcp-Session-ID": "wealth-organ"},
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 42,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "arif_vault_seal",
+                        "arguments": {
+                            "mode": "seal",
+                            "payload": json.dumps(body),
+                            "session_id": session_id or "",
+                            "actor_id": actor_id or "WEALTH",
+                            "ack_irreversible": False,
+                            "witness_type": "ai",
+                        },
+                    },
+                },
             )
         result = resp.json()
-
-        class _VaultResult:
-            chain_hash = result.get("chain_hash", "")
-            ledger_id = result.get("record_id", "")
-
-        return _VaultResult()
+        # Return dict so callers can access .get() — matches vault_write expectation
+        if result.get("result"):
+            content = result["result"].get("content", [{}])[0]
+            text = json.loads(content.get("text", "{}"))
+            return {
+                "chain_hash": text.get("chain_hash", ""),
+                "ledger_id": text.get("record_id", ""),
+                "status": text.get("status", "UNKNOWN"),
+            }
+        return {"chain_hash": "", "ledger_id": "", "status": "ERROR"}
     except Exception:
         return None
 
@@ -227,20 +247,36 @@ except Exception:
 
 
 def _vault_append(record, **kwargs):
-    """Bridge sync/async vault append safely."""
+    """Bridge sync/async vault append safely.
+
+    Routes vault writes through arifOS constitutional judgment (via HTTP).
+    Falls back to local JSONL if arifOS is unreachable.
+    """
     import asyncio
 
-    result = append_vault999(record, **kwargs)
-    if inspect.isawaitable(result):
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
-        if loop is None:
-            return asyncio.run(result)
-        # Inside async context: fire-and-forget with task
-        asyncio.create_task(result)
-    return result
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        # No running event loop — create new one and run async function
+        return asyncio.run(_vault_append_async(record, **kwargs))
+
+    # Inside async context — fire-and-forget via task
+    task = loop.create_task(_vault_append_async(record, **kwargs))
+    # Attach result retrieval for sync callers that later check res
+    return task
+
+
+async def _vault_append_async(record, **kwargs):
+    """Async vault append via arifOS HTTP — returns dict for vault_write."""
+    try:
+        result = await append_vault999(record, **kwargs)
+        return (
+            result
+            if result is not None
+            else {"chain_hash": "", "ledger_id": "", "status": "FALLBACK"}
+        )
+    except Exception:
+        return {"chain_hash": "", "ledger_id": "", "status": "ERROR"}
 
 
 def _evaluate_floors(args: Dict[str, Any]) -> Dict[str, Any]:
@@ -13289,8 +13325,8 @@ if __name__ == "__main__":
 
         return JSONResponse(
             {
-                "sha": "unknown",
-                "short_sha": "unknown",
+                "sha": "2f3d294891aa353bf3a0417c62436774e81d90b1",
+                "short_sha": "2f3d294",
                 "branch": "main",
                 "version": "1.0",
                 "tool_count": 33,
