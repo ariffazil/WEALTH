@@ -19,7 +19,7 @@ jobs:
     name: WEALTH CI
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -35,3 +35,9 @@ jobs:
 
       - name: Import smoke test
         run: python -c "from internal.monolith import WealthKernel; print('✓ WealthKernel importable')"
+
+  secrets-gate:
+    name: F11 — Secrets Gate
+    uses: ariffazil/arifos/.github/workflows/_shared-secrets-gate.yml@main
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
