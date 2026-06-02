@@ -156,15 +156,14 @@ except ImportError:
 
 
 # --- Sovereign Governance ---
+# check_floors: try to import from arifOS (floor evaluation is read-only)
 try:
     from arifosmcp.runtime.megaTools.tool_01_init_anchor import check_floors
-    from arifosmcp.runtime.vault_postgres import seal_to_vault as append_vault999
 
     GOVERNANCE_AVAILABLE = True
 except Exception:
     try:
         from arifosmcp.runtime.tools import arifos_judge as check_floors
-        from arifosmcp.runtime.vault_postgres import seal_to_vault as append_vault999
 
         GOVERNANCE_AVAILABLE = True
     except Exception:
@@ -179,14 +178,52 @@ except Exception:
                 "warnings": [],
             }
 
-        try:
-            from host.governance.vault_supabase import append_vault999
 
-            GOVERNANCE_AVAILABLE = True
-        except Exception:
+# Vault sealing must delegate to arifOS via HTTP (federation boundary).
+# WEALTH must not call arifOS vault internals directly.
+async def _arifos_vault_seal_http(
+    event_type: str = "",
+    session_id: str = "",
+    actor_id: str = "",
+    stage: str = "",
+    verdict: str = "ACTIVE",
+    payload: dict | None = None,
+    risk_tier: str = "low",
+    **kwargs,
+):
+    """Delegate vault sealing to arifOS via HTTP — do not import arifOS internals."""
+    import httpx
 
-            def append_vault999(record, **kwargs):
-                return record
+    body = {
+        "event_type": event_type,
+        "session_id": session_id,
+        "actor_id": actor_id,
+        "stage": stage,
+        "verdict": verdict,
+        "data": payload or {},
+        "risk_tier": risk_tier,
+    }
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.post(
+                "http://localhost:8088/tools/arif_vault_seal",
+                json={"payload": json.dumps(body), "ack_irreversible": False, "witness_type": "ai"},
+            )
+        result = resp.json()
+
+        class _VaultResult:
+            chain_hash = result.get("chain_hash", "")
+            ledger_id = result.get("record_id", "")
+
+        return _VaultResult()
+    except Exception:
+        return None
+
+
+try:
+    from host.governance.vault_supabase import append_vault999
+except Exception:
+    append_vault999 = _arifos_vault_seal_http
 
 
 def _vault_append(record, **kwargs):
@@ -5589,9 +5626,7 @@ async def wealth_init_tool(
     ledger_id = ""
 
     try:
-        from arifosmcp.runtime.vault_postgres import seal_to_vault
-
-        res = await seal_to_vault(
+        res = await _arifos_vault_seal_http(
             event_type="WEALTH_SESSION_INIT",
             session_id=sid,
             actor_id=actor_id,
@@ -12769,6 +12804,94 @@ if __name__ == "__main__":
             return result.model_dump(by_alias=True, exclude_none=True)
         return result
 
+    # ── Supabase L4 Domain Receipts ───────────────────────────────────────────
+    # Fire-and-forget async writes to Supabase domain tables.
+    # Fails softly — never blocks WEALTH tool execution.
+    # Pattern mirrors arifOS kernel injection (same doctrine).
+
+    WEALTH_SUPABASE_URL = os.getenv(
+        "WEALTH_SUPABASE_URL", "https://utbmmjmbolmuahwixjqc.supabase.co"
+    )
+    WEALTH_SUPABASE_ANON_KEY = os.getenv(
+        "WEALTH_SUPABASE_ANON_KEY",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0Ym1tam1ib2xtdWFod2l4anFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk1MjQwMTYsImV4cCI6MjAwNTA5OTk5Nn0.Nxg2Rkf-PyqnemVGz-_H1VW22jhNbmq67hH6EZ2EzEs",
+    )
+
+    async def _wealth_write_domain_receipt(
+        tool_name: str, result: Any, arguments: dict
+    ) -> None:
+        """Write WEALTH domain data to Supabase. Fails silently if Supabase is down."""
+        try:
+            mode = os.getenv("WEALTH_SUPABASE_WRITE_MODE", "off").lower()
+            if mode == "off":
+                return
+
+            epoch = datetime.now(timezone.utc).isoformat()
+            headers = {
+                "apikey": WEALTH_SUPABASE_ANON_KEY,
+                "Authorization": f"Bearer {WEALTH_SUPABASE_ANON_KEY}",
+                "Content-Type": "application/json",
+                "Prefer": "return=minimal",
+            }
+
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                # ── cashflow_track → arifosmcp_transactions ─────────────────
+                if tool_name == "wealth_cashflow_track" and mode in ("domain", "dual"):
+                    payload = {
+                        "tx_type": arguments.get("category", "expense"),
+                        "asset": arguments.get("description", ""),
+                        "amount": arguments.get("amount", 0.0),
+                        "currency": arguments.get("currency", "MYR"),
+                        "metadata": {
+                            "owner": arguments.get("owner", "arif"),
+                            "tool": "wealth_cashflow_track",
+                            "result": result
+                            if isinstance(result, dict)
+                            else {"status": str(result)},
+                        },
+                        "epoch": epoch,
+                    }
+                    await client.post(
+                        f"{WEALTH_SUPABASE_URL}/rest/v1/arifosmcp_transactions",
+                        headers=headers,
+                        json=payload,
+                    )
+
+                # ── net_worth_snapshot → arifosmcp_portfolio_snapshots ────
+                elif tool_name == "wealth_net_worth_snapshot" and mode in (
+                    "domain",
+                    "dual",
+                ):
+                    # Extract holdings and total from result
+                    holdings = (
+                        result.get("holdings", []) if isinstance(result, dict) else []
+                    )
+                    total = (
+                        result.get("net_worth", result.get("total_value", 0))
+                        if isinstance(result, dict)
+                        else 0
+                    )
+                    payload = {
+                        "snapshot_ts": epoch,
+                        "holdings": holdings,
+                        "total_value": total,
+                        "currency": arguments.get("currency", "MYR"),
+                    }
+                    await client.post(
+                        f"{WEALTH_SUPABASE_URL}/rest/v1/arifosmcp_portfolio_snapshots",
+                        headers=headers,
+                        json=payload,
+                    )
+
+                # ── all tools → tool_calls audit (domain mode) ──────────────
+                elif mode == "domain" or (mode == "dual"):
+                    # Generic tool receipt for audit trail
+                    pass  # arifOS already logs the cross-organ call
+
+        except Exception:
+            # Fire-and-forget — never let Supabase failure propagate
+            pass
+
     async def legacy_mcp_handler(request):
         """Direct JSON-RPC handler — bypasses FastMCP Accept-header enforcement."""
         if request.method == "GET":
@@ -12840,6 +12963,18 @@ if __name__ == "__main__":
                         result = alias_fn(**arguments)
                 else:
                     result = await mcp.call_tool(name, arguments)
+
+                # ── Supabase L4: fire-and-forget domain receipt ───────────
+                # Write to arifosmcp_transactions / arifosmcp_portfolio_snapshots
+                # Never blocks — WEALTH continues even if Supabase is down
+                try:
+                    loop = asyncio.get_running_loop()
+                    loop.create_task(
+                        _wealth_write_domain_receipt(name, result, arguments)
+                    )
+                except Exception:
+                    pass  # fire-and-forget — never propagate
+
                 return _JR(
                     {
                         "jsonrpc": "2.0",
@@ -13149,6 +13284,21 @@ if __name__ == "__main__":
             }
         )
 
+    async def build_info_handler(request):
+        from starlette.responses import JSONResponse
+
+        return JSONResponse(
+            {
+                "sha": "unknown",
+                "short_sha": "unknown",
+                "branch": "main",
+                "version": "1.0",
+                "tool_count": 33,
+                "epoch": "2026",
+                "source_repo": "wealth",
+            }
+        )
+
     async def health_handler(request):
         # Compute identity_hash from /root/WEALTH/identity.toml
         identity_hash = "UNAVAILABLE"
@@ -13298,6 +13448,7 @@ if __name__ == "__main__":
             Route("/prompts", prompts_handler, methods=["GET"]),
             Route("/resources", resources_handler, methods=["GET"]),
             Route("/health", health_handler, methods=["GET"]),
+            Route("/api/build-info", build_info_handler, methods=["GET"]),
             Route("/ready", ready_handler, methods=["GET"]),
             Mount("/", app=mcp_app),
         ],
@@ -13344,6 +13495,7 @@ if __name__ == "__main__":
             Route("/prompts", prompts_handler, methods=["GET"]),
             Route("/resources", resources_handler, methods=["GET"]),
             Route("/health", health_handler, methods=["GET"]),
+            Route("/api/build-info", build_info_handler, methods=["GET"]),
             Route("/ready", ready_handler, methods=["GET"]),
             Mount("/", app=mcp_app),
         ],

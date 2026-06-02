@@ -3,7 +3,7 @@ VAULT999 append-only audit trail for WEALTH governance decisions.
 Writes to Supabase PostgreSQL via HTTP REST API (no psycopg needed).
 
 Uses Supabase REST API: https://utbmmjmbolmuahwixjqc.supabase.co
-Tables: public.wealth_transactions, public.arifosmcp_vault_seals,
+Tables: public.arifosmcp_transactions, public.vault_sealed_events,
         public.arifosmcp_portfolio_snapshots, public.arifosmcp_sessions
 
 DITEMPA BUKAN DIBERI — 999 SEAL ALIVE
@@ -173,7 +173,7 @@ def query_vault999(
     if query:
         filters["action"] = f"ilike.%{query}%"
 
-    rows = loop.run_until_complete(_supabase_select("wealth_transactions", filters, limit))
+    rows = loop.run_until_complete(_supabase_select("arifosmcp_transactions", filters, limit))
 
     earth_refs = []
     for row in rows:
@@ -219,7 +219,7 @@ def get_latest_geox_volumetrics(prospect_id: str) -> Optional[Dict[str, Any]]:
         "order": "sealed_at.desc",
         "limit": "1"
     }
-    rows = loop.run_until_complete(_supabase_select("arifosmcp_vault_seals", filters, 1))
+    rows = loop.run_until_complete(_supabase_select("vault_sealed_events", filters, 1))
     
     for row in rows:
         payload = row.get("payload", {})
@@ -244,7 +244,7 @@ def record_transaction(
     metadata: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
-    Record a financial transaction to public.wealth_transactions via Supabase REST API.
+    Record a financial transaction to public.arifosmcp_transactions via Supabase REST API.
     """
     epoch = _now_iso()
     integrity = _compute_integrity(
@@ -290,9 +290,9 @@ def record_transaction(
             # but FastMCP is usually running.
             # Best approach for a bridge: fire and forget or use a sync client.
             # Here we will try to use a one-off sync request for reliability in this specific tool.
-            result = _sync_supabase_insert("wealth_transactions", record)
+            result = _sync_supabase_insert("arifosmcp_transactions", record)
         else:
-            result = asyncio.run(_supabase_insert("wealth_transactions", record))
+            result = asyncio.run(_supabase_insert("arifosmcp_transactions", record))
     except Exception as e:
         _fallback_jsonl({**record, "source_tool": source_tool, "verdict": "VAULT999_ERROR", "error": str(e)})
         return {"status": "ERROR", "integrity": integrity, "error": str(e)}
@@ -466,11 +466,11 @@ def health_check() -> Dict[str, Any]:
             import asyncio
 
             response = asyncio.run(
-                client.get("/rest/v1/wealth_transactions?select=id&limit=1")
+                client.get("/rest/v1/arifosmcp_transactions?select=id&limit=1")
             )
         else:
             response = loop.run_until_complete(
-                client.get("/rest/v1/wealth_transactions?select=id&limit=1")
+                client.get("/rest/v1/arifosmcp_transactions?select=id&limit=1")
             )
 
         if response.status_code == 200:
