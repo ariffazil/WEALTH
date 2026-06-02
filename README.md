@@ -288,10 +288,24 @@ GEOX feeds prospect economics to WEALTH for POS/EMV calculations:
 | Repo | Role | How WEALTH relates |
 |------|------|-------------------|
 | [arifOS](https://github.com/ariffazil/arifos) | LAW | WEALTH calls arifOS for SEAL/HOLD/VOID on capital decisions |
-| [AAA](https://github.com/ariffazil/AAA) | INTERFACE | AAA routes capital queries to WEALTH |
+| [AAA-Cockpit](https://github.com/ariffazil/AAA) | INTERFACE | AAA-Cockpit routes capital queries to WEALTH; does not own constitutional judgment |
 | [A-FORGE](https://github.com/ariffazil/A-FORGE) | EXECUTION | A-FORGE calls WEALTH tools in governed agent workloads |
 | [GEOX](https://github.com/ariffazil/geox) | FIELD | GEOX prospect economics feed into WEALTH POS/EMV |
 | **WEALTH** | CAPITAL | The financial engine |
+
+### AAA Terminology Note
+
+When WEALTH docs or agents reference AAA, qualify the surface:
+
+| Term | Surface | Role |
+|------|---------|------|
+| **AAA-HF** | Hugging Face dataset | Supplies doctrine and evaluation references — defines what "governed capital action" means |
+| **AAA-Cockpit** | GitHub `ariffazil/AAA` | Displays and routes federation state — does not judge capital decisions |
+| **arifOS** | `ariffazil/arifos` | **The judge** — applies F1–F13 floors to all WEALTH computations |
+
+WEALTH computes capital evidence and valuations only. WEALTH does not judge. WEALTH does not define doctrine.
+
+> "AAA is polymorphic by design. When precision matters, qualify the surface."
 
 ---
 
