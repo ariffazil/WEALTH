@@ -34,7 +34,7 @@
 
 ## Canonical Public Tool Surface
 **Diagnostics (2)**
-1. `mcp_health_check` — Universal federation health check
+1. `wealth_health_check` — Universal federation health check
 2. `wealth_system_registry_status` — Registry truth diagnostic
 
 **Substrate Invariants (12)**

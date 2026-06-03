@@ -4,12 +4,37 @@
 
 LEGACY_TO_CANONICAL = {
     # ─── SYSTEM ────────────────────────────────────────────────────────────
-    "mcp_health_check": {
-        "canonical": "wealth_system_status",
-        "mode": "health",
+    "wealth_health_check": {
+        "canonical": "wealth_health_check",
+        "mode": None,
         "decision_class": "W0",
-        "new_schema": "wealth_system_status(mode='health')",
-        "sunset": "v2",
+        "new_schema": "wealth_health_check()",
+        "sunset": None,
+        "note": "Renamed 2026-06-03 from mcp_health_check. Old name retained as legacy alias for backward compat.",
+    },
+    "wealth_synthesize": {
+        "canonical": "wealth_omni_wisdom",
+        "mode": "synthesize",
+        "decision_class": "W0",
+        "new_schema": "wealth_omni_wisdom(mode='synthesize', decision_context={description, capital_type, ...})",
+        "sunset": None,
+        "note": "Path D 2026-06-03: absorbed into wealth_omni_wisdom (mode='synthesize'). Old name retained as legacy alias for backward compat.",
+    },
+    "wealth_deal_frame": {
+        "canonical": "wealth_omni_wisdom",
+        "mode": "deal",
+        "decision_class": "L3",
+        "new_schema": "wealth_omni_wisdom(mode='deal', decision_context={description}, deal_params={initial_investment, cash_flows, ...})",
+        "sunset": None,
+        "note": "Path D 2026-06-03: absorbed into wealth_omni_wisdom (mode='deal'). Old name retained as legacy alias for backward compat.",
+    },
+    "wealth_hysteresis_ledger": {
+        "canonical": "wealth_omni_wisdom",
+        "mode": "hysteresis",
+        "decision_class": "W12",
+        "new_schema": "wealth_omni_wisdom(mode='hysteresis', decision_context={description}, path_params={current_state, ...})",
+        "sunset": None,
+        "note": "Path D 2026-06-03: absorbed into wealth_omni_wisdom (mode='hysteresis'). Old name retained as legacy alias for backward compat.",
     },
     "wealth_system_registry_status": {
         "canonical": "wealth_system_status",

@@ -274,7 +274,7 @@ These tools bridge WEALTH to real-world sectoral and civilizational signals. The
 
 | Tool Name | What It Checks | Human Benefit |
 |---|---|---|
-| `mcp_health_check` | Transport system health, auth status, schema version, mode | "Is WEALTH MCP reachable and functioning right now?" |
+| `wealth_health_check` | Transport system health, auth status, schema version, mode | "Is WEALTH MCP reachable and functioning right now?" |
 
 ***
 
@@ -441,7 +441,7 @@ WEALTH MCP — Next Horizon
 │   ├── sensor      6   (fetch, snapshot, reconcile, health, vintage, sources)
 │   ├── ledger      5   (query, write, init, record, snapshot)
 │   ├── domain      6   (prospect, ticker, stress_test, energy_crisis, shortage, food)
-│   └── health      1   (mcp_health_check)
+│   └── health      1   (wealth_health_check)
 │
 ├── prompts/        12 governed reasoning workflows
 │   ├── wealth_appraise_project

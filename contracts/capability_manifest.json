@@ -4,7 +4,7 @@
   "authority": "ARIF",
   "schema_version": "wealth.physics_economics.v1",
   "description": "Genotype map of all WEALTH capabilities. No capability may be deleted unless explicitly approved by Arif. This manifest is the source of truth for capability preservation.",
-  "total_runtime_tools": 43,
+  "total_runtime_tools": 44,
   "total_aliases": 34,
   "total_ghost_tools": 5,
   "total_capabilities": 82,
@@ -16,12 +16,12 @@
   "capabilities": [
     {
       "capability_id": "health.mcp",
-      "legacy_tools": ["mcp_health_check"],
+      "legacy_tools": ["wealth_health_check"],
       "new_engine": null,
       "status": "preserved",
       "must_pass_tests": ["health_check_ok", "transport_sse_valid", "auth_ok"],
       "delete_allowed": false,
-      "notes": "Federation heartbeat. Always preserved."
+      "notes": "Federation heartbeat. Always preserved. Tool renamed from mcp_health_check → wealth_health_check on 2026-06-03 (F13 tool-registry change, commit on feat/wealth-mcp-health-rename-2026-06-03)."
     },
     {
       "capability_id": "registry.status",

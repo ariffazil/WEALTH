@@ -15,18 +15,16 @@ import os
 import httpx
 from typing import Any, Optional, Tuple
 
-ARIFOS_KERNEL_URL = os.environ.get(
-    "ARIFOS_KERNEL_URL", "http://arifosmcp:8080"
-)
+ARIFOS_KERNEL_URL = os.environ.get("ARIFOS_KERNEL_URL", "http://arifosmcp:8080")
 
 # Risk classification for WEALTH tools
 WEALTH_RISK_TIERS = {
     # C2/IRREVERSIBLE — require arifOS judgment
-    "wealth_ledger_write": "c2",          # VAULT999 write, irreversible
-    "wealth_ledger_snapshot": "c2",        # VAULT999 write, irreversible
-    "wealth_synthesize": "c1",             # Advisory verdict
-    "wealth_governance_verdict": "c1",     # Advisory verdict
-    "wealth_boundary_governance": "c1",    # Legitimacy audit, advisory
+    "wealth_ledger_write": "c2",  # VAULT999 write, irreversible
+    "wealth_ledger_snapshot": "c2",  # VAULT999 write, irreversible
+    "wealth_synthesize": "c1",  # Advisory verdict
+    "wealth_governance_verdict": "c1",  # Advisory verdict
+    "wealth_boundary_governance": "c1",  # Legitimacy audit, advisory
     # READONLY — execute directly
     "wealth_mass_networth": "readonly",
     "wealth_flow_cashflow": "readonly",
@@ -41,8 +39,8 @@ WEALTH_RISK_TIERS = {
     "wealth_inertia_leverage": "readonly",
     "wealth_entropy_risk": "readonly",
     "wealth_entropy_audit": "readonly",
-    "wealth_game_coordination": "c1",      # Game theory, advisory
-    "wealth_inequality_kernel": "c1",      # Inequality analysis
+    "wealth_game_coordination": "c1",  # Game theory, advisory
+    "wealth_inequality_kernel": "c1",  # Inequality analysis
     "wealth_conservation_capital": "readonly",
     "wealth_energy_productivity": "readonly",
     "wealth_density_pi": "readonly",
@@ -54,12 +52,14 @@ WEALTH_RISK_TIERS = {
     "wealth_expectation_emv": "readonly",
     "wealth_velocity_runway": "readonly",
     "wealth_hysteresis_ledger": "readonly",
-    "mcp_health_check": "readonly",
+    "wealth_health_check": "readonly",
     "wealth_system_registry_status": "readonly",
 }
 
 
-def _call_arifOS_judge(tool_name: str, arguments: dict, actor_id: str) -> Tuple[str, Optional[dict]]:
+def _call_arifOS_judge(
+    tool_name: str, arguments: dict, actor_id: str
+) -> Tuple[str, Optional[dict]]:
     """
     Call arifOS kernel arif_judge_deliberate.
     Returns (verdict, error_response).
@@ -67,12 +67,15 @@ def _call_arifOS_judge(tool_name: str, arguments: dict, actor_id: str) -> Tuple[
     """
     import json
 
-    candidate = json.dumps({
-        "action": f"WEALTH_ORGAN:{tool_name}",
-        "description": f"WEALTH organ tool: {tool_name}",
-        "tool": tool_name,
-        "arguments": arguments,
-    }, separators=(",", ":"))
+    candidate = json.dumps(
+        {
+            "action": f"WEALTH_ORGAN:{tool_name}",
+            "description": f"WEALTH organ tool: {tool_name}",
+            "tool": tool_name,
+            "arguments": arguments,
+        },
+        separators=(",", ":"),
+    )
 
     payload = {
         "jsonrpc": "2.0",
@@ -93,7 +96,10 @@ def _call_arifOS_judge(tool_name: str, arguments: dict, actor_id: str) -> Tuple[
             response = client.post(
                 f"{ARIFOS_KERNEL_URL}/mcp",
                 json=payload,
-                headers={"Content-Type": "application/json", "Accept": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
             )
             data = response.json()
 
@@ -119,7 +125,7 @@ def check_governance(
 ) -> Tuple[str, Optional[dict]]:
     """
     Main entry point. Returns (verdict, error_response).
-    
+
     - verdict = "READONLY" or "C1_PASS" if tool should proceed
     - error_response = not None if execution should be BLOCKED
       (contains the HOLD/VOID response to return to caller)
