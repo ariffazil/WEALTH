@@ -11165,6 +11165,129 @@ def wealth_synthesize(
             )
             dimensional_scores["time"] = r.get("governance_verdict", "UNKNOWN")
             verdicts.append(r.get("governance_verdict", "UNKNOWN"))
+            # EUREKA FORGE (2026-06-03): cash-flow trend regression.
+            # The Time dimension above reports NPV but not the SHAPE of the
+            # cash-flow stream. OLS regression of cash_flows ~ time_index
+            # answers the capital question: "is the cash flow trending up,
+            # down, or flat — and is the trend statistically significant?"
+            # A significantly negative trend (p<0.05, slope<0) downgrade
+            # the time verdict from SEAL → SABAR — a declining cash flow
+            # is capital depreciation in slow motion, even if NPV is
+            # positive in the early periods.
+            try:
+                import sys as _sys_cfr
+
+                _arifos_kernel_cfr = "/root/arifOS"
+                if _arifos_kernel_cfr not in _sys_cfr.path:
+                    _sys_cfr.path.insert(0, _arifos_kernel_cfr)
+                import pandas as _pd_cfr
+                import uuid as _uuid_cfr
+                from pathlib import Path as _Path_cfr
+                import os as _os_cfr
+                from core.shared.saf_stats import (
+                    stat_regress as _saf_regress,
+                )
+
+                _wealth_saf_root_cfr = _Path_cfr(
+                    _os_cfr.environ.get("WEALTH_SAF_DATA_ROOT", "/tmp/wealth_saf")
+                )
+                _wealth_saf_root_cfr.mkdir(parents=True, exist_ok=True)
+                _os_cfr.environ.setdefault("SAF_DATA_ROOT", str(_wealth_saf_root_cfr))
+                if len(cash_flows) >= 5:
+                    _t_index = list(range(len(cash_flows)))
+                    _cfr_csv = _wealth_saf_root_cfr / (
+                        f"cfr_{_uuid_cfr.uuid4().hex[:10]}.csv"
+                    )
+                    _pd_cfr.DataFrame(
+                        {
+                            "t": _t_index,
+                            "cash_flow": [float(x) for x in cash_flows],
+                        }
+                    ).to_csv(_cfr_csv, index=False)
+                    _cfr_result = _saf_regress(
+                        str(_cfr_csv),
+                        dependent="cash_flow",
+                        independents=["t"],
+                        family="ols",
+                    )
+                    try:
+                        _cfr_csv.unlink()
+                    except OSError:
+                        pass
+                    # Federated saf_stats returns a flat envelope with
+                    # fields at the top level (coefficients is a dict
+                    # shaped {coef: {...}, p: {...}, se: {...}, ...}).
+                    # Upstream-style saf_stats nests under "result". Handle
+                    # both via _cfr_inner fallback to _cfr_result.
+                    _cfr_coef = None
+                    _cfr_p = None
+                    _cfr_r2 = None
+                    if isinstance(_cfr_result, dict):
+                        _cfr_inner = _cfr_result.get("result", _cfr_result)
+                        if isinstance(_cfr_inner, dict):
+                            _coefs = _cfr_inner.get("coefficients", {}) or {}
+                            # Federated format: flat dict of {coef, p, se, ...}
+                            if isinstance(_coefs, dict) and "coef" in _coefs:
+                                _coef_map = _coefs.get("coef") or {}
+                                _p_map = _coefs.get("p") or {}
+                                _cfr_coef = _coef_map.get("t")
+                                _cfr_p = _p_map.get("t")
+                            else:
+                                # Upstream format: nested per-coefficient dict
+                                _t_block = _coefs.get("t")
+                                if isinstance(_t_block, dict):
+                                    _cfr_coef = _t_block.get("coef")
+                                    _cfr_p = _t_block.get("p_value")
+                            _cfr_r2 = _cfr_inner.get("r_squared")
+                    _cfr_summary = {
+                        "n_periods": len(cash_flows),
+                        "trend_coef": (
+                            round(float(_cfr_coef), 6)
+                            if _cfr_coef is not None
+                            else None
+                        ),
+                        "trend_p_value": (
+                            round(float(_cfr_p), 6) if _cfr_p is not None else None
+                        ),
+                        "r_squared": (
+                            round(float(_cfr_r2), 4) if _cfr_r2 is not None else None
+                        ),
+                        "interpretation": None,
+                    }
+                    if (
+                        _cfr_coef is not None
+                        and _cfr_p is not None
+                        and float(_cfr_p) < 0.05
+                        and float(_cfr_coef) < 0
+                    ):
+                        _cfr_summary["interpretation"] = (
+                            "significant declining trend (p<0.05)"
+                        )
+                        _cfr_summary["verdict"] = "SABAR"
+                    elif (
+                        _cfr_coef is not None
+                        and _cfr_p is not None
+                        and float(_cfr_p) < 0.05
+                        and float(_cfr_coef) > 0
+                    ):
+                        _cfr_summary["interpretation"] = (
+                            "significant rising trend (p<0.05)"
+                        )
+                        _cfr_summary["verdict"] = "SEAL"
+                    else:
+                        _cfr_summary["interpretation"] = "no significant trend"
+                        _cfr_summary["verdict"] = "SEAL"
+                    if isinstance(results.get("time"), dict):
+                        results["time"]["_saf_regression"] = _cfr_summary
+                    # F2 TRUTH: a significant declining trend downgrades the
+                    # time dimension — the operator must know the cash flow
+                    # is shrinking, not just discounted.
+                    if _cfr_summary.get("verdict") == "SABAR":
+                        if "SABAR" not in verdicts:
+                            verdicts.append("SABAR")
+            except Exception as _cfr_exc:
+                if isinstance(results.get("time"), dict):
+                    results["time"]["_saf_regression_skipped"] = str(_cfr_exc)[:120]
         else:
             dimensional_scores["time"] = "NO_CASHFLOWS_PROVIDED"
     except Exception as exc:
