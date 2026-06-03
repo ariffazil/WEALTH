@@ -219,10 +219,22 @@ Total: ~62 legitimate surface tools. The 5 ghost L3 + 4 vault-leak + 1 typo = 10
 
 ---
 
-## Future Consolidation: `wealth_omni_wisdom` (888_HOLD pending Path D)
+## Path D SEALED: `wealth_omni_wisdom` implementation live (2026-06-03)
 
-**Status:** Mode design SEALED 2026-06-03 by Arif Fazil + Perplexity audit frame.
-**Implementation:** 888_HOLD — Path D module federation is the execution vehicle.
+**Status:** ✅ **SEALED 2026-06-03 by Arif Fazil.** Path D module federation executed; live surface dropped 44 → 42; new tool registered, 3 originals converted to internal helpers.
+**Commit:** `feat/wealth-omni-wisdom-2026-06-03` (this session, pending push).
+**Tests:** 73/73 pytest pass (66 pre-existing + 7 new omni tests).
+**Manifest:** Synced to 42 across `fastmcp.json`, `.well-known/mcp.json`, `wealth-mcp-tools.json`.
+
+### What landed
+
+1. **New tool** `wealth_omni_wisdom` — `@mcp.tool()`, 4 modes (synthesize | deal | hysteresis | omni), unified schema, F01 strictest-wins fusion.
+2. **Three originals demoted** to internal Python helpers (no `@mcp.tool` decorator): `wealth_synthesize`, `wealth_deal_frame`, `wealth_hysteresis_ledger`. Still callable as Python functions, no longer MCP-exposed.
+3. **Surface delta** confirmed: live count 44 → 42; WHITELIST, MANIFEST, ORDER, ATLAS all updated.
+4. **Backward compat** via `internal/engines/compatibility_map.py`: 3 legacy aliases point old names → new tool with appropriate `mode=`.
+5. **Audit doc table** updated: rows 38, 73, 75 marked `absorbed into wealth_omni_wisdom (mode=...)` instead of `keep_name`.
+6. **Test constants** updated in `test_ghost_retirement.py`: `CANONICAL_REPLACEMENT = "wealth_omni_wisdom"`, `REQUIRED_SURFACE_COUNT = 42`.
+7. **New test file** `tests/test_omni_wisdom.py` (7 tests): mode coverage, F01 fusion, sub-engine error resilience, MCP registration check.
 
 ### The consolidation
 

@@ -1,8 +1,8 @@
 {
   "$id": "https://wealth.arif-fazil.com/api/schemas/wealth-mcp-tools.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "_deprecation_notice": "DEPRECATED. Live runtime as of 2026-06-03 serves 44 tools. For canonical surface, see .well-known/mcp.json. To regenerate this file from runtime, run: python scripts/sync_manifest.py --full",
-  "_live_runtime_count": 44,
+  "_deprecation_notice": "DEPRECATED. Live runtime as of 2026-06-03 serves 42 tools. For canonical surface, see .well-known/mcp.json. To regenerate this file from runtime, run: python scripts/sync_manifest.py --full",
+  "_live_runtime_count": 42,
   "definitions": {
     "CapitalType": {
       "default": "financial",

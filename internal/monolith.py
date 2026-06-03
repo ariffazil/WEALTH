@@ -1425,7 +1425,7 @@ PUBLIC_SURFACE_WHITELIST = {
     # L0 — Kernel Surface
     "wealth_health_check",
     "wealth_system_registry_status",
-    "wealth_synthesize",
+    "wealth_omni_wisdom",
     "wealth_agent_path",
     # L1 — 12 Canonical Physics Organs
     "wealth_conservation_capital",
@@ -1439,7 +1439,6 @@ PUBLIC_SURFACE_WHITELIST = {
     "wealth_signal_information",
     "wealth_game_coordination",
     "wealth_boundary_governance",
-    "wealth_hysteresis_ledger",
     # L2 — Mandatory Specialists
     "wealth_value_npv",
     "wealth_energy_irr",
@@ -1458,10 +1457,11 @@ PUBLIC_SURFACE_WHITELIST = {
     "wealth_ledger_query",
     "wealth_ledger_write",
     "wealth_inequality_kernel",
-    # L3 — Composite Deal Frame (absorbs 5 ghost tools)
-    "wealth_deal_frame",
     # Phase 1 Survival Engine
     "wealth_survival_engine",
+    # NOTE: wealth_synthesize, wealth_deal_frame, wealth_hysteresis_ledger
+    # were absorbed into wealth_omni_wisdom on 2026-06-03 (Path D consolidation).
+    # The 3 originals remain as INTERNAL Python helpers, no longer on public surface.
 }
 
 PUBLIC_RESOURCE_WHITELIST = {
@@ -1573,7 +1573,6 @@ WEALTH_TOOL_MANIFEST: List[Dict[str, object]] = [
     {"name": "wealth_governance_verdict", "axis": "critique", "expose": True},
     {"name": "wealth_gradient_price", "axis": "observe", "expose": True},
     {"name": "wealth_gravity_dscr", "axis": "vitality", "expose": True},
-    {"name": "wealth_hysteresis_ledger", "axis": "seal", "expose": True},
     {"name": "wealth_inertia_leverage", "axis": "boundary", "expose": True},
     {"name": "wealth_ledger_query", "axis": "trace", "expose": True},
     {"name": "wealth_ledger_record", "axis": "seal", "expose": True},
@@ -6894,7 +6893,9 @@ async def wealth_signal_evoi_mc(
     )
 
 
-@mcp.tool()
+# NOTE: wealth_deal_frame is now an INTERNAL HELPER called by wealth_omni_wisdom (mode='deal').
+# Removed from @mcp.tool surface 2026-06-03 in Path D consolidation. See Ω-WEALTH-OMNI below.
+# @mcp.tool()  # <-- removed 2026-06-03: absorbed into wealth_omni_wisdom
 async def wealth_deal_frame(
     opportunity_name: str,
     initial_investment: float,
@@ -9476,9 +9477,16 @@ _WEALTH_CIVILIZATION_ATLAS: Dict[str, Dict[str, Any]] = {
         "failure_warning": "Hysteresis means the system does not fully reset. Past actions change future possibilities.",
         "axiom": "A ledger is civilization remembering consequence.",
     },
+    "wealth_omni_wisdom": {
+        "story_id": "WEALTH-CIV-OMNI",
+        "civilization_event": "Path D consolidation — three disciplines into one judgment",
+        "lesson": "Synthesis, deal, and hysteresis are not separate deliberations; they are three lenses on the same decision. The fusion is the wisdom.",
+        "failure_warning": "Three tools answering separately invite paralysis. One tool answering with three voices invites action.",
+        "axiom": "Wisdom is the fusion of synthesis, deal, and memory under reversibility.",
+    },
 }
 
-_WEALTH_DEFAULT_CIV = _WEALTH_CIVILIZATION_ATLAS["wealth_hysteresis_ledger"]
+_WEALTH_DEFAULT_CIV = _WEALTH_CIVILIZATION_ATLAS["wealth_omni_wisdom"]
 
 
 def _wealth_civilization_for_tool(tool_name: str) -> Dict[str, Any]:
@@ -10813,7 +10821,9 @@ def wealth_boundary_governance(
     return result
 
 
-@mcp.tool(name="wealth_hysteresis_ledger")
+# NOTE: wealth_hysteresis_ledger is now an INTERNAL HELPER called by wealth_omni_wisdom (mode='hysteresis').
+# Removed from @mcp.tool surface 2026-06-03 in Path D consolidation. See Ω-WEALTH-OMNI below.
+# @mcp.tool(name="wealth_hysteresis_ledger")  # <-- removed 2026-06-03: absorbed into wealth_omni_wisdom
 def wealth_hysteresis_ledger(
     mode: str = "init",
     session_id: Optional[str] = None,
@@ -10863,7 +10873,9 @@ async def wealth_system_registry_status() -> dict[str, Any]:
     return snapshot
 
 
-@mcp.tool(name="wealth_synthesize")
+# NOTE: wealth_synthesize is now an INTERNAL HELPER called by wealth_omni_wisdom (mode='synthesize').
+# Removed from @mcp.tool surface 2026-06-03 in Path D consolidation. See Ω-WEALTH-OMNI below.
+# @mcp.tool(name="wealth_synthesize")  # <-- removed 2026-06-03: absorbed into wealth_omni_wisdom
 def wealth_synthesize(
     question: str = "",
     scale_mode: str = "enterprise",
@@ -11331,6 +11343,422 @@ def wealth_synthesize(
     from contracts.enrich_wealth import build_metabolic_output
 
     return build_metabolic_output(result, "wealth_synthesize")
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Ω-WEALTH-OMNI: wealth_omni_wisdom — Path D consolidation
+# SEALED 2026-06-03 by Arif Fazil. 4 modes: synthesize | deal | hysteresis | omni.
+# Absorbs: wealth_synthesize, wealth_deal_frame, wealth_hysteresis_ledger.
+# Net live count: -2 (44 → 42). F01 Reversibility governs fusion in omni mode.
+# ═══════════════════════════════════════════════════════════════════════
+
+
+def _verdict_unify(verdict: Any) -> str:
+    """Map any verdict string to the unified wisdom vocabulary: SEAL | HOLD | STOP."""
+    v = str(verdict or "").upper()
+    if v in {"SEAL", "PROCEED", "VIABLE", "GO", "CLEAN", "OPTIMAL", "STABLE", "GROWTH"}:
+        return "SEAL"
+    if v in {
+        "HOLD",
+        "SABAR",
+        "MARGINAL",
+        "CONDITIONAL",
+        "PLATEAU",
+        "REVERSION",
+        "ADVISORY",
+        "DEGRADED",
+    }:
+        return "HOLD"
+    if v in {
+        "STOP",
+        "VOID",
+        "REJECT",
+        "NON_VIABLE",
+        "COLLAPSE",
+        "ESCALATE",
+        "DEFER",
+        "CRITICAL",
+    }:
+        return "STOP"
+    return "HOLD"  # safe default
+
+
+def _wisdom_fuse(verdicts: List[str]) -> Tuple[str, float]:
+    """F01 Reversibility fusion: strictest verdict wins. Confidence = unanimity bonus."""
+    if not verdicts:
+        return "HOLD", 0.0
+    order = {"SEAL": 3, "HOLD": 2, "STOP": 1}
+    ranked = sorted(verdicts, key=lambda v: order.get(v, 0))
+    strictest = ranked[0]
+    confidence = 1.0 if len(set(verdicts)) == 1 else 0.6
+    return strictest, confidence
+
+
+@mcp.tool()
+async def wealth_omni_wisdom(
+    mode: str = "synthesize",
+    decision_context: Optional[Dict[str, Any]] = None,
+    deal_params: Optional[Dict[str, Any]] = None,
+    path_params: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Ω-WEALTH-OMNI: Unified capital intelligence — synthesis + deal + hysteresis in one tool.
+
+    Consolidates three legacy tools into one:
+      - wealth_synthesize (mode='synthesize')     — Ω-WEALTH-00 unified verdict
+      - wealth_deal_frame (mode='deal')           — Ω-DEAL-00 capital opportunity judgment
+      - wealth_hysteresis_ledger (mode='hysteresis') — Ω-WEALTH-12 path-dependence ledger
+      - mode='omni'                               — parallel fan-out + F01 fusion
+
+    UNIFIED INPUT SCHEMA:
+      decision_context (required): free-form context dict
+        - description (str): primary purpose / opportunity name / question
+        - capital_type (str): financial | temporal | cognitive | social | ecological | strategic | thermodynamic
+        - horizon (str): e.g. "3Y", "10Y", "perpetual"
+        - entropy_signal (float, optional): 0.0–1.0
+        - risk_regime (str, optional): GO | HOLD | STOP
+      deal_params (mode='deal' | 'omni'): initial_investment, cash_flows, terminal_value,
+        discount_rate, maruah_impact, scale_mode, etc.
+      path_params (mode='hysteresis' | 'omni'): prior_path_id, current_state (GROWTH|PLATEAU|
+        REVERSION|COLLAPSE), transition_signal, limit
+
+    OUTPUT BUNDLE:
+      {
+        "wisdom_verdict": "SEAL" | "HOLD" | "STOP",
+        "confidence": 0.0–1.0,
+        "epistemic_tag": "CLAIM" | "PLAUSIBLE" | "HYPOTHESIS" | "ESTIMATE",
+        "synthesis":  {...} (when mode includes synthesize),
+        "deal":       {...} (when mode includes deal),
+        "hysteresis": {...} (when mode includes hysteresis),
+        "telemetry":  {mode_executed, parallel, tokens_estimated, dS, timestamp}
+      }
+
+    F01 REVERSIBILITY: In mode='omni', if any sub-engine returns STOP, the top-level
+    wisdom_verdict is STOP regardless of the other two outputs (strictest wins).
+    Sub-engine errors are downgraded to HOLD to prevent cascade failure.
+    """
+    import asyncio
+    from datetime import datetime
+
+    if mode not in {"synthesize", "deal", "hysteresis", "omni"}:
+        return {
+            "wisdom_verdict": "HOLD",
+            "confidence": 0.0,
+            "epistemic_tag": "HYPOTHESIS",
+            "error": f"Unknown mode '{mode}'. Valid: synthesize, deal, hysteresis, omni.",
+            "telemetry": {"mode_executed": "none", "parallel": False},
+        }
+
+    decision_context = decision_context or {}
+    deal_params = deal_params or {}
+    path_params = path_params or {}
+    description = decision_context.get("description", "")
+    timestamp = datetime.utcnow().isoformat() + "Z"
+
+    # ── mode='synthesize' ────────────────────────────────────────────────
+    if mode == "synthesize":
+        synth = None
+        sub_error = None
+        try:
+            synth = wealth_synthesize(
+                question=description,
+                scale_mode=decision_context.get("capital_type", "enterprise"),
+                context=decision_context,
+                reversible=True,
+            )
+        except Exception as e:
+            sub_error = f"{type(e).__name__}: {e}"
+        if isinstance(synth, dict):
+            synth_verdict = _verdict_unify(
+                synth.get("omega_verdict", synth.get("verdict", "HOLD"))
+            )
+            confidence = synth.get("confidence", 0.5)
+            epistemic = "CLAIM" if synth_verdict == "SEAL" else "HYPOTHESIS"
+            synthesis_bundle = {
+                "omega_verdict": "Ω-WEALTH-00",
+                "capital_score": synth.get("capital_score", 0.0),
+                "conversion_integrity": synth.get("conversion_integrity", "UNKNOWN"),
+                "summary": synth.get("summary", description),
+            }
+        else:
+            synth_verdict = "HOLD"
+            confidence = 0.0
+            epistemic = "HYPOTHESIS"
+            synthesis_bundle = {
+                "omega_verdict": "Ω-WEALTH-00",
+                "capital_score": 0.0,
+                "conversion_integrity": "ERROR",
+                "summary": description or "(synth sub-engine unavailable)",
+            }
+        return {
+            "wisdom_verdict": synth_verdict,
+            "confidence": confidence,
+            "epistemic_tag": epistemic,
+            "synthesis": synthesis_bundle,
+            "telemetry": {
+                "mode_executed": "synthesize",
+                "parallel": False,
+                "tokens_estimated": 0,
+                "dS": synth.get("dS", 0.0) if isinstance(synth, dict) else 0.0,
+                "timestamp": timestamp,
+                "sub_engine_error": sub_error,
+            },
+        }
+
+    # ── mode='deal' ──────────────────────────────────────────────────────
+    if mode == "deal":
+        deal = None
+        sub_error = None
+        try:
+            deal = await wealth_deal_frame(
+                opportunity_name=description or "unnamed_opportunity",
+                initial_investment=deal_params.get("initial_investment", 0.0),
+                cash_flows=deal_params.get("cash_flows"),
+                terminal_value=deal_params.get("terminal_value", 0.0),
+                discount_rate=deal_params.get("discount_rate", 0.10),
+                maruah_impact=deal_params.get("maruah_impact", 0.5),
+                scale_mode=deal_params.get("scale_mode", "enterprise"),
+            )
+        except Exception as e:
+            sub_error = f"{type(e).__name__}: {e}"
+        if isinstance(deal, dict):
+            deal_verdict = _verdict_unify(
+                deal.get("recommendation", deal.get("verdict", "HOLD"))
+            )
+            confidence = deal.get("confidence", 0.5)
+            epistemic = "CLAIM" if deal_verdict == "SEAL" else "HYPOTHESIS"
+            deal_bundle = {
+                "omega_verdict": "Ω-DEAL-00",
+                "deal_score": deal.get("npv", 0.0),
+                "structure_verdict": deal.get("classification", "UNKNOWN"),
+                "risk_flags": deal.get("risk_flags", []),
+            }
+        else:
+            deal_verdict = "HOLD"
+            confidence = 0.0
+            epistemic = "HYPOTHESIS"
+            deal_bundle = {
+                "omega_verdict": "Ω-DEAL-00",
+                "deal_score": 0.0,
+                "structure_verdict": "ERROR",
+                "risk_flags": [],
+            }
+        return {
+            "wisdom_verdict": deal_verdict,
+            "confidence": confidence,
+            "epistemic_tag": epistemic,
+            "deal": deal_bundle,
+            "telemetry": {
+                "mode_executed": "deal",
+                "parallel": False,
+                "tokens_estimated": 0,
+                "dS": deal.get("entropy", 0.0) if isinstance(deal, dict) else 0.0,
+                "timestamp": timestamp,
+                "sub_engine_error": sub_error,
+            },
+        }
+
+    # ── mode='hysteresis' ────────────────────────────────────────────────
+    if mode == "hysteresis":
+        hyst = None
+        sub_error = None
+        try:
+            hyst = wealth_hysteresis_ledger(
+                mode=path_params.get("ledger_mode", "query"),
+                query=description,
+                limit=path_params.get("limit", 10),
+                dry_run=True,  # F01: omni is read-only by default
+                human_confirmed=False,
+            )
+        except Exception as e:
+            sub_error = f"{type(e).__name__}: {e}"
+        path_state = path_params.get("current_state", "PLATEAU")
+        hyst_verdict = _verdict_unify(path_state)
+        return {
+            "wisdom_verdict": hyst_verdict,
+            "confidence": 0.5 if sub_error is None else 0.0,
+            "epistemic_tag": "ESTIMATE" if sub_error is None else "HYPOTHESIS",
+            "hysteresis": {
+                "omega_path": "Ω-WEALTH-12",
+                "path_state": path_state,
+                "hysteresis_risk": 0.0,
+                "transition_recommendation": str(hyst)[:200] if hyst else "no_data",
+            },
+            "telemetry": {
+                "mode_executed": "hysteresis",
+                "parallel": False,
+                "tokens_estimated": 0,
+                "dS": 0.0,
+                "timestamp": timestamp,
+                "sub_engine_error": sub_error,
+            },
+        }
+
+    # ── mode='deal' ──────────────────────────────────────────────────────
+    if mode == "deal":
+        try:
+            deal = await wealth_deal_frame(
+                opportunity_name=description or "unnamed_opportunity",
+                initial_investment=deal_params.get("initial_investment", 0.0),
+                cash_flows=deal_params.get("cash_flows"),
+                terminal_value=deal_params.get("terminal_value", 0.0),
+                discount_rate=deal_params.get("discount_rate", 0.10),
+                maruah_impact=deal_params.get("maruah_impact", 0.5),
+                scale_mode=deal_params.get("scale_mode", "enterprise"),
+            )
+        except Exception as e:
+            return _omni_error("deal", e, timestamp)
+        deal_verdict = _verdict_unify(
+            deal.get("recommendation", deal.get("verdict", "HOLD"))
+        )
+        return {
+            "wisdom_verdict": deal_verdict,
+            "confidence": deal.get("confidence", 0.5),
+            "epistemic_tag": "CLAIM" if deal_verdict == "SEAL" else "HYPOTHESIS",
+            "deal": {
+                "omega_verdict": "Ω-DEAL-00",
+                "deal_score": deal.get("npv", 0.0),
+                "structure_verdict": deal.get("classification", "UNKNOWN"),
+                "risk_flags": deal.get("risk_flags", []),
+            },
+            "telemetry": {
+                "mode_executed": "deal",
+                "parallel": False,
+                "tokens_estimated": 0,
+                "dS": deal.get("entropy", 0.0),
+                "timestamp": timestamp,
+            },
+        }
+
+    # ── mode='hysteresis' ────────────────────────────────────────────────
+    if mode == "hysteresis":
+        try:
+            hyst = wealth_hysteresis_ledger(
+                mode=path_params.get("ledger_mode", "query"),
+                query=description,
+                limit=path_params.get("limit", 10),
+                dry_run=True,  # F01: omni is read-only by default
+                human_confirmed=False,
+            )
+        except Exception as e:
+            return _omni_error("hysteresis", e, timestamp)
+        path_state = path_params.get("current_state", "PLATEAU")
+        hyst_verdict = _verdict_unify(path_state)
+        return {
+            "wisdom_verdict": hyst_verdict,
+            "confidence": 0.5,
+            "epistemic_tag": "ESTIMATE",
+            "hysteresis": {
+                "omega_path": "Ω-WEALTH-12",
+                "path_state": path_state,
+                "hysteresis_risk": 0.0,
+                "transition_recommendation": str(hyst)[:200] if hyst else "no_data",
+            },
+            "telemetry": {
+                "mode_executed": "hysteresis",
+                "parallel": False,
+                "tokens_estimated": 0,
+                "dS": 0.0,
+                "timestamp": timestamp,
+            },
+        }
+
+    # ── mode='omni' — parallel fan-out + F01 fusion ──────────────────────
+    synth_task = asyncio.to_thread(
+        wealth_synthesize,
+        question=description,
+        scale_mode=decision_context.get("capital_type", "enterprise"),
+        context=decision_context,
+        reversible=True,
+    )
+    deal_task = wealth_deal_frame(
+        opportunity_name=description or "omni_opportunity",
+        initial_investment=deal_params.get("initial_investment", 0.0),
+        cash_flows=deal_params.get("cash_flows"),
+        terminal_value=deal_params.get("terminal_value", 0.0),
+        discount_rate=deal_params.get("discount_rate", 0.10),
+        maruah_impact=deal_params.get("maruah_impact", 0.5),
+        scale_mode=deal_params.get("scale_mode", "enterprise"),
+    )
+    hyst_task = asyncio.to_thread(
+        wealth_hysteresis_ledger,
+        mode="query",
+        query=description,
+        limit=path_params.get("limit", 10),
+        dry_run=True,
+        human_confirmed=False,
+    )
+
+    synth, deal, hyst = await asyncio.gather(
+        synth_task, deal_task, hyst_task, return_exceptions=True
+    )
+
+    # F01: any sub-engine error → HOLD verdict (defensive)
+    synth_ok = isinstance(synth, dict)
+    deal_ok = isinstance(deal, dict)
+    hyst_ok = isinstance(hyst, dict)
+
+    synth_v = _verdict_unify(synth.get("omega_verdict", "HOLD")) if synth_ok else "HOLD"
+    deal_v = _verdict_unify(deal.get("recommendation", "HOLD")) if deal_ok else "HOLD"
+    path_state = path_params.get("current_state", "PLATEAU")
+    hyst_v = _verdict_unify(path_state)  # path_state is the user-supplied signal
+
+    # F01 fusion: strictest wins
+    final_verdict, confidence = _wisdom_fuse([synth_v, deal_v, hyst_v])
+
+    return {
+        "wisdom_verdict": final_verdict,
+        "confidence": confidence,
+        "epistemic_tag": "PLAUSIBLE" if confidence > 0.7 else "HYPOTHESIS",
+        "synthesis": {
+            "omega_verdict": "Ω-WEALTH-00",
+            "capital_score": synth.get("capital_score", 0.0) if synth_ok else 0.0,
+            "conversion_integrity": synth.get("conversion_integrity", "ERROR")
+            if synth_ok
+            else "ERROR",
+            "summary": synth.get("summary", description) if synth_ok else "synth_error",
+        },
+        "deal": {
+            "omega_verdict": "Ω-DEAL-00",
+            "deal_score": deal.get("npv", 0.0) if deal_ok else 0.0,
+            "structure_verdict": deal.get("classification", "ERROR")
+            if deal_ok
+            else "ERROR",
+            "risk_flags": deal.get("risk_flags", []) if deal_ok else [],
+        },
+        "hysteresis": {
+            "omega_path": "Ω-WEALTH-12",
+            "path_state": path_state,
+            "hysteresis_risk": 0.0,
+            "transition_recommendation": "see ledger" if hyst_ok else "hyst_error",
+        },
+        "telemetry": {
+            "mode_executed": "omni",
+            "parallel": True,
+            "tokens_estimated": 0,
+            "dS": 0.0,
+            "timestamp": timestamp,
+            "sub_verdicts": {"synth": synth_v, "deal": deal_v, "hysteresis": hyst_v},
+            "sub_ok": {"synth": synth_ok, "deal": deal_ok, "hysteresis": hyst_ok},
+        },
+    }
+
+
+def _omni_error(failed_mode: str, exc: Exception, timestamp: str) -> Dict[str, Any]:
+    """Helper: produce a structured error bundle for a failed sub-engine."""
+    return {
+        "wisdom_verdict": "HOLD",
+        "confidence": 0.0,
+        "epistemic_tag": "HYPOTHESIS",
+        "error": f"sub-engine '{failed_mode}' failed: {type(exc).__name__}: {exc}",
+        "telemetry": {
+            "mode_executed": failed_mode,
+            "parallel": False,
+            "tokens_estimated": 0,
+            "dS": 0.0,
+            "timestamp": timestamp,
+            "sub_engine_error": failed_mode,
+        },
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -12579,11 +13007,11 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     # L0 — Kernel Surface
     "wealth_health_check",
     "wealth_system_registry_status",
-    "wealth_synthesize",
+    "wealth_omni_wisdom",
     "wealth_agent_path",
     # Phase 1 Survival Engine (absorbs cashflow/liquidity/runway wrappers)
     "wealth_survival_engine",
-    # L1 — 12 Canonical Physics Organs
+    # L1 — 11 Canonical Physics Organs (hysteresis_ledger absorbed into wealth_omni_wisdom 2026-06-03)
     "wealth_conservation_capital",
     "wealth_flow_liquidity",
     "wealth_gradient_price",
@@ -12595,7 +13023,6 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_signal_information",
     "wealth_game_coordination",
     "wealth_boundary_governance",
-    "wealth_hysteresis_ledger",
     # L2 — Mandatory Specialists
     "wealth_value_npv",
     "wealth_energy_irr",
@@ -12615,8 +13042,9 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_ledger_write",
     # Domain Specialist (Civilization)
     "wealth_inequality_kernel",
-    # L3 — Composite Deal Frame (absorbs 5 ghost tools: screen, viability, risk, compare, memo)
-    "wealth_deal_frame",
+    # NOTE: wealth_synthesize, wealth_deal_frame, wealth_hysteresis_ledger
+    # were absorbed into wealth_omni_wisdom on 2026-06-03 (Path D consolidation).
+    # L3 — Composite Deal Frame is no longer standalone (now mode='deal' of omni).
     # D1 — Personal Finance (cashflow, net worth, EPF, zakat)
     "wealth_cashflow_track",
     "wealth_cashflow_summary",
