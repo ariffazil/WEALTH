@@ -2,7 +2,7 @@
   "$schema": "https://gofastmcp.com/public/schemas/fastmcp.json/v1.json",
   "name": "WEALTH-MONOLITH",
   "version": "2026.05.11",
-  "description": "Sovereign Wealth & Capital Allocation Engine (87 tools live)",
+  "description": "Sovereign Wealth & Capital Allocation Engine (44 tools live; run scripts/sync_manifest.py to update)",
   "source": {
     "type": "filesystem",
     "path": "internal/monolith.py",
@@ -10,8 +10,8 @@
   },
   "capabilities": {
     "tools": {
-      "count": 87,
-      "source": "host.ingest.registry"
+      "count": 44,
+      "source": "scripts/sync_manifest.py (auto-generated from FastMCP runtime; do not hand-edit)"
     }
   },
   "environment": {
