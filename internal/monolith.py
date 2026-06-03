@@ -11092,6 +11092,89 @@ def wealth_synthesize(
                 # Stat embed is optional; never break the main flow
                 _saf_skipped = str(_saf_exc)[:120]
 
+        # EUREKA FORGE (2026-06-03): non-parametric distribution check.
+        # The 2026-06-02 stat_assumptions forge checks normality (Shapiro).
+        # This forge complements it with the Wilcoxon signed-rank test,
+        # which is robust to non-Gaussian data and asks a different
+        # question: "is the cash-flow stream symmetrically distributed
+        # around the hypothesized median (mu=0), or is there a systematic
+        # shift?" A significant Wilcoxon p-value means the cash flow is
+        # not zero-centered — useful for distinguishing "noise" streams
+        # (p>0.05, symmetric around zero) from "directional" streams
+        # (p<0.05, systematically positive or negative).
+        _wilcoxon_summary = None
+        if cash_flows and len(cash_flows) >= 5:
+            try:
+                import sys as _sys_wil
+
+                _arifos_kernel_wil = "/root/arifOS"
+                if _arifos_kernel_wil not in _sys_wil.path:
+                    _sys_wil.path.insert(0, _arifos_kernel_wil)
+                from core.shared.saf_stats import (
+                    stat_nonparametric as _saf_nonpara,
+                )
+                import pandas as _pd_wil
+                import uuid as _uuid_wil
+                from pathlib import Path as _Path_wil
+                import os as _os_wil
+
+                _wil_root = _Path_wil(
+                    _os_wil.environ.get("WEALTH_SAF_DATA_ROOT", "/tmp/wealth_saf")
+                )
+                _wil_root.mkdir(parents=True, exist_ok=True)
+                _os_wil.environ["SAF_DATA_ROOT"] = str(_wil_root)
+                _wil_csv = _wil_root / (f"wilcoxon_{_uuid_wil.uuid4().hex[:10]}.csv")
+                _pd_wil.DataFrame({"cash_flow": [float(x) for x in cash_flows]}).to_csv(
+                    _wil_csv, index=False
+                )
+                _wil_raw = _saf_nonpara(
+                    str(_wil_csv),
+                    value_col="cash_flow",
+                    test="wilcoxon",
+                    mu=0.0,
+                )
+                try:
+                    _wil_csv.unlink()
+                except OSError:
+                    pass
+                # Federated saf_stats returns the F1-F13 envelope with
+                # method, W (Wilcoxon stat), p_value, n at the top
+                # level. Upstream saf_stats nests under "result".
+                _wil_method = (
+                    _wil_raw.get("method", "Wilcoxon signed-rank")
+                    if isinstance(_wil_raw, dict)
+                    else "Wilcoxon signed-rank"
+                )
+                _wil_W = _wil_raw.get("W") if isinstance(_wil_raw, dict) else None
+                _wil_p = _wil_raw.get("p_value") if isinstance(_wil_raw, dict) else None
+                _wil_n = _wil_raw.get("n") if isinstance(_wil_raw, dict) else None
+                if _wil_W is None and isinstance(_wil_raw, dict):
+                    _wil_inner = _wil_raw.get("result", _wil_raw)
+                    if isinstance(_wil_inner, dict):
+                        _wil_W = _wil_inner.get("W")
+                        _wil_p = _wil_inner.get("p_value")
+                        _wil_n = _wil_inner.get("n")
+                _wilcoxon_summary = {
+                    "method": _wil_method,
+                    "mu": 0.0,
+                    "W": _wil_W,
+                    "p_value": _wil_p,
+                    "n": _wil_n or len(cash_flows),
+                    "significant_at_0_05": (
+                        _wil_p is not None and float(_wil_p) < 0.05
+                    ),
+                    "interpretation": (
+                        "cash flow is directionally biased (not symmetric around 0)"
+                        if _wil_p is not None and float(_wil_p) < 0.05
+                        else "cash flow is consistent with symmetric noise around 0"
+                    ),
+                }
+                # F2 TRUTH: a non-zero-centered cash flow is meaningful
+                # even if NPV is positive. Surface as advisory; never
+                # override the verdict (this is descriptive, not normative).
+            except Exception as _wil_exc:
+                _wilcoxon_summary = {"embed_skipped": str(_wil_exc)[:120]}
+
         if cash_flows:
             r = emv_risk(
                 scenarios=[
@@ -11142,6 +11225,8 @@ def wealth_synthesize(
                 results["entropy"]["_saf_assumptions"] = _saf_summary
             if "_saf_skipped" in dir() and _saf_skipped is not None:
                 results["entropy"]["_saf_embed_skipped"] = _saf_skipped
+            if "_wilcoxon_summary" in dir() and _wilcoxon_summary is not None:
+                results["entropy"]["_saf_wilcoxon"] = _wilcoxon_summary
         except Exception:
             pass
         dimensional_scores["entropy"] = r.get("governance_verdict", "UNKNOWN")
