@@ -1423,7 +1423,7 @@ def wealth_macro_indicator(
 # are hidden from the MCP registry but remain available as internal Python functions.
 PUBLIC_SURFACE_WHITELIST = {
     # L0 — Kernel Surface
-    "mcp_health_check",
+    "wealth_health_check",
     "wealth_system_registry_status",
     "wealth_synthesize",
     "wealth_agent_path",
@@ -1543,7 +1543,7 @@ mcp.prompt = controlled_mcp_prompt
 
 
 WEALTH_TOOL_MANIFEST: List[Dict[str, object]] = [
-    {"name": "mcp_health_check", "axis": "identity", "expose": True},
+    {"name": "wealth_health_check", "axis": "identity", "expose": True},
     {"name": "vault_query", "axis": "trace", "expose": True},
     {"name": "vault_write", "axis": "seal", "expose": True},
     {"name": "vaultquery", "axis": "trace", "expose": True},
@@ -1623,7 +1623,7 @@ except Exception:
 
 
 @mcp.tool()
-def mcp_health_check() -> dict:
+def wealth_health_check() -> dict:
     """Universal health check for federation stability."""
     return {
         "mcp": "WEALTH",
@@ -9378,7 +9378,7 @@ def _invoke_callable(func: Callable[..., Any], payload: Dict[str, Any]) -> Any:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 _WEALTH_CIVILIZATION_ATLAS: Dict[str, Dict[str, Any]] = {
-    "mcp_health_check": {
+    "wealth_health_check": {
         "story_id": "WEALTH-CIV-001",
         "civilization_event": "Roman aqueduct maintenance",
         "lesson": "Verify the instrument before judging the allocation.",
@@ -12577,7 +12577,7 @@ def wealth_emit_investment_memo(
 
 WEALTH_PUBLIC_TOOL_ORDER = (
     # L0 — Kernel Surface
-    "mcp_health_check",
+    "wealth_health_check",
     "wealth_system_registry_status",
     "wealth_synthesize",
     "wealth_agent_path",

@@ -77,7 +77,7 @@ These are the umbrella/orchestration tools — the ones flagged for demotion:
 
 | Current name | Line | Type | Action |
 |---|---|---|---|
-| `mcp_health_check` | 540 | tool | ✅ KEEP — transport health |
+| `wealth_health_check` | 540 | tool | ✅ KEEP — transport health |
 | `wealth_future_value` | 3659 | umbrella | ❌ DEMOTE to `wealth_appraise_project` prompt |
 | `wealth_present_expect` | 3687 | umbrella | ❌ DEMOTE to `wealth_expectation_emv` prompt |
 | `wealth_future_simulate` | 3702 | umbrella | ❌ DEMOTE to `wealth_run_monte_carlo` prompt |
@@ -155,7 +155,7 @@ Organized by physics dimension:
 #### Transport (1)
 | New name | Operation | Description |
 |---|---|---|
-| `mcp_health_check` | health | Universal transport health |
+| `wealth_health_check` | health | Universal transport health |
 
 #### Value / Energy (5)
 | New name | Operation | Physics analogue |
@@ -505,7 +505,7 @@ for old_name, new_name in _migration_aliases.items():
 | `wealth_vault_init` | `wealth_ledger_init` | ledger | tool |
 | `wealth_vault_record` | `wealth_ledger_record` | ledger | tool |
 | `wealth_vault_snapshot` | `wealth_ledger_snapshot` | ledger | tool |
-| `mcp_health_check` | `mcp_health_check` | transport | tool |
+| `wealth_health_check` | `wealth_health_check` | transport | tool |
 | `wealth_future_value` | `wealth_appraise_project` | orchestration | **PROMPT** |
 | `wealth_present_expect` | `wealth_expectation_emv` | orchestration | **PROMPT** |
 | `wealth_future_simulate` | `wealth_run_monte_carlo` | orchestration | **PROMPT** |

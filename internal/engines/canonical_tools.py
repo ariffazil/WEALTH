@@ -71,11 +71,11 @@ _FIVE_SEALS_LOADED = True
 # ═══════════════════════════════════════════════════════════════════════════
 # CANONICAL TOOL 01 — wealth_system_status
 # Modes: health, registry, version, aliases, schema
-# Collapses: mcp_health_check, wealth_system_registry_status
+# Collapses: wealth_health_check, wealth_system_registry_status
 # ═══════════════════════════════════════════════════════════════════════════
 
 if _ENGINES_IMPORTED:
-    from internal.monolith import mcp_health_check, wealth_system_registry_status
+    from internal.monolith import wealth_health_check, wealth_system_registry_status
 
     async def wealth_system_status_tool(
         mode: str = "health",
@@ -102,7 +102,7 @@ if _ENGINES_IMPORTED:
 
         if mode == "health":
             try:
-                health = mcp_health_check()
+                health = wealth_health_check()
                 metrics = {
                     "service": "WEALTH",
                     "status": health.get("status", "unknown"),

@@ -89,7 +89,7 @@ Total @mcp.tool decorators:   72
 | `wealth_inequality_kernel` | IEQ | 5-dimension inequality diagnosis (pass `preset='malaysia'` for live WB data) |
 | `wealth_sensor_snapshot` | 08 | Multi-source macro snapshot (ECB, FRED, OWID, Ember, WorldBank) |
 | `wealth_stewardship_civilization` | Future | Long-horizon planetary boundary + civilization continuity |
-| `mcp_health_check` | System | Federation health probe |
+| `wealth_health_check` | System | Federation health probe |
 
 ---
 

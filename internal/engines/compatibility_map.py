@@ -4,12 +4,13 @@
 
 LEGACY_TO_CANONICAL = {
     # ─── SYSTEM ────────────────────────────────────────────────────────────
-    "mcp_health_check": {
-        "canonical": "wealth_system_status",
-        "mode": "health",
+    "wealth_health_check": {
+        "canonical": "wealth_health_check",
+        "mode": None,
         "decision_class": "W0",
-        "new_schema": "wealth_system_status(mode='health')",
-        "sunset": "v2",
+        "new_schema": "wealth_health_check()",
+        "sunset": None,
+        "note": "Renamed 2026-06-03 from mcp_health_check. Old name retained as legacy alias for backward compat.",
     },
     "wealth_system_registry_status": {
         "canonical": "wealth_system_status",

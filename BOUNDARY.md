@@ -63,7 +63,7 @@ scope: /
 ## Canonical Tool Surface (Live)
 
 18 tools exposed on port 8082:
-`mcp_health_check`, `wealth_conservation_capital`, `wealth_flow_liquidity`, `wealth_gradient_price`, `wealth_entropy_risk`, `wealth_energy_productivity`, `wealth_time_discount`, `wealth_inertia_leverage`, `wealth_field_macro`, `wealth_signal_information`, `wealth_game_coordination`, `wealth_boundary_governance`, `wealth_hysteresis_ledger`, `wealth_system_registry_status`, `wealth_synthesize`, `wealth_role_scarcity_risk`, `wealth_inequality_kernel`
+`wealth_health_check`, `wealth_conservation_capital`, `wealth_flow_liquidity`, `wealth_gradient_price`, `wealth_entropy_risk`, `wealth_energy_productivity`, `wealth_time_discount`, `wealth_inertia_leverage`, `wealth_field_macro`, `wealth_signal_information`, `wealth_game_coordination`, `wealth_boundary_governance`, `wealth_hysteresis_ledger`, `wealth_system_registry_status`, `wealth_synthesize`, `wealth_role_scarcity_risk`, `wealth_inequality_kernel`
 
 ## Canonical Surfaces
 

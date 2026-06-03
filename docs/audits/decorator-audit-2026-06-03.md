@@ -53,7 +53,7 @@ Legend: **N** = named, **U** = unnamed, **S** = stateful (touches DB/cache/IO), 
 | 7 | 1253 | `wealth_fx_rate()` | `wealth_fx_rate` | N | S | market_data | **keep_name** | D3-01, live API call |
 | 8 | 1298 | `wealth_commodity_price()` | `wealth_commodity_price` | N | S | market_data | **keep_name** | D3-02 |
 | 9 | 1349 | `wealth_macro_indicator()` | `wealth_macro_indicator` | N | S | market_data | **keep_name** | D3-03, World Bank API |
-| 10 | 1625 | `mcp_health_check()` | `mcp_health_check` | U | P | helper-leak | **rename** | Generic name. Rename to `wealth_health_check` and document as F1-F13 enforcement probe. **Note: this is the deprecated alias in `TOOL_SURFACE.md`.** |
+| 10 | 1625 | `wealth_health_check()` | `wealth_health_check` | U | P | helper-leak | **rename (DONE 2026-06-03)** | F1-F13 enforcement probe. Original `mcp_health_check` name was the deprecated alias per `TOOL_SURFACE.md`; renamed in branch `feat/wealth-mcp-health-rename-2026-06-03`. |
 
 ### Section B — SURVIVAL_ENGINE + Legacy Wrappers (L3467, L3761)
 
@@ -213,7 +213,7 @@ Based on the classification, the natural module boundaries for **Reading A (one 
 | `internal/engines/governance.py` | ~15 (Sections C, D, E, F) | All ledger_*, vault_* (TO BE REMOVED), boundary_*, governance_verdict, rule_enforce, hysteresis_ledger, audit, institution_score |
 | `internal/engines/personal_finance.py` (continued) | (deal frame) | deal_frame, screen_opportunity, compute_viability, score_risk, compare_scenarios, emit_investment_memo (the 5 ghost L3 + #38) |
 | `internal/engines/civilization.py` | ~5 (Sections C, E, H) | inequality_kernel, role_scarcity_risk, stewardship_civilization, future_steward, plus the synthesis hub |
-| `internal/utils/health.py` | 1 (Section A #10) | mcp_health_check → wealth_health_check |
+| `internal/utils/health.py` | 1 (Section A #10) | wealth_health_check (rename completed 2026-06-03) |
 
 Total: ~62 legitimate surface tools. The 5 ghost L3 + 4 vault-leak + 1 typo = 10 to remove/hide, bringing live surface to ~44–49 (with the 5 ghost L3 fixed back to 49).
 
