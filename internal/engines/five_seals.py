@@ -7,6 +7,15 @@ from datetime import datetime, timezone
 import hashlib
 import uuid
 
+# Advisory boundary (PR 5). Lazy-imported to avoid package-init order
+# coupling with internal.engines.advisory during five_seals module load.
+try:
+    from internal.engines.advisory import compute_advisory_boundary
+    _ADVISORY_LOADED = True
+except ImportError:  # pragma: no cover — defensive only
+    compute_advisory_boundary = None  # type: ignore[assignment]
+    _ADVISORY_LOADED = False
+
 # ─── EVIDENCE LEVELS ───────────────────────────────────────────────────
 EVIDENCE_LEVELS: Dict[str, str] = {
     "E0": "assumption — no verification",
@@ -217,6 +226,28 @@ def wajib_envelope(
             evidence_level=evidence_level,
         )
 
+    # Compute Advisory Boundary (PR 5) — every WEALTH output must label
+    # its seal authority and surface input integrity. WEALTH advises;
+    # arifOS authorizes. The label is the F2-honest disambiguation that
+    # prevents a downstream agent from mistaking advisory for execution.
+    if _ADVISORY_LOADED and compute_advisory_boundary is not None:
+        advisory_boundary = compute_advisory_boundary(
+            metrics,
+            decision_class=decision_class,
+            evidence_level=evidence_level,
+        )
+    else:  # pragma: no cover — defensive only, advisory.py must be present
+        advisory_boundary = {
+            "domain_seal_validity": "WEALTH|advisory_only",
+            "judge_seal_authorization_required": decision_class in ("W4", "W5"),
+            "synthetic_inputs_detected": False,
+            "insufficient_input_detected": False,
+            "seal_authority_disclaimer": (
+                "WEALTH verdict is domain-valid advisory only. "
+                "Execution requires arifOS JUDGE_SEAL_AUTHORIZATION."
+            ),
+        }
+
     # Default handoff matrix
     if handoff_required is None:
         handoff_required = {
@@ -277,6 +308,16 @@ def wajib_envelope(
         "handoff_recommendation": _build_handoff_recommendation(
             decision_class, wealth_verdict
         ),
+        # ── Advisory Boundary (PR 5) ────────────────────────────────
+        # Every WEALTH output carries the seal-authority label and the
+        # input-integrity flags. WEALTH|advisory_only ≠ arifOS|execution_authorized.
+        "domain_seal_validity": advisory_boundary["domain_seal_validity"],
+        "judge_seal_authorization_required": advisory_boundary[
+            "judge_seal_authorization_required"
+        ],
+        "synthetic_inputs_detected": advisory_boundary["synthetic_inputs_detected"],
+        "insufficient_input_detected": advisory_boundary["insufficient_input_detected"],
+        "seal_authority_disclaimer": advisory_boundary["seal_authority_disclaimer"],
         # ── Audit ──────────────────────────────────────────────────────
         "audit_trace": audit_trace,
         # ── Legacy compatibility ──────────────────────────────────────
