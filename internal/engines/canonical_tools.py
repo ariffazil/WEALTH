@@ -2177,7 +2177,61 @@ if _ENGINES_IMPORTED:
 
         WAJIB: All mandatory fields apply.
         HARAM: Synthesis that makes weak inputs sound strong.
+        PR 5: no-default-rich-synthesis — if no cash_flows, p50_value, well_cost,
+              or prior_pos are provided, return INSUFFICIENT_INPUT, not a rich
+              default narrative. The fabricator path is the F7 violation.
         """
+        # ── PR 5: INSUFFICIENT_INPUT early return ─────────────────────
+        # Detect "no data" before calling the engine. The engine would
+        # otherwise produce a confident-looking default narrative from
+        # nothing, which violates F7 Stewardship (no fabrication) and
+        # F2 Truth (no overclaim). The honest path is to refuse.
+        _has_cashflows = bool(cash_flows) and len(cash_flows) > 0
+        _has_p50 = bool(p50_value_musd) and p50_value_musd != 0
+        _has_well = bool(well_cost_musd) and well_cost_musd != 0
+        _has_prior = prior_pos is not None
+
+        if not (_has_cashflows or _has_p50 or _has_well or _has_prior):
+            from internal.engines.advisory import (
+                INSUFFICIENT_INPUT_STATUS,
+                INSUFFICIENT_INPUT_SUMMARY,
+                INSUFFICIENT_INPUT_VERDICT,
+            )
+            return wajib_envelope(
+                tool="wealth_synthesize",
+                mode=mode,
+                status=INSUFFICIENT_INPUT_STATUS,
+                wealth_verdict=INSUFFICIENT_INPUT_VERDICT,
+                summary=INSUFFICIENT_INPUT_SUMMARY,
+                metrics={},
+                intent=intent or f"synthesize:{question[:30]}",
+                entity_scope=entity_scope,
+                time_horizon=time_horizon,
+                capital_at_risk=capital_at_risk or {},
+                decision_class="W0",
+                evidence_level="E0",
+                risks=[
+                    "No cash_flows, p50_value_musd, well_cost_musd, or prior_pos provided",
+                    "A synthesis cannot be forged from no data (F7 STEWARDSHIP)",
+                ],
+                assumptions=[],
+                sensitivity=[],
+                liquidity_impact="unknown",
+                legitimacy_score=0.0,
+                reversibility_score=1.0,
+                confidence=0.0,
+                next_safe_action=(
+                    "Provide at least one of: cash_flows (list of floats), "
+                    "p50_value_musd, well_cost_musd, or prior_pos"
+                ),
+                handoff_required={
+                    "WELL": False,
+                    "arifOS": True,  # Insufficient input always escalates
+                    "GEOX": False,
+                    "human_professional": True,
+                },
+            )
+
         result = wealth_synthesize_engine(
             question=question,
             scale_mode=scale_mode,
