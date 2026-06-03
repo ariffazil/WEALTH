@@ -41,7 +41,7 @@
 
 | Tool | Dimension | Engine | Status |
 |------|-----------|--------|--------|
-| `mcp_health_check` | — | — | ✅ Single responsibility |
+| `wealth_health_check` | — | — | ✅ Single responsibility |
 | `wealth_value_npv` | value | `npv_reward` | ✅ |
 | `wealth_energy_irr` | energy | `irr_yield` | ✅ |
 | `wealth_density_pi` | density | `pi_efficiency` | ✅ |

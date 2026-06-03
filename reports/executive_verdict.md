@@ -152,7 +152,7 @@ VAULT INTERFACE (2):
   vault_query
 
 HEALTH (1):
-  mcp_health_check
+  wealth_health_check
 
 DOMAIN (6):
   wealth_evaluate_prospect

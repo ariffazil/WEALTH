@@ -40,7 +40,7 @@ from internal.monolith import (
     wealth_boundary_governance,
     wealth_hysteresis_ledger,
     wealth_system_registry_status,
-    mcp_health_check,
+    wealth_health_check,
 )
 
 
@@ -230,7 +230,7 @@ def test_system_registry_status():
 
 
 def test_health_check():
-    payload = mcp_health_check()
+    payload = wealth_health_check()
     assert payload["status"] == "OK"
     assert payload["schema_version"] == "wealth.physics_economics.v1"
     assert payload["final_authority"] == "ARIF"
@@ -280,8 +280,6 @@ def test_tool_schema_contract():
     violations = []
     for tool in registered_tools:
         func_name = tool.name
-        if func_name == "mcp_health_check":
-            continue  # FastMCP core — skip
 
         func = getattr(monolith_module, func_name, None)
         if func is None or not callable(func):
