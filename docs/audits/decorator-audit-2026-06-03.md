@@ -103,7 +103,7 @@ Legend: **N** = named, **U** = unnamed, **S** = stateful (touches DB/cache/IO), 
 | 35 | 6828 | `wealth_probability_monte_carlo()` | `wealth_probability_monte_carlo` | U | S | kernel_math | **keep_name** | MC state store |
 | 36 | 6851 | `wealth_signal_evoi()` | `wealth_signal_evoi` | U | P | kernel_math | **keep_name** | Pure math |
 | 37 | 6876 | `wealth_signal_evoi_mc()` | `wealth_signal_evoi_mc` | U | S | kernel_math | **keep_name** | MC variant |
-| 38 | 6897 | `wealth_deal_frame()` | `wealth_deal_frame` | U | S | personal_finance | **keep_name** | Ω-DEAL-00 (will likely consolidate with the 5 ghost L3 tools once they're fixed) |
+| 38 | 6897 | `wealth_deal_frame()` | `wealth_deal_frame` (absorbed) | U | S | personal_finance | **absorbed into wealth_omni_wisdom (mode='deal')** | Will be one of the 3 modes of `wealth_omni_wisdom`. Original Ω-DEAL-00 capability preserved as `mode='deal'`. |
 | 39 | 7278 | `wealth_coupling_correlation()` | `wealth_coupling_correlation` | U | P | kernel_math | **keep_name** | Pure math |
 | 40 | 7294 | `wealth_flow_cashflow()` | `wealth_flow_cashflow` | U | S | personal_finance | **keep_name** | Cash flow projection, state |
 | 41 | 7312 | `wealth_velocity_runway()` | `wealth_velocity_runway` | U | P | personal_finance | **keep_name** | Pure math |
@@ -148,9 +148,9 @@ Legend: **N** = named, **U** = unnamed, **S** = stateful (touches DB/cache/IO), 
 | 70 | 10143 | `wealth_signal_information()` | `wealth_signal_information` | N | S | kernel_math | **keep_name** | Ω-WEALTH-09 |
 | 71 | 10312 | `wealth_game_coordination()` | `wealth_game_coordination` | N | P | kernel_math | **keep_name** | Ω-WEALTH-10 |
 | 72 | 10372 | `wealth_boundary_governance()` | `wealth_boundary_governance` | N | G | governance | **keep_name** | Ω-WEALTH-11 |
-| 73 | 10816 | `wealth_hysteresis_ledger()` | `wealth_hysteresis_ledger` | N | S | governance | **keep_name** | Ω-WEALTH-12 |
+| 73 | 10816 | `wealth_hysteresis_ledger()` | `wealth_hysteresis_ledger` (absorbed) | N | S | governance | **absorbed into wealth_omni_wisdom (mode='hysteresis')** | Will be one of the 3 modes of `wealth_omni_wisdom`. Original Ω-WEALTH-12 capability preserved as `mode='hysteresis'`. |
 | 74 | 10850 | `wealth_system_registry_status()` | `wealth_system_registry_status` | N | P | governance | **keep_name** | Registry probe, stateless |
-| 75 | 10866 | `wealth_synthesize()` | `wealth_synthesize` | N | S | kernel_math | **keep_name** | Ω-WEALTH-00, the synthesis, stateful |
+| 75 | 10866 | `wealth_synthesize()` | `wealth_synthesize` (absorbed) | N | S | kernel_math | **absorbed into wealth_omni_wisdom (mode='synthesize')** | Will be one of the 3 modes of `wealth_omni_wisdom`. Original Ω-WEALTH-00 capability preserved as `mode='synthesize'`. |
 
 ### Section H — Ω-INEQUALITY (L11596, L12150)
 
@@ -216,6 +216,85 @@ Based on the classification, the natural module boundaries for **Reading A (one 
 | `internal/utils/health.py` | 1 (Section A #10) | mcp_health_check → wealth_health_check |
 
 Total: ~62 legitimate surface tools. The 5 ghost L3 + 4 vault-leak + 1 typo = 10 to remove/hide, bringing live surface to ~44–49 (with the 5 ghost L3 fixed back to 49).
+
+---
+
+## Future Consolidation: `wealth_omni_wisdom` (888_HOLD pending Path D)
+
+**Status:** Mode design SEALED 2026-06-03 by Arif Fazil + Perplexity audit frame.
+**Implementation:** 888_HOLD — Path D module federation is the execution vehicle.
+
+### The consolidation
+
+Three existing tools (Ω-WEALTH-00, Ω-DEAL-00, Ω-WEALTH-12) become modes of one new tool `wealth_omni_wisdom`. Net: -2 tools from the live surface (44 → 42 once Path D lands).
+
+| Old tool | ω-tag | New mode |
+|---|---|---|
+| `wealth_synthesize` | Ω-WEALTH-00 | `mode='synthesize'` |
+| `wealth_deal_frame` | Ω-DEAL-00 | `mode='deal'` |
+| `wealth_hysteresis_ledger` | Ω-WEALTH-12 | `mode='hysteresis'` |
+| (new) | (new) | `mode='omni'` — parallel fan-out, all three combined |
+
+### Input contract (unified schema)
+
+```python
+{
+  "mode": "synthesize" | "deal" | "hysteresis" | "omni",   # required
+  "decision_context": {                                       # required for all modes
+    "description": str,
+    "capital_type": str,         # financial | temporal | cognitive | social | ecological | strategic | thermodynamic
+    "horizon": str,              # e.g. "3Y", "10Y", "perpetual"
+    "entropy_signal": float,     # optional
+    "risk_regime": str           # optional — GO | HOLD | STOP
+  },
+  "deal_params": {               # required only for mode='deal' | 'omni'
+    "structure": str,
+    "counterparty_profile": str,
+    "term_sheet_summary": str
+  },
+  "path_params": {               # required only for mode='hysteresis' | 'omni'
+    "prior_path_id": str,
+    "current_state": str,        # GROWTH | PLATEAU | REVERSION | COLLAPSE
+    "transition_signal": str
+  }
+}
+```
+
+### Output contract (structured bundle)
+
+```json
+{
+  "wisdom_verdict": "SEAL | HOLD | STOP",
+  "confidence": 0.0–1.0,
+  "epistemic_tag": "CLAIM | PLAUSIBLE | HYPOTHESIS | ESTIMATE",
+  "synthesis":    { "omega_verdict": "Ω-WEALTH-00", "capital_score": float, "conversion_integrity": "CLEAN | CAPTURED | DEGRADED", "summary": str },
+  "deal":         { "omega_verdict": "Ω-DEAL-00",   "deal_score": float,    "structure_verdict": str, "risk_flags": [str] },
+  "hysteresis":   { "omega_path": "Ω-WEALTH-12",   "path_state": "GROWTH | PLATEAU | REVERSION | COLLAPSE", "hysteresis_risk": float, "transition_recommendation": str },
+  "telemetry":    { "mode_executed": str, "parallel": bool, "tokens_estimated": int, "dS": float }
+}
+```
+
+### Execution model
+
+For `mode='omni'`: three sub-engines run in parallel (asyncio.gather or threading), results fused at the `wisdom_verdict` layer. **Constitutional floor: F01 Reversibility governs** — if any sub-engine returns STOP, the top-level `wisdom_verdict` is STOP regardless of the other two outputs.
+
+### Live count delta (cumulative)
+
+| State | Count |
+|---|---|
+| Current (PR #17 + Path C live) | 44 |
+| After `wealth_omni_wisdom` consolidation | 42 |
+| After + 5 L3 ghost tools fixed (DEBUG, separate issue) | 47 |
+| After + 4 VAULT leaks removed (PR X, separate) | 43 |
+| After + 1 typo + 1 duplicate fixed (PR X, separate) | 41 |
+| **End state target (post-omni + post-cleanup)** | **38** |
+
+### Authoritative sources (mode design ratified from)
+
+- **Anthropic engineering:** ["Writing effective tools for agents"](https://www.anthropic.com/engineering/writing-tools-for-agents) — unambiguous parameter names, strict data models
+- **MCP spec 2025-06-18:** tool consolidation pattern (mode enum on inputSchema)
+- **Arcade.dev:** 54 MCP tool patterns (anti-pattern: granular sub-modes like `omni.synthesize_only`)
+- **Klavis:** Workflow-Based Design — tools around complete user goals
 
 ---
 
