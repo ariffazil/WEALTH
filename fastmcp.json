@@ -2,7 +2,7 @@
   "$schema": "https://gofastmcp.com/public/schemas/fastmcp.json/v1.json",
   "capabilities": {
     "tools": {
-      "count": 44,
+      "count": 42,
       "source": "scripts/sync_manifest.py (auto-generated from FastMCP runtime; do not hand-edit)"
     }
   },
@@ -13,7 +13,7 @@
     "port": 8082,
     "transport": "http"
   },
-  "description": "Sovereign Wealth & Capital Allocation Engine (44 tools live; run scripts/sync_manifest.py to update)",
+  "description": "Sovereign Wealth & Capital Allocation Engine (42 tools live; run scripts/sync_manifest.py to update)",
   "environment": {
     "project": ".",
     "python": ">=3.12",
