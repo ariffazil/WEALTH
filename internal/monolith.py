@@ -11647,9 +11647,9 @@ async def wealth_omni_wisdom(
             deal_verdict = _verdict_unify(
                 deal.get("recommendation", deal.get("verdict", "HOLD"))
             )
-            confidence = deal.get("confidence", 0.5)
+            confiance = deal.get("confidence", 0.5)
             epistemic = "CLAIM" if deal_verdict == "SEAL" else "HYPOTHESIS"
-            deal_bundle = {
+            dealbundle = {
                 "omega_verdict": "Ω-DEAL-00",
                 "deal_score": deal.get("npv", 0.0),
                 "structure_verdict": deal.get("classification", "UNKNOWN"),
@@ -11657,19 +11657,166 @@ async def wealth_omni_wisdom(
             }
         else:
             deal_verdict = "HOLD"
-            confidence = 0.0
+            confiance = 0.0
             epistemic = "HYPOTHESIS"
-            deal_bundle = {
+            dealbundle = {
                 "omega_verdict": "Ω-DEAL-00",
                 "deal_score": 0.0,
                 "structure_verdict": "ERROR",
                 "risk_flags": [],
             }
+
+        # EUREKA FORGE (2026-06-03): A/B deal comparison.
+        # When the user passes deal_params.cash_flows_b, run a two-sample
+        # test (Student t / Welch t / Mann-Whitney) on the two cash-flow
+        # arrays via stat_compare_groups. Answers: "are these two deals
+        # actually different, or am I fooling myself with NPV alone?"
+        # The federated saf_stats returns an F1-F13 envelope; we extract
+        # the test verdict + effect size and surface in dealbundle.
+        _cash_flows_b = (
+            deal_params.get("cash_flows_b") if isinstance(deal_params, dict) else None
+        )
+        _ab_result = None
+        if (
+            _cash_flows_b
+            and isinstance(_cash_flows_b, list)
+            and len(_cash_flows_b) >= 3
+            and isinstance(deal_params.get("cash_flows"), list)
+            and len(deal_params.get("cash_flows")) >= 3
+        ):
+            try:
+                import sys as _sys_ab
+
+                _arifos_kernel_ab = "/root/arifOS"
+                if _arifos_kernel_ab not in _sys_ab.path:
+                    _sys_ab.path.insert(0, _arifos_kernel_ab)
+                import pandas as _pd_ab
+                import uuid as _uuid_ab
+                from pathlib import Path as _Path_ab
+                import os as _os_ab
+                from core.shared.saf_stats import (
+                    stat_compare_groups as _saf_compare_groups,
+                )
+
+                _wealth_saf_root_ab = _Path_ab(
+                    _os_ab.environ.get("WEALTH_SAF_DATA_ROOT", "/tmp/wealth_saf_test")
+                )
+                _wealth_saf_root_ab.mkdir(parents=True, exist_ok=True)
+                _os_ab.environ["SAF_DATA_ROOT"] = str(_wealth_saf_root_ab)
+                _ab_csv = _wealth_saf_root_ab / (f"ab_{_uuid_ab.uuid4().hex[:10]}.csv")
+                _n = max(
+                    len(deal_params["cash_flows"]),
+                    len(_cash_flows_b),
+                )
+                _pd_ab.DataFrame(
+                    {
+                        "scenario_a": (
+                            deal_params["cash_flows"]
+                            + [float("nan")] * (_n - len(deal_params["cash_flows"]))
+                        )[:_n],
+                        "scenario_b": (
+                            _cash_flows_b + [float("nan")] * (_n - len(_cash_flows_b))
+                        )[:_n],
+                        "scenario": (
+                            ["A"] * len(deal_params["cash_flows"])
+                            + [None] * (_n - len(deal_params["cash_flows"]))
+                        )[:_n],
+                    }
+                ).to_csv(_ab_csv, index=False)
+                _ab_raw = _saf_compare_groups(
+                    str(_ab_csv),
+                    value_col="scenario_a",
+                    group_col="scenario",
+                    parametric=True,
+                    equal_var=False,
+                )
+                try:
+                    _ab_csv.unlink()
+                except OSError:
+                    pass
+                # Extract from F1-F13 envelope (federated) or nested
+                # upstream format. Federated saf_stats uses:
+                #   "statistic"  (t-stat for t-tests, U for Mann-Whitney)
+                #   "effect_size" (Cohen's d for t-tests, r for MW)
+                #   "ci95_diff"   (CI of the mean/prob difference)
+                # Upstream saf_stats uses "t_stat" / "cohens_d" / "ci95".
+                # Handle both.
+                _ab_result_data = (
+                    _ab_raw.get("result", _ab_raw) if isinstance(_ab_raw, dict) else {}
+                )
+                _ab_method = _ab_result_data.get("method", "Welch t-test")
+                _ab_p = _ab_result_data.get("p_value")
+                _ab_t = _ab_result_data.get("statistic") or _ab_result_data.get(
+                    "t_stat"
+                )
+                _ab_d = _ab_result_data.get("effect_size") or _ab_result_data.get(
+                    "cohens_d"
+                )
+                # Federated saf_stats does not always populate n_group1/2;
+                # fall back to the input lengths.
+                _ab_n_a = _ab_result_data.get("n_group1") or len(
+                    deal_params["cash_flows"]
+                )
+                _ab_n_b = _ab_result_data.get("n_group2") or len(_cash_flows_b)
+                _ab_significant = _ab_p is not None and float(_ab_p) < 0.05
+                _ab_d = _ab_result_data.get("effect_size") or _ab_result_data.get(
+                    "cohens_d"
+                )
+                _ab_n_a = _ab_result_data.get("n_group1")
+                _ab_n_b = _ab_result_data.get("n_group2")
+                _ab_significant = _ab_p is not None and float(_ab_p) < 0.05
+                _ab_method = _ab_result_data.get("method", "Welch t-test")
+                _ab_p = _ab_result_data.get("p_value")
+                _ab_t = _ab_result_data.get("t_stat")
+                _ab_d = _ab_result_data.get("cohens_d")
+                _ab_n_a = _ab_result_data.get("n_group1")
+                _ab_n_b = _ab_result_data.get("n_group2")
+                _ab_significant = _ab_p is not None and float(_ab_p) < 0.05
+                _ab_summary = {
+                    "method": _ab_method,
+                    "n_a": _ab_n_a,
+                    "n_b": _ab_n_b,
+                    "t_stat": _ab_t,
+                    "p_value": _ab_p,
+                    "cohens_d": _ab_d,
+                    "significant_at_0_05": _ab_significant,
+                    "interpretation": (
+                        "scenarios A and B are statistically different"
+                        if _ab_significant
+                        else "scenarios A and B are NOT statistically distinguishable"
+                    ),
+                }
+                # F2 TRUTH: if the scenarios are NOT significantly different,
+                # the operator's choice of A vs B may be illusion — flag SABAR.
+                if not _ab_significant and deal_verdict == "SEAL":
+                    deal_verdict = "HOLD"
+                    dealbundle["risk_flags"] = list(
+                        dealbundle.get("risk_flags", [])
+                    ) + [f"SAF_AB_NOT_SIGNIFICANT: p={_ab_p}"]
+                dealbundle["_saf_ab_comparison"] = _ab_summary
+            except Exception as _ab_exc:
+                dealbundle["_saf_ab_comparison"] = {"embed_skipped": str(_ab_exc)[:120]}
+
+        return {
+            "wisdom_verdict": deal_verdict,
+            "confidence": confiance,
+            "epistemic_tag": epistemic,
+            "deal": dealbundle,
+            "telemetry": {
+                "mode_executed": "deal",
+                "parallel": False,
+                "tokens_estimated": 0,
+                "dS": deal.get("entropy", 0.0) if isinstance(deal, dict) else 0.0,
+                "timestamp": timestamp,
+                "sub_engine_error": sub_error,
+            },
+        }
+
         return {
             "wisdom_verdict": deal_verdict,
             "confidence": confidence,
             "epistemic_tag": epistemic,
-            "deal": deal_bundle,
+            "deal": dealbundle,
             "telemetry": {
                 "mode_executed": "deal",
                 "parallel": False,
