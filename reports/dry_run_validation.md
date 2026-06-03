@@ -246,7 +246,7 @@ Checked all 87 tools against `wealth_<dimension>_<operation>` grammar:
 
 | Tool | Grammar | Issue |
 |------|---------|-------|
-| `mcp_health_check` | ✅ (special case) | — |
+| `wealth_health_check` | ✅ (special case) | — |
 | `vault_write` / `vault_query` | ✅ (special case) | — |
 | `wealth_future_value` | ⚠️ UMBRELLA | Mode dispatch, to be removed |
 | `wealth_value_npv` | ✅ CORRECT | — |

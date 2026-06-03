@@ -94,7 +94,7 @@ wealth_<dimension>_<operation>
 | `wealth_ledger_init` | ledger | `wealth_init_tool` |
 | `wealth_ledger_record` | ledger | `record_transaction_tool` |
 | `wealth_ledger_snapshot` | ledger | `snapshot_portfolio_tool` |
-| `mcp_health_check` | — | — |
+| `wealth_health_check` | — | — |
 
 ### 6 Domain Tools (unchanged)
 

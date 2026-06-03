@@ -33,7 +33,7 @@ The problem isn't quantity — it's **category impurity**. Many "tools" are orch
 
 | # | Current Name | Internal Engine(s) | Mode Dispatch |
 |---|---|---|---|
-| 1 | `mcp_health_check` | — | — |
+| 1 | `wealth_health_check` | — | — |
 | 2 | `wealth_future_value` | `measurement_npv`, `measurement_irr`, `measurement_pi`, `measurement_payback` | `npv`, `irr`, `pi`, `payback` |
 | 3 | `wealth_present_expect` | `emv_risk` | `emv` |
 | 4 | `wealth_future_simulate` | `monte_carlo_forecast` | `simulate` |
@@ -196,7 +196,7 @@ wealth_<physics_dimension>_<economic_operation>
 
 | New Name | Old Source | What It Does |
 |----------|-----------|--------------|
-| `mcp_health_check` | `mcp_health_check` | Transport + system health |
+| `wealth_health_check` | `wealth_health_check` | Transport + system health |
 
 **Total: 36 atomic tools**
 
@@ -354,7 +354,7 @@ WEALTH MCP
 │   ├── allocation/                 (4) game, equilibrium, preference, agent_path
 │   ├── sensor/                     (6) fetch, snapshot, reconcile, health, vintage, sources
 │   ├── ledger/                     (5) query, write, init, record, snapshot
-│   └── health/                     (1) mcp_health_check
+│   └── health/                     (1) wealth_health_check
 │
 ├── prompts/                        (12 reasoning workflows)
 │   ├── wealth_appraise_project
