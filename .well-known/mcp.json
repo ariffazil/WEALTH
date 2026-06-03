@@ -5,7 +5,7 @@
   "display_name": "WEALTH — Capital Intelligence",
   "version": "1.6.0",
   "spec_version": "2026-04-29",
-  "description": "WEALTH is the constitucional capital allocation layer in the arifOS organism. This repository exposes the canonical valuation kernel in internal/monolith.py through the compatibility wrapper server.py, plus a secondary civilizational demo surface in mcp/server.py.",
+  "description": "WEALTH is the constitutional capital allocation layer in the arifOS organism. This repository exposes the canonical valuation kernel in internal/monolith.py through the compatibility wrapper server.py, plus a secondary civilizational demo surface in mcp/server.py.",
   "homepage": "https://github.com/ariffazil/wealth",
   "repository": {
     "type": "git",
