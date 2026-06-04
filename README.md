@@ -10,14 +10,17 @@ epistemic_status: CLAIM
 
 # WEALTH — Capital Intelligence & Resource Stewardship
 
-[![MCP](https://img.shields.io/badge/MCP-FastMCP_3.2.4-7C3AED?style=flat-square)](https://github.com/jlowin/fastmcp)
-[![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?style=flat-square)](https://www.python.org/)
-[![arifOS](https://img.shields.io/badge/arifOS-F1%E2%80%93F13_Governed-FF6B00?style=flat-square)](https://github.com/ariffazil/arifos)
+> **WEALTH is a governed capital intelligence server for the arifOS federation.** It computes value — NPV, IRR, risk scores, portfolio allocation, sovereign resource economics — and enforces constitutional rules that prevent AI from overstating returns, hiding downside risk, or authorizing resource allocation without human approval. It is the capital witness: it computes, it models, it never allocates alone.
 
-> ⚠️ **CANONICAL AUTHORITY NOTICE:**
-> WEALTH is the **capital intelligence organ**, not a constitutional authority.
-> The sovereign constitution and F1-F13 floors live in `ariffazil/arifOS`.
-> For live federation status, see `ariffazil/arifOS/FEDERATION_STATUS.md`.
+<!-- SOT-MANIFEST
+owner: Arif
+last_verified: 2026-06-04
+valid_from: 2026-05-26
+valid_until: 2026-06-26
+confidence: high
+scope: /root/WEALTH
+epistemic_status: CLAIM
+-->
 
 > **In one sentence:** WEALTH is the financial brain of the federation — when any agent or decision needs a capital computation (NPV, cash flow, risk, game theory, civilizational boundary), WEALTH is the governed engine that runs it.
 
