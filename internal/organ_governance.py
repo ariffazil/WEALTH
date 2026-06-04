@@ -26,14 +26,7 @@ WEALTH_RISK_TIERS = {
     "wealth_governance_verdict": "c1",  # Advisory verdict
     "wealth_boundary_governance": "c1",  # Legitimacy audit, advisory
     # READONLY — execute directly
-    "wealth_mass_networth": "readonly",
-    "wealth_flow_cashflow": "readonly",
     "wealth_flow_liquidity": "readonly",
-    "wealth_energy_irr": "readonly",
-    "wealth_value_npv": "readonly",
-    "wealth_time_payback": "readonly",
-    "wealth_probability_monte_carlo": "readonly",
-    "wealth_signal_evoi": "readonly",
     "wealth_signal_information": "readonly",
     "wealth_gradient_price": "readonly",
     "wealth_inertia_leverage": "readonly",
@@ -43,14 +36,10 @@ WEALTH_RISK_TIERS = {
     "wealth_inequality_kernel": "c1",  # Inequality analysis
     "wealth_conservation_capital": "readonly",
     "wealth_energy_productivity": "readonly",
-    "wealth_density_pi": "readonly",
-    "wealth_gravity_dscr": "readonly",
     "wealth_time_discount": "readonly",
     "wealth_preference_rank": "readonly",
     "wealth_agent_path": "readonly",
     "wealth_field_macro": "readonly",
-    "wealth_expectation_emv": "readonly",
-    "wealth_velocity_runway": "readonly",
     "wealth_hysteresis_ledger": "readonly",
     "wealth_health_check": "readonly",
     "wealth_system_registry_status": "readonly",

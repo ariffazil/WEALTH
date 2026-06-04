@@ -44,34 +44,6 @@ LEGACY_TO_CANONICAL = {
         "sunset": "v2",
     },
     # ─── CAPITAL EVALUATE ──────────────────────────────────────────────────
-    "wealth_value_npv": {
-        "canonical": "wealth_capital_evaluate",
-        "mode": "npv",
-        "decision_class": "W2",
-        "new_schema": "wealth_capital_evaluate(mode='npv', ...)",
-        "sunset": "v2",
-    },
-    "wealth_energy_irr": {
-        "canonical": "wealth_capital_evaluate",
-        "mode": "irr",
-        "decision_class": "W2",
-        "new_schema": "wealth_capital_evaluate(mode='irr', ...)",
-        "sunset": "v2",
-    },
-    "wealth_density_pi": {
-        "canonical": "wealth_capital_evaluate",
-        "mode": "profitability_index",
-        "decision_class": "W2",
-        "new_schema": "wealth_capital_evaluate(mode='profitability_index', ...)",
-        "sunset": "v2",
-    },
-    "wealth_time_payback": {
-        "canonical": "wealth_capital_evaluate",
-        "mode": "payback",
-        "decision_class": "W2",
-        "new_schema": "wealth_capital_evaluate(mode='payback', ...)",
-        "sunset": "v2",
-    },
     "wealth_time_discount": {
         "canonical": "wealth_capital_evaluate",
         "mode": "discount",
@@ -87,20 +59,6 @@ LEGACY_TO_CANONICAL = {
         "sunset": "v2",
     },
     # ─── UNCERTAINTY EVALUATE ─────────────────────────────────────────────
-    "wealth_expectation_emv": {
-        "canonical": "wealth_uncertainty_evaluate",
-        "mode": "emv",
-        "decision_class": "W3",
-        "new_schema": "wealth_uncertainty_evaluate(mode='emv', ...)",
-        "sunset": "v2",
-    },
-    "wealth_probability_monte_carlo": {
-        "canonical": "wealth_uncertainty_evaluate",
-        "mode": "monte_carlo",
-        "decision_class": "W3",
-        "new_schema": "wealth_uncertainty_evaluate(mode='monte_carlo', ...)",
-        "sunset": "v2",
-    },
     "wealth_entropy_risk": {
         "canonical": "wealth_governance_risk",
         "mode": "risk_entropy",
@@ -109,13 +67,6 @@ LEGACY_TO_CANONICAL = {
         "sunset": "v2",
     },
     # ─── INFORMATION VALUE ────────────────────────────────────────────────
-    "wealth_signal_evoi": {
-        "canonical": "wealth_information_value",
-        "mode": "evoi",
-        "decision_class": "W3",
-        "new_schema": "wealth_information_value(mode='evoi', ...)",
-        "sunset": "v2",
-    },
     "wealth_signal_information": {
         "canonical": "wealth_information_value",
         "mode": "signal_quality",
@@ -124,34 +75,6 @@ LEGACY_TO_CANONICAL = {
         "sunset": "v2",
     },
     # ─── FINANCIAL POSITION ────────────────────────────────────────────────
-    "wealth_flow_cashflow": {
-        "canonical": "wealth_financial_position",
-        "mode": "cashflow",
-        "decision_class": "W2",
-        "new_schema": "wealth_financial_position(mode='cashflow', ...)",
-        "sunset": "v2",
-    },
-    "wealth_velocity_runway": {
-        "canonical": "wealth_financial_position",
-        "mode": "runway",
-        "decision_class": "W2",
-        "new_schema": "wealth_financial_position(mode='runway', ...)",
-        "sunset": "v2",
-    },
-    "wealth_gravity_dscr": {
-        "canonical": "wealth_financial_position",
-        "mode": "dscr",
-        "decision_class": "W2",
-        "new_schema": "wealth_financial_position(mode='dscr', ...)",
-        "sunset": "v2",
-    },
-    "wealth_mass_networth": {
-        "canonical": "wealth_financial_position",
-        "mode": "networth",
-        "decision_class": "W2",
-        "new_schema": "wealth_financial_position(mode='networth', ...)",
-        "sunset": "v2",
-    },
     "wealth_flow_liquidity": {
         "canonical": "wealth_financial_position",
         "mode": "liquidity",

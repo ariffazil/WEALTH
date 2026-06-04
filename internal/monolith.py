@@ -992,7 +992,7 @@ async def _pf_get_epf(owner):
     return await get_latest_epf(owner)
 
 
-@mcp.tool(name="wealth_cashflow_track")
+# REMOVED from public surface — use wealth_personal_finance / wealth_market_data
 async def wealth_cashflow_track(
     owner: str = "arif",
     txn_date: str = None,
@@ -1032,7 +1032,7 @@ async def wealth_cashflow_track(
     }
 
 
-@mcp.tool(name="wealth_cashflow_summary")
+# REMOVED from public surface — use wealth_personal_finance / wealth_market_data
 async def wealth_cashflow_summary(
     owner: str = "arif",
     start_date: str = None,
@@ -1068,7 +1068,7 @@ async def wealth_cashflow_summary(
     }
 
 
-@mcp.tool(name="wealth_runway_calculate")
+# REMOVED from public surface — use wealth_personal_finance / wealth_market_data
 def wealth_runway_calculate(
     monthly_burn: float = 0.0,
     liquid_assets: float = 0.0,
@@ -1101,7 +1101,7 @@ def wealth_runway_calculate(
     }
 
 
-@mcp.tool(name="wealth_net_worth_snapshot")
+# REMOVED from public surface — use wealth_personal_finance / wealth_market_data
 async def wealth_net_worth_snapshot(
     owner: str = "arif",
     include_EPF: bool = True,
@@ -1140,6 +1140,76 @@ async def wealth_net_worth_snapshot(
         "recommendation_only": True,
         "final_authority": "Arif",
     }
+
+
+@mcp.tool(name="wealth_personal_finance")
+async def wealth_personal_finance(
+    mode: str = "summary",
+    owner: str = "arif",
+    # track mode params
+    txn_date: str = None,
+    description: str = "",
+    category: str = "expense",
+    subcategory: str = None,
+    amount: float = 0.0,
+    currency: str = "MYR",
+    # summary mode params
+    start_date: str = None,
+    end_date: str = None,
+    summary_category: str = None,
+    # runway mode params
+    monthly_burn: float = 0.0,
+    liquid_assets: float = 0.0,
+    conservative_factor: float = 0.8,
+    # net_worth mode params
+    include_EPF: bool = True,
+) -> dict:
+    """Ω-D1: Personal Finance — unified surface for cashflow, runway, and net worth.
+
+    Modes:
+      track    — Record a financial transaction
+      summary  — Aggregate transactions by category
+      runway   — Months of financial runway
+      net_worth — Assets minus liabilities
+    """
+    mode = mode.lower().strip()
+    if mode == "track":
+        return await wealth_cashflow_track(
+            owner=owner,
+            txn_date=txn_date,
+            description=description,
+            category=category,
+            subcategory=subcategory,
+            amount=amount,
+            currency=currency,
+        )
+    elif mode == "summary":
+        return await wealth_cashflow_summary(
+            owner=owner,
+            start_date=start_date,
+            end_date=end_date,
+            category=summary_category,
+        )
+    elif mode == "runway":
+        return await wealth_survival_engine(
+            mode="runway",
+            liquid_assets=liquid_assets,
+            monthly_expenses=monthly_burn,
+            conservative_factor=conservative_factor,
+            legacy_compat=True,
+        )
+    elif mode == "net_worth":
+        return await wealth_net_worth_snapshot(
+            owner=owner,
+            include_EPF=include_EPF,
+        )
+    else:
+        return {
+            "mcp": "WEALTH",
+            "tool": "wealth_personal_finance",
+            "status": "error",
+            "message": f"Unknown mode: {mode}. Use track|summary|runway|net_worth",
+        }
 
 
 @mcp.tool(name="wealth_epf_project")
@@ -1250,7 +1320,7 @@ async def wealth_zakat_calculate(
 _TIMEOUT = httpx.Timeout(10.0, connect=5.0)
 
 
-@mcp.tool(name="wealth_fx_rate")
+# REMOVED from public surface — use wealth_personal_finance / wealth_market_data
 def wealth_fx_rate(
     base: str = "USD",
     targets: str = "MYR,SGD,GBP,EUR,JPY,CNY,AUD",
@@ -1295,7 +1365,7 @@ def wealth_fx_rate(
         }
 
 
-@mcp.tool(name="wealth_commodity_price")
+# REMOVED from public surface — use wealth_personal_finance / wealth_market_data
 def wealth_commodity_price(
     commodity: str = "brent_crude",
     unit: str = "usd_per_bbl",
@@ -1346,7 +1416,7 @@ def wealth_commodity_price(
     }
 
 
-@mcp.tool(name="wealth_macro_indicator")
+# REMOVED from public surface — use wealth_personal_finance / wealth_market_data
 def wealth_macro_indicator(
     indicator: str = "usd_myr",
     country: str = "MYS",
@@ -1413,6 +1483,57 @@ def wealth_macro_indicator(
     return result
 
 
+@mcp.tool(name="wealth_market_data")
+def wealth_market_data(
+    mode: str = "fx",
+    # fx mode params
+    base: str = "USD",
+    targets: str = "MYR,SGD,GBP,EUR,JPY,CNY,AUD",
+    fx_as_of_date: str = None,
+    # commodity mode params
+    commodity: str = "brent_crude",
+    unit: str = "usd_per_bbl",
+    commodity_as_of_date: str = None,
+    # macro mode params
+    indicator: str = "usd_myr",
+    country: str = "MYS",
+    macro_as_of_date: str = None,
+) -> dict:
+    """Ω-D3: Market Data — unified surface for FX, commodities, and macro indicators.
+
+    Modes:
+      fx        — Live FX rates via Frankfurter API
+      commodity — Approximate commodity market prices
+      macro     — GDP, inflation, rates via World Bank API
+    """
+    mode = mode.lower().strip()
+    if mode == "fx":
+        return wealth_fx_rate(
+            base=base,
+            targets=targets,
+            as_of_date=fx_as_of_date,
+        )
+    elif mode == "commodity":
+        return wealth_commodity_price(
+            commodity=commodity,
+            unit=unit,
+            as_of_date=commodity_as_of_date,
+        )
+    elif mode == "macro":
+        return wealth_macro_indicator(
+            indicator=indicator,
+            country=country,
+            as_of_date=macro_as_of_date,
+        )
+    else:
+        return {
+            "mcp": "WEALTH",
+            "tool": "wealth_market_data",
+            "status": "error",
+            "message": f"Unknown mode: {mode}. Use fx|commodity|macro",
+        }
+
+
 # --------------------------------------------------------------------------- #
 # Remove lazy-load approach (tools now inline above)
 # --------------------------------------------------------------------------- #
@@ -1440,17 +1561,13 @@ PUBLIC_SURFACE_WHITELIST = {
     "wealth_game_coordination",
     "wealth_boundary_governance",
     # L2 — Mandatory Specialists
-    "wealth_value_npv",
-    "wealth_energy_irr",
-    "wealth_density_pi",
-    "wealth_time_payback",
-    "wealth_gravity_dscr",
-    "wealth_mass_networth",
-    "wealth_flow_cashflow",
-    "wealth_velocity_runway",
-    "wealth_expectation_emv",
-    "wealth_probability_monte_carlo",
-    "wealth_signal_evoi",
+    # NOTE: Atomic thin wrappers removed from public surface 2026-06-04.
+    # Use mode-based Ω-WEALTH tools instead:
+    #   NPV/IRR/PI/payback → wealth_time_discount, wealth_energy_productivity
+    #   EMV/Monte Carlo    → wealth_entropy_risk
+    #   EVOI               → wealth_signal_information
+    #   Cashflow/runway    → wealth_flow_liquidity, wealth_survival_engine
+    #   DSCR/networth      → wealth_inertia_leverage, wealth_conservation_capital
     "wealth_entropy_audit",
     "wealth_governance_verdict",
     "wealth_preference_rank",
@@ -3757,7 +3874,7 @@ async def wealth_survival_engine(
 # Tests verify output equivalence before any legacy tool is deprecated.
 
 
-@mcp.tool(name="wealth_runway_calculate")
+# REMOVED from public surface — use wealth_personal_finance / wealth_market_data
 def wealth_runway_calculate(
     monthly_burn: float = 0.0,
     liquid_assets: float = 0.0,
@@ -6731,7 +6848,7 @@ HarnessEngine.SOVEREIGN_METADATA.update(_ATOMIC_METADATA)
 # --- Value / Time Tools (4) ---
 
 
-@mcp.tool()
+# REMOVED from public surface — internal use only
 def wealth_value_npv(
     initial_investment: float = 0,
     cash_flows: Optional[List[float]] = None,
@@ -6755,7 +6872,7 @@ def wealth_value_npv(
     )
 
 
-@mcp.tool()
+# REMOVED from public surface — internal use only
 def wealth_energy_irr(
     initial_investment: float = 0,
     cash_flows: Optional[List[float]] = None,
@@ -6779,7 +6896,7 @@ def wealth_energy_irr(
     )
 
 
-@mcp.tool()
+# REMOVED from public surface — internal use only
 def wealth_density_pi(
     initial_investment: float = 0,
     cash_flows: Optional[List[float]] = None,
@@ -6795,7 +6912,7 @@ def wealth_density_pi(
     )
 
 
-@mcp.tool()
+# REMOVED from public surface — internal use only
 def wealth_time_payback(
     initial_investment: float = 0,
     cash_flows: Optional[List[float]] = None,
@@ -6814,7 +6931,7 @@ def wealth_time_payback(
 # --- Probability / Information Tools (5) ---
 
 
-@mcp.tool()
+# REMOVED from public surface — internal use only
 def wealth_expectation_emv(
     scenarios: List[dict],
     scale_mode: str = "enterprise",
@@ -6824,7 +6941,7 @@ def wealth_expectation_emv(
     return emv_risk(scenarios, scale_mode)
 
 
-@mcp.tool()
+# REMOVED from public surface — internal use only
 def wealth_probability_monte_carlo(
     initial_commitment: float,
     mean_cash_flows: List[float],
@@ -6847,7 +6964,7 @@ def wealth_probability_monte_carlo(
     )
 
 
-@mcp.tool()
+# REMOVED from public surface — internal use only
 async def wealth_signal_evoi(
     well_cost_musd: float = 0,
     p50_value_musd: float = 0,
@@ -7292,7 +7409,7 @@ async def wealth_coupling_correlation(
 # --- Survival / Balance Sheet Tools (6) ---
 
 
-@mcp.tool()
+# REMOVED from public surface — internal use only
 def wealth_flow_cashflow(
     income: Optional[List[dict]] = None,
     expenses: Optional[List[dict]] = None,
@@ -7310,7 +7427,7 @@ def wealth_flow_cashflow(
     return result
 
 
-@mcp.tool()
+# REMOVED from public surface — internal use only
 def wealth_velocity_runway(
     principal: float,
     rate: float,
@@ -7326,7 +7443,7 @@ def wealth_velocity_runway(
     )
 
 
-@mcp.tool()
+# REMOVED from public surface — internal use only
 def wealth_gravity_dscr(
     ebitda: Optional[float] = None,
     principal: float = 0,
@@ -7353,7 +7470,7 @@ def wealth_gravity_dscr(
     )
 
 
-@mcp.tool()
+# REMOVED from public surface — internal use only
 def wealth_mass_networth(
     assets: Optional[List[dict]] = None,
     liabilities: Optional[List[dict]] = None,
@@ -13379,17 +13496,6 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_game_coordination",
     "wealth_boundary_governance",
     # L2 — Mandatory Specialists
-    "wealth_value_npv",
-    "wealth_energy_irr",
-    "wealth_density_pi",
-    "wealth_time_payback",
-    "wealth_gravity_dscr",
-    "wealth_mass_networth",
-    "wealth_flow_cashflow",
-    "wealth_velocity_runway",
-    "wealth_expectation_emv",
-    "wealth_probability_monte_carlo",
-    "wealth_signal_evoi",
     "wealth_entropy_audit",
     "wealth_governance_verdict",
     "wealth_preference_rank",
@@ -13397,20 +13503,18 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_ledger_write",
     # Domain Specialist (Civilization)
     "wealth_inequality_kernel",
+    # NOTE: Atomic thin wrappers removed 2026-06-04.
+    # Use mode-based tools: wealth_time_discount, wealth_energy_productivity,
+    # wealth_entropy_risk, wealth_signal_information, wealth_flow_liquidity,
+    # wealth_inertia_leverage, wealth_conservation_capital.
     # NOTE: wealth_synthesize, wealth_deal_frame, wealth_hysteresis_ledger
     # were absorbed into wealth_omni_wisdom on 2026-06-03 (Path D consolidation).
-    # L3 — Composite Deal Frame is no longer standalone (now mode='deal' of omni).
-    # D1 — Personal Finance (cashflow, net worth, EPF, zakat)
-    "wealth_cashflow_track",
-    "wealth_cashflow_summary",
-    "wealth_runway_calculate",
-    "wealth_net_worth_snapshot",
+    # D1 — Personal Finance (merged 2026-06-04)
+    "wealth_personal_finance",
     "wealth_epf_project",
     "wealth_zakat_calculate",
-    # D3 — Market Data (FX, commodities, macro)
-    "wealth_fx_rate",
-    "wealth_commodity_price",
-    "wealth_macro_indicator",
+    # D3 — Market Data (merged 2026-06-04)
+    "wealth_market_data",
 )
 _PUBLIC_TOOLS = set(WEALTH_PUBLIC_TOOL_ORDER)
 
