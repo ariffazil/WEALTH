@@ -54,3 +54,5 @@ C:/
 # Runtime identity (generated at startup)
 identity.toml
 .identity_hash
+*.egg-info/
+.coverage
