@@ -1,6 +1,28 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+
+const runPython = (script) => {
+  const result = spawnSync("python", ["-c", script], {
+    cwd: "/root/WEALTH",
+    encoding: "utf8",
+  });
+  if (result.status !== 0) {
+    throw new Error(result.stderr || result.stdout);
+  }
+  const lines = result.stdout.trim().split("\n");
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = lines[i].trim();
+    if (line.startsWith("{") && line.endsWith("}")) {
+      try {
+        return JSON.parse(line);
+      } catch (e) {
+        // ignore and continue
+      }
+    }
+  }
+  return JSON.parse(result.stdout.trim());
+};
 import {
   buildCashflowSeries,
   calculateDscrMeasurement,
@@ -165,12 +187,7 @@ payload = {
 }
 print(json.dumps(payload))
 `;
-  const run = spawnSync("python", ["-c", script], {
-    cwd: "/root/WEALTH",
-    encoding: "utf8",
-  });
-  assert.equal(run.status, 0, run.stderr);
-  const actual = JSON.parse(run.stdout.trim());
+  const actual = runPython(script);
 
   const jsNpv = calculateNpvMeasurement({
     initial_investment: 1000,
@@ -259,12 +276,7 @@ pi = pi_efficiency(initial_investment=120000, cash_flows=[30000,35000,40000,4500
 expected = pi_efficiency(initial_investment=120000, cash_flows=[30000,35000,40000,45000,50000], discount_rate=0.1, terminal_value=20000)["allocation_signal"]
 print(json.dumps({"npv": npv, "pi": pi, "alloc": expected}))
 `;
-  const run = spawnSync("python", ["-c", script], {
-    cwd: "/root/WEALTH",
-    encoding: "utf8",
-  });
-  assert.equal(run.status, 0, run.stderr);
-  const actual = JSON.parse(run.stdout.trim());
+  const actual = runPython(script);
 
   const jsNpv = calculateNpvMeasurement({
     initial_investment: 120000,
