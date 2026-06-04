@@ -13,7 +13,7 @@ Risk tiers:
 
 import os
 import httpx
-from typing import Any, Optional, Tuple
+from typing import Optional, Tuple
 
 ARIFOS_KERNEL_URL = os.environ.get("ARIFOS_KERNEL_URL", "http://arifosmcp:8080")
 

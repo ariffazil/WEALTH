@@ -4,7 +4,6 @@ Codification of the 6 Forge Laws and Epistemic Metrics.
 """
 
 import enum
-from typing import Any, Dict, List
 
 class ForgeLaw(enum.Enum):
     F1_REVERSIBILITY = "Reversible by default; permanent only by SEAL."

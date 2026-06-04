@@ -4,7 +4,6 @@
 
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
-import hashlib
 import uuid
 
 # Advisory boundary (PR 5). Lazy-imported to avoid package-init order
