@@ -175,7 +175,7 @@ if _ENGINES_IMPORTED:
                     mode=mode,
                     status="OK",
                     wealth_verdict="PROCEED",
-                    summary=f"WEALTH registry check passed.",
+                    summary="WEALTH registry check passed.",
                     metrics=metrics,
                     intent=intent,
                     entity_scope=entity_scope,
@@ -717,7 +717,6 @@ else:
 if _ENGINES_IMPORTED:
     from internal.monolith import (
         wealth_signal_evoi,
-        wealth_signal_evoi_mc,
         wealth_signal_information,
     )
 

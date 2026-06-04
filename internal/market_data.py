@@ -5,9 +5,8 @@ Data sourced from public APIs (no API key required).
 All tools: recommendation_only=True, final_authority=Arif.
 """
 
-import asyncio
 import sys as _sys
-from datetime import date as _date, datetime, timezone
+from datetime import date as _date
 from pathlib import Path as _Path
 from typing import Any, Dict, Optional
 
@@ -277,7 +276,7 @@ if mcp:
         def eia_price(product: str) -> Optional[float]:
             try:
                 # EIA petroleum status page (scraped approximation)
-                url = f"https://www.eia.gov/petroleum/"
+                url = "https://www.eia.gov/petroleum/"
                 with httpx.Client(timeout=_TIMEOUT) as client:
                     resp = client.get(url)
                     resp.raise_for_status()

@@ -30,7 +30,7 @@ if base_dir not in sys.path:
 try:
     from .governance import ForgeLaw, compute_kappa_r, compute_psi_le, get_qdf_version
 except ImportError:
-    from governance import ForgeLaw, compute_kappa_r, compute_psi_le, get_qdf_version
+    from governance import compute_kappa_r, compute_psi_le, get_qdf_version
 
 try:
     from host.governance.tri_witness import TriWitness
@@ -52,7 +52,7 @@ try:
 
     G_SCORE_AVAILABLE = True
     G_SCORE_IMPORT_ERROR = None
-except Exception as exc:
+except Exception:
     # If standard import fails, try relative import
     try:
         from invariants import get_g_score
@@ -959,7 +959,7 @@ WEALTH_SCHEMA_VERSION = "wealth.physics_economics.v1"
 # db_schema.py provides async PostgreSQL helpers; we call via run_until_complete
 # --------------------------------------------------------------------------- #
 
-from datetime import date as _date, datetime
+from datetime import date as _date
 
 
 async def _pf_init_db():
@@ -3481,7 +3481,8 @@ def cashflow_flow(
 
     # Load defaults from /app/cashflow_defaults.json if no params provided
     if not income and not expenses and liquid_assets in (None, 0):
-        import os, json
+        import os
+        import json
 
         defaults_path = os.environ.get(
             "WEALTH_DEFAULTS_PATH", "/app/cashflow_defaults.json"
@@ -7073,7 +7074,6 @@ async def wealth_deal_frame(
 
     ADVISORY ONLY: recommendation_only=True, final_authority=Arif.
     """
-    import asyncio
     from datetime import datetime
 
     cash_flows = cash_flows or []
@@ -7332,23 +7332,23 @@ async def wealth_deal_frame(
     irr_pct = round(irr * 100, 2) if irr else 0
     memo_lines = [
         f"## Investment Memo: {opportunity_name}",
-        f"",
+        "",
         f"**Classification:** {classification}",
         f"**Recommendation:** {recommendation}",
         f"**Stress Label:** {stress_label}",
-        f"",
-        f"### Valuation",
+        "",
+        "### Valuation",
         f"- NPV: {npv:,.2f}",
         f"- IRR: {irr_pct:.2f}%",
         f"- Payback: {payback} periods" if payback else "- Payback: N/A",
         f"- Profitability Index: {pi:.2f}",
-        f"",
+        "",
     ]
     if scenario_emv is not None:
         memo_lines += [
-            f"### Scenario EMV",
+            "### Scenario EMV",
             f"- EMV: {scenario_emv:,.2f}",
-            f"",
+            "",
         ]
     if mc_result and isinstance(mc_result, dict):
 
@@ -7361,15 +7361,15 @@ async def wealth_deal_frame(
             f"- Prob(NPV>0): {(mc.get('probability_positive') or 0) * 100:.1f}%",
             f"- VaR 5%: {_mc_f(mc.get('var_5pct'))}",
             f"- Upside 95%: {_mc_f(mc.get('upside_potential_95pct'))}",
-            f"",
+            "",
         ]
     memo_lines += [
-        f"### Governance",
+        "### Governance",
         f"- Boundary Passed: {'YES' if boundary_passed else 'NO'}",
         f"- Maruah Impact: {maruah_impact:.1f}",
         f"- Verdict: {result.get('governance', {}).get('verdict', 'N/A')}",
-        f"",
-        f"**Final Authority: Arif**",
+        "",
+        "**Final Authority: Arif**",
     ]
     result["investment_memo"] = "\n".join(memo_lines)
 
@@ -9171,7 +9171,6 @@ End with: PROCEED_TO_JUDGE | HOLD | NEED_MORE_EVIDENCE"""
 # 12 public tools. Everything else is internal alias (callable, hidden).
 # ═══════════════════════════════════════════════════════════════════════
 
-import inspect
 
 
 def _dispatch_to(
@@ -11157,7 +11156,6 @@ def wealth_synthesize(
             _saf_skipped = None
             try:
                 from core.shared.saf_stats import stat_assumptions as _saf_assumptions
-                from core.shared.saf_stats.sandbox import get_data_root as _saf_get_root
                 import pandas as _pd_saf
                 import uuid as _uuid_saf
                 from pathlib import (
