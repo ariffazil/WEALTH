@@ -1,6 +1,6 @@
 <!-- SOT-MANIFEST
 owner: Arif
-last_verified: 2026-05-26
+last_verified: 2026-06-04
 valid_from: 2026-05-26
 valid_until: 2026-06-26
 confidence: high
@@ -63,7 +63,7 @@ Every capital question maps to one or more of these 12 thermodynamic dimensions:
 
 ---
 
-## 38 Live MCP Tools
+## 44 Live MCP Tools
 
 ```
 Public MCP surface:           38 tools
