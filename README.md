@@ -10,17 +10,7 @@ epistemic_status: CLAIM
 
 # WEALTH — Capital Intelligence & Resource Stewardship
 
-> **WEALTH is a governed capital intelligence server for the arifOS federation.** It computes value — NPV, IRR, risk scores, portfolio allocation, sovereign resource economics — and enforces constitutional rules that prevent AI from overstating returns, hiding downside risk, or authorizing resource allocation without human approval. It is the capital witness: it computes, it models, it never allocates alone.
-
-<!-- SOT-MANIFEST
-owner: Arif
-last_verified: 2026-06-04
-valid_from: 2026-05-26
-valid_until: 2026-06-26
-confidence: high
-scope: /root/WEALTH
-epistemic_status: CLAIM
--->
+> **WEALTH is the capital intelligence organ of the arifOS federation.** It computes value — NPV, IRR, risk scores, portfolio allocation, sovereign resource economics — and enforces constitutional rules that prevent AI from overstating returns, hiding downside risk, or authorizing resource allocation without human approval. It computes. It models. It never allocates alone.
 
 > **In one sentence:** WEALTH is the financial brain of the federation — when any agent or decision needs a capital computation (NPV, cash flow, risk, game theory, civilizational boundary), WEALTH is the governed engine that runs it.
 
