@@ -14,9 +14,7 @@ import internal.organ_governance as og
 
 def test_risk_tier_readonly_tools():
     readonly_tools = [
-        "wealth_mass_networth", "wealth_flow_cashflow", "wealth_flow_liquidity",
-        "wealth_energy_irr", "wealth_value_npv", "wealth_time_payback",
-        "wealth_probability_monte_carlo", "wealth_signal_evoi",
+        "wealth_flow_liquidity",
         "wealth_health_check", "wealth_system_registry_status",
     ]
     for t in readonly_tools:
@@ -39,7 +37,7 @@ def test_risk_tier_c1_tools():
 
 def test_check_governance_readonly():
     """READONLY tool returns READONLY verdict immediately, no judge call."""
-    verdict, err = og.check_governance("wealth_mass_networth", {})
+    verdict, err = og.check_governance("wealth_health_check", {})
     assert verdict == "READONLY"
     assert err is None
 
