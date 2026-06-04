@@ -10,6 +10,17 @@ const runPython = (script) => {
   if (result.status !== 0) {
     throw new Error(result.stderr || result.stdout);
   }
+  const lines = result.stdout.trim().split("\n");
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = lines[i].trim();
+    if (line.startsWith("{") && line.endsWith("}")) {
+      try {
+        return JSON.parse(line);
+      } catch (e) {
+        // ignore and continue
+      }
+    }
+  }
   return JSON.parse(result.stdout.trim());
 };
 
