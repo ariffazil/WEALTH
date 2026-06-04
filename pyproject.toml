@@ -4,7 +4,7 @@ version = "2026.06.02"
 description = "WEALTH Sovereign Valuation Kernel — Universal Resource Allocation Intelligence (URAI) with constitutional governance for arifOS"
 readme = "README.md"
 requires-python = ">=3.12"
-license = {text = "PROPRIETARY"}
+license = "AGPL-3.0"
 authors = [
     {name = "Arif Fazil", email = "arif@arif-fazil.com"}
 ]
@@ -12,7 +12,7 @@ keywords = ["finance", "valuation", "mcp", "arifOS", "constitutional-ai", "wealt
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: Other/Proprietary License",
+    "License :: OSI Approved :: GNU Affero General Public License v3 (AGPL-3.0)",
     "Programming Language :: Python :: 3.12",
     "Topic :: Office/Business :: Financial",
 ]
