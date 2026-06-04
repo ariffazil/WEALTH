@@ -13928,7 +13928,7 @@ if __name__ == "__main__":
                             {
                                 "name": t.name,
                                 "description": t.description,
-                                "inputSchema": (getattr(t, "inputSchema", None) or {})
+                                "inputSchema": (getattr(t, "parameters", None) or {})
                                 | {"type": "object"},
                                 "outputSchema": (
                                     getattr(t, "output_schema", None) or {}
