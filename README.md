@@ -283,29 +283,6 @@ GEOX feeds prospect economics to WEALTH for POS/EMV calculations:
 
 ---
 
-## Federation Map
-
-| Repo | Role | How WEALTH relates |
-|------|------|-------------------|
-| [arifOS](https://github.com/ariffazil/arifos) | LAW | WEALTH calls arifOS for SEAL/HOLD/VOID on capital decisions |
-| [AAA-Cockpit](https://github.com/ariffazil/AAA) | INTERFACE | AAA-Cockpit routes capital queries to WEALTH; does not own constitutional judgment |
-| [A-FORGE](https://github.com/ariffazil/A-FORGE) | EXECUTION | A-FORGE calls WEALTH tools in governed agent workloads |
-| [GEOX](https://github.com/ariffazil/geox) | FIELD | GEOX prospect economics feed into WEALTH POS/EMV |
-| **WEALTH** | CAPITAL | The financial engine |
-
-### AAA Terminology Note
-
-When WEALTH docs or agents reference AAA, qualify the surface:
-
-| Term | Surface | Role |
-|------|---------|------|
-| **AAA-HF** | Hugging Face dataset | Supplies doctrine and evaluation references — defines what "governed capital action" means |
-| **AAA-Cockpit** | GitHub `ariffazil/AAA` | Displays and routes federation state — does not judge capital decisions |
-| **arifOS** | `ariffazil/arifos` | **The judge** — applies F1–F13 floors to all WEALTH computations |
-
-WEALTH computes capital evidence and valuations only. WEALTH does not judge. WEALTH does not define doctrine.
-
-> "AAA is polymorphic by design. When precision matters, qualify the surface."
 
 ---
 
@@ -316,5 +293,29 @@ Full architecture documentation and Ω-dimension theory:
 
 ---
 
-*Last Verified: 2026-05-26 | 999 SEAL ALIVE*
-**DITEMPA BUKAN DIBERI — Intelligence is forged, not given.**
+## 🏛️ Federation
+
+| Organ | Repository | Role | Port |
+|-------|-----------|------|------|
+| **arifOS** | [ariffazil/arifOS](https://github.com/ariffazil/arifOS) | Constitutional Kernel · F1-F13 | 8088 |
+| **AAA** | [ariffazil/AAA](https://github.com/ariffazil/AAA) | Reality Console · A2A Gateway | 3001 |
+| **A-FORGE** | [ariffazil/A-FORGE](https://github.com/ariffazil/A-FORGE) | Execution Shell | 7071 |
+| **GEOX** | [ariffazil/geox](https://github.com/ariffazil/geox) | Earth Intelligence | 8081 |
+| **WEALTH** | [ariffazil/wealth](https://github.com/ariffazil/wealth) | Capital Intelligence | 18082 |
+| **WELL** | [ariffazil/well](https://github.com/ariffazil/well) | Human Readiness | 18083 |
+| **arif-sites** | [ariffazil/arif-sites](https://github.com/ariffazil/arif-sites) | Public Surfaces | 443 |
+
+> **Constitutional authority:** F1-F13 floors, 888_JUDGE, and VAULT999 live in `ariffazil/arifOS`.  
+> **Live federation status:** See `ariffazil/arifOS/FEDERATION_STATUS.md`.
+## 📄 Contributing
+
+This repository operates under the arifOS Federation constitution (F1–F13).  
+See [AGENTS.md](AGENTS.md) for the canonical boot sequence and agent operating rules.
+
+## 📜 License
+
+AGPL-3.0. See [LICENSE](LICENSE).
+
+---
+
+**DITEMPA BUKAN DIBERI** — Forged, Not Given.
