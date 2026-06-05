@@ -13832,6 +13832,19 @@ def _registry_snapshot(visible_names: List[str]) -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
+    # ── Transport mode selection ─────────────────────────────────────────
+    import argparse
+    _parser = argparse.ArgumentParser(add_help=False)
+    _parser.add_argument(
+        "--transport",
+        choices=["http", "stdio"],
+        default=os.environ.get("MCP_TRANSPORT", "http"),
+    )
+    _args, _ = _parser.parse_known_args()
+    if _args.transport == "stdio":
+        mcp.run(transport="stdio")
+        sys.exit(0)
+
     # Register v2 legacy aliases (non-breaking Phase 1 Migration)
     engine = HarnessEngine()
     _v1_funcs = {
