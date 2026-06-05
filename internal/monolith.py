@@ -3605,7 +3605,7 @@ def _runway_compute(liquid_assets: float, monthly_expenses: float) -> dict:
     }
 
 
-@mcp.tool()
+@mcp.tool(task=True)
 async def wealth_survival_engine(
     mode: Literal[
         "cashflow", "runway", "burn", "liquidity", "personal_finance"
@@ -7014,7 +7014,7 @@ async def wealth_signal_evoi(
     )
 
 
-@mcp.tool()
+@mcp.tool(task=True)
 async def wealth_signal_evoi_mc(
     prior_pos_samples: List[float],
     posterior_pos_samples: List[float],
@@ -7644,6 +7644,7 @@ class InstitutionalEntropyInput(BaseModel):
 
 @mcp.tool(
     name="wealth_institutional_entropy_scorer",
+    task=True,
     description="Executes a thermodynamic audit on state-backed enterprises. Processes financial extraction parameters against structural and narrative entropy bounds.",
 )
 async def wealth_institutional_entropy_scorer(
@@ -11774,7 +11775,7 @@ def _wisdom_fuse(verdicts: List[str]) -> Tuple[str, float]:
     return strictest, confidence
 
 
-@mcp.tool()
+@mcp.tool(task=True)
 async def wealth_omni_wisdom(
     mode: str = "synthesize",
     decision_context: Optional[Dict[str, Any]] = None,
@@ -13739,6 +13740,23 @@ _TOOL_ANNOTATIONS: dict[str, dict[str, Any]] = {
 }
 
 
+# MCP Spec 2025-11-25 outputSchema — standard WEALTH response envelope
+# FastMCP expects dict[str, Any] JSON Schema, not Pydantic model.
+_WEALTH_OUTPUT_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "status": {"type": "string", "description": "Execution status"},
+        "verdict": {"type": "string", "description": "Wisdom verdict: SEAL, HOLD, STOP, etc."},
+        "wisdom_verdict": {"type": "string", "description": "Omni-wisdom unified verdict"},
+        "confidence": {"type": "number", "description": "Confidence score 0.0–1.0"},
+        "epistemic_tag": {"type": "string", "description": "CLAIM | PLAUSIBLE | HYPOTHESIS | ESTIMATE"},
+        "result": {"type": "object", "description": "Tool-specific payload"},
+        "error": {"type": "string", "description": "Error message if status != OK"},
+        "reasons": {"type": "array", "items": {"type": "string"}, "description": "Human-readable justification"},
+    },
+}
+
+
 def _patch_tool_annotations(mcp_server: Any) -> None:
     """Patch MCP tool annotations post-registration (FastMCP 3.x)."""
     import asyncio
@@ -13750,6 +13768,26 @@ def _patch_tool_annotations(mcp_server: Any) -> None:
                 t = await mcp_server.get_tool(name)
                 if t is not None and hasattr(t, "annotations"):
                     t.annotations = ToolAnnotations(**anno)
+            except Exception:
+                pass
+
+    try:
+        loop = asyncio.get_running_loop()
+        loop.create_task(_do())
+    except RuntimeError:
+        asyncio.run(_do())
+
+
+def _patch_output_schemas(mcp_server: Any) -> None:
+    """Patch MCP tool outputSchema post-registration (FastMCP 3.x)."""
+    import asyncio
+
+    async def _do() -> None:
+        for name in _TOOL_ANNOTATIONS.keys():
+            try:
+                t = await mcp_server.get_tool(name)
+                if t is not None and hasattr(t, "output_schema"):
+                    t.output_schema = _WEALTH_OUTPUT_SCHEMA
             except Exception:
                 pass
 
@@ -14001,6 +14039,7 @@ if __name__ == "__main__":
     )
     _args, _ = _parser.parse_known_args()
     _patch_tool_annotations(mcp)
+    _patch_output_schemas(mcp)
     if _args.transport == "stdio":
         mcp.run(transport="stdio")
         sys.exit(0)
@@ -14747,6 +14786,7 @@ if __name__ == "__main__":
         )
 
     _patch_tool_annotations(mcp)
+    _patch_output_schemas(mcp)
     mcp_app = mcp.http_app(path="/", transport="streamable-http", stateless_http=True)
 
     app = Starlette(
