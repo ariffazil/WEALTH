@@ -56,8 +56,11 @@ GHOST_TOOLS = {
 # wealth_synthesize, wealth_deal_frame, and wealth_hysteresis_ledger.
 CANONICAL_REPLACEMENT = "wealth_omni_wisdom"
 
-# 44 (Phase 2 end) - 2 (Path D delta: 3 absorbed → 1 new) = 42
-REQUIRED_SURFACE_COUNT = 42
+# 26 (pre-Next-Horizon) - 7 (Next Horizon absorption 2026-06-05:
+# epf, zakat, health_check, ledger_query, ledger_write, entropy_audit, preference_rank
+# all absorbed as modes into personal_finance, conservation_capital,
+# system_registry_status, entropy_risk, game_coordination) = 19
+REQUIRED_SURFACE_COUNT = 19
 
 
 def get_runtime_tools():

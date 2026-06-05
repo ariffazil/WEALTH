@@ -1163,6 +1163,17 @@ async def wealth_personal_finance(
     conservative_factor: float = 0.8,
     # net_worth mode params
     include_EPF: bool = True,
+    # epf mode params
+    current_account_1: float = 0.0,
+    current_account_2: float = 0.0,
+    epf_monthly_contribution: float = 0.0,
+    epf_current_age: int = 30,
+    epf_target_age: int = 55,
+    epf_annual_rate: float = 0.0515,
+    epf_employer_match: float = 0.0,
+    # zakat mode params
+    zakat_year: int = None,
+    zakat_total_wealth: float = None,
 ) -> dict:
     """Ω-D1: Personal Finance — unified surface for cashflow, runway, and net worth.
 
@@ -1171,6 +1182,8 @@ async def wealth_personal_finance(
       summary  — Aggregate transactions by category
       runway   — Months of financial runway
       net_worth — Assets minus liabilities
+      epf      — Project EPF accumulation to target age (Malaysian)
+      zakat    — Calculate Malaysian 2.5%% zakat above nisab
     """
     mode = mode.lower().strip()
     if mode == "track":
@@ -1203,16 +1216,32 @@ async def wealth_personal_finance(
             owner=owner,
             include_EPF=include_EPF,
         )
+    elif mode == "epf":
+        return wealth_epf_project(
+            current_account_1=current_account_1,
+            current_account_2=current_account_2,
+            monthly_contribution=epf_monthly_contribution,
+            current_age=epf_current_age,
+            target_age=epf_target_age,
+            annual_rate=epf_annual_rate,
+            employer_match=epf_employer_match,
+        )
+    elif mode == "zakat":
+        return await wealth_zakat_calculate(
+            owner=owner,
+            year=zakat_year,
+            total_wealth=zakat_total_wealth,
+            currency=currency,
+        )
     else:
         return {
             "mcp": "WEALTH",
             "tool": "wealth_personal_finance",
             "status": "error",
-            "message": f"Unknown mode: {mode}. Use track|summary|runway|net_worth",
+            "message": f"Unknown mode: {mode}. Use track|summary|runway|net_worth|epf|zakat",
         }
 
 
-@mcp.tool(name="wealth_epf_project")
 def wealth_epf_project(
     current_account_1: float = 0.0,
     current_account_2: float = 0.0,
@@ -1273,7 +1302,6 @@ NISAB_MYR = 14254.0
 ZAKAT_RATE = 0.025
 
 
-@mcp.tool(name="wealth_zakat_calculate")
 async def wealth_zakat_calculate(
     owner: str = "arif",
     year: int = None,
@@ -1544,11 +1572,10 @@ def wealth_market_data(
 # are hidden from the MCP registry but remain available as internal Python functions.
 PUBLIC_SURFACE_WHITELIST = {
     # L0 — Kernel Surface
-    "wealth_health_check",
     "wealth_system_registry_status",
     "wealth_omni_wisdom",
     "wealth_agent_path",
-    # L1 — 12 Canonical Physics Organs
+    # L1 — 11 Canonical Physics Organs
     "wealth_conservation_capital",
     "wealth_flow_liquidity",
     "wealth_gradient_price",
@@ -1561,24 +1588,22 @@ PUBLIC_SURFACE_WHITELIST = {
     "wealth_game_coordination",
     "wealth_boundary_governance",
     # L2 — Mandatory Specialists
-    # NOTE: Atomic thin wrappers removed from public surface 2026-06-04.
-    # Use mode-based Ω-WEALTH tools instead:
-    #   NPV/IRR/PI/payback → wealth_time_discount, wealth_energy_productivity
-    #   EMV/Monte Carlo    → wealth_entropy_risk
-    #   EVOI               → wealth_signal_information
-    #   Cashflow/runway    → wealth_flow_liquidity, wealth_survival_engine
-    #   DSCR/networth      → wealth_inertia_leverage, wealth_conservation_capital
-    "wealth_entropy_audit",
     "wealth_governance_verdict",
-    "wealth_preference_rank",
-    "wealth_ledger_query",
-    "wealth_ledger_write",
     "wealth_inequality_kernel",
     # Phase 1 Survival Engine
     "wealth_survival_engine",
+    # D1 — Personal Finance (absorbs epf, zakat)
+    "wealth_personal_finance",
+    # D3 — Market Data
+    "wealth_market_data",
+    # NOTE: wealth_health_check → wealth_system_registry_status(mode="health")
+    # NOTE: wealth_epf_project + wealth_zakat_calculate → wealth_personal_finance (mode="epf"/"zakat")
+    # NOTE: wealth_ledger_query + wealth_ledger_write → wealth_conservation_capital (mode="ledger_read"/"ledger_seal")
+    # NOTE: wealth_entropy_audit → wealth_entropy_risk (mode="institutional")
+    # NOTE: wealth_preference_rank → wealth_game_coordination (mode="preference")
+    # All 7 absorptions executed 2026-06-05. Surface: 26 → 19 tools.
     # NOTE: wealth_synthesize, wealth_deal_frame, wealth_hysteresis_ledger
     # were absorbed into wealth_omni_wisdom on 2026-06-03 (Path D consolidation).
-    # The 3 originals remain as INTERNAL Python helpers, no longer on public surface.
 }
 
 PUBLIC_RESOURCE_WHITELIST = {
@@ -1738,7 +1763,6 @@ except Exception:
     pass  # federation module may not exist in all environments
 
 
-@mcp.tool()
 def wealth_health_check() -> dict:
     """Universal health check for federation stability."""
     return {
@@ -7527,10 +7551,6 @@ async def wealth_measurement_schema(
     return await wealth_schema_validate(prospects, scale_mode)
 
 
-@mcp.tool(
-    name="wealth_entropy_audit",
-    description="Calculate structural and narrative entropy coefficients for an SOE/NOC.",
-)
 def wealth_entropy_audit(
     revenue_trend_yoy: float,
     ebitda_trend_yoy: float,
@@ -7811,7 +7831,6 @@ def wealth_field_equilibrium(
     return coordination_equilibrium(agents, shared_resources, mechanism, scale_mode)
 
 
-@mcp.tool()
 def wealth_preference_rank(
     alternatives: List[dict],
     constraints: dict,
@@ -7993,7 +8012,6 @@ def _sensor_sources() -> Any:
 # --- Ledger / Vault Tools (5) ---
 
 
-@mcp.tool()
 def wealth_ledger_query(
     query: str,
     limit: int = 10,
@@ -8004,7 +8022,6 @@ def wealth_ledger_query(
     return vault_query(query, limit, session_id)
 
 
-@mcp.tool()
 def wealth_ledger_write(
     action: str,
     payload: Dict[str, Any],
@@ -9172,7 +9189,6 @@ End with: PROCEED_TO_JUDGE | HOLD | NEED_MORE_EVIDENCE"""
 # ═══════════════════════════════════════════════════════════════════════
 
 
-
 def _dispatch_to(
     tool_name: str,
     mode: str,
@@ -9808,13 +9824,15 @@ def wealth_conservation_capital(
     human_confirmed: bool = False,
     idempotency_key: Optional[str] = None,
 ) -> Any:
-    """Ω-WEALTH-01: Conservation — capital stock reality (assets, liabilities, reserves)."""
+    """Ω-WEALTH-01: Conservation — capital stock reality (assets, liabilities, reserves, ledger)."""
     return _dispatch_emergence(
         "wealth_conservation_capital",
         mode,
         {
             "state": networth_state,
             "snapshot": snapshot_portfolio_tool,
+            "ledger_read": wealth_ledger_query,
+            "ledger_seal": wealth_ledger_write,
         },
         {k: v for k, v in locals().items() if k not in ("mode", "dispatch")},
     )
@@ -9923,6 +9941,17 @@ def wealth_entropy_risk(
             coercion_factor=_mp.get("coercion_factor", 0.0),
             scale_mode=_mp.get("scale_mode", scale_mode),
         )
+    if mode == "institutional":
+        return wealth_entropy_audit(
+            revenue_trend_yoy=_mp.get("revenue_trend_yoy", 0.0),
+            ebitda_trend_yoy=_mp.get("ebitda_trend_yoy", 0.0),
+            capex_trend_yoy=_mp.get("capex_trend_yoy", 0.0),
+            dividend_payout_ratio=_mp.get("dividend_payout_ratio", 0.0),
+            reporting_interval_months=_mp.get("reporting_interval_months", 3),
+            narrative_page_count=_mp.get("narrative_page_count", 0),
+            is_loss_year_dividend_paid=_mp.get("is_loss_year_dividend_paid", False),
+            scale_mode=_mp.get("scale_mode", scale_mode),
+        )
     return _dispatch_emergence(
         "wealth_entropy_risk",
         mode,
@@ -9931,6 +9960,7 @@ def wealth_entropy_risk(
             "monte_carlo": monte_carlo_forecast,
             "audit": audit_entropy,
             "correlation": wealth_correlation_guard_check,
+            "institutional": wealth_entropy_audit,
         },
         {
             k: v
@@ -10444,6 +10474,7 @@ def wealth_game_coordination(
     token_budget: float = 1000.0,
     time_deadline_hours: float = 24.0,
     template: str = "",
+    mode_params: Optional[Any] = None,
 ) -> Any:
     """Ω-WEALTH-10: Game — multi-agent incentives, bargaining, coordination.
 
@@ -10481,6 +10512,24 @@ def wealth_game_coordination(
         params["mechanism"] = t.get("mechanism", mechanism)
         params["_template_used"] = template
 
+    if mode == "preference":
+        _mp = {}
+        if isinstance(mode_params, str):
+            try:
+                import json as _j2
+
+                _mp = _j2.loads(mode_params)
+            except Exception:
+                _mp = {}
+        elif isinstance(mode_params, dict):
+            _mp = mode_params
+        return wealth_preference_rank(
+            alternatives=_mp.get("alternatives", []),
+            constraints=_mp.get("constraints", {}),
+            values=_mp.get("values"),
+            scale_mode=_mp.get("scale_mode", "personal"),
+        )
+
     return _dispatch_emergence(
         "wealth_game_coordination",
         mode,
@@ -10488,6 +10537,7 @@ def wealth_game_coordination(
             "equilibrium": coordination_equilibrium,
             "game": game_theory_solve,
             "budget": agent_budget,
+            "preference": wealth_preference_rank,
         },
         params,
     )
@@ -10974,8 +11024,15 @@ def wealth_hysteresis_ledger(
 
 
 @mcp.tool(name="wealth_system_registry_status")
-async def wealth_system_registry_status() -> dict[str, Any]:
-    """Registry truth diagnostic — intended, registered, and alias surfaces."""
+async def wealth_system_registry_status(mode: str = "registry") -> dict[str, Any]:
+    """Registry truth diagnostic — intended, registered, and alias surfaces.
+
+    Modes:
+      registry — Full tool/resource/prompt surface audit (default)
+      health   — Lightweight liveness probe (~1ms, for systemd health checks)
+    """
+    if mode == "health":
+        return wealth_health_check()
     all_tools = await mcp.list_tools()
     all_resources = await mcp.list_resources()
     all_prompts = await mcp.list_prompts()
@@ -13475,7 +13532,6 @@ def wealth_emit_investment_memo(
 
 WEALTH_PUBLIC_TOOL_ORDER = (
     # L0 — Kernel Surface
-    "wealth_health_check",
     "wealth_system_registry_status",
     "wealth_omni_wisdom",
     "wealth_agent_path",
@@ -13494,11 +13550,7 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_game_coordination",
     "wealth_boundary_governance",
     # L2 — Mandatory Specialists
-    "wealth_entropy_audit",
     "wealth_governance_verdict",
-    "wealth_preference_rank",
-    "wealth_ledger_query",
-    "wealth_ledger_write",
     # Domain Specialist (Civilization)
     "wealth_inequality_kernel",
     # NOTE: Atomic thin wrappers removed 2026-06-04.
@@ -13507,10 +13559,14 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     # wealth_inertia_leverage, wealth_conservation_capital.
     # NOTE: wealth_synthesize, wealth_deal_frame, wealth_hysteresis_ledger
     # were absorbed into wealth_omni_wisdom on 2026-06-03 (Path D consolidation).
-    # D1 — Personal Finance (merged 2026-06-04)
+    # NOTE: wealth_health_check → wealth_system_registry_status(mode="health")
+    # NOTE: wealth_epf_project + wealth_zakat_calculate → wealth_personal_finance (mode="epf"/"zakat")
+    # NOTE: wealth_ledger_query + wealth_ledger_write → wealth_conservation_capital (mode="ledger_read"/"ledger_seal")
+    # NOTE: wealth_entropy_audit → wealth_entropy_risk (mode="institutional")
+    # NOTE: wealth_preference_rank → wealth_game_coordination (mode="preference")
+    # All 7 absorptions executed 2026-06-05: 26 → 19 tools.
+    # D1 — Personal Finance (merged 2026-06-04, +epf +zakat 2026-06-05)
     "wealth_personal_finance",
-    "wealth_epf_project",
-    "wealth_zakat_calculate",
     # D3 — Market Data (merged 2026-06-04)
     "wealth_market_data",
 )
