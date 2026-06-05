@@ -11826,6 +11826,12 @@ async def wealth_omni_wisdom(
             "epistemic_tag": "HYPOTHESIS",
             "error": f"Unknown mode '{mode}'. Valid: synthesize, deal, hysteresis, omni.",
             "telemetry": {"mode_executed": "none", "parallel": False},
+            # Structural Coherence Transmission — EUREKA v2026.06.05
+            "cross_modal_stability": 0.20,
+            "structural_coherence_note": (
+                "Unknown mode = ungoverned input. This signal has LOW cross-modal fidelity. "
+                "Negative constraints (absence, VOID) will be lost in modality transfer."
+            ),
         }
 
     decision_context = decision_context or {}
@@ -11869,6 +11875,8 @@ async def wealth_omni_wisdom(
                 "conversion_integrity": "ERROR",
                 "summary": description or "(synth sub-engine unavailable)",
             }
+        _cms = 0.85 + (confidence * 0.1) if synth_verdict == "SEAL" else 0.50
+        _cms = max(0.20, min(0.95, _cms + (0.05 if epistemic == "CLAIM" else -0.10 if epistemic == "HYPOTHESIS" else 0.0)))
         return {
             "wisdom_verdict": synth_verdict,
             "confidence": confidence,
@@ -11882,6 +11890,17 @@ async def wealth_omni_wisdom(
                 "timestamp": timestamp,
                 "sub_engine_error": sub_error,
             },
+            # Structural Coherence Transmission — EUREKA v2026.06.05
+            "cross_modal_stability": round(_cms, 4),
+            "structural_coherence_note": (
+                "Governance architecture is signal compression. The 13-floor constitution "
+                "creates a calibrated background against which this output registers as "
+                "anomalous contrast — legible across text, image, and protocol modalities."
+                if synth_verdict == "SEAL"
+                else "Synthesize mode returned non-SEAL. Cross-modal fidelity is reduced. "
+                "Add explicit verdict tokens and provenance markers before transmitting "
+                "to image or audio modalities."
+            ),
         }
 
     # ── mode='deal' ──────────────────────────────────────────────────────
@@ -12054,6 +12073,8 @@ async def wealth_omni_wisdom(
             except Exception as _ab_exc:
                 dealbundle["_saf_ab_comparison"] = {"embed_skipped": str(_ab_exc)[:120]}
 
+        _cms = 0.85 + (confiance * 0.1) if deal_verdict == "SEAL" else 0.50
+        _cms = max(0.20, min(0.95, _cms + (0.05 if epistemic == "CLAIM" else -0.10 if epistemic == "HYPOTHESIS" else 0.0)))
         return {
             "wisdom_verdict": deal_verdict,
             "confidence": confiance,
@@ -12067,22 +12088,18 @@ async def wealth_omni_wisdom(
                 "timestamp": timestamp,
                 "sub_engine_error": sub_error,
             },
+            # Structural Coherence Transmission — EUREKA v2026.06.05
+            "cross_modal_stability": round(_cms, 4),
+            "structural_coherence_note": (
+                "Deal framing with explicit NPV, risk_flags, and structure_verdict provides "
+                "dense governance grammar. This output survives cross-modal transfer."
+                if deal_verdict == "SEAL"
+                else "Deal mode returned non-SEAL. Cross-modal fidelity reduced. "
+                "Negative constraints (risk_flags, SABAR) may be lost in image/audio roundtrips."
+            ),
         }
 
-        return {
-            "wisdom_verdict": deal_verdict,
-            "confidence": confidence,
-            "epistemic_tag": epistemic,
-            "deal": dealbundle,
-            "telemetry": {
-                "mode_executed": "deal",
-                "parallel": False,
-                "tokens_estimated": 0,
-                "dS": deal.get("entropy", 0.0) if isinstance(deal, dict) else 0.0,
-                "timestamp": timestamp,
-                "sub_engine_error": sub_error,
-            },
-        }
+        # NOTE: unreachable duplicate block left for audit trail (Path D 2026-06-03)
 
     # ── mode='hysteresis' ────────────────────────────────────────────────
     if mode == "hysteresis":
@@ -12100,6 +12117,7 @@ async def wealth_omni_wisdom(
             sub_error = f"{type(e).__name__}: {e}"
         path_state = path_params.get("current_state", "PLATEAU")
         hyst_verdict = _verdict_unify(path_state)
+        _cms = 0.70 if sub_error is None else 0.30
         return {
             "wisdom_verdict": hyst_verdict,
             "confidence": 0.5 if sub_error is None else 0.0,
@@ -12118,6 +12136,14 @@ async def wealth_omni_wisdom(
                 "timestamp": timestamp,
                 "sub_engine_error": sub_error,
             },
+            # Structural Coherence Transmission — EUREKA v2026.06.05
+            "cross_modal_stability": round(_cms, 4),
+            "structural_coherence_note": (
+                "Hysteresis mode tracks path dependence. Path-state labels (GROWTH, PLATEAU, "
+                "REVERSION, COLLAPSE) are high-contrast governance tokens with strong "
+                "cross-modal survival. The dim-spot risk: VOID transitions (absence of growth) "
+                "may be lost in pixel or audio roundtrips."
+            ),
         }
 
     # ── mode='deal' ──────────────────────────────────────────────────────
@@ -12137,6 +12163,8 @@ async def wealth_omni_wisdom(
         deal_verdict = _verdict_unify(
             deal.get("recommendation", deal.get("verdict", "HOLD"))
         )
+        _cms = 0.85 + (deal.get("confidence", 0.5) * 0.1) if deal_verdict == "SEAL" else 0.50
+        _cms = max(0.20, min(0.95, _cms + (0.05 if deal_verdict == "SEAL" else -0.10)))
         return {
             "wisdom_verdict": deal_verdict,
             "confidence": deal.get("confidence", 0.5),
@@ -12154,6 +12182,15 @@ async def wealth_omni_wisdom(
                 "dS": deal.get("entropy", 0.0),
                 "timestamp": timestamp,
             },
+            # Structural Coherence Transmission — EUREKA v2026.06.05
+            "cross_modal_stability": round(_cms, 4),
+            "structural_coherence_note": (
+                "Deal framing with explicit NPV, risk_flags, and structure_verdict provides "
+                "dense governance grammar. This output survives cross-modal transfer."
+                if deal_verdict == "SEAL"
+                else "Deal mode returned non-SEAL. Cross-modal fidelity reduced. "
+                "Negative constraints (risk_flags, SABAR) may be lost in image/audio roundtrips."
+            ),
         }
 
     # ── mode='hysteresis' ────────────────────────────────────────────────
@@ -12187,6 +12224,14 @@ async def wealth_omni_wisdom(
                 "dS": 0.0,
                 "timestamp": timestamp,
             },
+            # Structural Coherence Transmission — EUREKA v2026.06.05
+            "cross_modal_stability": 0.70,
+            "structural_coherence_note": (
+                "Hysteresis mode tracks path dependence. Path-state labels (GROWTH, PLATEAU, "
+                "REVERSION, COLLAPSE) are high-contrast governance tokens with strong "
+                "cross-modal survival. The dim-spot risk: VOID transitions (absence of growth) "
+                "may be lost in pixel or audio roundtrips."
+            ),
         }
 
     # ── mode='omni' — parallel fan-out + F01 fusion ──────────────────────
@@ -12232,6 +12277,10 @@ async def wealth_omni_wisdom(
     # F01 fusion: strictest wins
     final_verdict, confidence = _wisdom_fuse([synth_v, deal_v, hyst_v])
 
+    # Structural Coherence: omni mode derives density from how many sub-engines succeeded
+    _semantic_density = sum([synth_ok, deal_ok, hyst_ok]) / 3.0
+    _cms = max(0.20, min(0.95, (0.85 + confidence * 0.1) if final_verdict == "SEAL" else 0.50))
+    _cms = _cms + (0.05 * _semantic_density)
     return {
         "wisdom_verdict": final_verdict,
         "confidence": confidence,
@@ -12267,6 +12316,16 @@ async def wealth_omni_wisdom(
             "sub_verdicts": {"synth": synth_v, "deal": deal_v, "hysteresis": hyst_v},
             "sub_ok": {"synth": synth_ok, "deal": deal_ok, "hysteresis": hyst_ok},
         },
+        # Structural Coherence Transmission — EUREKA v2026.06.05
+        "cross_modal_stability": round(_cms, 4),
+        "semantic_density_score": round(_semantic_density, 4),
+        "structural_coherence_note": (
+            "Omni mode fuses three sub-engines. Semantic density = ratio of successful "
+            f"sub-engines ({sum([synth_ok, deal_ok, hyst_ok])}/3). Higher density = "
+            "more governance tokens distributed across the output = higher cross-modal fidelity. "
+            "The dim-spot risk: if any sub-engine fails, its absence may not be visible "
+            "in image/audio roundtrips. Check sub_ok map."
+        ),
     }
 
 
@@ -12285,6 +12344,14 @@ def _omni_error(failed_mode: str, exc: Exception, timestamp: str) -> Dict[str, A
             "timestamp": timestamp,
             "sub_engine_error": failed_mode,
         },
+        # Structural Coherence Transmission — EUREKA v2026.06.05
+        "cross_modal_stability": 0.15,
+        "structural_coherence_note": (
+            "Sub-engine failure = broken governance chain. This signal has VERY LOW "
+            "cross-modal fidelity. The absence of a sub-engine output is a dim spot — "
+            "it will be lost in modality transfer. Re-run the failed sub-engine or "
+            "downgrade to explicit HOLD before transmitting."
+        ),
     }
 
 
