@@ -149,11 +149,16 @@ The `host/kernel/` directory contains a legacy JS kernel (`floors.js`, `finance.
 # Install Python side
 pip install -e .
 
-# Start MCP server (port 8082) — use monolith directly
+# Start MCP server (port 18082) — use monolith directly
 python internal/monolith.py
 
 # Or via the wrapper (same result)
 python server.py
+
+# Stdio mode (local agents — Claude Code, OpenCode, Continue CLI)
+python internal/monolith.py --transport stdio
+# or
+MCP_TRANSPORT=stdio python internal/monolith.py
 
 # Install Node.js side (for legacy CLI tools)
 npm install
@@ -171,7 +176,9 @@ docker build -t wealth .
 docker run -p 8082:8082 wealth
 ```
 
-### Connect via Claude Desktop
+### Connect via Claude Desktop / Agent Config
+
+**HTTP (public or local):**
 
 ```json
 {
@@ -179,6 +186,20 @@ docker run -p 8082:8082 wealth
     "wealth": {
       "type": "http",
       "url": "https://wealth.arif-fazil.com/mcp"
+    }
+  }
+}
+```
+
+**Stdio (local-only, no token, no port):**
+
+```json
+{
+  "mcpServers": {
+    "wealth": {
+      "command": "python3",
+      "args": ["internal/monolith.py", "--transport", "stdio"],
+      "cwd": "/root/WEALTH"
     }
   }
 }
