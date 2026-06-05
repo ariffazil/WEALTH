@@ -1,19 +1,17 @@
-schema_version: 1
+schema_version: 2
 kind: arifos.mcp_surface
 owner_repo: WEALTH
 status: contract
-last_verified: "2026-05-25"
+last_verified: "2026-06-05"
 implementation_status:
-  wealth_screen_opportunity: implemented
-  wealth_compute_viability: implemented
-  wealth_score_risk: implemented
-  wealth_compare_scenarios: implemented
-  wealth_emit_investment_memo: implemented
-  wealth_boundary_governance: implemented
+  phase: "Next Horizon — 7 absorptions, 26→19 tools"
 runtime_surface:
   primary_transport: streamable_http
-  primary_port: 8082
+  primary_port: 18082
   public_domain: https://wealth.arif-fazil.com
+  public_surface_count: 19
+  hidden_alias_count: 34
+  registry_truth: PASS
 authority:
   owns:
     - capital_viability
@@ -21,18 +19,45 @@ authority:
     - emv_npv_irr_dscr
     - portfolio_scenarios
     - decision_memos
+    - ledger_operations
+    - personal_finance
   excludes:
     - constitutional_judgment
     - geological_truth
     - deployment_substrate
     - final_capital_commitment
-expected_tools_or_routes:
-  - wealth_screen_opportunity
-  - wealth_compute_viability
-  - wealth_score_risk
-  - wealth_compare_scenarios
-  - wealth_emit_investment_memo
-  - wealth_boundary_governance
+canonical_tools:
+  L0_kernel:
+    - wealth_system_registry_status   # +mode="health"
+    - wealth_omni_wisdom
+    - wealth_agent_path
+  L1_physics_organs:
+    - wealth_conservation_capital      # +mode="ledger_read", "ledger_seal"
+    - wealth_flow_liquidity
+    - wealth_gradient_price
+    - wealth_entropy_risk             # +mode="institutional"
+    - wealth_energy_productivity
+    - wealth_time_discount
+    - wealth_inertia_leverage
+    - wealth_field_macro
+    - wealth_signal_information
+    - wealth_game_coordination        # +mode="preference"
+    - wealth_boundary_governance
+  L2_specialists:
+    - wealth_governance_verdict
+    - wealth_inequality_kernel
+  L3_applications:
+    - wealth_survival_engine
+    - wealth_personal_finance         # +mode="epf", "zakat"
+    - wealth_market_data
+absorption_log_2026_06_05:
+  - wealth_epf_project → wealth_personal_finance(mode="epf")
+  - wealth_zakat_calculate → wealth_personal_finance(mode="zakat")
+  - wealth_health_check → wealth_system_registry_status(mode="health")
+  - wealth_ledger_query → wealth_conservation_capital(mode="ledger_read")
+  - wealth_ledger_write → wealth_conservation_capital(mode="ledger_seal")
+  - wealth_entropy_audit → wealth_entropy_risk(mode="institutional")
+  - wealth_preference_rank → wealth_game_coordination(mode="preference")
 artifact_policy:
   machine_readable: required
   human_readable: required_for_memos

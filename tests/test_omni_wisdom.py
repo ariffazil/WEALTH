@@ -9,7 +9,7 @@ Tests the wealth_omni_wisdom consolidation tool:
   - mode='hysteresis' → routes to internal wealth_hysteresis_ledger
   - mode='omni' → parallel fan-out + F01 fusion (strictest verdict wins)
 
-Net surface delta from Path D: 44 → 42 tools.
+Net surface delta from Path D + Next Horizon: 44 → 42 → 19 tools.
 """
 
 import asyncio
@@ -155,10 +155,10 @@ def test_omni_registered_in_mcp():
         assert absorbed not in runtime_names, (
             f"{absorbed} should be internal, not public"
         )
-    # Count must be 42 (Path D end-state)
-    assert len(runtime_tools) == 42, f"Expected 42 tools, got {len(runtime_tools)}"
+    # 26 (pre-Next-Horizon) - 7 (Next Horizon absorption 2026-06-05) = 19
+    assert len(runtime_tools) == 19, f"Expected 19 tools, got {len(runtime_tools)}"
     print(
-        f"✅ test_omni_registered_in_mcp PASS (42 tools, omni present, 3 absorbed internal)"
+        f"test_omni_registered_in_mcp PASS (19 tools, omni present, 7 absorbed internal)"
     )
 
 
@@ -186,5 +186,7 @@ if __name__ == "__main__":
     print(f"\n{'=' * 60}")
     print(f"Path D Omni Wisdom — {passed} passed, {failed} failed")
     if failed == 0:
-        print("🏆 OMNI WISDOM SEALED — 42 tools, 4 modes, F01 fusion live")
+        print(
+            "OMNI WISDOM + NEXT HORIZON SEALED — 19 tools, 4 omni modes, 7 absorptions, F01 fusion live"
+        )
     sys.exit(failed)
