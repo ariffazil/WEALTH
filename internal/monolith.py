@@ -13639,6 +13639,165 @@ WEALTH_PUBLIC_TOOL_ORDER = (
 )
 _PUBLIC_TOOLS = set(WEALTH_PUBLIC_TOOL_ORDER)
 
+# MCP Spec 2025-11-25 tool annotations (SEP-1862/1913/1984/2417)
+_TOOL_ANNOTATIONS: dict[str, dict[str, Any]] = {
+    "wealth_system_registry_status": {
+        "title": "System Registry Status",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": True, "openWorldHint": False,
+    },
+    "wealth_omni_wisdom": {
+        "title": "Omni Wisdom",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": False, "openWorldHint": False,
+    },
+    "wealth_agent_path": {
+        "title": "Agent Path",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": True, "openWorldHint": False,
+    },
+    "wealth_survival_engine": {
+        "title": "Survival Engine",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": True, "openWorldHint": False,
+    },
+    "wealth_conservation_capital": {
+        "title": "Conservation Capital",
+        "readOnlyHint": False, "destructiveHint": False,
+        "idempotentHint": False, "openWorldHint": True,
+    },
+    "wealth_flow_liquidity": {
+        "title": "Flow Liquidity",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": True, "openWorldHint": False,
+    },
+    "wealth_gradient_price": {
+        "title": "Gradient Price",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": True, "openWorldHint": False,
+    },
+    "wealth_entropy_risk": {
+        "title": "Entropy Risk",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": True, "openWorldHint": False,
+    },
+    "wealth_energy_productivity": {
+        "title": "Energy Productivity",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": True, "openWorldHint": False,
+    },
+    "wealth_time_discount": {
+        "title": "Time Discount",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": True, "openWorldHint": False,
+    },
+    "wealth_inertia_leverage": {
+        "title": "Inertia Leverage",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": True, "openWorldHint": False,
+    },
+    "wealth_field_macro": {
+        "title": "Field Macro",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": False, "openWorldHint": True,
+    },
+    "wealth_signal_information": {
+        "title": "Signal Information",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": True, "openWorldHint": False,
+    },
+    "wealth_game_coordination": {
+        "title": "Game Coordination",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": True, "openWorldHint": False,
+    },
+    "wealth_boundary_governance": {
+        "title": "Boundary Governance",
+        "readOnlyHint": False, "destructiveHint": False,
+        "idempotentHint": False, "openWorldHint": False,
+    },
+    "wealth_governance_verdict": {
+        "title": "Governance Verdict",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": False, "openWorldHint": False,
+    },
+    "wealth_inequality_kernel": {
+        "title": "Inequality Kernel",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": True, "openWorldHint": False,
+    },
+    "wealth_personal_finance": {
+        "title": "Personal Finance",
+        "readOnlyHint": False, "destructiveHint": False,
+        "idempotentHint": False, "openWorldHint": True,
+    },
+    "wealth_market_data": {
+        "title": "Market Data",
+        "readOnlyHint": True, "destructiveHint": False,
+        "idempotentHint": False, "openWorldHint": True,
+    },
+}
+
+
+def _patch_tool_annotations(mcp_server: Any) -> None:
+    """Patch MCP tool annotations post-registration (FastMCP 3.x)."""
+    import asyncio
+    from mcp.types import ToolAnnotations
+
+    async def _do() -> None:
+        for name, anno in _TOOL_ANNOTATIONS.items():
+            try:
+                t = await mcp_server.get_tool(name)
+                if t is not None and hasattr(t, "annotations"):
+                    t.annotations = ToolAnnotations(**anno)
+            except Exception:
+                pass
+
+    try:
+        loop = asyncio.get_running_loop()
+        loop.create_task(_do())
+    except RuntimeError:
+        asyncio.run(_do())
+
+
+class OriginValidationMiddleware:
+    """Validate Origin header on MCP endpoints to prevent DNS rebinding (SEP-2243)."""
+
+    ALLOWED_ORIGIN_PREFIXES: tuple[str, ...] = (
+        "https://wealth.arif-fazil.com",
+        "https://arif-fazil.com",
+        "http://localhost",
+        "https://localhost",
+        "http://127.0.0.1",
+        "https://127.0.0.1",
+    )
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and scope.get("path", "").startswith("/mcp"):
+            headers = dict(scope.get("headers", []))
+            origin_bytes = headers.get(b"origin", b"")
+            origin = origin_bytes.decode() if isinstance(origin_bytes, bytes) else str(origin_bytes)
+            if origin and not any(origin.startswith(p) for p in self.ALLOWED_ORIGIN_PREFIXES):
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 403,
+                        "headers": [[b"content-type", b"application/json"]],
+                    }
+                )
+                await send(
+                    {
+                        "type": "http.response.body",
+                        "body": b'{"error":"Invalid Origin","detail":"DNS rebinding protection"}',
+                    }
+                )
+                return
+        await self.app(scope, receive, send)
+
+    def __init__(self, app):
+        self.app = app
+
+
 # ── Tools declared in surface but not yet registered (PHOENIX-73F) ────
 # These 5 L3 tools are in WEALTH_PUBLIC_TOOL_ORDER but their @mcp.tool
 # decorators do not register with FastMCP at import time (silent failure).
@@ -13841,6 +14000,7 @@ if __name__ == "__main__":
         default=os.environ.get("MCP_TRANSPORT", "http"),
     )
     _args, _ = _parser.parse_known_args()
+    _patch_tool_annotations(mcp)
     if _args.transport == "stdio":
         mcp.run(transport="stdio")
         sys.exit(0)
@@ -14503,6 +14663,19 @@ if __name__ == "__main__":
             }
         )
 
+    async def mcp_server_card(request):
+        """MCP Server Card — SEP-2127 HTTP discovery document."""
+        return _JR(
+            {
+                "name": "wealth",
+                "displayName": "WEALTH Capital Intelligence",
+                "url": "https://wealth.arif-fazil.com/mcp",
+                "version": __version__,
+                "capabilities": {"tools": True, "resources": False, "prompts": False},
+                "authentication": {"type": "none"},
+            }
+        )
+
     async def prompts_handler(request):
         """Federation prompt discovery — returns governance reasoning workflows."""
         all_prompts = await mcp.list_prompts()
@@ -14573,10 +14746,12 @@ if __name__ == "__main__":
             }
         )
 
+    _patch_tool_annotations(mcp)
     mcp_app = mcp.http_app(path="/", transport="streamable-http", stateless_http=True)
 
     app = Starlette(
         routes=[
+            Route("/.well-known/mcp.json", mcp_server_card, methods=["GET"]),
             Route("/mcp", legacy_mcp_handler, methods=["GET", "POST"]),
             Route("/tools", tools_handler, methods=["GET"]),
             Route("/prompts", prompts_handler, methods=["GET"]),
@@ -14588,6 +14763,7 @@ if __name__ == "__main__":
         ],
         lifespan=getattr(mcp_app, "lifespan", None),
     )
+    app.add_middleware(OriginValidationMiddleware)
 
     # ── Startup Registry Assertion (deferred to lifespan) ────
     # PHOENIX-73F: 5 tools are in _KNOWN_MISSING but the assertion ran
@@ -14624,6 +14800,7 @@ if __name__ == "__main__":
 
     app = Starlette(
         routes=[
+            Route("/.well-known/mcp.json", mcp_server_card, methods=["GET"]),
             Route("/mcp", legacy_mcp_handler, methods=["GET", "POST"]),
             Route("/tools", tools_handler, methods=["GET"]),
             Route("/prompts", prompts_handler, methods=["GET"]),
@@ -14635,6 +14812,7 @@ if __name__ == "__main__":
         ],
         lifespan=_combined_lifespan,
     )
+    app.add_middleware(OriginValidationMiddleware)
 
     uvicorn.run(
         app,
