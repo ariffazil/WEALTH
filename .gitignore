@@ -56,3 +56,6 @@ identity.toml
 .identity_hash
 *.egg-info/
 .coverage
+coverage.xml
+.memory/
+.ci-venv/
