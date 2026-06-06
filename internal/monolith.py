@@ -11160,7 +11160,25 @@ async def wealth_system_registry_status(mode: str = "registry") -> dict[str, Any
       health   — Lightweight liveness probe (~1ms, for systemd health checks)
     """
     if mode == "health":
-        return wealth_health_check()
+        # Wrap the health check in the standard WEALTH envelope so it matches
+        # the FastMCP structured output schema. The flat dict from
+        # wealth_health_check() does not conform on its own.
+        health = wealth_health_check()
+        return {
+            "status": "OK"
+            if health.get("status") == "OK"
+            else health.get("status", "UNKNOWN"),
+            "verdict": "SEAL" if health.get("status") == "OK" else "HOLD",
+            "result": health,
+            "error": None,
+            "reasons": [
+                f"transport={health.get('transport', '?')}",
+                f"auth={health.get('auth', '?')}",
+                f"schema_version={health.get('schema_version', '?')}",
+            ],
+            "read_only": health.get("read_only", True),
+            "final_authority": health.get("final_authority", "ARIF"),
+        }
     all_tools = await mcp.list_tools()
     all_resources = await mcp.list_resources()
     all_prompts = await mcp.list_prompts()
