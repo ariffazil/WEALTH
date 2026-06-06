@@ -173,7 +173,7 @@ npm run seal    # Seal session to VAULT999
 
 # Docker
 docker build -t wealth .
-docker run -p 8082:8082 wealth
+docker run -p 18082:18082 wealth
 ```
 
 ### Connect via Claude Desktop / Agent Config
