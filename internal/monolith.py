@@ -8173,36 +8173,70 @@ try:
         negotiate field names. The organ does NOT name the Laws (L01-L13).
         That is arifOS's job.
 
-        Returns a NEW dict. Does not mutate the original.
+        Spec shape (Appendix B):
+          {
+            "result": {},                  ← tool's DOMAIN payload (not wrapper)
+            "epistemic_tag": "...",
+            "evidence_quality": 0.0,
+            "source_attribution": [...],
+            "uncertainty_band": [...],
+            "delta_S": 0.0
+          }
         """
-        # Coerce to dict — FastMCP may return Pydantic models, lists, or tuples
+        import json as _json
+
+        # Extract the domain payload. FastMCP result shapes:
+        #   - Pydantic CallToolResult with .structured_content
+        #   - tuple (content_list, structured_dict)
+        #   - list[ContentBlock] (no structured)
+        #   - dict (already a domain payload)
+        domain = None
+        call_meta = {}  # is_error, meta — preserved alongside envelope
         if hasattr(result, "model_dump"):
-            result_dict = result.model_dump()
-        elif isinstance(result, tuple) and len(result) >= 1:
-            # FastMCP tuple form: (content_list, structured_dict)
-            structured = result[1] if len(result) > 1 else None
-            if structured is not None and hasattr(structured, "model_dump"):
-                result_dict = structured.model_dump()
+            r_dict = result.model_dump()
+            domain = r_dict.get("structured_content") or r_dict.get("structuredContent")
+            call_meta = {
+                "is_error": r_dict.get("is_error", False),
+                "meta": r_dict.get("meta"),
+            }
+        elif isinstance(result, tuple) and len(result) >= 2:
+            structured = result[1]
+            if hasattr(structured, "model_dump"):
+                domain = structured.model_dump()
             elif isinstance(structured, dict):
-                result_dict = structured
-            else:
-                return result
+                domain = structured
+            call_meta = {"is_error": False, "meta": None}
+        elif isinstance(result, list):
+            # No structured content; try to parse content[0].text as JSON
+            try:
+                if result and hasattr(result[0], "text"):
+                    domain = _json.loads(result[0].text)
+                elif result and isinstance(result[0], dict) and "text" in result[0]:
+                    domain = _json.loads(result[0]["text"])
+            except (_json.JSONDecodeError, IndexError, TypeError):
+                pass
+            call_meta = {"is_error": False, "meta": None}
         elif isinstance(result, dict):
-            result_dict = result
+            # Skip envelope for governance blocks (those are pre-tool errors)
+            if result.get("error_code") == "ORGAN_GOVERNANCE_BLOCKED":
+                return result
+            domain = result
+            call_meta = {"is_error": False, "meta": None}
         else:
             return result
-        # Skip envelope for governance blocks (those are pre-tool errors)
-        if result_dict.get("error_code") == "ORGAN_GOVERNANCE_BLOCKED":
+
+        if domain is None or not isinstance(domain, dict):
             return result
-        tag, quality, band = _classify_epistemic(result_dict)
-        # Entropy delta: negative = clarity gained, positive = added uncertainty
-        flags = result_dict.get("failure_flags") or []
+        if domain.get("error_code") == "ORGAN_GOVERNANCE_BLOCKED":
+            return result
+
+        tag, quality, band = _classify_epistemic(domain)
+        flags = domain.get("failure_flags") or []
         n_flags = len(flags) if isinstance(flags, (list, tuple)) else 0
-        # Heuristic: -0.1 base for clean output, +0.05 per flag
         delta_s = round(-0.10 + (0.05 * n_flags) + (0.02 * (1.0 - quality)), 4)
-        # Build envelope. Place original fields under "result" for spec compliance.
+        # Build envelope. The "result" field carries the DOMAIN payload only.
         envelope = {
-            "result": result_dict,
+            "result": domain,
             "epistemic_tag": tag,
             "evidence_quality": quality,
             "source_attribution": [
@@ -8211,6 +8245,12 @@ try:
             ],
             "uncertainty_band": band,
             "delta_S": delta_s,
+            # call_meta retained for transport-level observability
+            **(
+                {"_call": call_meta}
+                if call_meta.get("is_error") or call_meta.get("meta")
+                else {}
+            ),
         }
         return envelope
 
