@@ -72,7 +72,7 @@ wealth_vault_record     → wealth_record_transaction
 |-----|-------------|
 | `wealth://doctrine/valuation` | WEALTH motto + protocol version |
 | `wealth://dimensions/definitions` | 9-dimension definitions (Reward, Energy, Entropy, Time, Mass, Flow, Velocity, Survival, Allocation) |
-| `wealth://governance/floors` | F1–F13 Constitutional Floors |
+| `wealth://governance/floors` | F1–F13 Constitutional Laws |
 | `wealth://governance/harness-doctrines` | 9-Harness constraint architecture |
 | `wealth://topology/families` | 6 Sovereign Families: SENSE(100), MIND(200), SURVIVAL(300), REASON(400), JUDGE(888), VAULT(999) |
 | `wealth://topology/scales` | 8 Capital Scales: personal → civilization → agentic |

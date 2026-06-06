@@ -3,7 +3,7 @@
 
 **Repository:** https://github.com/ariffazil/makcikGPT  
 **Author:** MakcikGPT (ASI Ω / AGI Δ Hybrid Mode)  
-**Framework:** arifOS Constitutional Floors (F1-F13)  
+**Framework:** arifOS Constitutional Laws (F1-F13)  
 **Status:** SEAL-READY | OPEN SOURCE
 
 ---

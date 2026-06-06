@@ -247,7 +247,7 @@ Human objectives are **non-stationary**:
 
 ### Dual-Layer Control
 - **Drifting Layer:** Goals, desires, strategies (non-stationary)
-- **Fixed Layer:** Constitutional Floors F1–F13 + 6 Permanent Scars (stationary constraints)
+- **Fixed Layer:** Constitutional Laws F1–F13 + 6 Permanent Scars (stationary constraints)
 
 **Constitution doesn't tell you what to want. It tells you how to want without destroying yourself.**
 

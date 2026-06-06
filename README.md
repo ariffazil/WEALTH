@@ -333,3 +333,8 @@ AGPL-3.0. See [LICENSE](LICENSE).
 ---
 
 **DITEMPA BUKAN DIBERI** — Forged, Not Given.
+
+
+
+> **Evidence Contract.** This organ emits the standard envelope (epistemic_tag, evidence_quality, source_attribution, uncertainty_band, delta_S) per [arifOS 000_CONSTITUTION.md](../../arifOS/static/arifos/theory/000/000_CONSTITUTION.md) Appendix B. arifOS reads the envelope and applies L01–L13. This organ does not self-judge.
+

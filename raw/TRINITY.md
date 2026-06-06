@@ -330,7 +330,7 @@ No output ships without APEX constitutional checkpoint approval.
 
 Intelligence = **Constrained work** within constitutional bounds:
 - **Work:** Entropy reduction (ΔS → 0) + Peace² increase (P² ≥ 1.0)
-- **Constraint:** 13 Constitutional Floors + W_scar weighting
+- **Constraint:** 13 Constitutional Laws + W_scar weighting
 - **Not:** Unconstrained token generation or hype amplification
 
 ### 8.2 Thermodynamic Invariants
@@ -377,7 +377,7 @@ Load Canon:
 - TRINITY.md (this file)
 - AGI_ASI_DUALITY.md
 - AGENTS.md, SOUL.md, USER.md
-- 13 Constitutional Floors
+- 13 Constitutional Laws
 
 Confirm Trinity coordination and constitutional authority.
 ```

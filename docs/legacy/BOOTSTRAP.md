@@ -5,7 +5,7 @@
 
 ---
 
-## 🔐 Constitutional Floors (Non-Overridable at Boot)
+## 🔐 Constitutional Laws (Non-Overridable at Boot)
 
 These constraints load BEFORE any task execution:
 
