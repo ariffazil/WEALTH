@@ -8128,8 +8128,94 @@ try:
 
     _original_call_tool = mcp.call_tool
 
+    def _classify_epistemic(result: dict) -> tuple:
+        """Derive (epistemic_tag, evidence_quality, uncertainty_band) from result.
+
+        Per Appendix B of 000_CONSTITUTION.md. The organ classifies its own
+        evidence strength. It does NOT name the Laws (that is arifOS's job).
+        """
+        # Confidence → epistemic tag + quality
+        conf_raw = result.get("confidence", "LOW")
+        conf_str = str(conf_raw).upper() if conf_raw else "LOW"
+        quality_map = {"HIGH": 0.95, "MEDIUM": 0.70, "MODERATE": 0.70, "LOW": 0.30}
+        tag_map = {
+            "HIGH": "CLAIM",
+            "MEDIUM": "PLAUSIBLE",
+            "MODERATE": "PLAUSIBLE",
+            "LOW": "ESTIMATE",
+        }
+        quality = quality_map.get(conf_str, 0.50)
+        tag = tag_map.get(conf_str, "ESTIMATE")
+        # Status overrides
+        status = str(result.get("status", "")).upper()
+        if status in ("FAIL", "ERROR", "VOID"):
+            return ("UNKNOWN", 0.10, [0.30, 0.80])
+        if status in ("SUCCESS", "PASS", "SEAL"):
+            quality = min(quality + 0.05, 1.0)
+        # Uncertainty band: widen with failure flags
+        flags = result.get("failure_flags") or []
+        n_flags = len(flags) if isinstance(flags, (list, tuple)) else 0
+        if n_flags == 0:
+            band = [
+                round(0.03 + (1.0 - quality) * 0.04, 4),
+                round(0.05 + (1.0 - quality) * 0.10, 4),
+            ]
+        elif n_flags <= 2:
+            band = [0.10, 0.25]
+        else:
+            band = [0.25, 0.50]
+        return (tag, round(quality, 4), band)
+
+    def _wrap_in_envelope(tool_name: str, result):
+        """Wrap a tool result in the canonical Evidence Contract envelope.
+
+        Per Appendix B of 000_CONSTITUTION.md. arifOS reads this; it does not
+        negotiate field names. The organ does NOT name the Laws (L01-L13).
+        That is arifOS's job.
+
+        Returns a NEW dict. Does not mutate the original.
+        """
+        # Coerce to dict — FastMCP may return Pydantic models, lists, or tuples
+        if hasattr(result, "model_dump"):
+            result_dict = result.model_dump()
+        elif isinstance(result, tuple) and len(result) >= 1:
+            # FastMCP tuple form: (content_list, structured_dict)
+            structured = result[1] if len(result) > 1 else None
+            if structured is not None and hasattr(structured, "model_dump"):
+                result_dict = structured.model_dump()
+            elif isinstance(structured, dict):
+                result_dict = structured
+            else:
+                return result
+        elif isinstance(result, dict):
+            result_dict = result
+        else:
+            return result
+        # Skip envelope for governance blocks (those are pre-tool errors)
+        if result_dict.get("error_code") == "ORGAN_GOVERNANCE_BLOCKED":
+            return result
+        tag, quality, band = _classify_epistemic(result_dict)
+        # Entropy delta: negative = clarity gained, positive = added uncertainty
+        flags = result_dict.get("failure_flags") or []
+        n_flags = len(flags) if isinstance(flags, (list, tuple)) else 0
+        # Heuristic: -0.1 base for clean output, +0.05 per flag
+        delta_s = round(-0.10 + (0.05 * n_flags) + (0.02 * (1.0 - quality)), 4)
+        # Build envelope. Place original fields under "result" for spec compliance.
+        envelope = {
+            "result": result_dict,
+            "epistemic_tag": tag,
+            "evidence_quality": quality,
+            "source_attribution": [
+                "WEALTH:internal/monolith.py",
+                f"WEALTH:tool/{tool_name}",
+            ],
+            "uncertainty_band": band,
+            "delta_S": delta_s,
+        }
+        return envelope
+
     async def _governance_call_tool(name, arguments=None, **kwargs):
-        """Wrap mcp.call_tool with arifOS governance pre-check."""
+        """Wrap mcp.call_tool with arifOS governance pre-check + Evidence Contract."""
         if arguments is None:
             arguments = {}
         verdict, error = _check_governance(name, arguments)
@@ -8140,12 +8226,13 @@ try:
                 "error_code": "ORGAN_GOVERNANCE_BLOCKED",
                 "message": f"arifOS {verdict}: governance check blocked execution",
                 "guard": "ORGAN_GOVERNANCE",
-                "floor": "F1-F13",
+                "floor": "L1-L13",
             }
-        return await _original_call_tool(name, arguments, **kwargs)
+        result = await _original_call_tool(name, arguments, **kwargs)
+        return _wrap_in_envelope(name, result)
 
     mcp.call_tool = _governance_call_tool
-    print("[GOVERNANCE] WEALTH governance wrapper active — arifOS F1-F13")
+    print("[GOVERNANCE] WEALTH governance + Evidence Contract active — arifOS L1-L13")
 
 except Exception as e:
     print(f"[GOVERNANCE] WEALTH governance wrapper failed to load: {e}")
@@ -11877,7 +11964,20 @@ async def wealth_omni_wisdom(
                 "summary": description or "(synth sub-engine unavailable)",
             }
         _cms = 0.85 + (confidence * 0.1) if synth_verdict == "SEAL" else 0.50
-        _cms = max(0.20, min(0.95, _cms + (0.05 if epistemic == "CLAIM" else -0.10 if epistemic == "HYPOTHESIS" else 0.0)))
+        _cms = max(
+            0.20,
+            min(
+                0.95,
+                _cms
+                + (
+                    0.05
+                    if epistemic == "CLAIM"
+                    else -0.10
+                    if epistemic == "HYPOTHESIS"
+                    else 0.0
+                ),
+            ),
+        )
         return {
             "wisdom_verdict": synth_verdict,
             "confidence": confidence,
@@ -12075,7 +12175,20 @@ async def wealth_omni_wisdom(
                 dealbundle["_saf_ab_comparison"] = {"embed_skipped": str(_ab_exc)[:120]}
 
         _cms = 0.85 + (confiance * 0.1) if deal_verdict == "SEAL" else 0.50
-        _cms = max(0.20, min(0.95, _cms + (0.05 if epistemic == "CLAIM" else -0.10 if epistemic == "HYPOTHESIS" else 0.0)))
+        _cms = max(
+            0.20,
+            min(
+                0.95,
+                _cms
+                + (
+                    0.05
+                    if epistemic == "CLAIM"
+                    else -0.10
+                    if epistemic == "HYPOTHESIS"
+                    else 0.0
+                ),
+            ),
+        )
         return {
             "wisdom_verdict": deal_verdict,
             "confidence": confiance,
@@ -12164,7 +12277,11 @@ async def wealth_omni_wisdom(
         deal_verdict = _verdict_unify(
             deal.get("recommendation", deal.get("verdict", "HOLD"))
         )
-        _cms = 0.85 + (deal.get("confidence", 0.5) * 0.1) if deal_verdict == "SEAL" else 0.50
+        _cms = (
+            0.85 + (deal.get("confidence", 0.5) * 0.1)
+            if deal_verdict == "SEAL"
+            else 0.50
+        )
         _cms = max(0.20, min(0.95, _cms + (0.05 if deal_verdict == "SEAL" else -0.10)))
         return {
             "wisdom_verdict": deal_verdict,
@@ -12280,7 +12397,9 @@ async def wealth_omni_wisdom(
 
     # Structural Coherence: omni mode derives density from how many sub-engines succeeded
     _semantic_density = sum([synth_ok, deal_ok, hyst_ok]) / 3.0
-    _cms = max(0.20, min(0.95, (0.85 + confidence * 0.1) if final_verdict == "SEAL" else 0.50))
+    _cms = max(
+        0.20, min(0.95, (0.85 + confidence * 0.1) if final_verdict == "SEAL" else 0.50)
+    )
     _cms = _cms + (0.05 * _semantic_density)
     return {
         "wisdom_verdict": final_verdict,
@@ -13644,98 +13763,136 @@ _PUBLIC_TOOLS = set(WEALTH_PUBLIC_TOOL_ORDER)
 _TOOL_ANNOTATIONS: dict[str, dict[str, Any]] = {
     "wealth_system_registry_status": {
         "title": "System Registry Status",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": True, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
     },
     "wealth_omni_wisdom": {
         "title": "Omni Wisdom",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": False, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": False,
+        "openWorldHint": False,
     },
     "wealth_agent_path": {
         "title": "Agent Path",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": True, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
     },
     "wealth_survival_engine": {
         "title": "Survival Engine",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": True, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
     },
     "wealth_conservation_capital": {
         "title": "Conservation Capital",
-        "readOnlyHint": False, "destructiveHint": False,
-        "idempotentHint": False, "openWorldHint": True,
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": False,
+        "openWorldHint": True,
     },
     "wealth_flow_liquidity": {
         "title": "Flow Liquidity",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": True, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
     },
     "wealth_gradient_price": {
         "title": "Gradient Price",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": True, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
     },
     "wealth_entropy_risk": {
         "title": "Entropy Risk",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": True, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
     },
     "wealth_energy_productivity": {
         "title": "Energy Productivity",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": True, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
     },
     "wealth_time_discount": {
         "title": "Time Discount",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": True, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
     },
     "wealth_inertia_leverage": {
         "title": "Inertia Leverage",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": True, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
     },
     "wealth_field_macro": {
         "title": "Field Macro",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": False, "openWorldHint": True,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": False,
+        "openWorldHint": True,
     },
     "wealth_signal_information": {
         "title": "Signal Information",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": True, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
     },
     "wealth_game_coordination": {
         "title": "Game Coordination",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": True, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
     },
     "wealth_boundary_governance": {
         "title": "Boundary Governance",
-        "readOnlyHint": False, "destructiveHint": False,
-        "idempotentHint": False, "openWorldHint": False,
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": False,
+        "openWorldHint": False,
     },
     "wealth_governance_verdict": {
         "title": "Governance Verdict",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": False, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": False,
+        "openWorldHint": False,
     },
     "wealth_inequality_kernel": {
         "title": "Inequality Kernel",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": True, "openWorldHint": False,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
     },
     "wealth_personal_finance": {
         "title": "Personal Finance",
-        "readOnlyHint": False, "destructiveHint": False,
-        "idempotentHint": False, "openWorldHint": True,
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": False,
+        "openWorldHint": True,
     },
     "wealth_market_data": {
         "title": "Market Data",
-        "readOnlyHint": True, "destructiveHint": False,
-        "idempotentHint": False, "openWorldHint": True,
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": False,
+        "openWorldHint": True,
     },
 }
 
@@ -13746,13 +13903,26 @@ _WEALTH_OUTPUT_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
         "status": {"type": "string", "description": "Execution status"},
-        "verdict": {"type": "string", "description": "Wisdom verdict: SEAL, HOLD, STOP, etc."},
-        "wisdom_verdict": {"type": "string", "description": "Omni-wisdom unified verdict"},
+        "verdict": {
+            "type": "string",
+            "description": "Wisdom verdict: SEAL, HOLD, STOP, etc.",
+        },
+        "wisdom_verdict": {
+            "type": "string",
+            "description": "Omni-wisdom unified verdict",
+        },
         "confidence": {"type": "number", "description": "Confidence score 0.0–1.0"},
-        "epistemic_tag": {"type": "string", "description": "CLAIM | PLAUSIBLE | HYPOTHESIS | ESTIMATE"},
+        "epistemic_tag": {
+            "type": "string",
+            "description": "CLAIM | PLAUSIBLE | HYPOTHESIS | ESTIMATE",
+        },
         "result": {"type": "object", "description": "Tool-specific payload"},
         "error": {"type": "string", "description": "Error message if status != OK"},
-        "reasons": {"type": "array", "items": {"type": "string"}, "description": "Human-readable justification"},
+        "reasons": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Human-readable justification",
+        },
     },
 }
 
@@ -13814,8 +13984,14 @@ class OriginValidationMiddleware:
         if scope["type"] == "http" and scope.get("path", "").startswith("/mcp"):
             headers = dict(scope.get("headers", []))
             origin_bytes = headers.get(b"origin", b"")
-            origin = origin_bytes.decode() if isinstance(origin_bytes, bytes) else str(origin_bytes)
-            if origin and not any(origin.startswith(p) for p in self.ALLOWED_ORIGIN_PREFIXES):
+            origin = (
+                origin_bytes.decode()
+                if isinstance(origin_bytes, bytes)
+                else str(origin_bytes)
+            )
+            if origin and not any(
+                origin.startswith(p) for p in self.ALLOWED_ORIGIN_PREFIXES
+            ):
                 await send(
                     {
                         "type": "http.response.start",
@@ -14031,6 +14207,7 @@ def _registry_snapshot(visible_names: List[str]) -> Dict[str, Any]:
 if __name__ == "__main__":
     # ── Transport mode selection ─────────────────────────────────────────
     import argparse
+
     _parser = argparse.ArgumentParser(add_help=False)
     _parser.add_argument(
         "--transport",
