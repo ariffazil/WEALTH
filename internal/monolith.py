@@ -7845,7 +7845,7 @@ def wealth_preference_rank(
 
 @mcp.tool()
 def wealth_agent_path(
-    task_description: str,
+    task_description: str = "",
     scale_mode: str = "agentic",
     context: Optional[dict] = None,
 ) -> dict[str, Any]:
@@ -9360,7 +9360,31 @@ def _dispatch_to(
     try:
         result = func(**clean)
         if inspect.isawaitable(result):
-            return asyncio.run(result)
+            # asyncio.run() fails inside a running event loop (FastMCP async context).
+            # Use a thread executor so we don't nest event loops.
+            import concurrent.futures
+            try:
+                loop = asyncio.get_running_loop()
+                # We are inside a running loop — run coro in a separate thread
+                import threading
+                out: list = [None]
+                exc_holder: list = [None]
+
+                def _run():
+                    try:
+                        out[0] = asyncio.run(result)
+                    except Exception as e:
+                        exc_holder[0] = e
+
+                t = threading.Thread(target=_run, daemon=True)
+                t.start()
+                t.join(timeout=60)
+                if exc_holder[0]:
+                    raise exc_holder[0]
+                return out[0]
+            except RuntimeError:
+                # No running loop — safe to use asyncio.run directly
+                return asyncio.run(result)
         return result
     except TypeError as exc:
         return _runtime_error_response(tool_name, mode, str(exc))
@@ -9630,7 +9654,27 @@ def _invoke_callable(func: Callable[..., Any], payload: Dict[str, Any]) -> Any:
         }
     result = func(**clean)
     if inspect.isawaitable(result):
-        return asyncio.run(result)
+        # asyncio.run() fails inside a running event loop (FastMCP async context).
+        import threading
+        try:
+            asyncio.get_running_loop()
+            out: list = [None]
+            exc_holder: list = [None]
+
+            def _run_coro():
+                try:
+                    out[0] = asyncio.run(result)
+                except Exception as e:
+                    exc_holder[0] = e
+
+            t = threading.Thread(target=_run_coro, daemon=True)
+            t.start()
+            t.join(timeout=60)
+            if exc_holder[0]:
+                raise exc_holder[0]
+            return out[0]
+        except RuntimeError:
+            return asyncio.run(result)
     return result
 
 
@@ -11164,12 +11208,88 @@ async def wealth_system_registry_status(mode: str = "registry") -> dict[str, Any
         # the FastMCP structured output schema. The flat dict from
         # wealth_health_check() does not conform on its own.
         health = wealth_health_check()
+        # ── FEDERATION GEOMETRY 1a: home-call to arifOS ─────────────────────
+        # Non-blocking. arifOS geometry is auth-bypass (absorbed diagnostic).
+        # arifOS MCP requires session-init before tools/call, so we do a
+        # 2-call sequence (initialize + tools/call). 2s timeout per step.
+        # If arifOS is unreachable, federation_geometry=None + note.
+        fed_geometry: dict | None = None
+        fed_geometry_source: str | None = None
+        fed_geometry_note: str | None = None
+        try:
+            async with httpx.AsyncClient(timeout=2.0) as _arif_client:
+                # Step 1: initialize to get session id
+                _init_resp = await _arif_client.post(
+                    "http://127.0.0.1:8088/mcp",
+                    headers={
+                        "Content-Type": "application/json",
+                        "Accept": "application/json, text/event-stream",
+                    },
+                    json={
+                        "jsonrpc": "2.0",
+                        "id": 1,
+                        "method": "initialize",
+                        "params": {
+                            "protocolVersion": "2024-11-25",
+                            "capabilities": {},
+                            "clientInfo": {
+                                "name": "wealth-federation-bridge",
+                                "version": "1.0",
+                            },
+                        },
+                    },
+                )
+                _session_id = _init_resp.headers.get("mcp-session-id")
+                if _session_id:
+                    # Step 2: tools/call with session id
+                    _arif_resp = await _arif_client.post(
+                        "http://127.0.0.1:8088/mcp",
+                        headers={
+                            "Content-Type": "application/json",
+                            "Accept": "application/json, text/event-stream",
+                            "mcp-session-id": _session_id,
+                        },
+                        json={
+                            "jsonrpc": "2.0",
+                            "id": 2,
+                            "method": "tools/call",
+                            "params": {
+                                "name": "arif_ops_measure",
+                                "arguments": {"mode": "geometry"},
+                            },
+                        },
+                    )
+                    _arif_json = _arif_resp.json()
+                    for _c in _arif_json.get("result", {}).get("content", []):
+                        if _c.get("type") != "text":
+                            continue
+                        try:
+                            _inner = json.loads(_c.get("text", ""))
+                        except Exception:
+                            continue
+                        _payload = _inner.get("result", _inner)
+                        if (
+                            isinstance(_payload, dict)
+                            and _payload.get("telemetry_source")
+                            == "geometry_hygiene_v1"
+                        ):
+                            fed_geometry = _payload
+                            fed_geometry_source = "arifOS:8088/mcp"
+                            break
+                else:
+                    fed_geometry_note = "arifOS did not return mcp-session-id"
+        except Exception as _exc:
+            fed_geometry_note = f"arifOS unreachable: {type(_exc).__name__}"
+        # ── END FEDERATION GEOMETRY 1a ───────────────────────────────────
         return {
             "status": "OK"
             if health.get("status") == "OK"
             else health.get("status", "UNKNOWN"),
             "verdict": "SEAL" if health.get("status") == "OK" else "HOLD",
             "result": health,
+            "federation_geometry": fed_geometry,
+            "federation_geometry_source": fed_geometry_source,
+            "federation_geometry_note": fed_geometry_note,
             "error": None,
             "reasons": [
                 f"transport={health.get('transport', '?')}",
@@ -13349,6 +13469,7 @@ def _save_inequality_panel(
 
 @mcp.tool(name="wealth_inequality_kernel")
 def wealth_inequality_kernel(
+    mode: str = "analyze",
     context: str = "",
     domain: str = "civilization",
     description: str = "",
@@ -13386,6 +13507,22 @@ def wealth_inequality_kernel(
     Verdict: Bounded inequality + high mobility + universal dignity is achievable.
     Perfect equality is not. Extractive lock-in is the enemy, not inequality itself.
     """
+    # Mode routing: health/status return quickly without running full kernel
+    if mode in ("health", "status", "usage"):
+        return {
+            "mcp": "WEALTH",
+            "task": "wealth_inequality_kernel",
+            "mode": mode,
+            "status": "PASS",
+            "domain_verdict": "SEAL",
+            "description": "Inequality Kernel — unified diagnosis across 5 inequality dimensions.",
+            "available_modes": ["analyze", "health", "status"],
+            "usage": (
+                "wealth_inequality_kernel() — analyze with defaults | "
+                "wealth_inequality_kernel(preset='malaysia') — live World Bank data | "
+                "wealth_inequality_kernel(country_code='MYS') — direct ISO code"
+            ),
+        }
     # Live data wire: resolve preset → country_code → WB fetch
     wb_data: Dict[str, Any] = {}
     if preset or country_code:

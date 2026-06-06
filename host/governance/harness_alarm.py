@@ -1,8 +1,12 @@
 import json
+import logging
 import os
 import sys
 from datetime import datetime, timezone
 from typing import Dict, Any
+
+logger = logging.getLogger("wealth.harness_alarm")
+
 
 class HarnessAlarmSystem:
     """
@@ -10,13 +14,16 @@ class HarnessAlarmSystem:
     Detects 'Constraint Snapping' and emits high-priority telemetry to arifOS.
     """
 
-    def __init__(self, vault_path: str = "C:/ariffazil/arifOS/arifosmcp/VAULT999/harness_breaches.jsonl"):
+    def __init__(
+        self,
+        vault_path: str = "/root/arifOS/arifosmcp/VAULT999/harness_breaches.jsonl",
+    ):
         self.vault_path = vault_path
         # Ensure the vault directory exists
         try:
             os.makedirs(os.path.dirname(self.vault_path), exist_ok=True)
         except Exception:
-            # Fail silently if directory creation is blocked, but log to stderr
+            # Fail silently if directory creation is blocked
             pass
 
     def trigger(self, tool_name: str, harness_name: str, detail: Dict[str, Any]) -> Dict[str, Any]:
@@ -28,11 +35,11 @@ class HarnessAlarmSystem:
             "harness": harness_name,
             "tool": tool_name,
             "detail": detail,
-            "message": f"CRITICAL: {harness_name} Harness SNAPPED in {tool_name}."
+            "message": f"CRITICAL: {harness_name} Harness SNAPPED in {tool_name}.",
         }
 
-        # For real-time terminal monitor (simulated)
-        print(f"!!! [HARNESS_ALARM] {event['message']} !!!", file=sys.stderr)
+        # Use structured logging instead of raw print to stderr
+        logger.critical("[HARNESS_ALARM] %s", event["message"], extra={"detail": detail})
 
         try:
             with open(self.vault_path, "a") as f:
@@ -41,6 +48,7 @@ class HarnessAlarmSystem:
             event["error"] = f"Vault write failed: {str(e)}"
 
         return event
+
 
 if __name__ == "__main__":
     # Test trigger
