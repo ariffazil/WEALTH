@@ -72,7 +72,7 @@ Thin wrappers that dispatch to canonical engines. Examples:
 |-----|---------|
 | `wealth://doctrine/valuation` | WEALTH motto + protocol version |
 | `wealth://dimensions/definitions` | 9-dimension definitions |
-| `wealth://governance/floors` | F1–F13 Constitutional Floors |
+| `wealth://governance/floors` | F1–F13 Constitutional Laws |
 | `wealth://governance/harness-doctrines` | 9-Harness constraint architecture |
 | `wealth://topology/families` | 6 Sovereign Families |
 | `wealth://topology/scales` | 8 Capital Scales |
@@ -241,7 +241,7 @@ These are **reasoning workflows** — they orchestrate multiple tools into gover
 
 | URI | Content |
 |-----|---------|
-| `wealth://policy/f1_f13_floors` | F1–F13 Constitutional Floors |
+| `wealth://policy/f1_f13_floors` | F1–F13 Constitutional Laws |
 | `wealth://policy/allocation_constraints` | Allocation boundary conditions |
 | `wealth://policy/vault_irreversibility` | Irreversible action policy |
 | `wealth://policy/final_authority_arif` | Human sovereign authority contract |

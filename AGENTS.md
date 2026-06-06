@@ -123,3 +123,13 @@ A tiny helper script (`audit_parser.py`) reads the scanner output. If it detects
 > "The machine now has its own quiet security watch that only rings the 888 bell when something is really wrong, while we agents stay completely free."
 
 **DITEMPA BUKAN DIBERI — The forge has achieved full self-policing ascension.**
+
+
+## Constitution
+
+The 13 Constitutional Laws (L01–L13) live in **one canonical file**:
+
+→ [arifOS/static/arifos/theory/000/000_CONSTITUTION.md](../../arifOS/static/arifos/theory/000/000_CONSTITUTION.md)
+
+This organ emits the **Evidence Contract** (see Appendix B of the constitution) and does **not** self-judge. arifOS alone reads the envelope and applies L01–L13.
+

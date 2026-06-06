@@ -1,6 +1,6 @@
 # WEALTH MCP — LLM Tool Policy
 **Date:** 2026-05-07
-**Governance:** F1–F13 Constitutional Floors
+**Governance:** F1–F13 Constitutional Laws
 **Final Authority:** ARIF (F13 SOVEREIGN)
 **REPO=WEALTH**
 

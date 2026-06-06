@@ -565,7 +565,7 @@ Institutional Decision Proposed
 
 | LLM Component | arifOS Equivalent | Function |
 |---|---|---|
-| Tokenizer | F1–F13 Constitutional Floors | Cuts raw intent into processable units; determines what is legible and permissible |
+| Tokenizer | F1–F13 Constitutional Laws | Cuts raw intent into processable units; determines what is legible and permissible |
 | Embeddings | G-Score Thermodynamic State (Ω, S) | Places decisions in geometric governance space; proximity = institutional similarity |
 | Transformer | arif_kernel_route (444) + 13-tool pipeline | Self-attention: which floor applies? Which tool is right next? Residual = vault chain continuity |
 | Output Head (linguistic) | arif_reply_compose (444r) | Converts processed state into governed speech — narrates the G-Score diagnosis |

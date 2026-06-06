@@ -55,7 +55,7 @@ WEALTH touches reality through interfaces, not directly.[^1] Current verified co
 | Banking / Markets | ❌ Not confirmed | Current health status: `read_only` |
 | Industrial actuators | ❌ No | WEALTH does not drill wells, execute trades, or launch infrastructure |
 
-### Constitutional Floors (F1–F13) — Always Active
+### Constitutional Laws (F1–F13) — Always Active
 
 Every tool call, every prompt execution, every vault write is governed by these 13 floors.[^2]
 
@@ -332,7 +332,7 @@ These tools bridge WEALTH to real-world sectoral and civilizational signals. The
 
 | URI | Content | Human Benefit |
 |---|---|---|
-| `wealth://policy/f1_f13_floors` | F1–F13 Constitutional Floors full text | "What are the hard rules that govern every WEALTH output?" |
+| `wealth://policy/f1_f13_floors` | F1–F13 Constitutional Laws full text | "What are the hard rules that govern every WEALTH output?" |
 | `wealth://policy/allocation_constraints` | Allocation boundary conditions | "What constraints apply to capital allocation decisions?" |
 | `wealth://policy/vault_irreversibility` | Irreversible action policy | "What actions cannot be undone and require pre-approval?" |
 | `wealth://policy/final_authority_arif` | Human sovereign authority contract | "Confirmation that Arif holds F13 veto over all capital decisions" |
