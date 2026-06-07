@@ -9363,10 +9363,12 @@ def _dispatch_to(
             # asyncio.run() fails inside a running event loop (FastMCP async context).
             # Use a thread executor so we don't nest event loops.
             import concurrent.futures
+
             try:
                 loop = asyncio.get_running_loop()
                 # We are inside a running loop — run coro in a separate thread
                 import threading
+
                 out: list = [None]
                 exc_holder: list = [None]
 
@@ -9656,6 +9658,7 @@ def _invoke_callable(func: Callable[..., Any], payload: Dict[str, Any]) -> Any:
     if inspect.isawaitable(result):
         # asyncio.run() fails inside a running event loop (FastMCP async context).
         import threading
+
         try:
             asyncio.get_running_loop()
             out: list = [None]
@@ -11309,7 +11312,22 @@ async def wealth_system_registry_status(mode: str = "registry") -> dict[str, Any
     snapshot["resource_count"] = len(all_resources)
     snapshot["prompt_count"] = len(all_prompts)
 
-    return snapshot
+    return {
+        "status": "OK",
+        "verdict": "SEAL",
+        "result": snapshot,
+        "federation_geometry": None,
+        "federation_geometry_source": None,
+        "federation_geometry_note": None,
+        "error": None,
+        "reasons": [
+            f"tools={snapshot.get('canonical_tools_count', len(all_tools))}",
+            f"resources={len(all_resources)}",
+            f"prompts={len(all_prompts)}",
+        ],
+        "read_only": True,
+        "final_authority": "ARIF",
+    }
 
 
 # NOTE: wealth_synthesize is now an INTERNAL HELPER called by wealth_omni_wisdom (mode='synthesize').
