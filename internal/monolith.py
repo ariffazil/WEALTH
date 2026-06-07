@@ -15182,6 +15182,7 @@ if __name__ == "__main__":
     app = Starlette(
         routes=[
             Route("/.well-known/mcp.json", mcp_server_card, methods=["GET"]),
+            Route("/.well-known/mcp/server.json", mcp_server_card, methods=["GET"]),
             Route("/mcp", legacy_mcp_handler, methods=["GET", "POST"]),
             Route("/tools", tools_handler, methods=["GET"]),
             Route("/prompts", prompts_handler, methods=["GET"]),
@@ -15231,6 +15232,7 @@ if __name__ == "__main__":
     app = Starlette(
         routes=[
             Route("/.well-known/mcp.json", mcp_server_card, methods=["GET"]),
+            Route("/.well-known/mcp/server.json", mcp_server_card, methods=["GET"]),
             Route("/mcp", legacy_mcp_handler, methods=["GET", "POST"]),
             Route("/tools", tools_handler, methods=["GET"]),
             Route("/prompts", prompts_handler, methods=["GET"]),
