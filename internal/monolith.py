@@ -2011,7 +2011,13 @@ def present_value_breakdown(
 
 def validate_series(initial_investment: float, cash_flows: List[float]) -> List[str]:
     flags: List[str] = []
-    if not math.isfinite(initial_investment) or initial_investment == 0:
+    # EUREKA FIX 2026-06-08: 0 initial_investment is now VALID.
+    # Prior code: `or initial_investment == 0` — blocked life-decision NPVs
+    # (STAY at job, take sabbatical, switch career) where there is no
+    # upfront capital commitment. Only flag NaN/Inf and negative values.
+    # Negative initial_investment would be silently abs()'d by
+    # build_cashflow_series, masking "signing bonus" semantics — still invalid.
+    if not math.isfinite(initial_investment) or initial_investment < 0:
         flags.append("INVALID_INITIAL_INVESTMENT")
     if (
         not isinstance(cash_flows, list)
@@ -2866,11 +2872,19 @@ def measurement_pi(
         > 1
     ):
         flags.append("NON_NORMAL_FLOWS")
-    pi = (
-        None
-        if npv_measure["pv_inflows"] is None
-        else npv_measure["pv_inflows"] / abs(initial_investment)
-    )
+    # EUREKA FIX 2026-06-08: PI is undefined when initial_investment is 0
+    # (no capital was committed — you can't compute "value per unit capital
+    # committed" if no capital was committed). Return None + flag instead
+    # of dividing by zero. This makes life decisions (STAY at job, take
+    # sabbatical, etc.) work end-to-end through the deal sub-engine.
+    pi = None
+    if npv_measure["pv_inflows"] is None:
+        pi = None
+    elif abs(initial_investment) < 1e-9:
+        pi = None
+        flags.append("PI_UNDEFINED_NO_INVESTMENT")
+    else:
+        pi = npv_measure["pv_inflows"] / abs(initial_investment)
     return {
         "pi": round_value(pi, 8) if pi is not None else None,
         "pv_inflows": npv_measure["pv_inflows"],
@@ -7661,6 +7675,41 @@ async def wealth_institutional_entropy_scorer(
     nhi = matrix.narrative_hypertrophy_index
     latency = matrix.reporting_latency_delta_days
 
+    return _institutional_thermometer(
+        epi=epi,
+        prr_slope=prr_slope,
+        prod_growth=prod_growth,
+        nhi=nhi,
+        latency=latency,
+    )
+
+
+def _institutional_thermometer(
+    epi: float,
+    prr_slope: float,
+    prod_growth: float,
+    nhi: float,
+    latency: float,
+) -> Dict[str, Any]:
+    """EUREKA FORGE 2026-06-08: Sync core of E1 Institutional Thermometer.
+
+    Acemoglu + Calhoun institutional audit. Pure math, no IO, no async.
+    Reused by both wealth_institutional_entropy_scorer (Pydantic input) and
+    wealth_entropy_risk(mode='institutional', mode_params={...}) (dict input
+    from the public surface, e.g. PETRONAS-vs-PETROS employer comparison).
+
+    Inputs:
+      epi         — Extractive Pressure Index. 0.0 (reinvests all) to 1.0+ (extracts > produces).
+                    Akemoglu EPI ≈ Total Dividends / (Net Profit + OCF).
+      prr_slope   — 3-year slope of Capex/EBITDA. Negative = under-reinvestment.
+      prod_growth — YoY % change in physical output. Negative = decline.
+      nhi         — Narrative Hypertrophy Index, 0-100+. Word-count/engineering-capex ratio.
+      latency     — Reporting latency delta in days. 0 = timely, +90 = quarterly→half-year.
+
+    Returns:
+      systemic_entropy_delta, classification {institutional_regime, executive_node_archetype},
+      evaluation_metrics {extractive_coefficient, behavioral_sink_coefficient}, verdict
+    """
     # 2. Calculate Parametric Component Scores
     # Base Acemoglu Extraction Coefficient (0.0 to 1.0 bounded range)
     c_acemoglu = min(1.0, epi * 0.5)
@@ -10117,6 +10166,28 @@ def wealth_entropy_risk(
             scale_mode=_mp.get("scale_mode", scale_mode),
         )
     if mode == "institutional":
+        # EUREKA FORGE 2026-06-08: F3 Institutional Thermometer.
+        # If the caller passes the 5 institutional fields (EPI, PRR slope,
+        # production growth, NHI, reporting latency), route to the real
+        # Acemoglu+Calhoun math in _institutional_thermometer. Otherwise
+        # fall back to the financial-statement audit (legacy path).
+        if any(
+            k in _mp
+            for k in (
+                "extractive_pressure_index",
+                "physical_reinvestment_ratio_slope",
+                "production_growth_rate",
+                "narrative_hypertrophy_index",
+                "reporting_latency_delta_days",
+            )
+        ):
+            return _institutional_thermometer(
+                epi=_mp.get("extractive_pressure_index", 0.0),
+                prr_slope=_mp.get("physical_reinvestment_ratio_slope", 0.0),
+                prod_growth=_mp.get("production_growth_rate", 0.0),
+                nhi=_mp.get("narrative_hypertrophy_index", 0.0),
+                latency=_mp.get("reporting_latency_delta_days", 0),
+            )
         return wealth_entropy_audit(
             revenue_trend_yoy=_mp.get("revenue_trend_yoy", 0.0),
             ebitda_trend_yoy=_mp.get("ebitda_trend_yoy", 0.0),
@@ -12611,11 +12682,37 @@ async def wealth_omni_wisdom(
         },
         "deal": {
             "omega_verdict": "Ω-DEAL-00",
-            "deal_score": deal.get("npv", 0.0) if deal_ok else 0.0,
+            # EUREKA FIX 2026-06-08: deal_frame nests NPV under "valuation" dict.
+            # Prior code: deal.get("npv", 0.0) — always returned 0.0 (wrong key path).
+            # Correct path: deal["valuation"]["npv"]. Also surface IRR/payback/PI
+            # so the agent sees the full deal thermodynamics, not just NPV.
+            "deal_score": deal.get("valuation", {}).get("npv", 0.0) if deal_ok else 0.0,
+            "deal_irr_pct": deal.get("valuation", {}).get("irr_pct", 0.0)
+            if deal_ok
+            else 0.0,
+            "deal_payback_years": deal.get("valuation", {}).get("payback_years", 0)
+            if deal_ok
+            else 0,
+            "deal_profitability_index": deal.get("valuation", {}).get(
+                "profitability_index", 0.0
+            )
+            if deal_ok
+            else 0.0,
             "structure_verdict": deal.get("classification", "ERROR")
             if deal_ok
             else "ERROR",
+            "recommendation": deal.get("recommendation", "HOLD") if deal_ok else "HOLD",
+            "viability_score": deal.get("viability_score", "?") if deal_ok else "?",
+            "stress_label": deal.get("stress_label", "") if deal_ok else "",
             "risk_flags": deal.get("risk_flags", []) if deal_ok else [],
+            "boundary_passed": deal.get("boundary_check", {}).get("passed", None)
+            if deal_ok
+            else None,
+            "floors_triggered": deal.get("boundary_check", {}).get(
+                "floors_triggered", []
+            )
+            if deal_ok
+            else [],
         },
         "hysteresis": {
             "omega_path": "Ω-WEALTH-12",
