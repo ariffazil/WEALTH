@@ -112,9 +112,10 @@ def test_registry_status_matches_runtime_surface():
     # DEGRADED_EXTERNAL_CACHE is expected: 5 L3 PHOENIX-73F tools are declared
     # in WEALTH_PUBLIC_TOOL_ORDER but not yet registered with FastMCP.
     # This is intentional — surface < intended until PHOENIX-73F is resolved.
-    assert payload["registry_truth"] in {"PASS", "DEGRADED_EXTERNAL_CACHE"}
-    assert payload["intended_public_tools"] == len(_PUBLIC_TOOLS)
-    assert payload["registered_public_tools"] <= len(_PUBLIC_TOOLS)
+    result = payload["result"]
+    assert result["registry_truth"] in {"PASS", "DEGRADED_EXTERNAL_CACHE"}
+    assert result["intended_public_tools"] == len(_PUBLIC_TOOLS)
+    assert result["registered_public_tools"] <= len(_PUBLIC_TOOLS)
 
 
 def test_cache_age_is_unknown_when_no_cache_file_exists(tmp_path):
