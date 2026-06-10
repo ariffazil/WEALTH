@@ -1,0 +1,33 @@
+name: "Copilot Setup Steps — WEALTH"
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    name: "WEALTH — Pre-install capital intelligence dependencies"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install Python dependencies
+        run: pip install -e ".[dev]" -q
+      - name: Verify WEALTH server loads
+        run: python3 -c "import internal.monolith; print('[PASS] WEALTH monolith loaded')"
+        env:
+          ARIFOS_ENV: ci
+      - name: Run smoke tests
+        run: python3 -m pytest tests/ -q --tb=short -x || true
+        env:
+          ARIFOS_ENV: ci
