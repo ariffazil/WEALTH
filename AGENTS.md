@@ -1,8 +1,8 @@
 <!-- SOT-MANIFEST
 owner: Arif
-last_verified: 2026-05-26
-valid_from: 2026-05-26
-valid_until: 2026-06-26
+last_verified: 2026-06-10
+valid_from: 2026-06-10
+valid_until: 2026-07-10
 confidence: high
 scope: /root/WEALTH
 -->
@@ -24,7 +24,7 @@ Arif. This is the **WEALTH** organ of the arifOS federation — Resource Intelli
 
 The canonical capital engine. It models conservation, flow, gradient, entropy, energy, time, inertia, field, signal, game, boundary, and hysteresis as thermodynamic invariants over financial and resource systems.
 
-**48 MCP tools** across 13 primitives × modes. Dual runtime: Python (canonical) + Node.js (legacy).
+**20 public MCP tools** across kernel, physics organs, specialists, survival, personal finance, market data, and stock analysis. Dual runtime: Python (canonical) + Node.js (legacy). 34 hidden alias tools.
 
 ## Authority & Autonomy
 
@@ -61,10 +61,16 @@ docker build -t wealth .
 
 | Path | Purpose |
 |------|---------|
-| `internal/monolith.py` | Canonical kernel — 48 MCP tools (~10,152 lines) |
+| `internal/monolith.py` | Canonical kernel — 20 public MCP tools (~16,000 lines) |
+| `internal/stock/` | D4 Stock Analysis — 12-mode capital-risk governance (verify_math, pre_trade, fundamentals, TAC-9, contrast, confluence) |
+| `internal/market_data.py` | D3 Market Data — FX rates, commodities, macro indicators |
+| `internal/personal_finance.py` | D1 Personal Finance — cashflow, net worth, EPF, zakat |
+| `internal/db_schema.py` | PostgreSQL schema — transactions, assets, trades, positions, watchlist |
+| `internal/engines/` | Advisory boundary, five seals, canonical tools |
 | `mcp/server.py` | Cross-domain demo surface (6 tools) |
 | `host/` | Modular Python libraries (coordination, epistemic, governance, ingest, kernel, wealth) |
 | `src/` | Legacy JS/Node kernel |
+| `capitalx/` | Constitutional capital pricing engine (Node.js) |
 | `civilizational/` | JS boundary monitors |
 | `canon/` | Constitutional specs |
 

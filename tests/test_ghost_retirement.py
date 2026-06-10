@@ -60,7 +60,7 @@ CANONICAL_REPLACEMENT = "wealth_omni_wisdom"
 # epf, zakat, health_check, ledger_query, ledger_write, entropy_audit, preference_rank
 # all absorbed as modes into personal_finance, conservation_capital,
 # system_registry_status, entropy_risk, game_coordination) = 19
-REQUIRED_SURFACE_COUNT = 19
+REQUIRED_SURFACE_COUNT = 20  # +1: wealth_stock_analysis (D4 Stock Analysis, 2026-06-10)
 
 
 def get_runtime_tools():

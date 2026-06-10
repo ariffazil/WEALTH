@@ -458,3 +458,24 @@ tools:
     runtime_surface: internal/monolith.py
     tests_present: true
     status: sealed
+
+  wealth_stock_analysis:
+    category: stock
+    owner_repo: ariffazil/wealth
+    runtime_surface: internal/monolith.py + internal/stock/
+    tests_present: true
+    status: sealed
+    modes:
+      - verify_math
+      - separate_pl
+      - position_size
+      - r_multiple
+      - exposure
+      - bursa_cost
+      - tamak_check
+      - pre_trade
+      - fundamentals
+      - tac9
+      - contrast
+      - confluence
+    note: "Unified mode-routed stock analysis tool. 12 modes. Forged 2026-06-10. Advisory only. Not buy/sell."
