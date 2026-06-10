@@ -135,6 +135,76 @@ CREATE TABLE IF NOT EXISTS wealth.zakat_records (
 );
 
 CREATE INDEX IF NOT EXISTS idx_zakat_owner_year ON wealth.zakat_records(owner, year);
+
+-- ═══════════════════════════════════════════════════════════════════════
+-- D4 — Stock Analysis Tables
+-- ═══════════════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS wealth.trades (
+    id              BIGSERIAL PRIMARY KEY,
+    owner           TEXT        NOT NULL DEFAULT 'arif',
+    ticker          TEXT        NOT NULL,
+    entry_date      DATE        NOT NULL,
+    entry_price     NUMERIC(12, 4) NOT NULL,
+    exit_date       DATE,
+    exit_price      NUMERIC(12, 4),
+    current_price   NUMERIC(12, 4),
+    position_size   INTEGER     NOT NULL DEFAULT 0,
+    fees            NUMERIC(12, 4) DEFAULT 0,
+    status          TEXT        NOT NULL DEFAULT 'unrealized',  -- realized | unrealized
+    stop_loss       NUMERIC(12, 4),
+    target_price    NUMERIC(12, 4),
+    direction       TEXT        NOT NULL DEFAULT 'long',       -- long | short
+    strategy        TEXT,
+    reason_entry    TEXT,
+    reason_exit     TEXT,
+    emotion         TEXT,
+    notes           TEXT,
+    metadata        JSONB       DEFAULT '{}',
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_trades_owner_ticker  ON wealth.trades(owner, ticker);
+CREATE INDEX IF NOT EXISTS idx_trades_status        ON wealth.trades(owner, status);
+CREATE INDEX IF NOT EXISTS idx_trades_entry_date    ON wealth.trades(owner, entry_date DESC);
+
+CREATE TABLE IF NOT EXISTS wealth.positions (
+    id              BIGSERIAL PRIMARY KEY,
+    owner           TEXT        NOT NULL DEFAULT 'arif',
+    ticker          TEXT        NOT NULL,
+    entry_price     NUMERIC(12, 4) NOT NULL,
+    current_price   NUMERIC(12, 4) NOT NULL,
+    position_size   INTEGER     NOT NULL DEFAULT 0,
+    stop_loss       NUMERIC(12, 4),
+    target_price    NUMERIC(12, 4),
+    direction       TEXT        NOT NULL DEFAULT 'long',
+    sector          TEXT        DEFAULT 'Unknown',
+    unrealized_pl_rm   NUMERIC(16, 4) DEFAULT 0,
+    unrealized_pl_pct  NUMERIC(8, 4) DEFAULT 0,
+    position_value_rm  NUMERIC(16, 4) GENERATED ALWAYS AS (current_price * position_size) STORED,
+    stop_loss_distance_pct NUMERIC(8, 4) DEFAULT 5.0,
+    metadata        JSONB       DEFAULT '{}',
+    updated_at      TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(owner, ticker)
+);
+
+CREATE INDEX IF NOT EXISTS idx_positions_owner  ON wealth.positions(owner);
+CREATE INDEX IF NOT EXISTS idx_positions_sector ON wealth.positions(owner, sector);
+
+CREATE TABLE IF NOT EXISTS wealth.watchlist (
+    id              BIGSERIAL PRIMARY KEY,
+    owner           TEXT        NOT NULL DEFAULT 'arif',
+    ticker          TEXT        NOT NULL,
+    notes           TEXT,
+    fundamental_score   NUMERIC(4, 3),  -- 0.000 to 1.000
+    tac9_score      INTEGER,            -- 0 to 9
+    added_at        TIMESTAMPTZ DEFAULT NOW(),
+    last_reviewed_at TIMESTAMPTZ,
+    UNIQUE(owner, ticker)
+);
+
+CREATE INDEX IF NOT EXISTS idx_watchlist_owner ON wealth.watchlist(owner);
 """
 
 
