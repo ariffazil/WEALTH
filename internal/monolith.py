@@ -86,6 +86,42 @@ except Exception:
 # db_schema is a pure utility — no FastMCP coupling.
 # --------------------------------------------------------------------------- #
 
+# D4 Stock Analysis — imported from internal/stock/
+# All 12 stock tools exposed through one unified mode-based tool.
+# Import happens at module level for tool registration.
+# --------------------------------------------------------------------------- #
+try:
+    from internal.stock import (
+        verify_trade_math,
+        separate_realized_unrealized,
+        calculate_position_size,
+        calculate_r_multiple,
+        check_portfolio_exposure,
+        apply_bursa_cost_model,
+        detect_tamak_behavior,
+        pre_trade_gate,
+        check_fundamental_invariants,
+        run_tac9_engine,
+        detect_anomalous_contrast,
+        detect_false_confluence,
+    )
+
+    _WEALTH_STOCK_AVAILABLE = True
+except ImportError:
+    _WEALTH_STOCK_AVAILABLE = False
+    verify_trade_math = None  # type: ignore
+    separate_realized_unrealized = None  # type: ignore
+    calculate_position_size = None  # type: ignore
+    calculate_r_multiple = None  # type: ignore
+    check_portfolio_exposure = None  # type: ignore
+    apply_bursa_cost_model = None  # type: ignore
+    detect_tamak_behavior = None  # type: ignore
+    pre_trade_gate = None  # type: ignore
+    check_fundamental_invariants = None  # type: ignore
+    run_tac9_engine = None  # type: ignore
+    detect_anomalous_contrast = None  # type: ignore
+    detect_false_confluence = None  # type: ignore
+
 
 # Lazy helpers for async DB operations (import at call time to avoid top-level asyncio)
 async def _init_db_schema():
@@ -1566,6 +1602,358 @@ def wealth_market_data(
 # Remove lazy-load approach (tools now inline above)
 # --------------------------------------------------------------------------- #
 
+# ═══════════════════════════════════════════════════════════════════════════
+# D4 — STOCK ANALYSIS (12 modes, one tool)
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+@mcp.tool(name="wealth_stock_analysis", task=True)
+async def wealth_stock_analysis(
+    mode: str = "verify_math",
+    # ── Common params ──
+    ticker: str = "",
+    # ── verify_math params ──
+    entry_price: float = 0.0,
+    exit_price: Optional[float] = None,
+    current_price: Optional[float] = None,
+    position_size: int = 0,
+    fees: float = 0.0,
+    direction: str = "long",
+    status: str = "unrealized",
+    journal_pnl: Optional[float] = None,
+    journal_pnl_pct: Optional[float] = None,
+    # ── separate_pl params ──
+    trades: Optional[List[Dict[str, Any]]] = None,
+    # ── position_size params ──
+    account_balance: float = 0.0,
+    stop_loss: float = 0.0,
+    risk_per_trade_pct: float = 1.0,
+    # ── r_multiple params ──
+    target_price: float = 0.0,
+    # ── exposure params ──
+    positions: Optional[List[Dict[str, Any]]] = None,
+    # ── bursa_cost params ──
+    exit_price_bursa: float = 0.0,
+    # ── tamak params ──
+    recent_trades: Optional[List[Dict[str, Any]]] = None,
+    current_open_positions: int = 0,
+    recent_streak: str = "neutral",
+    recent_size_trend: str = "stable",
+    stop_loss_moved_lower: bool = False,
+    averaging_down: bool = False,
+    revenge_pattern: bool = False,
+    chasing_call: bool = False,
+    position_count: int = 0,
+    max_recommended: int = 5,
+    # ── pre_trade params ──
+    has_stop_loss: bool = False,
+    has_position_size: bool = False,
+    r_multiple: float = 0.0,
+    liquidity_adequate: bool = False,
+    sector_exposure_ok: bool = False,
+    market_regime: str = "neutral",
+    fundamental_check_passed: bool = False,
+    emotional_trigger: bool = False,
+    reason_for_trade: str = "",
+    # ── fundamentals params ──
+    operating_cash_flow: Optional[float] = None,
+    free_cash_flow: Optional[float] = None,
+    cash_conversion: Optional[float] = None,
+    cash: Optional[float] = None,
+    total_debt: Optional[float] = None,
+    current_ratio: Optional[float] = None,
+    interest_coverage: Optional[float] = None,
+    debt_maturity_years: Optional[float] = None,
+    gross_margin: Optional[float] = None,
+    operating_margin: Optional[float] = None,
+    net_margin: Optional[float] = None,
+    margin_trend: str = "stable",
+    roic: Optional[float] = None,
+    roe: Optional[float] = None,
+    revenue_growth: Optional[float] = None,
+    fcf_growth: Optional[float] = None,
+    organic_growth: bool = True,
+    debt_funded_growth: bool = False,
+    shares_outstanding_m: Optional[float] = None,
+    dilution_rate: Optional[float] = None,
+    has_warrants: bool = False,
+    has_convertibles: bool = False,
+    has_esos: bool = False,
+    pe_ratio: Optional[float] = None,
+    pb_ratio: Optional[float] = None,
+    ev_ebitda: Optional[float] = None,
+    fcf_yield: Optional[float] = None,
+    has_moat: bool = False,
+    pricing_power: bool = False,
+    recurring_revenue: bool = False,
+    related_party_txns: bool = False,
+    insider_selling: bool = False,
+    audit_issues: bool = False,
+    pledged_shares_pct: Optional[float] = None,
+    # ── TAC-9 params ──
+    benchmark_trend: str = "neutral",
+    sector_trend: str = "neutral",
+    market_breadth: str = "neutral",
+    volatility_regime: str = "normal",
+    risk_state: str = "neutral",
+    stock_return_3m: Optional[float] = None,
+    sector_return_3m: Optional[float] = None,
+    stock_vs_klci: Optional[float] = None,
+    rs_3m: Optional[float] = None,
+    rs_6m: Optional[float] = None,
+    price_above_50ma: bool = False,
+    ma50_above_ma200: bool = False,
+    higher_highs: bool = False,
+    higher_lows: bool = False,
+    support_holding: bool = False,
+    breakout_volume: str = "unknown",
+    up_volume_ratio: Optional[float] = None,
+    accumulation: str = "neutral",
+    avg_daily_value_rm: Optional[float] = None,
+    position_value_rm: Optional[float] = None,
+    bid_ask_spread_pct: Optional[float] = None,
+    gap_frequency: str = "low",
+    atr_pct: Optional[float] = None,
+    bb_width: Optional[str] = None,
+    volume_dry_up: bool = False,
+    support_level: Optional[float] = None,
+    resistance_level: Optional[float] = None,
+    invalidation_level: Optional[float] = None,
+    breakout_retest: bool = False,
+    entry: Optional[float] = None,
+    stop: Optional[float] = None,
+    target: Optional[float] = None,
+    rsi_value: Optional[float] = None,
+    macd_signal: str = "neutral",
+    sar_position: str = "neutral",
+    # ── contrast params ──
+    fundamental_score: Optional[float] = None,
+    earnings_growth: Optional[float] = None,
+    price_trend_3m: Optional[float] = None,
+    price_trend_6m: Optional[float] = None,
+    volume_trend: str = "normal",
+    volatility_trend: str = "normal",
+    sector_rotation: str = "neutral",
+    liquidity_quality: str = "normal",
+    spread: Optional[float] = None,
+    valuation_zone: str = "fair",
+    sentiment: str = "neutral",
+    # ── confluence params ──
+    indicators: Optional[Dict[str, str]] = None,
+) -> dict:
+    """D4 Stock Analysis — unified capital-risk and stock governance layer.
+
+    Modes (12 total):
+      verify_math     — Recalculate P/L, detect AI number hallucination
+      separate_pl     — Separate realized vs unrealized P/L
+      position_size   — Risk-based position sizing (max 1% risk)
+      r_multiple      — Risk-reward geometry (R = reward / risk)
+      exposure        — Portfolio exposure and gap-down scenarios
+      bursa_cost      — Bursa Malaysia transaction cost model
+      tamak_check     — Detect greed/emotional behavior patterns
+      pre_trade       — Full pre-trade safety gate (9 checks)
+      fundamentals    — 9 business reality invariants
+      tac9            — TAC-9 technical analysis (regime → structure → R)
+      contrast        — Anomalous contrast detection (market layer disagreement)
+      confluence      — False confluence detection (same-class indicator collapse)
+
+    NOT: buy/sell oracle. NOT: trading coach. NOT: stock promoter.
+    Verdicts: SAFE_TO_STUDY | NEEDS_DATA | UNSAFE | 888_HOLD | MATH_ERROR
+    Authority: WEALTH computes. arifOS judges. Arif decides.
+    """
+    if not _WEALTH_STOCK_AVAILABLE:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "WEALTH Stock module not available"},
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+
+    # ── Mode dispatch ──
+    if mode == "verify_math":
+        r = verify_trade_math(
+            ticker=ticker,
+            entry_price=entry_price,
+            exit_price=exit_price,
+            current_price=current_price,
+            position_size=position_size,
+            fees=fees,
+            direction=direction,
+            status=status,
+            journal_pnl=journal_pnl,
+            journal_pnl_pct=journal_pnl_pct,
+        )
+    elif mode == "separate_pl":
+        r = separate_realized_unrealized(trades=trades)
+    elif mode == "position_size":
+        r = calculate_position_size(
+            account_balance=account_balance,
+            entry_price=entry_price,
+            stop_loss=stop_loss,
+            risk_per_trade_pct=risk_per_trade_pct,
+        )
+    elif mode == "r_multiple":
+        r = calculate_r_multiple(
+            entry_price=entry_price,
+            stop_loss=stop_loss,
+            target_price=target_price,
+            direction=direction,
+        )
+    elif mode == "exposure":
+        r = check_portfolio_exposure(
+            positions=positions,
+            account_balance=account_balance,
+        )
+    elif mode == "bursa_cost":
+        r = apply_bursa_cost_model(
+            entry_price=entry_price,
+            exit_price=exit_price_bursa or exit_price or 0,
+            position_size=position_size,
+            direction=direction,
+        )
+    elif mode == "tamak_check":
+        r = detect_tamak_behavior(
+            recent_trades=recent_trades,
+            current_open_positions=current_open_positions,
+            recent_streak=recent_streak,
+            recent_size_trend=recent_size_trend,
+            stop_loss_moved_lower=stop_loss_moved_lower,
+            averaging_down=averaging_down,
+            revenge_pattern=revenge_pattern,
+            chasing_call=chasing_call,
+            position_count=position_count,
+            max_recommended=max_recommended,
+        )
+    elif mode == "pre_trade":
+        r = pre_trade_gate(
+            ticker=ticker,
+            has_stop_loss=has_stop_loss,
+            has_position_size=has_position_size,
+            position_size=position_size,
+            risk_per_trade_pct=risk_per_trade_pct,
+            r_multiple=r_multiple,
+            liquidity_adequate=liquidity_adequate,
+            sector_exposure_ok=sector_exposure_ok,
+            market_regime=market_regime,
+            fundamental_check_passed=fundamental_check_passed,
+            emotional_trigger=emotional_trigger,
+            reason_for_trade=reason_for_trade,
+        )
+    elif mode == "fundamentals":
+        r = check_fundamental_invariants(
+            ticker=ticker,
+            operating_cash_flow=operating_cash_flow,
+            free_cash_flow=free_cash_flow,
+            cash_conversion=cash_conversion,
+            cash=cash,
+            total_debt=total_debt,
+            current_ratio=current_ratio,
+            interest_coverage=interest_coverage,
+            debt_maturity_years=debt_maturity_years,
+            gross_margin=gross_margin,
+            operating_margin=operating_margin,
+            net_margin=net_margin,
+            margin_trend=margin_trend,
+            roic=roic,
+            roe=roe,
+            revenue_growth=revenue_growth,
+            fcf_growth=fcf_growth,
+            organic_growth=organic_growth,
+            debt_funded_growth=debt_funded_growth,
+            shares_outstanding_m=shares_outstanding_m,
+            dilution_rate=dilution_rate,
+            has_warrants=has_warrants,
+            has_convertibles=has_convertibles,
+            has_esos=has_esos,
+            pe_ratio=pe_ratio,
+            pb_ratio=pb_ratio,
+            ev_ebitda=ev_ebitda,
+            fcf_yield=fcf_yield,
+            has_moat=has_moat,
+            pricing_power=pricing_power,
+            recurring_revenue=recurring_revenue,
+            related_party_txns=related_party_txns,
+            insider_selling=insider_selling,
+            audit_issues=audit_issues,
+            pledged_shares_pct=pledged_shares_pct,
+        )
+    elif mode == "tac9":
+        r = run_tac9_engine(
+            ticker=ticker,
+            benchmark_trend=benchmark_trend,
+            sector_trend=sector_trend,
+            market_breadth=market_breadth,
+            volatility_regime=volatility_regime,
+            risk_state=risk_state,
+            stock_return_3m=stock_return_3m,
+            sector_return_3m=sector_return_3m,
+            stock_vs_klci=stock_vs_klci,
+            rs_3m=rs_3m,
+            rs_6m=rs_6m,
+            price_above_50ma=price_above_50ma,
+            ma50_above_ma200=ma50_above_ma200,
+            higher_highs=higher_highs,
+            higher_lows=higher_lows,
+            support_holding=support_holding,
+            breakout_volume=breakout_volume,
+            up_volume_ratio=up_volume_ratio,
+            accumulation=accumulation,
+            avg_daily_value_rm=avg_daily_value_rm,
+            position_value_rm=position_value_rm,
+            bid_ask_spread_pct=bid_ask_spread_pct,
+            gap_frequency=gap_frequency,
+            atr_pct=atr_pct,
+            bb_width=bb_width,
+            volume_dry_up=volume_dry_up,
+            support_level=support_level,
+            resistance_level=resistance_level,
+            invalidation_level=invalidation_level,
+            breakout_retest=breakout_retest,
+            entry=entry,
+            stop=stop,
+            target=target,
+            r_multiple=r_multiple,
+            rsi_value=rsi_value,
+            macd_signal=macd_signal,
+            sar_position=sar_position,
+        )
+    elif mode == "contrast":
+        r = detect_anomalous_contrast(
+            ticker=ticker,
+            fundamental_score=fundamental_score,
+            revenue_growth=revenue_growth,
+            earnings_growth=earnings_growth,
+            price_trend_3m=price_trend_3m,
+            price_trend_6m=price_trend_6m,
+            volume_trend=volume_trend,
+            accumulation=accumulation,
+            volatility_trend=volatility_trend,
+            atr_pct=atr_pct,
+            sector_trend=sector_trend,
+            sector_rotation=sector_rotation,
+            liquidity_quality=liquidity_quality,
+            spread=spread,
+            valuation_zone=valuation_zone,
+            sentiment=sentiment,
+        )
+    elif mode == "confluence":
+        r = detect_false_confluence(ticker=ticker, indicators=indicators)
+    else:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {
+                "error": f"Unknown mode: {mode}. Use: verify_math | separate_pl | position_size | r_multiple | exposure | bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence"
+            },
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    r["tool"] = "wealth_stock_analysis"
+    r["mode"] = mode
+    return r
+
+
 # --- Registry Lockdown Logic (Phase 1) ---
 # Generic agents should only see: health -> registry -> synthesize -> canonical organ -> specialist.
 # This whitelist defines the public L0, L1, and L2 surface. All other tools (including 34 aliases)
@@ -1596,6 +1984,8 @@ PUBLIC_SURFACE_WHITELIST = {
     "wealth_personal_finance",
     # D3 — Market Data
     "wealth_market_data",
+    # D4 — Stock Analysis (12 modes in one tool)
+    "wealth_stock_analysis",
     # NOTE: wealth_health_check → wealth_system_registry_status(mode="health")
     # NOTE: wealth_epf_project + wealth_zakat_calculate → wealth_personal_finance (mode="epf"/"zakat")
     # NOTE: wealth_ledger_query + wealth_ledger_write → wealth_conservation_capital (mode="ledger_read"/"ledger_seal")
@@ -1623,6 +2013,11 @@ PUBLIC_RESOURCE_WHITELIST = {
     "wealth://schemas/capital-case",
     "wealth://schemas/sovereign-deal",
     "wealth://playbooks/project-appraisal",
+    # D4 — Stock Analysis Resources
+    "wealth://journal/trading_records",
+    "wealth://market/prices",
+    "wealth://fundamentals/company_snapshot",
+    "wealth://rules/risk_policy",
 }
 
 PUBLIC_PROMPT_WHITELIST = {
@@ -1634,6 +2029,9 @@ PUBLIC_PROMPT_WHITELIST = {
     "wealth_prompt_governance_redteam",
     "wealth_diagnose_portfolio",
     "wealth_opportunity_ranking",
+    # D4 — Stock Analysis Prompts
+    "wealth_prompt_stock_risk_auditor",
+    "wealth_prompt_stock_diagnosis",
 }
 
 _original_mcp_tool = mcp.tool
@@ -9361,6 +9759,270 @@ Output: Five Seals, wealth_verdict, recommended_mode, next_action
 End with: PROCEED_TO_JUDGE | HOLD | NEED_MORE_EVIDENCE"""
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# D4 — STOCK ANALYSIS RESOURCES
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+@mcp.resource("wealth://journal/trading_records")
+def get_trading_journal_schema() -> str:
+    """Trading journal schema — minimum fields for honest trade tracking."""
+    return json.dumps(
+        {
+            "resource": "wealth://journal/trading_records",
+            "description": "Trading journal record schema for Bursa Malaysia stock trades",
+            "schema": {
+                "date": "YYYY-MM-DD — trade entry date",
+                "ticker": "string — stock code (e.g., MI, TENAGA, MAYBANK)",
+                "entry_price": "float — price per share at entry",
+                "exit_price": "float — price per share at exit (null if unrealized)",
+                "current_price": "float — latest market price (for unrealized positions)",
+                "position_size": "integer — number of shares",
+                "fees": "float — total transaction costs in MYR",
+                "status": "realized | unrealized",
+                "stop_loss": "float — invalidation price",
+                "target_price": "float — profit target",
+                "strategy": "string — what approach was used",
+                "reason_for_entry": "string — why this trade was taken",
+                "reason_for_exit": "string — why this trade was closed",
+                "emotion": "string — emotional state at entry",
+                "notes": "string — any additional context",
+            },
+            "hard_rules": [
+                "Never record a trade without stop_loss",
+                "Never record a trade without position_size",
+                "Never mix realized and unrealized P/L in summary",
+                "Always include fees in P/L calculation",
+            ],
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        },
+        indent=2,
+    )
+
+
+@mcp.resource("wealth://market/prices")
+def get_market_prices_schema() -> str:
+    """Stock market price data schema."""
+    return json.dumps(
+        {
+            "resource": "wealth://market/prices",
+            "description": "Stock OHLCV market data schema for Bursa Malaysia",
+            "schema": {
+                "ticker": "string — stock code",
+                "date": "YYYY-MM-DD — trading date",
+                "open": "float — opening price",
+                "high": "float — highest price",
+                "low": "float — lowest price",
+                "close": "float — closing price",
+                "volume": "integer — number of shares traded",
+                "value_rm": "float — total traded value in MYR",
+                "source": "string — data source (e.g., bursa_malaysia, tradingview, yahoo)",
+                "timestamp_utc": "ISO 8601 — when data was fetched",
+            },
+            "data_sources": {
+                "bursa_malaysia": "Bursa Malaysia official — delayed by 15 min for free tier",
+                "tradingview": "TradingView — real-time for MYR 49/month",
+                "yahoo_finance": "Yahoo Finance — free, 15-min delay, Bursa coverage partial",
+            },
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        },
+        indent=2,
+    )
+
+
+@mcp.resource("wealth://fundamentals/company_snapshot")
+def get_company_snapshot_schema() -> str:
+    """Company fundamental data schema."""
+    return json.dumps(
+        {
+            "resource": "wealth://fundamentals/company_snapshot",
+            "description": "9-invariant fundamental analysis schema",
+            "invariants": {
+                "F1_CASH_FLOW": "operating_cash_flow, free_cash_flow, cash_conversion",
+                "F2_BALANCE_SHEET": "cash, total_debt, current_ratio, interest_coverage",
+                "F3_PROFITABILITY": "gross_margin, operating_margin, net_margin, margin_trend",
+                "F4_ROIC": "roic, roe",
+                "F5_GROWTH_QUALITY": "revenue_growth, fcf_growth, organic_growth",
+                "F6_DILUTION": "dilution_rate, warrants, convertibles, ESOS",
+                "F7_VALUATION": "pe_ratio, pb_ratio, ev_ebitda, fcf_yield",
+                "F8_BUSINESS_QUALITY": "moat, pricing_power, recurring_revenue",
+                "F9_GOVERNANCE": "related_party_txns, insider_selling, audit_issues, pledged_shares",
+            },
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        },
+        indent=2,
+    )
+
+
+@mcp.resource("wealth://rules/risk_policy")
+def get_risk_policy() -> str:
+    """Hard risk rules for stock trading."""
+    return json.dumps(
+        {
+            "resource": "wealth://rules/risk_policy",
+            "description": "Non-negotiable risk rules enforced by WEALTH stock tools",
+            "rules": [
+                {
+                    "rule": "MAX_RISK_PER_TRADE",
+                    "value": "1.0% of account balance",
+                    "hard": True,
+                },
+                {
+                    "rule": "MAX_OPEN_EXPOSURE",
+                    "value": "Configurable — default 100% (no leverage)",
+                    "hard": True,
+                },
+                {
+                    "rule": "MAX_SINGLE_POSITION",
+                    "value": "20% of account balance",
+                    "hard": False,
+                },
+                {
+                    "rule": "NO_AVERAGING_DOWN",
+                    "value": "Do not add to losing positions",
+                    "hard": True,
+                },
+                {
+                    "rule": "NO_LEVERAGE",
+                    "value": "No CFD, no margin, no futures for stock analysis",
+                    "hard": True,
+                },
+                {
+                    "rule": "STOP_LOSS_REQUIRED",
+                    "value": "Every trade must have a defined invalidation",
+                    "hard": True,
+                },
+                {
+                    "rule": "POSITION_SIZE_REQUIRED",
+                    "value": "Position must be calculated before entry",
+                    "hard": True,
+                },
+                {
+                    "rule": "NO_REALIZED_UNREALIZED_MIXING",
+                    "value": "Never combine realized and unrealized P/L",
+                    "hard": True,
+                },
+                {
+                    "rule": "FUNDAMENTALS_BEFORE_TECHNICALS",
+                    "value": "Business invariants checked before technicals",
+                    "hard": True,
+                },
+                {
+                    "rule": "TAC9_BEFORE_RSI_MACD",
+                    "value": "TAC-9 primary. RSI/MACD/SAR secondary only",
+                    "hard": True,
+                },
+            ],
+            "forbidden_verdicts": [
+                "BUY",
+                "SELL",
+                "STRONG BUY",
+                "GUARANTEED",
+                "SURE WIN",
+                "PROVEN STRATEGY",
+            ],
+            "allowed_verdicts": [
+                "SAFE_TO_STUDY",
+                "NEEDS_DATA",
+                "UNSAFE",
+                "888_HOLD",
+                "MATH_ERROR",
+            ],
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        },
+        indent=2,
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# D4 — STOCK ANALYSIS PROMPTS
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+@mcp.prompt()
+def wealth_prompt_stock_risk_auditor() -> str:
+    """Full stock audit system prompt — for AI assistants helping with stock analysis."""
+    return """You are WEALTH_STOCK_RISK_AUDITOR — a capital-risk governance layer.
+
+You are NOT a trading coach. You are NOT a stock promoter.
+You are NOT allowed to give buy/sell recommendations.
+
+YOUR PRIORITIES:
+1. Preserve capital.
+2. Verify all arithmetic with tools — never trust a chatbot's math.
+3. Separate facts, assumptions, interpretations, and verdicts.
+4. Separate realized and unrealized P/L.
+5. Reject missing data — say NEEDS_DATA, not a guess.
+6. Detect tamak, hope trades, revenge trades, and overconfidence.
+7. Use fundamentals (9 invariants) before technicals.
+8. Use TAC-9 after fundamentals pass.
+9. Treat RSI, MACD, and Parabolic SAR as secondary only.
+10. End every analysis with: SAFE_TO_STUDY | NEEDS_DATA | UNSAFE | 888_HOLD.
+
+HARD RULES:
+- If position size, stop loss, fees, or timestamp are missing → NEEDS_DATA.
+- If risk exceeds 1% of account → 888_HOLD.
+- If math conflicts with journal → MATH_ERROR.
+- If fundamentals weak and price rising → anomalous contrast detected.
+- If RSI+MACD+SAR all say the same thing → that's 1 signal, not 3.
+
+LANGUAGE:
+- Qwen boleh bantu fikir. Qwen tak boleh kira duit.
+- Free chatbots miscalculate P/L, mix realized/unrealized, ignore fees.
+- WEALTH MCP tools are the only source of deterministic truth.
+
+Human decides. You only audit."""
+
+
+@mcp.prompt()
+def wealth_prompt_stock_diagnosis() -> str:
+    """Stock diagnosis workflow prompt."""
+    return """DIAGNOSE this stock using the following workflow:
+
+STEP 1 — MATH VERIFICATION (mode=verify_math)
+  Recalculate all P/L. If journal differs from computed → MATH ERROR.
+
+STEP 2 — REALIZED VS UNREALIZED (mode=separate_pl)
+  Separate closed profits from open positions. Paper profit ≠ real profit.
+
+STEP 3 — RISK CHECK (mode=position_size, mode=r_multiple, mode=exposure)
+  Position size. R-multiple. Portfolio exposure. Gap-down scenarios.
+
+STEP 4 — BURSA COST CHECK (mode=bursa_cost)
+  Brokerage + clearing + stamp duty + spread + slippage.
+  Small gross winners may be net losers.
+
+STEP 5 — TAMAK CHECK (mode=tamak_check)
+  Green streak → increasing size? Averaging down? Revenge trading?
+  Moving stop lower? Too many open trades?
+
+STEP 6 — FUNDAMENTALS (mode=fundamentals)
+  9 business invariants. Cash flow, debt, margins, ROIC, growth quality,
+  dilution, valuation, moat, governance.
+
+STEP 7 — TAC-9 TECHNICALS (mode=tac9)
+  Regime → Sector → RS → Trend → Volume → Liquidity → Volatility → Structure → R.
+  RSI/MACD/SAR are confirmations only — never primary.
+
+STEP 8 — ANOMALOUS CONTRAST (mode=contrast)
+  Do market layers disagree? Fundamentals vs price. Volume vs price.
+  Sentiment vs fundamentals. Sector vs stock.
+
+STEP 9 — FALSE CONFLUENCE CHECK (mode=confluence)
+  Are your "multiple confirmations" really different signal classes?
+  RSI+MACD+SAR = 1 class, not 3.
+
+STEP 10 — PRE-TRADE GATE (mode=pre_trade)
+  All 9 gates must pass. If not → NEEDS_DATA or UNSAFE.
+
+FINAL VERDICT: SAFE_TO_STUDY | NEEDS_DATA | UNSAFE | 888_HOLD
+Human decides. WEALTH only audits."""
+
+
 # Ω-WEALTH Orthogonal Invariants — Physics × Economics
 # 12 public tools. Everything else is internal alias (callable, hidden).
 # ═══════════════════════════════════════════════════════════════════════
@@ -14066,6 +14728,8 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_personal_finance",
     # D3 — Market Data (merged 2026-06-04)
     "wealth_market_data",
+    # D4 — Stock Analysis
+    "wealth_stock_analysis",
 )
 _PUBLIC_TOOLS = set(WEALTH_PUBLIC_TOOL_ORDER)
 
@@ -14203,6 +14867,13 @@ _TOOL_ANNOTATIONS: dict[str, dict[str, Any]] = {
         "destructiveHint": False,
         "idempotentHint": False,
         "openWorldHint": True,
+    },
+    "wealth_stock_analysis": {
+        "title": "Stock Analysis",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
     },
 }
 

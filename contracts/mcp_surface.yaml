@@ -9,7 +9,7 @@ runtime_surface:
   primary_transport: streamable_http
   primary_port: 18082
   public_domain: https://wealth.arif-fazil.com
-  public_surface_count: 19
+  public_surface_count: 20
   hidden_alias_count: 34
   registry_truth: PASS
 authority:
