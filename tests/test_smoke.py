@@ -217,16 +217,17 @@ def test_hysteresis_ledger_query_emergence():
 
 def test_system_registry_status():
     payload = asyncio.run(wealth_system_registry_status())
+    result = payload.get("result", payload)  # governance envelope nesting (3157a28)
     # PHOENIX-73F: 5 L3 contract tools are known-missing from FastMCP registration.
     # registry_truth is DEGRADED_EXTERNAL_CACHE when surface counts differ but
     # all missing tools are in _KNOWN_MISSING (no unexpected gaps).
     # After MCP reconnect, cache is healthy — accept both states.
-    assert payload["registry_truth"] in {"PASS", "DEGRADED_EXTERNAL_CACHE"}
-    assert payload["intended_public_tools"] == len(_PUBLIC_TOOLS)
+    assert result["registry_truth"] in {"PASS", "DEGRADED_EXTERNAL_CACHE"}
+    assert result["intended_public_tools"] == len(_PUBLIC_TOOLS)
     # registered_public_tools reflects actual runtime registration (may be < intended)
-    assert payload["registered_public_tools"] <= len(_PUBLIC_TOOLS)
-    assert payload["hidden_alias_count"] == len(_ALIAS_DISPATCH)
-    assert payload["final_authority"] == "ARIF"
+    assert result["registered_public_tools"] <= len(_PUBLIC_TOOLS)
+    assert result["hidden_alias_count"] == len(_ALIAS_DISPATCH)
+    assert result["final_authority"] == "ARIF"
 
 
 def test_health_check():
