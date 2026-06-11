@@ -33,8 +33,8 @@ import {
   calculateProfitabilityIndexMeasurement,
   deriveAllocationSignal,
   validateMeasurementInvariants,
-} from "../src/kernel/finance.js";
-import { calculateRiskAdjustedRate } from "../src/kernel/capitalx.js";
+} from "../host/kernel/finance.js";
+import { calculateRiskAdjustedRate } from "../host/kernel/capitalx.js";
 
 test("calculateNpvMeasurement returns NPV and EAA on aligned periods", () => {
   const result = calculateNpvMeasurement({

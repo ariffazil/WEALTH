@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { checkFloors, EPISTEMIC } from '../src/kernel/floors.js';
-import { seal999 } from '../src/kernel/seal.js';
-import { initVault999, appendVault999 } from '../src/kernel/vault999.js';
-import { calculateRiskAdjustedRate, compareCapitalAdvantage } from '../src/kernel/capitalx.js';
-import { computeNetWorth, netWorthDelta } from '../src/wealth/networth.js';
-import { computeCashflow } from '../src/wealth/cashflow.js';
-import { computeMaruahScore } from '../src/wealth/maruah-score.js';
-import { projectCompoundGrowth } from '../src/wealth/projection.js';
+import { checkFloors, EPISTEMIC } from '../host/kernel/floors.js';
+import { seal999 } from '../host/kernel/seal.js';
+import { initVault999, appendVault999 } from '../host/kernel/vault999.js';
+import { calculateRiskAdjustedRate, compareCapitalAdvantage } from '../host/kernel/capitalx.js';
+import { computeNetWorth, netWorthDelta } from '../host/wealth/networth.js';
+import { computeCashflow } from '../host/wealth/cashflow.js';
+import { computeMaruahScore } from '../host/wealth/maruah-score.js';
+import { projectCompoundGrowth } from '../host/wealth/projection.js';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 
