@@ -211,6 +211,85 @@ def test_cashflow_deficit():
     print("✅ test_cashflow_deficit PASS")
 
 
+# ─── Test 8a: REGRESSION — monthly_expenses human-friendly API (2026-06-12) ──
+# Bug: cashflow mode double-negated expenses when using monthly_expenses param.
+# Fix: cashflow_flow() now uses abs() on expense amounts (line 3942).
+
+
+def test_cashflow_monthly_expenses_positive():
+    """monthly_expenses=9500 (positive, human-friendly) → net = income - expenses."""
+    result = asyncio.run(
+        wealth_survival_engine(
+            mode="cashflow",
+            monthly_income=15_000,
+            monthly_expenses=9_500,
+        )
+    )
+    net = get_net_monthly(result)
+    primary = result.get("primary_metrics", result)
+
+    assert net == 5500.0, (
+        f"REGRESSION: net_monthly should be 5500 (15000-9500), got {net}. "
+        f"Double-negation bug may have returned."
+    )
+    assert primary.get("cashflow_state") == "surplus", (
+        f"Expected surplus, got {primary.get('cashflow_state')}"
+    )
+    assert primary.get("monthly_expenses") == 9500.0, (
+        f"monthly_expenses should be stored as positive 9500, "
+        f"got {primary.get('monthly_expenses')}"
+    )
+    print("✅ test_cashflow_monthly_expenses_positive PASS")
+
+
+def test_cashflow_monthly_expenses_deficit():
+    """monthly_expenses > income → deficit state, correct net."""
+    result = asyncio.run(
+        wealth_survival_engine(
+            mode="cashflow",
+            monthly_income=8_000,
+            monthly_expenses=12_000,
+        )
+    )
+    net = get_net_monthly(result)
+    primary = result.get("primary_metrics", result)
+
+    assert net == -4000.0, (
+        f"REGRESSION: net_monthly should be -4000 (8000-12000), got {net}"
+    )
+    assert primary.get("cashflow_state") == "deficit", (
+        f"Expected deficit, got {primary.get('cashflow_state')}"
+    )
+    print("✅ test_cashflow_monthly_expenses_deficit PASS")
+
+
+def test_cashflow_personal_finance_consistency():
+    """cashflow mode and personal_finance mode produce same net with same inputs."""
+    r1 = asyncio.run(
+        wealth_survival_engine(
+            mode="cashflow",
+            monthly_income=15_000,
+            monthly_expenses=9_500,
+        )
+    )
+    r2 = asyncio.run(
+        wealth_survival_engine(
+            mode="personal_finance",
+            monthly_income=15_000,
+            monthly_expenses=9_500,
+        )
+    )
+    net1 = get_net_monthly(r1)
+    net2 = get_net_monthly(r2)
+
+    assert net1 == net2, (
+        f"Cross-mode consistency failure: cashflow net={net1}, "
+        f"personal_finance net={net2}"
+    )
+    assert net1 == 5500.0, f"Both modes should produce net=5500, got {net1}"
+    print("✅ test_cashflow_personal_finance_consistency PASS")
+
+
 # ─── Test 8: legacy_runway_wrapper_equivalence ─────────────────────────────
 
 
@@ -315,6 +394,9 @@ if __name__ == "__main__":
         test_liquidity_negative,
         test_cashflow_surplus,
         test_cashflow_deficit,
+        test_cashflow_monthly_expenses_positive,
+        test_cashflow_monthly_expenses_deficit,
+        test_cashflow_personal_finance_consistency,
         test_legacy_runway_wrapper_equivalence,
         test_legacy_cashflow_summary_wrapper_equivalence,
         test_no_public_tool_removed,
