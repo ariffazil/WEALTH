@@ -1,23 +1,25 @@
 {
   "MYS": {
     "2025": {
-      "kernel_score": 0.6612,
+      "kernel_score": 0.6601,
       "final_verdict": "QUALIFY",
-      "binding_constraint": "role_architecture",
+      "binding_constraint": "legitimacy",
       "sub_dimension_scores": {
-        "conversion": 0.7398,
-        "asymmetry": 0.6679,
-        "role_architecture": 0.6121,
-        "legitimacy": 0.6248
+        "conversion": 0.7393,
+        "asymmetry": 0.6675,
+        "role_architecture": 0.6322,
+        "legitimacy": 0.6014
       },
-      "calhoun_risk": 0.3879,
+      "calhoun_risk": 0.3678,
       "legitimacy_regime": "contested",
       "live_inputs": [
         "future_orientation_collapse",
         "information_symmetry",
         "institutions_quality",
+        "intergenerational_mobility_proxy",
         "mobility_channels",
         "ownership_concentration",
+        "ownership_concentration_income_top20",
         "power_asymmetry",
         "risk_distribution",
         "time_horizon",
@@ -33,9 +35,11 @@
         "information_symmetry": "2022",
         "risk_distribution": "2024",
         "voice_access": "2025",
-        "time_horizon": "2024"
+        "time_horizon": "2024",
+        "ownership_concentration_income_top20": "2021",
+        "intergenerational_mobility_proxy": "2016"
       },
-      "timestamp": "2026-06-12T12:52:00.892749Z"
+      "timestamp": "2026-06-12T19:07:16.569337Z"
     }
   },
   "SGP": {
