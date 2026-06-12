@@ -3940,7 +3940,7 @@ def cashflow_flow(
         if math.isfinite(item.get("monthly_amount", 0))
     )
     total_expenses = sum(
-        item.get("monthly_amount", 0)
+        abs(item.get("monthly_amount", 0))
         for item in expenses
         if math.isfinite(item.get("monthly_amount", 0))
     )
