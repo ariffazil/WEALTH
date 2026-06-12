@@ -210,6 +210,15 @@ except ImportError:
     compute_market_intelligence = None  # type: ignore
     run_screener_9 = None  # type: ignore
 
+# Governance Singularity Detector — EUREKA 2026-06-12
+try:
+    from internal.stock.governance_singularity import detect_governance_singularity
+
+    _WEALTH_GSD_AVAILABLE = True
+except ImportError:
+    _WEALTH_GSD_AVAILABLE = False
+    detect_governance_singularity = None
+
 
 # Lazy helpers for async DB operations (import at call time to avoid top-level asyncio)
 async def _init_db_schema():
@@ -2348,6 +2357,91 @@ def _handle_screener_9() -> dict:
         return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
 
 
+def _handle_governance_singularity(entities_json: str = "") -> dict:
+    """Handle governance_singularity mode — detect structural extraction geometry.
+
+    Accepts a JSON string of entities, inter-entity flows, and pending transactions.
+    Returns GSS (Governance Singularity Score) + Calhoun Beautiful One detection.
+    """
+    if not _WEALTH_GSD_AVAILABLE:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "Governance Singularity Detector not available"},
+        }
+    try:
+        import json as _json
+
+        args: dict = _json.loads(entities_json) if entities_json else {}
+        entities = args.get("entities", [])
+        flows = args.get("inter_entity_flows")
+        pending = args.get("pending_transactions")
+
+        if not entities:
+            # Fall back to built-in PETRONAS-Gentari test case
+            from internal.stock.governance_singularity import PETRONAS_GENTARI_TEST
+
+            entities = PETRONAS_GENTARI_TEST["entities"]
+            flows = PETRONAS_GENTARI_TEST.get("inter_entity_flows")
+            pending = PETRONAS_GENTARI_TEST.get("pending_transactions")
+
+        result = detect_governance_singularity(entities, flows, pending)
+
+        # ── Calhoun Beautiful One detection ──
+        # A Calhoun Beautiful One is a nexus individual who:
+        # 1. Sits at a governance singularity (GSS ≥ 0.5)
+        # 2. Controls entities with extreme governance gradient (≥ 0.7)
+        # 3. Is NOT independent on the low-governance entity
+        # 4. Occupies apex roles (CEO/Chairman) on both sides
+
+        beautiful_ones = []
+        for s in result.get("singularities", []):
+            if s["governance_gradient"] >= 0.7 and s["severity"] == "CRITICAL":
+                roles = s.get("roles", [])
+                roles_text = " ".join(roles).lower()
+                is_apex = any(
+                    kw in roles_text
+                    for kw in ("chairman", "ceo", "president", "group ceo")
+                )
+                not_independent = any("not independent" in r.lower() for r in roles)
+                if is_apex and not_independent:
+                    beautiful_ones.append(
+                        {
+                            "name": s["nexus_individual"],
+                            "gradient": s["governance_gradient"],
+                            "calhoun_traits": [
+                                "Apex node — occupies CEO/Chairman at governance singularity",
+                                "Insulated — zero independent oversight on low-gov entity",
+                                f"Gradient {s['governance_gradient']:.2f} — "
+                                "value flows through them while lower layers absorb damage",
+                                "Rhetorically skilled — polished public persona, "
+                                "unity theatre, curated Q&A",
+                            ],
+                            "calhoun_phase": "BEAUTIFUL_ONE",
+                            "note": (
+                                "In Calhoun's Universe 25, the Beautiful Ones were mice "
+                                "that withdrew from social chaos, groomed obsessively, "
+                                "and occupied safe apex positions while the colony collapsed. "
+                                "They were the SYMPTOM of behavioral sink, not the cause — "
+                                "but their presence signaled terminal institutional decay."
+                            ),
+                        }
+                    )
+
+        result["calhoun_beautiful_ones"] = beautiful_ones
+        result["calhoun_beautiful_one_count"] = len(beautiful_ones)
+
+        return {
+            "status": "OK",
+            "verdict": result["verdict"],
+            "tool": "wealth_stock_analysis",
+            "mode": "governance_singularity",
+            **result,
+        }
+    except Exception as e:
+        return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
+
+
 @mcp.tool(name="wealth_stock_analysis", task=True)
 async def wealth_stock_analysis(
     mode: str = "verify_math",
@@ -2717,12 +2811,14 @@ async def wealth_stock_analysis(
         r = _handle_market_intelligence(ticker)
     elif mode == "screener_9":
         r = _handle_screener_9()
+    elif mode == "governance_singularity":
+        r = _handle_governance_singularity(ticker)
     else:
         return {
             "status": "ERROR",
             "verdict": "NEEDS_DATA",
             "result": {
-                "error": f"Unknown mode: {mode}. Use: verify_math | separate_pl | position_size | r_multiple | exposure | bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence | bursa_snapshot | bursa_screen | bursa_evidence | global_snapshot | global_dashboard | global_list | technical_pack | risk_metrics | calhoun_survival | 888 | 999 | market_intelligence | screener_9"
+                "error": f"Unknown mode: {mode}. Use: verify_math | separate_pl | position_size | r_multiple | exposure | bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence | bursa_snapshot | bursa_screen | bursa_evidence | global_snapshot | global_dashboard | global_list | technical_pack | risk_metrics | calhoun_survival | 888 | 999 | market_intelligence | screener_9 | governance_singularity"
             },
             "recommendation_only": True,
             "final_authority": "Arif",
@@ -16036,6 +16132,30 @@ if __name__ == "__main__":
     from starlette.responses import JSONResponse as _JR
     import uvicorn
 
+    def _extract_structured_from_content(serialized: list) -> dict | None:
+        """Extract structuredContent from MCP text content blocks.
+
+        When FastMCP does not populate structuredContent in the tuple return,
+        MCP clients that validate outputSchema (e.g. OpenCode bridge) will
+        reject the response with -32600. This fallback parses JSON from
+        text content blocks and promotes it to structuredContent.
+        """
+        if not serialized:
+            return None
+        for item in serialized:
+            if isinstance(item, dict):
+                text = item.get("text") or item.get("data") or ""
+                if isinstance(text, str) and text.strip().startswith("{"):
+                    try:
+                        import json as _json
+
+                        parsed = _json.loads(text)
+                        if isinstance(parsed, dict) and parsed:
+                            return parsed
+                    except Exception:
+                        pass
+        return None
+
     def _serialize_result(result):
         """Convert FastMCP ToolResult to MCP-spec compliant JSON dict.
 
@@ -16068,6 +16188,19 @@ if __name__ == "__main__":
             out: Dict[str, Any] = {"content": serialized}
             if structured is not None:
                 out["structuredContent"] = structured
+            else:
+                # Fallback: MCP clients (OpenCode bridge) require structuredContent
+                # when outputSchema is present. If FastMCP didn't produce it,
+                # extract from content blocks or duplicate the first text content.
+                extracted = _extract_structured_from_content(serialized)
+                if extracted is not None:
+                    out["structuredContent"] = extracted
+                elif serialized and isinstance(serialized[0], dict):
+                    # Last resort: use first content block's text as structured
+                    txt = serialized[0].get("text", "")
+                    out["structuredContent"] = (
+                        {"result": txt} if txt else {"status": "ok"}
+                    )
             return out
         if hasattr(result, "model_dump"):
             return result.model_dump(by_alias=True, exclude_none=True)
