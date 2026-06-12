@@ -1,3 +1,8 @@
+# ⚠️ DEPRECATED — DO NOT USE
+# This is the OLD AGI-bot v63 constitution with '9+2+2 Laws' numbering.
+# The canonical 13-floor constitution is at: ariffazil/arifOS/static/arifos/theory/000/000_CONSTITUTION.md
+# This file kept for historical reference only. DITEMPA BUKAN DIBERI.
+
 # AGI-bot Constitutional Kernel v63
 
 # 9 Laws + 2 Mirrors + 2 Walls for Agent Governance

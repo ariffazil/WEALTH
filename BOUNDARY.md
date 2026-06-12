@@ -1,8 +1,8 @@
 <!-- SOT-MANIFEST
 owner: ariffazil/wealth
-last_verified: 2026-05-19
-valid_from: 2026-05-19
-valid_until: 2026-06-19
+last_verified: 2026-06-12
+valid_from: 2026-06-12
+valid_until: 2026-07-12
 confidence: high
 scope: /
 -->
