@@ -156,6 +156,15 @@ except ImportError:
     get_global = None  # type: ignore
     GLOBAL_SYMBOLS = {}  # type: ignore
 
+# D4+ Technical Indicators + Risk Metrics — computed from yfinance history
+try:
+    from internal.stock.indicators import compute_technical_pack
+
+    _WEALTH_INDICATORS_AVAILABLE = True
+except ImportError:
+    _WEALTH_INDICATORS_AVAILABLE = False
+    compute_technical_pack = None  # type: ignore
+
 
 # Lazy helpers for async DB operations (import at call time to avoid top-level asyncio)
 async def _init_db_schema():
@@ -1977,6 +1986,70 @@ def _handle_global_list() -> dict:
         }
 
 
+# ─── Technical + Risk Mode Handlers ──────────────────────────────────────
+
+
+def _handle_technical_pack(symbol: str) -> dict:
+    """Handle technical_pack mode — compute all indicators from price history."""
+    if not _WEALTH_INDICATORS_AVAILABLE:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "Indicators module not available"},
+        }
+    if not symbol:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "symbol is required"},
+        }
+    try:
+        result = compute_technical_pack(symbol)
+        return {
+            "status": "OK",
+            "verdict": "SAFE_TO_STUDY",
+            "tool": "wealth_stock_analysis",
+            "mode": "technical_pack",
+            "symbol": symbol,
+            **result,
+        }
+    except Exception as e:
+        return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
+
+
+def _handle_risk_metrics(symbol: str) -> dict:
+    """Handle risk_metrics mode — compute risk metrics (Sharpe, Sortino, MaxDD)."""
+    if not _WEALTH_INDICATORS_AVAILABLE:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "Indicators module not available"},
+        }
+    if not symbol:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "symbol is required"},
+        }
+    try:
+        result = compute_technical_pack(symbol)
+        risk = result.get("risk_metrics", {})
+        return {
+            "status": "OK",
+            "verdict": "SAFE_TO_STUDY",
+            "tool": "wealth_stock_analysis",
+            "mode": "risk_metrics",
+            "symbol": symbol,
+            "latest_price": result.get("latest_price"),
+            "risk_metrics": risk,
+            "peace_of_mind": risk.get("peace_of_mind_grade", "?"),
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    except Exception as e:
+        return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
+
+
 @mcp.tool(name="wealth_stock_analysis", task=True)
 async def wealth_stock_analysis(
     mode: str = "verify_math",
@@ -2332,12 +2405,16 @@ async def wealth_stock_analysis(
         r = _handle_global_dashboard()
     elif mode == "global_list":
         r = _handle_global_list()
+    elif mode == "technical_pack":
+        r = _handle_technical_pack(ticker)
+    elif mode == "risk_metrics":
+        r = _handle_risk_metrics(ticker)
     else:
         return {
             "status": "ERROR",
             "verdict": "NEEDS_DATA",
             "result": {
-                "error": f"Unknown mode: {mode}. Use: verify_math | separate_pl | position_size | r_multiple | exposure | bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence | bursa_snapshot | bursa_screen | bursa_evidence | global_snapshot | global_dashboard | global_list"
+                "error": f"Unknown mode: {mode}. Use: verify_math | separate_pl | position_size | r_multiple | exposure | bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence | bursa_snapshot | bursa_screen | bursa_evidence | global_snapshot | global_dashboard | global_list | technical_pack | risk_metrics"
             },
             "recommendation_only": True,
             "final_authority": "Arif",
