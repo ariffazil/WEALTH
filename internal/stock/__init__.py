@@ -38,6 +38,9 @@ from .contrast import (
     detect_anomalous_contrast,
     detect_false_confluence,
 )
+from .governance_singularity import (
+    detect_governance_singularity,
+)
 
 __all__ = [
     "verify_trade_math",
@@ -52,4 +55,5 @@ __all__ = [
     "run_tac9_engine",
     "detect_anomalous_contrast",
     "detect_false_confluence",
+    "detect_governance_singularity",
 ]
