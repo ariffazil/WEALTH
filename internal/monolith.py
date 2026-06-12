@@ -165,6 +165,15 @@ except ImportError:
     _WEALTH_INDICATORS_AVAILABLE = False
     compute_technical_pack = None  # type: ignore
 
+# D4+ 9-Point Screener
+try:
+    from internal.stock.screener_9 import run_screener_9
+
+    _WEALTH_SCREENER_9_AVAILABLE = True
+except ImportError:
+    _WEALTH_SCREENER_9_AVAILABLE = False
+    run_screener_9 = None  # type: ignore
+
 
 # Lazy helpers for async DB operations (import at call time to avoid top-level asyncio)
 async def _init_db_schema():
@@ -2050,6 +2059,20 @@ def _handle_risk_metrics(symbol: str) -> dict:
         return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
 
 
+def _handle_screener_9() -> dict:
+    """Handle screener_9 mode — 9-point fundamentals + technical screening."""
+    if not _WEALTH_SCREENER_9_AVAILABLE:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "Screener 9 not available"},
+        }
+    try:
+        return run_screener_9()
+    except Exception as e:
+        return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
+
+
 @mcp.tool(name="wealth_stock_analysis", task=True)
 async def wealth_stock_analysis(
     mode: str = "verify_math",
@@ -2409,6 +2432,8 @@ async def wealth_stock_analysis(
         r = _handle_technical_pack(ticker)
     elif mode == "risk_metrics":
         r = _handle_risk_metrics(ticker)
+    elif mode == "screener_9":
+        r = _handle_screener_9()
     else:
         return {
             "status": "ERROR",
