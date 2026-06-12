@@ -122,6 +122,40 @@ except ImportError:
     detect_anomalous_contrast = None  # type: ignore
     detect_false_confluence = None  # type: ignore
 
+# D4+ Bursa Malaysia Intelligence — imported from internal/bursa/
+# Free-first, arifOS-aligned. klse-screener-py (MIT license) as default provider.
+# Upgrade ports for Morningstar MCP / ICE Bursa when capital allows.
+try:
+    from internal.bursa import (
+        get_klse,
+        generate_evidence_card,
+        ScreenCriteria as BursaScreenCriteria,
+        ScreenResult as BursaScreenResult,
+    )
+
+    _WEALTH_BURSA_AVAILABLE = True
+except ImportError:
+    _WEALTH_BURSA_AVAILABLE = False
+    get_klse = None  # type: ignore
+    generate_evidence_card = None  # type: ignore
+    BursaScreenCriteria = None  # type: ignore
+    BursaScreenResult = None  # type: ignore
+
+# D4+ Global Markets Intelligence — imported from internal/world/
+# Free-first, arifOS-aligned. yfinance (Apache 2.0) as default provider.
+# Covers indices, commodities, FX, crypto, VIX. Upgrade ports for Alpha Vantage/FRED later.
+try:
+    from internal.world import (
+        get_global,
+        GLOBAL_SYMBOLS,
+    )
+
+    _WEALTH_GLOBAL_AVAILABLE = True
+except ImportError:
+    _WEALTH_GLOBAL_AVAILABLE = False
+    get_global = None  # type: ignore
+    GLOBAL_SYMBOLS = {}  # type: ignore
+
 
 # Lazy helpers for async DB operations (import at call time to avoid top-level asyncio)
 async def _init_db_schema():
@@ -1603,8 +1637,344 @@ def wealth_market_data(
 # --------------------------------------------------------------------------- #
 
 # ═══════════════════════════════════════════════════════════════════════════
-# D4 — STOCK ANALYSIS (12 modes, one tool)
+# D4 — STOCK ANALYSIS (15 modes, one tool)
 # ═══════════════════════════════════════════════════════════════════════════
+
+
+# ─── Bursa Mode Helpers (free delayed data, screening only) ─────────────
+
+
+def _handle_bursa_snapshot(ticker: str) -> dict:
+    """Handle bursa_snapshot mode — live-delayed Bursa quote."""
+    if not _WEALTH_BURSA_AVAILABLE:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "bursa_snapshot",
+            "result": {
+                "error": "Bursa module not available. Install klse-screener-py."
+            },
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    if not ticker:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "bursa_snapshot",
+            "result": {"error": "ticker is required for bursa_snapshot"},
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+
+    try:
+        adapter = get_klse()
+        quote = adapter.get_quote(ticker)
+        if quote is None:
+            return {
+                "status": "NEEDS_DATA",
+                "verdict": "NEEDS_DATA",
+                "tool": "wealth_stock_analysis",
+                "mode": "bursa_snapshot",
+                "ticker": ticker,
+                "result": {
+                    "error": f"No data for {ticker}. Check ticker or market is closed."
+                },
+                "recommendation_only": True,
+                "final_authority": "Arif",
+            }
+        return {
+            "status": "OK",
+            "verdict": "SAFE_TO_STUDY",
+            "tool": "wealth_stock_analysis",
+            "mode": "bursa_snapshot",
+            "ticker": ticker,
+            "result": quote.model_dump(),
+            "provenance": quote.provenance.model_dump(),
+            "recommendation_only": True,
+            "final_authority": "Arif",
+            "hold_required": quote.provenance.hold_required,
+        }
+    except Exception as e:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "bursa_snapshot",
+            "ticker": ticker,
+            "result": {"error": str(e)},
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+
+
+def _handle_bursa_screen(
+    min_pe=None,
+    max_pe=None,
+    min_roe=None,
+    max_pb=None,
+    sector="",
+    limit_count=20,
+) -> dict:
+    """Handle bursa_screen mode — screen Bursa stocks."""
+    if not _WEALTH_BURSA_AVAILABLE:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "bursa_screen",
+            "result": {
+                "error": "Bursa module not available. Install klse-screener-py."
+            },
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+
+    try:
+        criteria = BursaScreenCriteria(
+            min_pe=float(min_pe) if min_pe else None,
+            max_pe=float(max_pe) if max_pe else None,
+            min_roe=float(min_roe) if min_roe else None,
+            max_pb=float(max_pb) if max_pb else None,
+            sector=sector.strip() if sector else None,
+            sort_by="pe_ratio",
+            limit=int(limit_count) if limit_count else 20,
+        )
+        adapter = get_klse()
+        result = adapter.screen(criteria)
+        return {
+            "status": "OK",
+            "verdict": "SAFE_TO_STUDY",
+            "tool": "wealth_stock_analysis",
+            "mode": "bursa_screen",
+            "result": result.model_dump(),
+            "provenance": result.provenance.model_dump(),
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    except Exception as e:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "bursa_screen",
+            "result": {"error": str(e)},
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+
+    try:
+        criteria = BursaScreenCriteria(
+            min_pe=float(min_pe) if min_pe else None,
+            max_pe=float(max_pe) if max_pe else None,
+            min_dividend_yield=float(min_dy) if min_dy else None,
+            min_roe=float(min_roe) if min_roe else None,
+            max_pb=float(max_pb) if max_pb else None,
+            min_market_cap_m=float(min_mcap) if min_mcap else None,
+            sector=sector.strip() if sector else None,
+            sort_by=sort_by,
+            limit=int(limit) if limit else 20,
+        )
+        adapter = get_klse()
+        result = adapter.screen(criteria)
+        return {
+            "status": "OK",
+            "verdict": "SAFE_TO_STUDY",
+            "tool": "wealth_stock_analysis",
+            "mode": "bursa_screen",
+            "result": result.model_dump(),
+            "provenance": result.provenance.model_dump(),
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    except Exception as e:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "bursa_screen",
+            "result": {"error": str(e)},
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+
+
+def _handle_bursa_evidence(ticker: str) -> dict:
+    """Handle bursa_evidence mode — evidence card with governance."""
+    if not _WEALTH_BURSA_AVAILABLE:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "bursa_evidence",
+            "result": {
+                "error": "Bursa module not available. Install klse-screener-py."
+            },
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    if not ticker:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "bursa_evidence",
+            "result": {"error": "ticker is required for bursa_evidence"},
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+
+    try:
+        card = generate_evidence_card(ticker)
+        return {
+            "status": "OK",
+            "verdict": "SAFE_TO_STUDY",
+            "tool": "wealth_stock_analysis",
+            "mode": "bursa_evidence",
+            "ticker": ticker,
+            "result": card.model_dump(),
+            "provenance": card.provenance.model_dump(),
+            "recommendation_only": True,
+            "final_authority": "Arif",
+            "hold_required": card.provenance.hold_required,
+            "execution_allowed": card.execution_allowed,
+        }
+    except Exception as e:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "bursa_evidence",
+            "ticker": ticker,
+            "result": {"error": str(e)},
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+
+
+# ─── Global Mode Helpers (free delayed yfinance data, screening only) ────
+
+
+def _handle_global_snapshot(symbol: str) -> dict:
+    """Handle global_snapshot mode — global index/commodity/FX quote."""
+    if not _WEALTH_GLOBAL_AVAILABLE:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "global_snapshot",
+            "result": {"error": "Global module not available. Install yfinance."},
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    if not symbol:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "global_snapshot",
+            "result": {"error": "symbol is required (e.g. ^GSPC, GC=F, BTC-USD)"},
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    try:
+        adapter = get_global()
+        quote = adapter.get_quote(symbol)
+        if quote is None:
+            return {
+                "status": "NEEDS_DATA",
+                "verdict": "NEEDS_DATA",
+                "tool": "wealth_stock_analysis",
+                "mode": "global_snapshot",
+                "symbol": symbol,
+                "result": {"error": f"No data for {symbol}."},
+                "recommendation_only": True,
+                "final_authority": "Arif",
+            }
+        return {
+            "status": "OK",
+            "verdict": "SAFE_TO_STUDY",
+            "tool": "wealth_stock_analysis",
+            "mode": "global_snapshot",
+            "symbol": symbol,
+            "result": quote.model_dump(),
+            "provenance": quote.provenance.model_dump(),
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    except Exception as e:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "global_snapshot",
+            "symbol": symbol,
+            "result": {"error": str(e)},
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+
+
+def _handle_global_dashboard() -> dict:
+    """Handle global_dashboard mode — all global symbols at once."""
+    if not _WEALTH_GLOBAL_AVAILABLE:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "global_dashboard",
+            "result": {"error": "Global module not available."},
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    try:
+        adapter = get_global()
+        quotes = adapter.get_global_dashboard()
+        return {
+            "status": "OK",
+            "verdict": "SAFE_TO_STUDY",
+            "tool": "wealth_stock_analysis",
+            "mode": "global_dashboard",
+            "count": len(quotes),
+            "result": [q.model_dump() for q in quotes],
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    except Exception as e:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "tool": "wealth_stock_analysis",
+            "mode": "global_dashboard",
+            "result": {"error": str(e)},
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+
+
+def _handle_global_list() -> dict:
+    """Handle global_list mode — list all known global symbols."""
+    try:
+        return {
+            "status": "OK",
+            "verdict": "SAFE_TO_STUDY",
+            "tool": "wealth_stock_analysis",
+            "mode": "global_list",
+            "symbols": [{"symbol": k, **v} for k, v in GLOBAL_SYMBOLS.items()],
+            "count": len(GLOBAL_SYMBOLS),
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    except Exception as e:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": str(e)},
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
 
 
 @mcp.tool(name="wealth_stock_analysis", task=True)
@@ -1743,7 +2113,7 @@ async def wealth_stock_analysis(
 ) -> dict:
     """D4 Stock Analysis — unified capital-risk and stock governance layer.
 
-    Modes (12 total):
+    Modes (15 total):
       verify_math     — Recalculate P/L, detect AI number hallucination
       separate_pl     — Separate realized vs unrealized P/L
       position_size   — Risk-based position sizing (max 1% risk)
@@ -1756,10 +2126,14 @@ async def wealth_stock_analysis(
       tac9            — TAC-9 technical analysis (regime → structure → R)
       contrast        — Anomalous contrast detection (market layer disagreement)
       confluence      — False confluence detection (same-class indicator collapse)
+      bursa_snapshot  — Live-delayed Bursa quote from free data source
+      bursa_screen    — Screen Bursa stocks by PE, dividend, ROE, market cap
+      bursa_evidence  — Evidence card with provenance, valuation, quality, governance
 
     NOT: buy/sell oracle. NOT: trading coach. NOT: stock promoter.
     Verdicts: SAFE_TO_STUDY | NEEDS_DATA | UNSAFE | 888_HOLD | MATH_ERROR
     Authority: WEALTH computes. arifOS judges. Arif decides.
+    Data: Free delayed source (klse-screener-py). Screening only — NOT execution-grade.
     """
     if not _WEALTH_STOCK_AVAILABLE:
         return {
@@ -1939,12 +2313,31 @@ async def wealth_stock_analysis(
         )
     elif mode == "confluence":
         r = detect_false_confluence(ticker=ticker, indicators=indicators)
+    elif mode == "bursa_snapshot":
+        r = _handle_bursa_snapshot(ticker)
+    elif mode == "bursa_screen":
+        r = _handle_bursa_screen(
+            min_pe=fundamental_score,  # reused: fundamental_score as min_pe
+            max_pe=pe_ratio,  # max pe filter
+            min_roe=roe,  # min ROE
+            max_pb=pb_ratio,  # max PB
+            sector=f"{sector_trend or ''}",  # sector filter
+            limit_count=position_size or 20,  # reused: position_size as limit
+        )
+    elif mode == "bursa_evidence":
+        r = _handle_bursa_evidence(ticker)
+    elif mode == "global_snapshot":
+        r = _handle_global_snapshot(ticker)
+    elif mode == "global_dashboard":
+        r = _handle_global_dashboard()
+    elif mode == "global_list":
+        r = _handle_global_list()
     else:
         return {
             "status": "ERROR",
             "verdict": "NEEDS_DATA",
             "result": {
-                "error": f"Unknown mode: {mode}. Use: verify_math | separate_pl | position_size | r_multiple | exposure | bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence"
+                "error": f"Unknown mode: {mode}. Use: verify_math | separate_pl | position_size | r_multiple | exposure | bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence | bursa_snapshot | bursa_screen | bursa_evidence | global_snapshot | global_dashboard | global_list"
             },
             "recommendation_only": True,
             "final_authority": "Arif",
