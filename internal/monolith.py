@@ -184,6 +184,7 @@ except ImportError:
 # D4+++ 999 Engine
 try:
     from internal.stock.engine_999 import compute_999
+
     _WEALTH_999_AVAILABLE = True
 except ImportError:
     _WEALTH_999_AVAILABLE = False
@@ -191,6 +192,7 @@ except ImportError:
 # 888 JUDGE Engine
 try:
     from internal.stock.engine_888 import compute_888
+
     _WEALTH_888_AVAILABLE = True
 except ImportError:
     _WEALTH_888_AVAILABLE = False
@@ -198,6 +200,7 @@ except ImportError:
 # Calhoun Guard — 4 philosophical locks
 try:
     from internal.stock.calhoun_guard import enrich_888_verdict
+
     _WEALTH_CALHOUN_AVAILABLE = True
 except ImportError:
     _WEALTH_CALHOUN_AVAILABLE = False
@@ -2095,90 +2098,195 @@ def _handle_risk_metrics(symbol: str) -> dict:
 def _handle_calhoun(symbol: str) -> dict:
     """Handle calhoun_survival mode — Calhoun/StrangeLoop/Gödel/Anti-Beautiful analysis."""
     if not _WEALTH_CALHOUN_AVAILABLE:
-        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":"Calhoun Guard not available"}}
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "Calhoun Guard not available"},
+        }
     if not symbol:
-        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":"symbol is required"}}
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "symbol is required"},
+        }
     try:
         import yfinance as yf
+
         yt_sym = f"{symbol}.KL" if symbol.isdigit() else symbol
         hist = yf.Ticker(yt_sym).history(period="6mo")
         if hist.empty:
-            return {"status":"NEEDS_DATA","verdict":"NEEDS_DATA","result":{"error":"No history"}}
-        c=[float(x) for x in hist["Close"]]; v=[int(x) for x in hist["Volume"]]
-        pe=roe=pb=dy=eps=None; sector=""
+            return {
+                "status": "NEEDS_DATA",
+                "verdict": "NEEDS_DATA",
+                "result": {"error": "No history"},
+            }
+        c = [float(x) for x in hist["Close"]]
+        v = [int(x) for x in hist["Volume"]]
+        pe = roe = pb = dy = eps = None
+        sector = ""
         if symbol.isdigit():
             try:
                 from klse_screener import get_klse_fundamentals
-                fund=get_klse_fundamentals(symbol)
+
+                fund = get_klse_fundamentals(symbol)
                 if fund:
-                    pe=_sf4(fund.get("pe_ratio")); roe=_sf4(fund.get("roe"))
-                    pb=_sf4(fund.get("pb_ratio")); dy=_sf4(fund.get("dividend_yield"))
-                    eps=_sf4(fund.get("eps")); sector=fund.get("sector","")
-            except: pass
+                    pe = _sf4(fund.get("pe_ratio"))
+                    roe = _sf4(fund.get("roe"))
+                    pb = _sf4(fund.get("pb_ratio"))
+                    dy = _sf4(fund.get("dividend_yield"))
+                    eps = _sf4(fund.get("eps"))
+                    sector = fund.get("sector", "")
+            except:
+                pass
         from internal.stock.engine_888 import compute_888
-        r888=compute_888(symbol,pe=pe,roe=roe,pb=pb,dy=dy,eps=eps,sector=sector)
-        gates=r888.get("gate_summary",{})
-        fs=r888["fundamentals"]["score"]; ts=r888["technicals"]["score"]; ws=r888["flows"]["score"]
-        enriched=enrich_888_verdict(symbol,c,v,fs,ts,ws,
-            f_hold=gates.get("F_HOLD",False),t_hold=gates.get("T_HOLD",False),w_hold=gates.get("W_HOLD",False),
-            data_completeness={"PE":pe is not None,"ROE":roe is not None,"DY":dy is not None,"EPS":eps is not None})
-        return {"status":"OK","verdict":enriched["verdict"],"tool":"wealth_stock_analysis","mode":"calhoun_survival",**enriched}
+
+        r888 = compute_888(symbol, pe=pe, roe=roe, pb=pb, dy=dy, eps=eps, sector=sector)
+        gates = r888.get("gate_summary", {})
+        fs = r888["fundamentals"]["score"]
+        ts = r888["technicals"]["score"]
+        ws = r888["flows"]["score"]
+        enriched = enrich_888_verdict(
+            symbol,
+            c,
+            v,
+            fs,
+            ts,
+            ws,
+            f_hold=gates.get("F_HOLD", False),
+            t_hold=gates.get("T_HOLD", False),
+            w_hold=gates.get("W_HOLD", False),
+            data_completeness={
+                "PE": pe is not None,
+                "ROE": roe is not None,
+                "DY": dy is not None,
+                "EPS": eps is not None,
+            },
+        )
+        return {
+            "status": "OK",
+            "verdict": enriched["verdict"],
+            "tool": "wealth_stock_analysis",
+            "mode": "calhoun_survival",
+            **enriched,
+        }
     except Exception as e:
-        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":str(e)}}
+        return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
+
 
 def _sf4(val):
-    try: return float(val)
-    except: return None
+    try:
+        return float(val)
+    except:
+        return None
+
 
 def _handle_888(symbol: str) -> dict:
     """Handle 888 mode — JUDGE investment framework with HOLD gates."""
     if not _WEALTH_888_AVAILABLE:
-        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":"888 Engine not available"}}
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "888 Engine not available"},
+        }
     if not symbol:
-        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":"symbol is required"}}
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "symbol is required"},
+        }
     try:
-        pe=roe=pb=dy=eps=None; sector=""
+        pe = roe = pb = dy = eps = None
+        sector = ""
         if symbol.isdigit():
             try:
                 from klse_screener import get_klse_fundamentals
-                fund=get_klse_fundamentals(symbol)
+
+                fund = get_klse_fundamentals(symbol)
                 if fund:
-                    pe=_sf3(fund.get("pe_ratio")); roe=_sf3(fund.get("roe"))
-                    pb=_sf3(fund.get("pb_ratio")); dy=_sf3(fund.get("dividend_yield"))
-                    eps=_sf3(fund.get("eps")); sector=fund.get("sector","")
-            except: pass
+                    pe = _sf3(fund.get("pe_ratio"))
+                    roe = _sf3(fund.get("roe"))
+                    pb = _sf3(fund.get("pb_ratio"))
+                    dy = _sf3(fund.get("dividend_yield"))
+                    eps = _sf3(fund.get("eps"))
+                    sector = fund.get("sector", "")
+            except:
+                pass
         return compute_888(symbol, pe=pe, roe=roe, pb=pb, dy=dy, eps=eps, sector=sector)
     except Exception as e:
-        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":str(e)}}
+        return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
+
 
 def _sf3(val):
-    try: return float(val)
-    except: return None
+    try:
+        return float(val)
+    except:
+        return None
+
 
 def _handle_999(symbol: str) -> dict:
     """Handle 999 mode — complete investment intelligence framework."""
     if not _WEALTH_999_AVAILABLE:
-        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":"999 Engine not available"}}
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "999 Engine not available"},
+        }
     if not symbol:
-        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":"symbol is required"}}
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "symbol is required"},
+        }
     try:
-        pe=roe=pb=dy=eps=None; sector=""
+        pe = roe = pb = dy = eps = dps = nta = None
+        qoq = yoy = None
+        market_cap_raw = None
+        sector = ""
         if symbol.isdigit():
             try:
                 from klse_screener import get_klse_fundamentals
-                fund=get_klse_fundamentals(symbol)
+
+                fund = get_klse_fundamentals(symbol)
                 if fund:
-                    pe=_sf2(fund.get("pe_ratio")); roe=_sf2(fund.get("roe"))
-                    pb=_sf2(fund.get("pb_ratio")); dy=_sf2(fund.get("dividend_yield"))
-                    eps=_sf2(fund.get("eps")); sector=fund.get("sector","")
-            except: pass
-        return compute_999(symbol, pe=pe, roe=roe, pb=pb, dy=dy, eps=eps, sector=sector)
+                    pe = _sf2(fund.get("pe_ratio"))
+                    roe = _sf2(fund.get("roe"))
+                    pb = _sf2(fund.get("pb_ratio"))
+                    dy = _sf2(fund.get("dividend_yield"))
+                    eps = _sf2(fund.get("eps"))
+                    dps = _sf2(fund.get("dps"))
+                    nta = _sf2(fund.get("nta"))
+                    sector = fund.get("sector", "")
+                    market_cap_raw = fund.get("market_cap")
+                    lq = fund.get("latest_quarter")
+                    if isinstance(lq, dict):
+                        qoq = _sf2(lq.get("qoq"))
+                        yoy = _sf2(lq.get("yoy"))
+            except:
+                pass
+        return compute_999(
+            symbol,
+            pe=pe,
+            roe=roe,
+            pb=pb,
+            dy=dy,
+            eps=eps,
+            sector=sector,
+            dps=dps,
+            market_cap_raw=market_cap_raw,
+            nta=nta,
+            qoq=qoq,
+            yoy=yoy,
+        )
     except Exception as e:
-        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":str(e)}}
+        return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
+
 
 def _sf2(val):
-    try: return float(val)
-    except: return None
+    try:
+        return float(val)
+    except:
+        return None
+
 
 def _handle_market_intelligence(symbol: str) -> dict:
     """Handle market_intelligence mode — thermodynamic state-space analysis."""
@@ -2614,7 +2722,7 @@ async def wealth_stock_analysis(
             "status": "ERROR",
             "verdict": "NEEDS_DATA",
             "result": {
-                "error": f"Unknown mode: {mode}. Use: verify_math | separate_pl | position_size | r_multiple | exposure | bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence | bursa_snapshot | bursa_screen | bursa_evidence | global_snapshot | global_dashboard | global_list | technical_pack | risk_metrics"
+                "error": f"Unknown mode: {mode}. Use: verify_math | separate_pl | position_size | r_multiple | exposure | bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence | bursa_snapshot | bursa_screen | bursa_evidence | global_snapshot | global_dashboard | global_list | technical_pack | risk_metrics | calhoun_survival | 888 | 999 | market_intelligence | screener_9"
             },
             "recommendation_only": True,
             "final_authority": "Arif",

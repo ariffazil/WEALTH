@@ -246,6 +246,12 @@ def compute_999(
     dy: Optional[float] = None,
     eps: Optional[float] = None,
     sector: str = "",
+    # ── Enrichment params (from klse-screener) ──
+    dps: Optional[float] = None,
+    market_cap_raw: Optional[str] = None,
+    nta: Optional[float] = None,
+    qoq: Optional[float] = None,
+    yoy: Optional[float] = None,
     # Flow params (user-supplied)
     account_balance: float = 10000,
     risk_per_trade_pct: float = 1.0,
@@ -352,20 +358,30 @@ def compute_999(
     f7_score = _score_dividend(dy, eps)
     f_scores["F7_DIVIDEND"] = {"score": f7_score, "value": dy, "pass": f7_score >= 40}
 
-    # F8: Governance (data unavailable — flag as UNKNOWN)
-    f8_score = 50  # neutral — no governance data from free API
+    # F8: Governance — proxy scoring from available data
+    f8_score = _score_governance(dps, dy, eps, market_cap_raw, qoq, yoy)
     f_scores["F8_GOVERNANCE"] = {
         "score": f8_score,
-        "note": "UNKNOWN — no governance data from free API",
-        "pass": False,
+        "dps": dps,
+        "dividend_yield": dy,
+        "qoq": qoq,
+        "yoy": yoy,
+        "market_cap": market_cap_raw,
+        "note": "Proxy — uses DPS, dividend consistency, market cap, earnings consistency",
+        "data_quality": "PROXY" if (dps is not None or market_cap_raw) else "ESTIMATE",
+        "pass": f8_score >= 50,
     }
 
-    # F9: Sector Position (market cap proxy)
-    f9_score = 50  # neutral
+    # F9: Sector Position — competitive moat proxy
+    f9_score = _score_moat(roe, market_cap_raw, sector, eps, pb)
     f_scores["F9_POSITION"] = {
         "score": f9_score,
-        "note": "UNKNOWN — needs Morningstar/ICE data",
-        "pass": False,
+        "roe": roe,
+        "market_cap": market_cap_raw,
+        "sector": sector,
+        "note": "Proxy — uses ROE level, market cap tier, sector characteristics",
+        "data_quality": "PROXY" if (roe is not None and market_cap_raw) else "ESTIMATE",
+        "pass": f9_score >= 50,
     }
 
     # Weighted fundamentals
@@ -688,15 +704,30 @@ def compute_999(
     }
 
     # ═════════════════════════════════════════════════════════════════════
-    # 999 FUSION
+    # 999 FUSION — Weighted blend with macro + human readiness
     # ═════════════════════════════════════════════════════════════════════
-    # What (40%) + When (35%) + How (25%)
-    fusion = round(f_total * 0.40 + t_total * 0.35 + w_total * 0.25, 1)
+    # Macro alignment: sector-based regime score (placeholder for GEOX integration)
+    macro_score = _score_macro_alignment(sector, result.get("last_price"))
+    # Human readiness: placeholder for WELL integration (default 70 = neutral)
+    human_score = 70.0
+    # Fusion: What(35%) + When(30%) + How(20%) + Macro(10%) + Human(5%)
+    fusion = round(
+        f_total * 0.35
+        + t_total * 0.30
+        + w_total * 0.20
+        + macro_score * 0.10
+        + human_score * 0.05,
+        1,
+    )
     result["fusion"] = {
         "score": fusion,
         "fundamentals": f_total,
         "technicals": t_total,
         "flows": w_total,
+        "macro_alignment": round(macro_score, 1),
+        "human_readiness": round(human_score, 1),
+        "weights": "F:35% T:30% W:20% Macro:10% Human:5%",
+        "note": "Macro=GEOX proxy, Human=WELL placeholder. Calibrate with live data.",
     }
 
     # Verdict
@@ -719,12 +750,23 @@ def compute_999(
     result["final_authority"] = "Arif"
 
     # ═════════════════════════════════════════════════════════════════════
-    # RECURSIVE LOOP — Invert & Learn
+    # RECURSIVE LOOP — Invert & Learn (EXECUTABLE)
     # ═════════════════════════════════════════════════════════════════════
+    sell_triggers = _compute_sell_triggers(
+        result,
+        entry_price=entry_price,
+        stop_loss=stop_loss,
+        target_price=target_price,
+        last_price=last_price,
+        position_size=quantity,
+        account_balance=account_balance,
+        risk_per_trade_pct=risk_per_trade_pct,
+    )
     result["loop"] = {
         "buy_signal": verdict in ("STRONG_BUY", "BUY"),
         "watch_signal": verdict == "WATCH",
         "sell_signal": verdict in ("HOLD_OR_SELL", "SELL"),
+        "sell_triggers": sell_triggers,
         "invert_check": {
             "if_bought": f"Monitor: stop={stop_loss}, target={target_price}, r={r_mult}",
             "exit_condition": "Stop hit OR target hit OR conviction drops below 50",
@@ -837,6 +879,337 @@ def _calc_r(entry, stop, target):
     risk = abs(entry - stop)
     reward = abs(target - entry)
     return round(reward / risk, 2) if risk > 0 else None
+
+
+def _score_governance(
+    dps: Optional[float],
+    dy: Optional[float],
+    eps: Optional[float],
+    market_cap_raw: Optional[str],
+    qoq: Optional[float],
+    yoy: Optional[float],
+) -> int:
+    """Score governance quality from proxy signals.
+
+    Proxy signals (no direct governance data from free API):
+      - DPS > 0 + dividend consistency → shareholder-friendly (40 pts)
+      - Market cap tier → regulatory scrutiny proxy (20 pts)
+      - QoQ/YoY earnings consistency → less likely manipulation (20 pts)
+      - DPS/EPS payout ratio reasonable → balanced governance (20 pts)
+    """
+    score = 0
+    evidence = 0
+
+    # Signal 1: Dividend-paying = shareholder return discipline
+    if dps is not None and dps > 0:
+        score += 25
+        evidence += 1
+        # Strong payout consistency if yield > 2%
+        if dy is not None and dy > 2:
+            score += 15
+            evidence += 1
+    elif dy is not None and dy > 1:
+        score += 15
+        evidence += 1
+
+    # Signal 2: Market cap tier — larger = more regulatory scrutiny
+    mcap = _parse_market_cap(market_cap_raw)
+    if mcap is not None:
+        evidence += 1
+        if mcap > 10:  # > RM10B = large cap, heavy scrutiny
+            score += 20
+        elif mcap > 2:  # > RM2B = mid cap, moderate scrutiny
+            score += 12
+        elif mcap > 0.5:  # > RM500M = small cap, less scrutiny
+            score += 5
+
+    # Signal 3: Earnings consistency (QoQ/YoY)
+    if qoq is not None and yoy is not None:
+        evidence += 1
+        if qoq > 0 and yoy > 0:
+            score += 20  # both growing — consistent
+        elif qoq > 0 or yoy > 0:
+            score += 10  # one direction growing
+        elif qoq > -10 and yoy > -10:
+            score += 5  # mild decline
+
+    # Signal 4: Payout ratio sanity (DPS < EPS = sustainable)
+    if dps is not None and eps is not None and eps > 0 and dps < eps:
+        score += 15
+        evidence += 1
+    elif dps is not None and eps is not None and eps > 0 and dps <= eps * 1.5:
+        score += 5
+
+    # If no evidence at all, return honest neutral
+    if evidence == 0:
+        return 50  # "UNKNOWN — no governance signals available"
+
+    return min(95, score + 5)
+
+
+def _score_moat(
+    roe: Optional[float],
+    market_cap_raw: Optional[str],
+    sector: str,
+    eps: Optional[float],
+    pb: Optional[float],
+) -> int:
+    """Score competitive moat / market position from proxy signals.
+
+    Proxy signals:
+      - ROE level and consistency → capital compounder or value destroyer
+      - Market cap tier → dominant position
+      - Sector characteristics → some sectors have natural moats
+      - P/B premium → market pricing the moat
+    """
+    score = 0
+    evidence = 0
+
+    # Signal 1: ROE tier — the primary moat signal
+    if roe is not None:
+        evidence += 1
+        if roe > 20:
+            score += 40  # exceptional compounder
+        elif roe > 15:
+            score += 30  # strong moat
+        elif roe > 10:
+            score += 20  # adequate
+        elif roe > 5:
+            score += 10  # weak
+        else:
+            score += 0  # no moat
+
+    # Signal 2: Market cap — absolute size = competitive position
+    mcap = _parse_market_cap(market_cap_raw)
+    if mcap is not None:
+        evidence += 1
+        if mcap > 50:  # > RM50B = dominant
+            score += 30
+        elif mcap > 10:  # > RM10B = large cap
+            score += 20
+        elif mcap > 2:
+            score += 10
+        elif mcap > 0.5:
+            score += 5
+
+    # Signal 3: Sector moat characteristics
+    if sector:
+        evidence += 1
+        s = sector.lower()
+        if any(k in s for k in ["bank", "finance", "insurance"]):
+            score += 10  # regulatory moat + switching costs
+        elif any(k in s for k in ["tele", "utility", "infra"]):
+            score += 15  # natural monopoly / infrastructure moat
+        elif any(k in s for k in ["consumer", "food", "beverage"]):
+            score += 10  # brand moat
+        elif any(k in s for k in ["oil", "gas", "energy"]):
+            score += 8  # resource moat
+        elif any(k in s for k in ["tech", "software"]):
+            score += 5  # IP moat but competitive
+
+    # Signal 4: P/B premium — market paying for intangibles/moat
+    if pb is not None and pb > 0 and eps is not None and eps > 0:
+        evidence += 1
+        if pb > 3 and roe is not None and roe > 15:
+            score += 10  # high P/B justified by high ROE = moat premium
+        elif pb > 2:
+            score += 5
+
+    if evidence == 0:
+        return 50
+
+    return min(95, score + 5)
+
+
+def _parse_market_cap(raw: Optional[str]) -> Optional[float]:
+    """Parse market cap string like '129.7B' or '500M' to float in billions MYR."""
+    if raw is None:
+        return None
+    try:
+        raw = str(raw).strip().upper().replace(",", "")
+        if raw.endswith("B"):
+            return float(raw[:-1])
+        elif raw.endswith("M"):
+            return float(raw[:-1]) / 1000
+        elif raw.endswith("K"):
+            return float(raw[:-1]) / 1000000
+        else:
+            return float(raw) / 1e9
+    except (ValueError, TypeError):
+        return None
+
+
+def _compute_sell_triggers(
+    result: Dict[str, Any],
+    entry_price: Optional[float],
+    stop_loss: Optional[float],
+    target_price: Optional[float],
+    last_price: Optional[float],
+    position_size: int,
+    account_balance: float,
+    risk_per_trade_pct: float,
+) -> Dict[str, Any]:
+    """Compute EXECUTABLE sell/exit triggers from 999 scores + position state.
+
+    Returns structured sell rules, not just descriptive text.
+    Each trigger has: condition (boolean), action (str), reason (str).
+    """
+    triggers = []
+    active = 0
+
+    # Trigger 1: Stop-loss hit
+    stop_hit = (
+        stop_loss is not None and last_price is not None and last_price <= stop_loss
+    )
+    triggers.append(
+        {
+            "id": "SELL_STOP",
+            "active": stop_hit,
+            "condition": f"price {last_price} <= stop {stop_loss}"
+            if stop_hit
+            else "not triggered",
+            "action": "EXIT_FULL",
+            "reason": "Hard invalidation — stop loss breached",
+            "priority": 1,
+        }
+    )
+    if stop_hit:
+        active += 1
+
+    # Trigger 2: Target hit
+    target_hit = (
+        target_price is not None
+        and last_price is not None
+        and last_price >= target_price
+    )
+    triggers.append(
+        {
+            "id": "SELL_TARGET",
+            "active": target_hit,
+            "condition": f"price {last_price} >= target {target_price}"
+            if target_hit
+            else "not triggered",
+            "action": "EXIT_FULL_OR_TRAIL",
+            "reason": "Target achieved — take profit or trail stop",
+            "priority": 2,
+        }
+    )
+    if target_hit:
+        active += 1
+
+    # Trigger 3: Conviction collapse (fusion < 35)
+    fusion = result.get("fusion", {}).get("score", 50)
+    conviction_collapse = fusion < 35
+    triggers.append(
+        {
+            "id": "SELL_CONVICTION",
+            "active": conviction_collapse,
+            "condition": f"fusion {fusion} < 35"
+            if conviction_collapse
+            else f"fusion {fusion} >= 35",
+            "action": "EXIT_FULL",
+            "reason": "Conviction collapsed — thesis broken",
+            "priority": 3,
+        }
+    )
+    if conviction_collapse:
+        active += 1
+
+    # Trigger 4: Size exceeds risk budget
+    position_value = (entry_price or last_price or 0) * position_size
+    over_risk = (
+        account_balance > 0
+        and position_value > account_balance * (risk_per_trade_pct / 100) * 2
+    )
+    triggers.append(
+        {
+            "id": "REDUCE_SIZE",
+            "active": over_risk,
+            "condition": f"position RM{position_value:.0f} > {risk_per_trade_pct * 2:.1f}% of RM{account_balance:.0f}"
+            if over_risk
+            else "within risk budget",
+            "action": "REDUCE_HALF",
+            "reason": "Position exceeds risk budget — trim, don't exit",
+            "priority": 4,
+        }
+    )
+    if over_risk:
+        active += 1
+
+    # Trigger 5: Trend reversal (technical score < 30)
+    t_score = result.get("technicals", {}).get("score", 50)
+    trend_broken = t_score < 30
+    triggers.append(
+        {
+            "id": "SELL_TREND",
+            "active": trend_broken,
+            "condition": f"technicals {t_score} < 30"
+            if trend_broken
+            else f"technicals {t_score} >= 30",
+            "action": "EXIT_HALF",
+            "reason": "Technical structure broken — reduce exposure",
+            "priority": 5,
+        }
+    )
+    if trend_broken:
+        active += 1
+
+    # Trigger 6: 3 consecutive stops (recursive learn)
+    # This requires state tracking — hook for Calhoun guard integration
+    triggers.append(
+        {
+            "id": "CALHOUN_HALT",
+            "active": False,  # requires state tracking across trades
+            "condition": "requires trade history — CalhounGuard integration point",
+            "action": "PAUSE_ALL",
+            "reason": "3 consecutive stops — reduce size 50%, pause new entries",
+            "priority": 6,
+        }
+    )
+
+    return {
+        "triggers": triggers,
+        "active_count": active,
+        "any_critical": any(t["active"] and t["priority"] <= 2 for t in triggers),
+        "recommended_action": (
+            "EXIT"
+            if any(t["active"] and t["priority"] <= 2 for t in triggers)
+            else ("REDUCE" if active > 0 else "HOLD")
+        ),
+    }
+
+
+def _score_macro_alignment(sector: str, last_price: Optional[float]) -> float:
+    """Crude macro alignment score from sector + price (placeholder for GEOX integration).
+
+    Different sectors benefit from different macro regimes:
+      - Banking: higher rates = better NIM
+      - Energy: oil price > $60 = favorable
+      - Consumer: stable rates, low inflation
+      - Tech: low rates, growth regime
+
+    Currently returns sector-neutral baseline. Wire GEOX field_macro for real data.
+    """
+    if not sector:
+        return 50.0  # neutral
+    s = sector.lower()
+    # Sector baseline scores (to be calibrated with real macro data)
+    if any(k in s for k in ["bank", "finance"]):
+        return 55.0  # banking — moderate macro sensitivity
+    elif any(k in s for k in ["oil", "gas", "energy"]):
+        return 55.0  # energy — oil-price dependent
+    elif any(k in s for k in ["tele", "utility"]):
+        return 60.0  # defensive — less macro sensitive
+    elif any(k in s for k in ["consumer", "food"]):
+        return 55.0  # consumer staples — defensive
+    elif any(k in s for k in ["tech", "software"]):
+        return 50.0  # tech — growth dependent, higher vol
+    elif any(k in s for k in ["property", "construction"]):
+        return 45.0  # cyclical — rate sensitive
+    elif any(k in s for k in ["plant", "industrial"]):
+        return 50.0
+    else:
+        return 50.0
 
 
 def _macd_bullish(prices: List[float]) -> bool:
