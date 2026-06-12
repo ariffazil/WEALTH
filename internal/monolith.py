@@ -1585,6 +1585,18 @@ def wealth_macro_indicator(
 ) -> dict:
     """Ω-D3-03: Macro Indicator — GDP, inflation, rates via World Bank API."""
     indicator = indicator.lower().strip()
+    # Friendly aliases for common indicators
+    alias_map = {
+        "inflation": "inflation_my",
+        "cpi": "inflation_my",
+        "gdp": "gdp_growth_my",
+        "gdp_growth": "gdp_growth_my",
+        "interest_rate": "interest_rate_my",
+        "opr": "interest_rate_my",
+        "usd/myr": "usd_myr",
+        "usdmyr": "usd_myr",
+    }
+    indicator = alias_map.get(indicator, indicator)
     result = {
         "mcp": "WEALTH",
         "tool": "wealth_macro_indicator",
@@ -1605,6 +1617,7 @@ def wealth_macro_indicator(
                 d = r.json()
                 result["value"] = round(d["rates"]["MYR"], 4)
                 result["source"] = "Frankfurter API"
+                result["status"] = "OK"
             elif indicator in ("inflation_my", "gdp_growth_my"):
                 code_map = {
                     "inflation_my": "FP.CPI.TOTL.ZG",
@@ -1621,14 +1634,17 @@ def wealth_macro_indicator(
                     result["value"] = entry.get("value")
                     result["year"] = entry.get("date")
                     result["source"] = "World Bank"
+                    result["status"] = "OK"
             elif indicator == "interest_rate_my":
                 result["value"] = 3.00
                 result["source"] = "Bank Negara Malaysia OPR (public release)"
                 result["note"] = "Verify against latest BNM statistical release"
+                result["status"] = "OK"
             elif indicator in ("brent", "opec_basket", "coal_api2"):
                 STATIC = {"brent": 78.50, "opec_basket": 76.80, "coal_api2": 113.00}
                 result["value"] = STATIC.get(indicator)
                 result["source"] = "approximate — replace with live feed"
+                result["status"] = "OK"
             else:
                 result["status"] = "unsupported"
                 result["supported"] = [
@@ -11674,6 +11690,39 @@ def wealth_entropy_risk(
             scenarios = _json.loads(scenarios)
         except Exception:
             scenarios = []
+    if isinstance(mean_cash_flows, str):
+        try:
+            mean_cash_flows = _json.loads(mean_cash_flows)
+        except Exception:
+            mean_cash_flows = None
+    if isinstance(volatilities, str):
+        try:
+            volatilities = _json.loads(volatilities)
+        except Exception:
+            volatilities = None
+    # EMV mode: if caller provides mean/vol cashflows but no scenarios,
+    # synthesise a tri-state scenario set so the advertised API works.
+    if mode == "emv" and (not scenarios):
+        _means = mean_cash_flows or cash_flows
+        if _means:
+            _vols = volatilities or [0.15 * abs(x) for x in _means]
+            _commit = initial_commitment or initial_investment
+            _terminal = terminal_value or 0
+            _disc = discount_rate or 0.1
+            # Discount each period to present value
+            def _pv(series):
+                return sum(
+                    x / ((1 + _disc) ** (i + 1))
+                    for i, x in enumerate(series)
+                )
+
+            _base_outcome = _pv(_means) + (_terminal / ((1 + _disc) ** len(_means))) - _commit
+            _agg_vol = math.sqrt(sum(v * v for v in _vols)) / ((1 + _disc) ** (len(_means) / 2))
+            scenarios = [
+                {"name": "downside", "probability": 0.25, "outcome": _base_outcome - _agg_vol},
+                {"name": "base", "probability": 0.50, "outcome": _base_outcome},
+                {"name": "upside", "probability": 0.25, "outcome": _base_outcome + _agg_vol},
+            ]
     _mp = mode_params or {}
     if mode == "asymmetry_map":
         return wealth_asymmetry_map(
@@ -11837,6 +11886,84 @@ def wealth_energy_productivity(
                 "allocation_signal": "INSUFFICIENT_DATA",
             },
         )
+    # ── Load mode: VPS power metrics (power_draw sensor) ───────────────────
+    if mode == "load":
+        try:
+            from internal.vps_metrics import collect_power_metrics
+            metrics = collect_power_metrics()
+            power_w = metrics["power_draw_watts"]
+            verdict = "BELOW_THRESHOLD"
+            if power_w > 800:
+                verdict = "UNSUSTAINABLE"
+            elif power_w > 400:
+                verdict = "ELEVATED"
+            elif power_w > 100:
+                verdict = "NOMINAL"
+            return _inject_emergence(
+                "wealth_energy_productivity",
+                mode,
+                payload,
+                {
+                    "tool": "wealth_energy_productivity",
+                    "mode": "load",
+                    "status": "PASS",
+                    "domain_verdict": "SEAL",
+                    "governance_verdict": verdict,
+                    "metrics": metrics,
+                    "claim_tag": "ESTIMATE",
+                    "note": "Power draw estimated from CPU TDP × utilization + baseline. GPU via nvidia-smi if available.",
+                },
+            )
+        except Exception as e:
+            return _inject_emergence(
+                "wealth_energy_productivity",
+                mode,
+                payload,
+                {
+                    "tool": "wealth_energy_productivity",
+                    "mode": "load",
+                    "status": "FAIL",
+                    "domain_verdict": "VOID",
+                    "error": str(e),
+                    "failure_flags": ["VPS_METRICS_COLLECTION_FAILED"],
+                },
+            )
+    # ── Carbon mode: emissions from power draw (emissions sensor) ──────────
+    if mode == "carbon":
+        try:
+            from internal.vps_metrics import collect_power_metrics, power_to_carbon
+            metrics = collect_power_metrics()
+            carbon = power_to_carbon(metrics["power_draw_watts"])
+            return _inject_emergence(
+                "wealth_energy_productivity",
+                mode,
+                payload,
+                {
+                    "tool": "wealth_energy_productivity",
+                    "mode": "carbon",
+                    "status": "PASS",
+                    "domain_verdict": "SEAL",
+                    "governance_verdict": carbon["carbon_verdict"],
+                    "carbon_metrics": carbon,
+                    "power_metrics": metrics,
+                    "claim_tag": "ESTIMATE",
+                    "note": "Carbon estimated from power draw × Malaysia grid intensity (~560g CO2/kWh). Embodied carbon not included.",
+                },
+            )
+        except Exception as e:
+            return _inject_emergence(
+                "wealth_energy_productivity",
+                mode,
+                payload,
+                {
+                    "tool": "wealth_energy_productivity",
+                    "mode": "carbon",
+                    "status": "FAIL",
+                    "domain_verdict": "VOID",
+                    "error": str(e),
+                    "failure_flags": ["VPS_METRICS_COLLECTION_FAILED"],
+                },
+            )
     return _dispatch_emergence(
         "wealth_energy_productivity",
         mode,
@@ -11941,6 +12068,32 @@ WEALTH_SERIES_PRESETS: Dict[str, Dict[str, str]] = {
         "series_id": "__snapshot__",
         "entity_code": "MYS",
     },
+    # ── Labor market presets (employment_displacement sensor) ────────────
+    "my_unemployment": {
+        "source": "WorldBank",
+        "series_id": "SL.UEM.TOTL.ZS",
+        "entity_code": "MYS",
+    },
+    "my_youth_unemployment": {
+        "source": "WorldBank",
+        "series_id": "SL.UEM.1524.ZS",
+        "entity_code": "MYS",
+    },
+    "my_labor_force": {
+        "source": "WorldBank",
+        "series_id": "SL.TLF.CACT.ZS",
+        "entity_code": "MYS",
+    },
+    "my_vulnerable_employment": {
+        "source": "WorldBank",
+        "series_id": "SL.EMP.VULN.ZS",
+        "entity_code": "MYS",
+    },
+    "my_labor_snapshot": {
+        "source": "WorldBank",
+        "series_id": "__snapshot__",
+        "entity_code": "MYS",
+    },
 }
 
 
@@ -12038,6 +12191,7 @@ def wealth_field_macro(
         "snapshot": ["entity_code"],
         "reconcile": ["entity_code"],
         "vintage": ["source", "series_id", "entity_code", "vintage_date"],
+        "labor": ["entity_code"],
     }
     required = mode_requirements.get(mode, [])
     missing = [field for field in required if _is_blank_value(payload.get(field))]
@@ -12059,6 +12213,76 @@ def wealth_field_macro(
                 ),
                 "quick_start": "Use mode='sources' or mode='health' with no args. "
                 f"Or mode='preset' with preset in {sorted(WEALTH_SERIES_PRESETS.keys())}",
+            },
+        )
+
+    # ── Labor mode: fetch 4 WB indicators + compute AI exposure index ──────
+    if mode == "labor":
+        entity = payload["entity_code"]
+        labor_indicators = {
+            "unemployment_rate": ("SL.UEM.TOTL.ZS", "Unemployment, total (% of labor force)"),
+            "youth_unemployment": ("SL.UEM.1524.ZS", "Youth unemployment (% ages 15-24)"),
+            "labor_force_participation": ("SL.TLF.CACT.ZS", "Labor force participation rate"),
+            "vulnerable_employment": ("SL.EMP.VULN.ZS", "Vulnerable employment (% of total)"),
+        }
+        labor_data: Dict[str, Any] = {}
+        errors: List[str] = []
+        for key, (sid, desc) in labor_indicators.items():
+            try:
+                raw = ingest_fetch("WorldBank", sid, entity)
+                records = raw.get("secondary_metrics", {}).get("records", [])
+                val = None
+                yr = None
+                for rec in records:
+                    v = rec.get("value")
+                    if v is not None:
+                        try:
+                            fv = float(v)
+                            if fv == fv:
+                                val = round(fv, 2)
+                                yr = str(rec.get("observation_time", ""))[:4]
+                                break
+                        except (TypeError, ValueError):
+                            continue
+                if val is not None:
+                    labor_data[key] = {"value": val, "year": yr, "description": desc}
+                else:
+                    errors.append(f"{key}:NO_DATA")
+            except Exception as e:
+                errors.append(f"{key}:{type(e).__name__}")
+
+        # Compute AI exposure index (sector-weighted approximation)
+        ai_exposure_index = None
+        displacement_verdict = "UNKNOWN"
+        if labor_data:
+            unemp = labor_data.get("unemployment_rate", {}).get("value", 0) or 0
+            youth = labor_data.get("youth_unemployment", {}).get("value", 0) or 0
+            vuln = labor_data.get("vulnerable_employment", {}).get("value", 0) or 0
+            # AI exposure index: weighted composite of structural vulnerability signals
+            # Higher = more displacement risk. 0-1 normalized.
+            ai_exposure_index = round(min(1.0, (unemp / 15.0) * 0.3 + (youth / 30.0) * 0.3 + (vuln / 50.0) * 0.4), 4)
+            if ai_exposure_index < 0.3:
+                displacement_verdict = "STABLE"
+            elif ai_exposure_index < 0.55:
+                displacement_verdict = "ELEVATED_RISK"
+            else:
+                displacement_verdict = "DISPLACEMENT_ACTIVE"
+
+        return _inject_emergence(
+            "wealth_field_macro",
+            mode,
+            payload,
+            {
+                "tool": "wealth_field_macro",
+                "mode": "labor",
+                "entity_code": entity,
+                "indicators": labor_data,
+                "ai_exposure_index": ai_exposure_index,
+                "displacement_verdict": displacement_verdict,
+                "errors": errors if errors else None,
+                "data_source": "WorldBank",
+                "claim_tag": "ESTIMATE" if ai_exposure_index is not None else "UNKNOWN",
+                "note": "AI exposure index is a structural signal, not a forecast. Based on unemployment + youth + vulnerable employment weighted composite. Felten AIOE sector weights not yet wired.",
             },
         )
     return _dispatch_emergence(
@@ -14997,6 +15221,23 @@ _IEQ_WB_INDICATORS: Dict[str, tuple] = {
         lambda v: max(0.0, 1.0 - min(v / 20.0, 1.0)),
         "Inflation CPI %",
     ),
+    # ── Enhanced ownership concentration (multi-signal) ───────────────────
+    "SI.DST.05TH.20": (
+        "ownership_concentration_income_top20",
+        lambda v: min(v / 60.0, 1.0),
+        "Income share held by highest 20%",
+    ),
+    "SI.POV.GAP2": (
+        "poverty_depth",
+        lambda v: min(v / 20.0, 1.0),
+        "Poverty gap at $6.85/day (2017 PPP) %",
+    ),
+    # ── Intergenerational mobility proxy ──────────────────────────────────
+    "SE.SEC.PROG.ZS": (
+        "intergenerational_mobility_proxy",
+        lambda v: min(v / 100.0, 1.0),
+        "Progression to secondary school % — proxy for education mobility",
+    ),
 }
 
 
@@ -15067,6 +15308,50 @@ def _fetch_inequality_inputs_from_wb(
         provenance["institutions_quality"] = {
             "derived_from": ["information_symmetry", "voice_access"],
             "note": "WGI governance indicators unavailable via current adapter; proxy from literacy + LFP average",
+        }
+
+    # ── Composite ownership concentration ────────────────────────────────
+    # Derive from Gini + income share top20 + poverty depth for stronger signal.
+    # Falls back to single Gini signal if complement signals missing.
+    oc_signals = []
+    oc_weights = []
+    if "ownership_concentration" in params:
+        oc_signals.append(params["ownership_concentration"])
+        oc_weights.append(0.5)
+    if "ownership_concentration_income_top20" in params:
+        oc_signals.append(params["ownership_concentration_income_top20"])
+        oc_weights.append(0.3)
+    if "poverty_depth" in params:
+        # Invert: higher poverty depth → lower ownership concentration signal
+        # (poverty depth itself is a different dimension, but complements the picture)
+        oc_signals.append(1.0 - params["poverty_depth"])
+        oc_weights.append(0.2)
+    if oc_signals:
+        total_w = sum(oc_weights)
+        composite_oc = round(
+            sum(s * w for s, w in zip(oc_signals, oc_weights)) / total_w, 4
+        )
+        params["ownership_concentration"] = composite_oc
+        provenance["ownership_concentration"] = {
+            "composite": True,
+            "signals": ["gini", "income_share_top20", "poverty_depth_inv"][:len(oc_signals)],
+            "weights": oc_weights,
+            "note": "Composite from multiple WB signals. WID.world top10/top1 wealth share not yet wired (needs WID adapter).",
+        }
+
+    # ── Mobility channels enhancement ─────────────────────────────────────
+    # If intergenerational mobility proxy available, blend with income mobility
+    if "intergenerational_mobility_proxy" in params:
+        edu_mob = params["intergenerational_mobility_proxy"]
+        if "mobility_channels" in params:
+            income_mob = params["mobility_channels"]
+            params["mobility_channels"] = round(income_mob * 0.5 + edu_mob * 0.5, 4)
+        else:
+            params["mobility_channels"] = edu_mob
+        provenance["mobility_channels"] = {
+            "composite": True,
+            "signals": ["income_share_bottom20", "education_progression"],
+            "note": "Blended income mobility + education mobility proxy. GDIM intergenerational elasticity not yet wired.",
         }
 
     return {
