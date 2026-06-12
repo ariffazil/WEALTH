@@ -194,6 +194,14 @@ try:
     _WEALTH_888_AVAILABLE = True
 except ImportError:
     _WEALTH_888_AVAILABLE = False
+
+# Calhoun Guard — 4 philosophical locks
+try:
+    from internal.stock.calhoun_guard import enrich_888_verdict
+    _WEALTH_CALHOUN_AVAILABLE = True
+except ImportError:
+    _WEALTH_CALHOUN_AVAILABLE = False
+    enrich_888_verdict = None
     compute_888 = None
     compute_999 = None
     compute_market_intelligence = None  # type: ignore
@@ -2084,6 +2092,44 @@ def _handle_risk_metrics(symbol: str) -> dict:
         return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
 
 
+def _handle_calhoun(symbol: str) -> dict:
+    """Handle calhoun_survival mode — Calhoun/StrangeLoop/Gödel/Anti-Beautiful analysis."""
+    if not _WEALTH_CALHOUN_AVAILABLE:
+        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":"Calhoun Guard not available"}}
+    if not symbol:
+        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":"symbol is required"}}
+    try:
+        import yfinance as yf
+        yt_sym = f"{symbol}.KL" if symbol.isdigit() else symbol
+        hist = yf.Ticker(yt_sym).history(period="6mo")
+        if hist.empty:
+            return {"status":"NEEDS_DATA","verdict":"NEEDS_DATA","result":{"error":"No history"}}
+        c=[float(x) for x in hist["Close"]]; v=[int(x) for x in hist["Volume"]]
+        pe=roe=pb=dy=eps=None; sector=""
+        if symbol.isdigit():
+            try:
+                from klse_screener import get_klse_fundamentals
+                fund=get_klse_fundamentals(symbol)
+                if fund:
+                    pe=_sf4(fund.get("pe_ratio")); roe=_sf4(fund.get("roe"))
+                    pb=_sf4(fund.get("pb_ratio")); dy=_sf4(fund.get("dividend_yield"))
+                    eps=_sf4(fund.get("eps")); sector=fund.get("sector","")
+            except: pass
+        from internal.stock.engine_888 import compute_888
+        r888=compute_888(symbol,pe=pe,roe=roe,pb=pb,dy=dy,eps=eps,sector=sector)
+        gates=r888.get("gate_summary",{})
+        fs=r888["fundamentals"]["score"]; ts=r888["technicals"]["score"]; ws=r888["flows"]["score"]
+        enriched=enrich_888_verdict(symbol,c,v,fs,ts,ws,
+            f_hold=gates.get("F_HOLD",False),t_hold=gates.get("T_HOLD",False),w_hold=gates.get("W_HOLD",False),
+            data_completeness={"PE":pe is not None,"ROE":roe is not None,"DY":dy is not None,"EPS":eps is not None})
+        return {"status":"OK","verdict":enriched["verdict"],"tool":"wealth_stock_analysis","mode":"calhoun_survival",**enriched}
+    except Exception as e:
+        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":str(e)}}
+
+def _sf4(val):
+    try: return float(val)
+    except: return None
+
 def _handle_888(symbol: str) -> dict:
     """Handle 888 mode — JUDGE investment framework with HOLD gates."""
     if not _WEALTH_888_AVAILABLE:
@@ -2553,6 +2599,8 @@ async def wealth_stock_analysis(
         r = _handle_technical_pack(ticker)
     elif mode == "risk_metrics":
         r = _handle_risk_metrics(ticker)
+    elif mode == "calhoun_survival":
+        r = _handle_calhoun(ticker)
     elif mode == "888":
         r = _handle_888(ticker)
     elif mode == "999":
