@@ -16204,6 +16204,39 @@ if __name__ == "__main__":
             return out
         if hasattr(result, "model_dump"):
             return result.model_dump(by_alias=True, exclude_none=True)
+        # │ fallthrough-lists │ — mcp.call_tool() may return plain list[ContentBlock]
+        # │ (not wrapped in ToolResult).  Treat identically to the tuple-passthrough
+        # │ branch above: serialize content blocks, extract structuredContent from
+        # │ JSON-parseable text.  Required by MCP clients that validate outputSchema.
+        if isinstance(result, list):
+            serialized = [
+                item.model_dump(by_alias=True, exclude_none=True)
+                if hasattr(item, "model_dump")
+                else item
+                for item in result
+            ]
+            out: Dict[str, Any] = {"content": serialized}
+            extracted = _extract_structured_from_content(serialized)
+            if extracted is not None:
+                out["structuredContent"] = extracted
+            elif serialized and isinstance(serialized[0], dict):
+                txt = serialized[0].get("text", "")
+                out["structuredContent"] = {"result": txt} if txt else {"status": "ok"}
+            return out
+        # │ fallthrough-dicts │ — mcp.call_tool() may return a plain dict
+        # │ (not wrapped in ToolResult).  Wrap in MCP-spec CallToolResult shape
+        # │ with structuredContent set to the dict's inner "result" key.
+        # │ Required by MCP clients that validate outputSchema.
+        if isinstance(result, dict):
+            inner = result.get("result", result)
+            text_content = json.dumps(inner, default=str, ensure_ascii=False)
+            out = {
+                "content": [{"type": "text", "text": text_content}],
+                "structuredContent": inner
+                if isinstance(inner, dict)
+                else {"result": text_content},
+            }
+            return out
         return result
 
     # ── Supabase L4 Domain Receipts ───────────────────────────────────────────
