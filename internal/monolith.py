@@ -172,6 +172,15 @@ try:
     _WEALTH_SCREENER_9_AVAILABLE = True
 except ImportError:
     _WEALTH_SCREENER_9_AVAILABLE = False
+
+# D4++ Market Intelligence Engine — thermodynamic state-space analysis
+try:
+    from internal.stock.market_intelligence import compute_market_intelligence
+
+    _WEALTH_MI_AVAILABLE = True
+except ImportError:
+    _WEALTH_MI_AVAILABLE = False
+    compute_market_intelligence = None  # type: ignore
     run_screener_9 = None  # type: ignore
 
 
@@ -2059,6 +2068,52 @@ def _handle_risk_metrics(symbol: str) -> dict:
         return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
 
 
+def _handle_market_intelligence(symbol: str) -> dict:
+    """Handle market_intelligence mode — thermodynamic state-space analysis."""
+    if not _WEALTH_MI_AVAILABLE:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "Market Intelligence not available"},
+        }
+    if not symbol:
+        return {
+            "status": "ERROR",
+            "verdict": "NEEDS_DATA",
+            "result": {"error": "symbol is required"},
+        }
+    try:
+        # Auto-fetch fundamentals for Bursa tickers (numeric-only = Bursa code)
+        pe = roe = pb = dy = eps = None
+        sector = ""
+        if symbol.isdigit():
+            try:
+                from klse_screener import get_klse_fundamentals
+
+                fund = get_klse_fundamentals(symbol)
+                if fund:
+                    pe = _sf(fund.get("pe_ratio"))
+                    roe = _sf(fund.get("roe"))
+                    pb = _sf(fund.get("pb_ratio"))
+                    dy = _sf(fund.get("dividend_yield"))
+                    eps = _sf(fund.get("eps"))
+                    sector = fund.get("sector", "")
+            except:
+                pass
+        return compute_market_intelligence(
+            symbol, pe=pe, roe=roe, pb=pb, dy=dy, eps=eps, sector=sector
+        )
+    except Exception as e:
+        return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
+
+
+def _sf(val):  # safe float helper for handler
+    try:
+        return float(val)
+    except:
+        return None
+
+
 def _handle_screener_9() -> dict:
     """Handle screener_9 mode — 9-point fundamentals + technical screening."""
     if not _WEALTH_SCREENER_9_AVAILABLE:
@@ -2432,6 +2487,8 @@ async def wealth_stock_analysis(
         r = _handle_technical_pack(ticker)
     elif mode == "risk_metrics":
         r = _handle_risk_metrics(ticker)
+    elif mode == "market_intelligence":
+        r = _handle_market_intelligence(ticker)
     elif mode == "screener_9":
         r = _handle_screener_9()
     else:
