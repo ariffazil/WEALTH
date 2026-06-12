@@ -187,6 +187,14 @@ try:
     _WEALTH_999_AVAILABLE = True
 except ImportError:
     _WEALTH_999_AVAILABLE = False
+
+# 888 JUDGE Engine
+try:
+    from internal.stock.engine_888 import compute_888
+    _WEALTH_888_AVAILABLE = True
+except ImportError:
+    _WEALTH_888_AVAILABLE = False
+    compute_888 = None
     compute_999 = None
     compute_market_intelligence = None  # type: ignore
     run_screener_9 = None  # type: ignore
@@ -2076,6 +2084,31 @@ def _handle_risk_metrics(symbol: str) -> dict:
         return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
 
 
+def _handle_888(symbol: str) -> dict:
+    """Handle 888 mode — JUDGE investment framework with HOLD gates."""
+    if not _WEALTH_888_AVAILABLE:
+        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":"888 Engine not available"}}
+    if not symbol:
+        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":"symbol is required"}}
+    try:
+        pe=roe=pb=dy=eps=None; sector=""
+        if symbol.isdigit():
+            try:
+                from klse_screener import get_klse_fundamentals
+                fund=get_klse_fundamentals(symbol)
+                if fund:
+                    pe=_sf3(fund.get("pe_ratio")); roe=_sf3(fund.get("roe"))
+                    pb=_sf3(fund.get("pb_ratio")); dy=_sf3(fund.get("dividend_yield"))
+                    eps=_sf3(fund.get("eps")); sector=fund.get("sector","")
+            except: pass
+        return compute_888(symbol, pe=pe, roe=roe, pb=pb, dy=dy, eps=eps, sector=sector)
+    except Exception as e:
+        return {"status":"ERROR","verdict":"NEEDS_DATA","result":{"error":str(e)}}
+
+def _sf3(val):
+    try: return float(val)
+    except: return None
+
 def _handle_999(symbol: str) -> dict:
     """Handle 999 mode — complete investment intelligence framework."""
     if not _WEALTH_999_AVAILABLE:
@@ -2520,6 +2553,8 @@ async def wealth_stock_analysis(
         r = _handle_technical_pack(ticker)
     elif mode == "risk_metrics":
         r = _handle_risk_metrics(ticker)
+    elif mode == "888":
+        r = _handle_888(ticker)
     elif mode == "999":
         r = _handle_999(ticker)
     elif mode == "market_intelligence":
