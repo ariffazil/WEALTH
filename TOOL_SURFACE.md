@@ -2,7 +2,7 @@
 > **Canonical Source:** `ariffazil/wealth`
 > **Authority:** WEALTH organ, governed by `ariffazil/arifOS`
 > **Purpose:** Classify every `@mcp.tool` decorator in `internal/monolith.py`
-> **Status:** PARTIAL — classification in progress (PHOENIX-73E)
+> **Status:** OPERATIONAL — 20 public tools + 34 hidden aliases (verified 2026-06-12)
 
 ---
 
