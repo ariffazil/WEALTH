@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 
 const runPython = (script) => {
   const result = spawnSync("python", ["-c", script], {
-    cwd: "/root/WEALTH",
+    cwd: (process.env.ARIFOS_HOME || "/root") + "/WEALTH",
     encoding: "utf8",
   });
   if (result.status !== 0) {

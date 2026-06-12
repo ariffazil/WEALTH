@@ -52,7 +52,7 @@ def test_governance_active():
         [sys.executable, "-m", "internal.monolith"],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        cwd="/root/WEALTH",
+        cwd=os.environ.get("ARIFOS_HOME", "/root") + "/WEALTH",
         env=env,
     )
     try:
