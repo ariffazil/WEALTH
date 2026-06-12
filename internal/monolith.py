@@ -267,7 +267,7 @@ arifos_path = os.path.join(base_dir, "arifOS")
 if os.path.exists(arifos_path) and arifos_path not in sys.path:
     sys.path.append(arifos_path)
 # Canonical arifOS kernel path (added 2026-06-02 for SAF shared lib)
-_arifos_kernel = "/root/arifOS"
+_arifos_kernel = os.environ.get("ARIFOS_HOME", "/root") + "/arifOS"
 if os.path.isdir(_arifos_kernel) and _arifos_kernel not in sys.path:
     sys.path.append(_arifos_kernel)
 
@@ -7089,7 +7089,7 @@ async def wealth_init_tool(
 
     # Robust path resolution for arifOS root
     possible_paths = [
-        "/root/arifOS",
+        os.environ.get("ARIFOS_HOME", "/root") + "/arifOS",
         "/root",
         os.path.abspath(os.path.join(os.getcwd(), "..")),
         os.getcwd(),
@@ -13394,7 +13394,7 @@ def wealth_synthesize(
             try:
                 import sys as _sys_wil
 
-                _arifos_kernel_wil = "/root/arifOS"
+                _arifos_kernel_wil = os.environ.get("ARIFOS_HOME", "/root") + "/arifOS"
                 if _arifos_kernel_wil not in _sys_wil.path:
                     _sys_wil.path.insert(0, _arifos_kernel_wil)
                 from core.shared.saf_stats import (
@@ -13549,7 +13549,7 @@ def wealth_synthesize(
             try:
                 import sys as _sys_cfr
 
-                _arifos_kernel_cfr = "/root/arifOS"
+                _arifos_kernel_cfr = os.environ.get("ARIFOS_HOME", "/root") + "/arifOS"
                 if _arifos_kernel_cfr not in _sys_cfr.path:
                     _sys_cfr.path.insert(0, _arifos_kernel_cfr)
                 import pandas as _pd_cfr
@@ -14091,7 +14091,7 @@ async def wealth_omni_wisdom(
             try:
                 import sys as _sys_ab
 
-                _arifos_kernel_ab = "/root/arifOS"
+                _arifos_kernel_ab = os.environ.get("ARIFOS_HOME", "/root") + "/arifOS"
                 if _arifos_kernel_ab not in _sys_ab.path:
                     _sys_ab.path.insert(0, _arifos_kernel_ab)
                 import pandas as _pd_ab
@@ -16250,7 +16250,7 @@ def _resolve_repo_head() -> str:
         _script_dir,  # /app/internal (fallback)
         "/opt/wealth-src",
         "/root/wealth",
-        "/root/WEALTH",
+        os.environ.get("ARIFOS_HOME", "/root") + "/WEALTH",
     ]
     for candidate in candidates:
         if not candidate or not os.path.exists(candidate):
