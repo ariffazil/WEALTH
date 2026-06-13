@@ -17034,6 +17034,18 @@ if __name__ == "__main__":
             except Exception:
                 identity_hash = "UNAVAILABLE"
 
+        # P6 — Capital manifest hash (domain anchor, NOT constitution_hash)
+        # WEALTH answers to CAPITAL_LAW (value law), not constitutional law.
+        capital_manifest_hash = "sha256:missing"
+        domain_law = "CAPITAL_LAW"
+        try:
+            _manifest_path = "/root/WEALTH/canon/001_CAPITAL_MANIFEST.md"
+            if os.path.exists(_manifest_path):
+                with open(_manifest_path, "rb") as f:
+                    capital_manifest_hash = f"sha256:{hashlib.sha256(f.read()).hexdigest()}"
+        except Exception:
+            pass
+
         registry = _registry_snapshot([tool.name for tool in await mcp.list_tools()])
         return _JR(
             {
@@ -17049,6 +17061,9 @@ if __name__ == "__main__":
                 "registry_truth": registry["registry_truth"],
                 "final_authority": registry["final_authority"],
                 "identity_hash": identity_hash,
+                # P6 — WEALTH identity anchor (CAPITAL_LAW, not constitutional)
+                "domain_law": domain_law,
+                "capital_manifest_hash": capital_manifest_hash,
                 # Phase 2 hardening: freshness + owner summary
                 "freshness": {
                     "status": "fresh"
