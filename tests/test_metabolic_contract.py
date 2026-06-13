@@ -191,6 +191,8 @@ def test_metabolic_has_required_keys():
         "requires_888_judge",
         "timestamp_utc",
         "constitution_hash",
+        "domain_law",
+        "capital_manifest_hash",
     ]
     for key in required:
         assert key in metabolic, f"Missing required key: {key}"

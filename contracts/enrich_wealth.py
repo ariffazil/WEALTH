@@ -298,7 +298,9 @@ def build_metabolic_output(
         "human_final_authority": "Arif",
         "requires_888_judge": requires_888,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        "constitution_hash": _METABOLIC_SOURCE_COMMIT,
+        "domain_law": "CAPITAL_LAW",
+        "capital_manifest_hash": _METABOLIC_SOURCE_COMMIT,
+        "constitution_hash": _METABOLIC_SOURCE_COMMIT,  # DEPRECATED — backward compat
         "constitutional_boundary_notice": (
             "WEALTH is advisory-only. It computes capital thermodynamics "
             "but NEVER adjudicates constitutional verdicts. "
