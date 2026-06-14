@@ -1,8 +1,8 @@
 <!-- SOT-MANIFEST
 owner: Arif
-last_verified: 2026-06-10
-valid_from: 2026-06-10
-valid_until: 2026-07-10
+last_verified: 2026-06-14
+valid_from: 2026-06-14
+valid_until: 2026-07-14
 confidence: high
 scope: /root/WEALTH
 -->
@@ -34,7 +34,6 @@ The canonical capital engine. It models conservation, flow, gradient, entropy, e
 - Update schemas and contracts
 
 ### Requires 888_HOLD
-- Changes to `pyproject.toml` license field (currently PROPRIETARY — anomaly noted)
 - Cross-repo API contract changes
 - Production deployment without verified build + test pass
 
@@ -76,7 +75,7 @@ docker build -t wealth .
 
 ## Known Anomalies
 
-- `pyproject.toml` declares `license = {text = "PROPRIETARY"}` while `package.json` declares `"license": "AGPL-3.0"`. **Do not change without 888_HOLD.**
+- ~~`pyproject.toml` license mismatch~~ — RESOLVED 2026-06-14. Both `pyproject.toml` and `package.json` declare `AGPL-3.0`.
 
 ## Federation Position
 
@@ -85,6 +84,9 @@ arifOS (Ω Law) → WEALTH (Capital) → A-FORGE (Ψ Execution) → VAULT999 (Se
 ```
 
 WEALTH provides **evidence** — never execution. It computes NPV, IRR, EMV, DSCR, risk scores, and macro snapshots. It does not move capital.
+
+> **APEX (port 3002)** is a legacy health probe; deliberation moved to the AAA a2a-server.  
+> **MIND/MEMORY services** live under A-FORGE (ports 51001/51002) for cross-agent state and recall.
 
 ---
 

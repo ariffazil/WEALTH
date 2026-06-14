@@ -1,7 +1,10 @@
 # ⚠️ DEPRECATED — DO NOT USE
 # This is the OLD AGI-bot v63 constitution with '9+2+2 Laws' numbering.
-# The canonical 13-floor constitution is at: ariffazil/arifOS/static/arifos/theory/000/000_CONSTITUTION.md
-# This file kept for historical reference only. DITEMPA BUKAN DIBERI.
+# The canonical 13-floor constitution (F1–F13) is at:
+#   ariffazil/arifOS/static/arifos/theory/000/000_CONSTITUTION.md
+# F14 is DEAD and not a floor.
+# This file is kept for historical reference only. Removal requires explicit F13 approval.
+# DITEMPA BUKAN DIBERI.
 
 # AGI-bot Constitutional Kernel v63
 

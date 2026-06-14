@@ -1,5 +1,13 @@
 # WEALTH MCP — Architecture Refactor Blueprint
 
+> ⚰️ **DESIGN HISTORY — SUPERSEDED BY 2026-06-12 FEDERATION ALIGNMENT**
+> This blueprint predates the canonical topology ratification. The **live surface** is:
+> - **20 public MCP tools** + **34 hidden aliases**
+> - **65 `@mcp.tool` decorators** in `internal/monolith.py`
+> - Port **18082**, bound to **127.0.0.1**
+> - arifOS kernel port **8088**
+> The architectural direction below (atomic tools, prompts, resources) remains aspirational and is not yet implemented.
+
 **Status:** DESIGN APPROVED — Pending Implementation
 **Author:** Arif Fazil + Hermes ASI
 **Date:** 2026-05-07
@@ -9,7 +17,7 @@
 
 ## 1. Problem Statement
 
-WEALTH MCP currently exposes **50 tools** via a single `@mcp.tool()` decorator layer and a `V2_CANONICAL_MAP` that aliases 32 v1 functions to v2 names. The result:
+WEALTH MCP currently exposes **20 public tools + 34 hidden aliases** (65 `@mcp.tool()` decorators) via `internal/monolith.py`. This blueprint originally assumed ~50 tools; the canonical surface is now smaller and governed by `PUBLIC_SURFACE_WHITELIST`.
 
 - **Category impurity:** tools, orchestration wrappers, and prompts all dumped as `@mcp.tool()`
 - **Naming noise:** `wealth_reason_npv`, `wealth_survival_cashflow`, `wealth_mind_evoi` — mixed semantic layers
@@ -69,7 +77,7 @@ wealth_<dimension>_<operation>
 
 ---
 
-## 3. Current Tool Inventory (50 tools)
+## 3. Current Tool Inventory (20 public tools + 34 hidden aliases)
 
 ### 3.1 Registered via `@mcp.tool()` decorators (16 direct)
 
@@ -94,7 +102,7 @@ These are the umbrella/orchestration tools — the ones flagged for demotion:
 | `vault_write` | 4097 | tool | ✅ KEEP — ledger append (irreversible write) |
 | `vault_query` | 4158 | tool | ✅ KEEP — ledger read |
 
-### 3.2 Registered via `V2_CANONICAL_MAP` (32 atomic tools)
+### 3.2 Registered via `V2_CANONICAL_MAP` (canonical aliases; live public surface = 20)
 
 These are the actual computational primitives — most are already correctly designed:
 
@@ -143,7 +151,7 @@ These are the actual computational primitives — most are already correctly des
 
 ```
 WEALTH MCP
-├── tools/       (32 atomic executables)
+├── tools/       (20 public executables + 34 aliases)
 ├── prompts/     (8 reasoning workflows)
 └── resources/   (20+ stable knowledge items)
 ```
@@ -382,7 +390,7 @@ Resources are registered alongside existing `@mcp.resource()` decorators (alread
 
 1. Copy updated `monolith.py` to container
 2. Restart `wealth-organ`
-3. `curl http://127.0.0.1:18082/mcp` → `tools/list` should show ~32 tools
+3. `curl http://127.0.0.1:18082/mcp` → `tools/list` should show 20 public tools
 4. `curl http://127.0.0.1:18082/mcp` → `prompts/list` should show ~8 prompts
 5. `curl http://127.0.0.1:18082/mcp` → `resources/list` should show ~20 resources
 6. Run `openclaw doctor --non-interactive` → WEALTH handshake should still pass

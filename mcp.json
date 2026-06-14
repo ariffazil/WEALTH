@@ -2,7 +2,7 @@
   "mcpServers": {
     "wealth": {
       "command": "python",
-      "args": ["server.py"],
+      "args": ["internal/monolith.py"],
       "env": {
         "NODE_ENV": "production"
       }

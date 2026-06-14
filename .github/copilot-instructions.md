@@ -8,11 +8,12 @@ WEALTH is the **evidence-only** capital computation organ. It models, quantifies
 - **Port:** 18082 | **Domain:** `wealth.arif-fazil.com/mcp`
 - **Systemd:** `wealth-organ.service`
 - **Language:** Python 3.12 + Node.js 22 (dual runtime)
+- **Tool surface:** 20 public MCP tools + 34 hidden aliases (65 `@mcp.tool` decorators in `internal/monolith.py`)
 
 ## Build, test, run
 
 ```bash
-# Python side (canonical — 44 tools)
+# Python side (canonical — 20 public tools + 34 hidden aliases)
 pip install -e ".[dev]"
 pytest tests/ -q --tb=short          # 153 pass, 10 skip
 python internal/monolith.py          # FastMCP server on :18082
@@ -29,7 +30,7 @@ make forge && systemctl restart wealth-organ
 
 | Path | Role |
 |------|------|
-| `internal/monolith.py` | Canonical 44-tool MCP kernel (~16K lines) |
+| `internal/monolith.py` | Canonical 20-public-tool MCP kernel (~16K lines) |
 | `internal/stock/` | D4 Stock Analysis — 12-mode capital-risk |
 | `internal/engines/` | canonical_tools.py, five_seals.py, advisory.py |
 | `internal/personal_finance.py` | Personal cashflow, EPF, zakat |
@@ -46,10 +47,12 @@ make forge && systemctl restart wealth-organ
 ## Conventions
 
 - `internal/monolith.py` is the canonical kernel. Do NOT add tools to server.py.
-- All 44 tools export `mode` parameter for routing. Hidden aliases (34) are internal.
-- AGPL-3.0 license (code). README §dir-tree has a stale "PROPRIETARY" comment — ignore it.
+- 20 public tools export `mode` parameter for routing. Hidden aliases (34) are internal.
+- AGPL-3.0 license (code and packaging). License anomaly resolved 2026-06-14.
 - REPO= commit trailer required: `REPO=wealth`
 - Tags: `vYYYY.MM.DD` only — never semver counters.
+- APEX (port 3002) is a legacy health probe; deliberation moved to AAA a2a-server.
+- A-FORGE hosts MIND (51001) and MEMORY (51002) runtime services for cross-agent state/recall.
 
 ## F1-F13 binding
 

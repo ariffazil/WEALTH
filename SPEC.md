@@ -1,6 +1,13 @@
 # WEALTH MCP — Orthogonal Architecture Rebuild
 ## SPEC v1.0 — DITEMPA BUKAN DIBERI
 
+> ⚰️ **DESIGN HISTORY — SUPERSEDED BY 2026-06-12 FEDERATION ALIGNMENT**
+> This spec predates the canonical topology ratification. The **live surface** is:
+> - **20 public MCP tools** + **34 hidden aliases** (65 `@mcp.tool` decorators)
+> - Port **18082**, bound to **127.0.0.1**
+> - arifOS kernel port **8088**
+> The target architecture below remains aspirational.
+
 ---
 
 ## 1. Concept & Vision
@@ -193,10 +200,12 @@ Test that `/mcp` JSON-RPC returns correct tools/prompts/resources counts.
 
 ## 8. Success Criteria
 
-After rebuild:
+After rebuild (target, not current):
 - `/tools/list` returns exactly 42 tools (36 atomic + 6 domain)
 - `/prompts/list` returns exactly 12 prompts
 - `/resources/list` returns exactly 21 resources
+
+Current canonical surface (2026-06-14): 20 public tools + 34 hidden aliases.
 - No umbrella tool remains on the primary surface
 - V2 aliases removed (backward compatibility via redirect)
 - HTTP transport exposes all three primitives correctly
