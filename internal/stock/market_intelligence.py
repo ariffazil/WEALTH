@@ -33,7 +33,7 @@ DITEMPA BUKAN DIBERI — Intelligence is forged from structure, not from hope.
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 
 # ═══════════════════════════════════════════════════════════════════════════

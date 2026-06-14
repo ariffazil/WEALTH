@@ -3,6 +3,9 @@
 # Phase 3: Canonical organs
 # SPEAR: DITEMPA BUKAN DIBERI
 
+from __future__ import annotations
+
+
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
 import uuid

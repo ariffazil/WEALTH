@@ -29,7 +29,7 @@ DITEMPA BUKAN DIBERI — The judge does not compute. The judge deliberates.
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from .indicators import (
     compute_rsi,

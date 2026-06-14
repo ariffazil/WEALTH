@@ -2,6 +2,8 @@
 # Phase 1: Freeze legacy surface, map to canonical organs
 # SPEAR: DITEMPA BUKAN DIBERI
 
+from __future__ import annotations
+
 LEGACY_TO_CANONICAL = {
     # ─── SYSTEM ────────────────────────────────────────────────────────────
     "wealth_health_check": {

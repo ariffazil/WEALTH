@@ -3,6 +3,8 @@ WEALTH — Sovereign Governance & Forge Laws
 Codification of the 6 Forge Laws and Epistemic Metrics.
 """
 
+from __future__ import annotations
+
 import enum
 
 class ForgeLaw(enum.Enum):

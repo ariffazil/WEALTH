@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 try:
     import uvloop
 
@@ -25,6 +27,13 @@ import httpx
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if base_dir not in sys.path:
     sys.path.append(base_dir)
+
+# ── Reality Ledger Bridge ────────────────────────────────────────────────────────
+_WEALTH_LEDGER_AVAILABLE = True
+try:
+    from core.organ_ledger_bridge import record_wealth_computation
+except ImportError:
+    _WEALTH_LEDGER_AVAILABLE = False
 
 # WEALTH Internal Imports (Use relative or try/except for robustness)
 try:
@@ -252,13 +261,7 @@ async def _epf(owner):
 
 
 __version__ = "2026.05.02"
-"""WEALTH v2026.04.29 - Sovereign Pipeline OS with Expanded Resource Lattice."""
-
-__version__ = "2026.05.02"
-"""WEALTH v2026.04.29 - Sovereign Pipeline OS with Expanded Resource Lattice."""
-
-__version__ = "2026.05.02"
-"""WEALTH v2026.04.29 - Sovereign Pipeline OS with Expanded Resource Lattice."""
+"""WEALTH v2026.05.02 — Sovereign Pipeline OS with Expanded Resource Lattice."""
 
 LAST_RECEIPT_HASH = "0" * 64
 
@@ -11601,7 +11604,7 @@ def wealth_conservation_capital(
     idempotency_key: Optional[str] = None,
 ) -> Any:
     """Ω-WEALTH-01: Conservation — capital stock reality (assets, liabilities, reserves, ledger)."""
-    return _dispatch_emergence(
+    result = _dispatch_emergence(
         "wealth_conservation_capital",
         mode,
         {
@@ -11612,6 +11615,17 @@ def wealth_conservation_capital(
         },
         {k: v for k, v in locals().items() if k not in ("mode", "dispatch")},
     )
+    # ── Reality Ledger ──────────────────────────────────────────────────────────
+    if _WEALTH_LEDGER_AVAILABLE and mode == "state":
+        try:
+            record_wealth_computation(
+                computation_type="conservation_capital",
+                inputs={"mode": mode, "scale_mode": scale_mode},
+                result=result if isinstance(result, dict) else {},
+            )
+        except Exception:
+            pass
+    return result
 
 
 @mcp.tool(name="wealth_flow_liquidity")
@@ -11631,7 +11645,7 @@ def wealth_flow_liquidity(
     scale_mode: str = "enterprise",
 ) -> Any:
     """Ω-WEALTH-02: Flow — liquidity movement (cashflow, burn, runway, survival)."""
-    return _dispatch_emergence(
+    result = _dispatch_emergence(
         "wealth_flow_liquidity",
         mode,
         {
@@ -11641,6 +11655,17 @@ def wealth_flow_liquidity(
         },
         {k: v for k, v in locals().items() if k not in ("mode", "dispatch")},
     )
+    # ── Reality Ledger ──────────────────────────────────────────────────────────
+    if _WEALTH_LEDGER_AVAILABLE and mode == "cashflow":
+        try:
+            record_wealth_computation(
+                computation_type="flow_liquidity",
+                inputs={"mode": mode, "scale_mode": scale_mode},
+                result=result if isinstance(result, dict) else {},
+            )
+        except Exception:
+            pass
+    return result
 
 
 @mcp.tool(name="wealth_gradient_price")
@@ -11783,7 +11808,7 @@ def wealth_entropy_risk(
             is_loss_year_dividend_paid=_mp.get("is_loss_year_dividend_paid", False),
             scale_mode=_mp.get("scale_mode", scale_mode),
         )
-    return _dispatch_emergence(
+    result = _dispatch_emergence(
         "wealth_entropy_risk",
         mode,
         {
@@ -11799,6 +11824,17 @@ def wealth_entropy_risk(
             if k not in ("mode", "dispatch", "mode_params", "_mp", "_json")
         },
     )
+    # ── Reality Ledger ──────────────────────────────────────────────────────────
+    if _WEALTH_LEDGER_AVAILABLE and mode == "emv":
+        try:
+            record_wealth_computation(
+                computation_type="entropy_risk",
+                inputs={"mode": mode, "scale_mode": scale_mode},
+                result=result if isinstance(result, dict) else {},
+            )
+        except Exception:
+            pass
+    return result
 
 
 @mcp.tool(name="wealth_energy_productivity")
@@ -11996,7 +12032,18 @@ def wealth_time_discount(
     payload = _clean_payload(
         {k: v for k, v in locals().items() if k != "_json"}, exclude={"mode"}
     )
-    return _dispatch_invariant_tool("wealth_time_discount", mode, payload)
+    result = _dispatch_invariant_tool("wealth_time_discount", mode, payload)
+    # ── Reality Ledger ──────────────────────────────────────────────────────────
+    if _WEALTH_LEDGER_AVAILABLE and mode == "npv":
+        try:
+            record_wealth_computation(
+                computation_type="time_discount",
+                inputs={"mode": mode, "scale_mode": scale_mode},
+                result=result if isinstance(result, dict) else {},
+            )
+        except Exception:
+            pass
+    return result
 
 
 @mcp.tool(name="wealth_inertia_leverage")

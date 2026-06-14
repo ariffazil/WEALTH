@@ -5,6 +5,8 @@ Run: cd /root/WEALTH && python3 wealth_import_smoke.py
 Exits 0 if clean, exits 1 if governance wrapper fails.
 """
 
+from __future__ import annotations
+
 import sys
 import os
 import subprocess

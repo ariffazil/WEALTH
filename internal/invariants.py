@@ -5,6 +5,8 @@ Chronological Truth: 2026.04.29
 Finalized G-Score Instrumentation (v1.0 Blueprint).
 """
 
+from __future__ import annotations
+
 from typing import Any, Dict, List, Tuple
 
 import numpy as np

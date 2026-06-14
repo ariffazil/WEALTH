@@ -4,6 +4,8 @@ D1: Personal Finance infrastructure for cashflow, net worth, EPF, and zakat trac
 Tables: wealth.transactions, wealth.assets, wealth.liabilities, wealth.epf_snapshots, wealth.zakat_records
 """
 
+from __future__ import annotations
+
 from typing import Optional
 from datetime import date
 import asyncpg
