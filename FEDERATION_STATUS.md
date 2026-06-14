@@ -1,6 +1,6 @@
 # FEDERATION STATUS — WEALTH (Capital Intelligence)
 
-> **Canonical Source of Truth:** [`ariffazil/arifOS/FEDERATION_STATUS.md`](https://github.com/ariffazil/arifOS/blob/main/FEDERATION_STATUS.md)
+> **Canonical Source of Truth:** [`ariffazil/arifos/FEDERATION_STATUS.md`](https://github.com/ariffazil/arifos/blob/main/FEDERATION_STATUS.md)
 > **Local mirror:** This file is a pointer only. Do not edit organ status here.
 > **Last refreshed:** 2026-06-14
 
