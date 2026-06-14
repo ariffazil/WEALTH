@@ -898,7 +898,7 @@ WEALTH is one of seven organs in the arifOS Constitutional Federation.
 
 | Organ | Port | Repo | Role | Relationship to WEALTH |
 |-------|------|------|------|----------------------|
-| **arifOS** | 8088 | `ariffazil/arifOS` | Constitutional kernel | **Governs WEALTH** — F1-F13 enforcement, 888 JUDGE, VAULT999 |
+| **arifOS** | 8088 | `ariffazil/arifos` | Constitutional kernel | **Governs WEALTH** — F1-F13 enforcement, 888 JUDGE, VAULT999 |
 | **GEOX** | 8081 | `ariffazil/geox` | Earth intelligence | **Feeds WEALTH** — prospect volumes, resource quality (planned) |
 | **WELL** | 18083 | `ariffazil/well` | Human readiness | **Informs WEALTH** — cognitive load → capital preservation (planned) |
 | **AAA** | 3001 | `ariffazil/AAA` | Control plane | **Displays WEALTH** — cockpit, portfolio dashboard, decision memos |

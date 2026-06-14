@@ -1,7 +1,7 @@
 # CONTEXT.md — WEALTH (Capital Intelligence)
 
 > **Organ:** WEALTH | **Port:** 18082 | **Repo:** `ariffazil/wealth`
-> **Kernel SoT:** `ariffazil/arifOS` (FEDERATION_CONTRACT.md + GENESIS/000)
+> **Kernel SoT:** `ariffazil/arifos` (FEDERATION_CONTRACT.md + GENESIS/000)
 > **Last Updated:** 2026-06-14
 
 ## Live State
