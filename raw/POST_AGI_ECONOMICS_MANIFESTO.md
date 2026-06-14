@@ -1,3 +1,8 @@
+# ⚰️ ARCHIVED — HISTORICAL DRAFT
+# This manifesto is a historical draft. It is not canonical doctrine.
+# For current WEALTH cosmology, see canon/COSMOLOGY.md.
+# Last checked: 2026-06-14
+#
 # WEALTH Post‑AGI Economics Manifesto (v1.0)
 # DITEMPA BUKAN DIBERI
 

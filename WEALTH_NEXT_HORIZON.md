@@ -201,7 +201,7 @@ WEALTH is currently partially wired:
 | Federation Target | Status | Wire Required |
 |-------------------|--------|----------------|
 | GEOX (port 8081) | ✅ `wealth_evaluate_prospect` exists | Promotes GEOX ↔ WEALTH co-evaluation loop |
-| arifOS (port 8080) | ✅ VAULT999 bridge via `vault_bridge.py` | arifOS FLOOR enforcement on WEALTH decisions |
+| arifOS (port 8088) | ✅ VAULT999 bridge via `vault_bridge.py` | arifOS FLOOR enforcement on WEALTH decisions |
 | AAA (control plane) | ⚠️ Partial — port 3001 | WEALTH metrics dashboard |
 | WELL (port 8083) | ❌ Not wired | Human cognitive load → capital allocation |
 | A-FORGE | ❌ Not wired | A-FORGE orchestrates; WEALTH is the brain |

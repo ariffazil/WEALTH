@@ -1,5 +1,12 @@
 # WEALTH MCP — Unified Architecture & Next Horizon Blueprint
 
+> ⚰️ **DESIGN HISTORY — SUPERSEDED BY 2026-06-12 FEDERATION ALIGNMENT**
+> This blueprint predates the canonical topology ratification. The **live surface** is:
+> - **20 public MCP tools** + **34 hidden aliases** (65 `@mcp.tool` decorators)
+> - Port **18082**, bound to **127.0.0.1**
+> - arifOS kernel port **8088**
+> The architectural direction below remains aspirational and is not yet implemented.
+
 **Author:** AGI OPENCLAW + Hermes ASI  
 **Date:** 2026-05-07  
 **Status:** PROPOSED — awaiting Arif SEAL  
@@ -9,7 +16,7 @@
 
 ## Executive Summary
 
-WEALTH currently exposes **47 tools** (13 canonical + 6 domain + 2 vault + 25 legacy aliases + 1 health), **13 resources**, and **0 prompts**.
+This blueprint assumed **47 tools** (13 canonical + 6 domain + 2 vault + 25 legacy aliases + 1 health), **13 resources**, and **0 prompts**. The live canonical surface is **20 public tools + 34 hidden aliases** (65 `@mcp.tool` decorators).
 
 The problem isn't quantity — it's **category impurity**. Many "tools" are orchestration wrappers that should be prompts. The naming mixes abstraction levels (`reason_`, `mind_`, `survival_`).
 
@@ -387,7 +394,8 @@ WEALTH MCP
     └── food_security_index
 ```
 
-**Grand total surface: 36 + 6 domain = 42 tools | 12 prompts | 21 resources**
+**Blueprint target surface (not live): 36 + 6 domain = 42 tools | 12 prompts | 21 resources**  
+**Live canonical surface: 20 public tools + 34 hidden aliases | prompts/resources per runtime**
 
 ---
 

@@ -1,3 +1,9 @@
+# ⚰️ ARCHIVED DUPLICATE
+# This file is a duplicate of FIX_SPEC_URAI_v2.md in the repo root.
+# Canonical version: /root/WEALTH/FIX_SPEC_URAI_v2.md
+# Last canonical check: 2026-06-14
+# Do not edit this copy; edit the canonical file instead.
+#
 # WEALTH → URAI v2.0 FIX SPECIFICATION
 ## Forged by arifOS External Audit — 2026-04-15
 ## DeltaΩPsi Protocol — Ditempa Bukan Diberi

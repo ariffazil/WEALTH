@@ -20,7 +20,7 @@
 
 ### Authority Freeze
 - [ ] **Create `REPO_AUTHORITY_MATRIX.md`** — what WEALTH may own / must not own
-- [ ] **Tool inventory** — 48 tools, verify no overlap with other repos
+- [ ] **Tool inventory** — 20 public tools + 34 hidden aliases, verify no overlap with other repos
 - [ ] **Schema inventory** — map all valuation schemas
 - [ ] **Dual runtime decision** — Python vs Node.js canonical kernel
 

@@ -186,7 +186,7 @@ and fuses the results. For specific analysis, call the dimension tool directly.
 ### 4.1 Public MCP Surface — 20 Canonical Tools
 
 ```
-20 public tools · 34 hidden aliases · 72 total @mcp.tool decorators
+20 public tools + 34 hidden aliases (65 @mcp.tool decorators)
 ```
 
 | # | Tool | Domain | What It Does |
@@ -871,7 +871,7 @@ git tag vYYYY.MM.DD            # Date-stamp tag only (no semver)
 
 | Issue | Severity | Status | Notes |
 |-------|----------|--------|-------|
-| **License anomaly** | LOW | ⚠️ Documented | `pyproject.toml` says AGPL-3.0 (correct). Old `README.md` line ~215 had stale `PROPRIETARY` text — this README supersedes. Do NOT change without 888_HOLD. |
+| **License anomaly** | LOW | ✅ RESOLVED | Both `pyproject.toml` and `package.json` declare AGPL-3.0. Historical `PROPRIETARY` references are stale. |
 | **Node.js harness bug** | LOW | ⚠️ Known | 17 Node tests fail due to stdout pollution from Python `runPython` — filter `runPython` output. Python canonical suite is clean (153/153). |
 | **Dual runtime** | MEDIUM | ⚠️ Legacy | Python is canonical. Node.js is legacy. Should eventually be deprecated. |
 | **A-FORGE reimplements WEALTH** | MEDIUM | ⚠️ Drift | `A-FORGE/src/tools/WealthTools.ts` duplicates ROI/EMV/portfolio logic. Should delegate to WEALTH MCP instead. |
@@ -903,19 +903,21 @@ WEALTH is one of seven organs in the arifOS Constitutional Federation.
 | **WELL** | 18083 | `ariffazil/well` | Human readiness | **Informs WEALTH** — cognitive load → capital preservation (planned) |
 | **AAA** | 3001 | `ariffazil/AAA` | Control plane | **Displays WEALTH** — cockpit, portfolio dashboard, decision memos |
 | **A-FORGE** | 7071 | `ariffazil/A-FORGE` | Execution shell | **Executes under WEALTH verdicts** — gated by arifOS SEAL |
-| **APEX** | 3002 | `ariffazil/APEX` | 888 JUDGE (legacy) | Deliberative relay — absorbed into AAA a2a-server |
+| **APEX** | 3002 | `ariffazil/APEX` | 888 JUDGE (legacy) | Legacy health probe — deliberation moved to AAA a2a-server |
 
 ### Key Federation Files
 
 | File | Purpose |
 |------|---------|
 | `/root/arifOS/FEDERATION_CONTRACT.md` | Canonical federation contract |
-| `/root/arifOS/FEDERATION_STATUS.md` | Live health of all 7 organs |
+| `/root/arifOS/FEDERATION_STATUS.md` | Live health of all 7 organs + MIND/MEMORY services |
 | `/root/arifOS/GENESIS/000_KERNEL_CANON.md` | Kernel canon (Source of Truth) |
 | `/root/arifOS/static/arifos/theory/000/000_CONSTITUTION.md` | 13 Constitutional Laws |
 | `FEDERATION_CONTRACT.md` | WEALTH's local contract |
 | `BOUNDARY.md` | WEALTH's boundary declaration |
 | `GENESIS/011_WEALTH_MANDATE.md` | WEALTH's organ mandate |
+
+> **MIND/MEMORY services:** A-FORGE hosts the MIND service (port 51001) and MEMORY service (port 51002) for cross-agent state and recall. These are not separate federation organs; they are runtime services under A-FORGE.
 
 ---
 
@@ -954,9 +956,9 @@ This means:
 - ⚠️ If you run a modified WEALTH as a network service, you MUST release your changes under AGPL-3.0
 - ⚠️ This is a **strong copyleft** license — it protects the freedom of the code even when used over a network
 
-> **Note:** A stale line in the old README referenced `PROPRIETARY` license. This was a known
-> documentation anomaly. The canonical license is AGPL-3.0 as declared in `pyproject.toml`,
-> `package.json`, and this README. The anomaly is documented in `BOUNDARY.md` §"Known Boundary Violations."
+> **Note:** A stale line in an older README referenced `PROPRIETARY` license. This was a known
+> documentation anomaly that has been resolved. The canonical license is AGPL-3.0 as declared in `pyproject.toml`,
+> `package.json`, and this README.
 
 ### Sovereignty
 

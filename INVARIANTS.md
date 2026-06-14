@@ -55,7 +55,7 @@ curl http://127.0.0.1:18082/health
 - ❌ WEALTH governance disabled — it is ACTIVE
 - ❌ WEALTH can execute without arifOS F1-F13 check
 - ❌ "WEALTH is disabled" — it is LIVE
-- ❌ Tool count "17 tools" or "50 tools" — use `curl https://wealth.arif-fazil.com/tools` to count
+- ❌ Tool count "17 tools", "42 tools", or "50 tools" — canonical is 20 public tools + 34 hidden aliases (65 `@mcp.tool` decorators)
 
 ## Related Files
 - `internal/monolith.py` — canonical kernel

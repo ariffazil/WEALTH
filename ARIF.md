@@ -1,5 +1,22 @@
 # ARIF.md | METABOLIC KERNEL v1.0
 
+> ⚰️ **TOMBSTONE — STALE AS OF 2026-06-14**
+> This file is a historical metabolic snapshot from 2026-06-03. It has **not** been the live source of truth since the 2026-06-12 federation topology alignment.
+> Do not rely on counts, commit hashes, or test numbers here. See `README.md`, `CONTEXT.md`, `BOUNDARY.md`, and `FEDERATION_STATUS.md` for current state.
+> Preserved for audit trail only.
+>
+> **Live facts (2026-06-14):**
+> - Public MCP surface: **20 tools**
+> - Hidden aliases: **34**
+> - Verified `@mcp.tool` decorators: **65** in `internal/monolith.py`
+> - Port: **18082**
+> - arifOS kernel port: **8088**
+> - APEX: legacy health probe on **3002**
+> - License: **AGPL-3.0**
+> - Python tests: **153/153 PASS**
+
+---
+
 > SYSTEM TYPE: LORE INTERFACE
 > GOVERNANCE: arifOS AAA
 > VETO: 888 JUDGE

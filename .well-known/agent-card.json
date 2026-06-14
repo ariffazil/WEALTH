@@ -1,9 +1,9 @@
 {
   "name": "WEALTH Capital Intelligence",
-  "description": "Capital intelligence engine for the arifOS federation. Provides NPV, EMV, valuation, risk scoring, and portfolio optimization under constitutional floors F1-F13.",
+  "description": "Capital intelligence engine for the arifOS federation. Provides 20 governed MCP tools for NPV, EMV, valuation, risk scoring, and portfolio optimization under constitutional floors F1-F13.",
   "url": "https://wealth.arif-fazil.com",
   "provider": { "organization": "arifOS", "system": "WEALTH" },
-  "version": "2026.05.01",
+  "version": "2026.06.14",
   "protocol_version": "1.0.0",
   "capabilities": { "streaming": false, "push_notifications": false, "authenticated_extended_card": false },
   "authentication": { "schemes": ["bearer"] },
@@ -12,7 +12,10 @@
   "skills": [
     { "id": "wealth-npv-reward", "name": "NPV Reward", "description": "Net Present Value computation for capital allocation decisions.", "tags": ["finance", "npv", "valuation"], "examples": ["Calculate NPV of this project", "Evaluate investment reward"] },
     { "id": "wealth-emv-risk", "name": "EMV Risk", "description": "Expected Monetary Value and risk-adjusted return analysis.", "tags": ["finance", "emv", "risk"], "examples": ["Compute EMV for this scenario", "Risk-adjusted expected value"] },
-    { "id": "wealth-allocate-optimize", "name": "Portfolio Optimization", "description": "Optimal capital allocation across competing opportunities.", "tags": ["finance", "portfolio", "optimization"], "examples": ["Optimize my portfolio allocation", "Best capital distribution"] }
+    { "id": "wealth-allocate-optimize", "name": "Portfolio Optimization", "description": "Optimal capital allocation across competing opportunities.", "tags": ["finance", "portfolio", "optimization"], "examples": ["Optimize my portfolio allocation", "Best capital distribution"] },
+    { "id": "wealth-stock-analysis", "name": "D4 Stock Analysis", "description": "12-mode governed stock safety gate.", "tags": ["finance", "stocks", "risk"], "examples": ["Analyze TENAGA fundamentals", "Pre-trade safety gate"] },
+    { "id": "wealth-personal-finance", "name": "Personal Finance", "description": "Malaysian personal finance: EPF, zakat, runway, net worth.", "tags": ["finance", "personal", "malaysia"], "examples": ["Calculate zakat", "Project EPF at 55"] },
+    { "id": "wealth-field-macro", "name": "Macro Field", "description": "Live FX, commodity, and macro indicators.", "tags": ["finance", "macro", "fx"], "examples": ["MYR/USD rate", "Malaysia GDP snapshot"] }
   ],
   "governance": {
     "constitutional_floors": ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13"],
@@ -27,7 +30,7 @@
     "mcp": "POST /mcp"
   },
   "honesty_disclaimer": {
-    "transport_note": "MCP primary; A2A agent card for federation discovery only.",
-    "last_audited": "2026-05-07"
+    "transport_note": "MCP primary; A2A agent card for federation discovery only. APEX is legacy — deliberation moved to AAA a2a-server.",
+    "last_audited": "2026-06-14"
   }
 }

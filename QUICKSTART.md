@@ -6,7 +6,7 @@
 
 ## What You'll Have
 
-A running FastMCP server on `http://localhost:18082` exposing 48 capital-intelligence tools.
+A running FastMCP server on `http://localhost:18082` exposing 20 public capital-intelligence tools (plus 34 hidden aliases).
 
 ## Prerequisites
 
@@ -37,17 +37,17 @@ curl http://localhost:18082/health | python3 -m json.tool
 
 # Expected: {"status": "healthy", "service": "wealth-mcp", "registry_truth": "PASS"}
 
-# List tools (44+ canonical tools)
-curl -s http://localhost:18082/tools | python3 -m json.tool | head -30
+# List tools (20 public canonical tools)
+curl -s http://localhost:18082/mcp -X POST -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | python3 -m json.tool | head -60
 ```
 
 ## Quick Test
 
 ```bash
 # Compute NPV of a simple cash flow
-curl -s -X POST http://localhost:18082/call \
+curl -s -X POST http://localhost:18082/mcp \
   -H "Content-Type: application/json" \
-  -d '{"tool":"wealth_time_discount","args":{"mode":"npv","initial_investment":1000,"cash_flows":[300,400,500,600],"discount_rate":0.1}}' \
+  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"wealth_time_discount","arguments":{"mode":"npv","initial_investment":1000,"cash_flows":[300,400,500,600],"discount_rate":0.1}},"id":1}' \
   | python3 -m json.tool
 ```
 

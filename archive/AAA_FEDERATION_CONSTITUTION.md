@@ -1,3 +1,9 @@
+# ⚰️ ARCHIVED — STALE FEDERATION DRAFT
+# This file predates the canonical arifOS FEDERATION_CONTRACT.md (ratified 2026-06-12).
+# It is kept for historical audit trail only.
+# Canonical federation contract: /root/arifOS/FEDERATION_CONTRACT.md
+# Last checked: 2026-06-14
+#
 # AAA — Arif Autonomous Architecture
 ## Federation Constitution v1.0 — Session AAA
 

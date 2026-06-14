@@ -1,3 +1,9 @@
+# ⚰️ ARCHIVED DUPLICATE
+# This file is a duplicate of canon/COSMOLOGY.md.
+# Canonical version: canon/COSMOLOGY.md
+# Last canonical check: 2026-06-14
+# Do not edit this copy; edit the canonical file instead.
+#
 # COSMOLOGY.md — The AGI·arifOS·GEOX·WEALTH Stack
 
 > **Version:** v1.0.0  
