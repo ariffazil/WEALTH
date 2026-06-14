@@ -5,6 +5,10 @@ Standardized 3-layer health check for the WEALTH capital evidence organ.
 Aligned with FTC-1 and WELL MCP health schemas.
 """
 
+from __future__ import annotations
+
+"""
+
 from typing import Any, Dict
 from datetime import datetime, timezone
 from host.ingest.health import get_tracker

@@ -5,6 +5,9 @@ Data sourced from public APIs (no API key required).
 All tools: recommendation_only=True, final_authority=Arif.
 """
 
+from __future__ import annotations
+
+
 import sys as _sys
 from datetime import date as _date
 from pathlib import Path as _Path

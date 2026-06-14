@@ -2,6 +2,10 @@
 VPS Power Metrics Collector for WEALTH.
 Reads /proc, /sys, and system utilities to estimate power draw and carbon.
 No external API needed — computed from local hardware data.
+"""
+
+from __future__ import annotations
+
 
 Author: Hermes | arifOS Federation
 Forged: 2026-06-12

@@ -4,6 +4,8 @@ WEALTH Personal Finance — D1: Cashflow, EPF, Net Worth, Zakat
 All tools: recommendation_only=True, final_authority=Arif.
 """
 
+from __future__ import annotations
+
 import asyncio
 import sys as _sys
 from datetime import date as _date, datetime

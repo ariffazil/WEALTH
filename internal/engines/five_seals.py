@@ -2,6 +2,8 @@
 # Phase 2: Canonical organs with sovereign envelope
 # SPEAR: DITEMPA BUKAN DIBERI
 
+from __future__ import annotations
+
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
 import uuid
