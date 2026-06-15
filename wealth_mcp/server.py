@@ -23,7 +23,7 @@ from fastmcp import FastMCP
 
 # Import contracts
 from wealth_contracts.envelope import WealthEnvelope, wrap_result
-from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality
+from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality, ClaimState
 
 # Import core engines
 from wealth_core.wisdom import compute_wisdom
@@ -471,6 +471,88 @@ def _register_legacy_surface_tools(mcp: FastMCP) -> None:
 
 def _register_meta_tools(mcp: FastMCP) -> None:
     """Register meta/diagnostic tools."""
+
+    @mcp.tool(name="wealth_vault_write")
+    async def wealth_vault_write(
+        tx_type: str,
+        amount: float,
+        currency: str = "MYR",
+        description: str = "",
+        quantity: float | None = None,
+        price: float | None = None,
+        fees: float = 0,
+        broker: str = "",
+        asset_id: str = "",
+        category: str = "",
+        notes: str = "",
+    ) -> dict:
+        """Write a transaction to the VAULT999 ledger.
+        Irreversible — requires human confirmation for SEAL."""
+        try:
+            from host.governance.vault_supabase import record_transaction
+            result = record_transaction(
+                tx_type=tx_type, amount=amount, currency=currency,
+                description=description, quantity=quantity, price=price,
+                fees=fees, broker=broker, asset_id=asset_id,
+                category=category, notes=notes,
+            )
+            return wrap_result(
+                tool_name="wealth_vault_write",
+                domain="governance",
+                result=result,
+                epistemic_tag=EpistemicTag.OBSERVED,
+                evidence_quality=EvidenceQuality.STRONG,
+                source_attribution=["vault999_supabase"],
+                claim_state=ClaimState.SEALED,
+            )
+        except Exception as e:
+            return wrap_result(
+                tool_name="wealth_vault_write",
+                domain="governance",
+                result={"error": str(e)},
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=[f"Vault write error: {e}"],
+            )
+
+    @mcp.tool(name="wealth_vault_query")
+    async def wealth_vault_query(
+        query: str = "",
+        limit: int = 10,
+        asset_id: str = "",
+    ) -> dict:
+        """Query the VAULT999 ledger for portfolio memory and transactions."""
+        try:
+            from host.governance.vault_supabase import query_vault999, query_portfolio_snapshots
+            if asset_id:
+                snapshots = query_portfolio_snapshots(asset_id=asset_id, limit=limit)
+                return wrap_result(
+                    tool_name="wealth_vault_query",
+                    domain="governance",
+                    result={"snapshots": snapshots, "count": len(snapshots)},
+                    epistemic_tag=EpistemicTag.OBSERVED,
+                    evidence_quality=EvidenceQuality.STRONG,
+                    source_attribution=["vault999_supabase"],
+                )
+            else:
+                records = query_vault999(query=query, limit=limit)
+                return wrap_result(
+                    tool_name="wealth_vault_query",
+                    domain="governance",
+                    result=records,
+                    epistemic_tag=EpistemicTag.OBSERVED,
+                    evidence_quality=EvidenceQuality.STRONG,
+                    source_attribution=["vault999_supabase"],
+                )
+        except Exception as e:
+            return wrap_result(
+                tool_name="wealth_vault_query",
+                domain="governance",
+                result={"error": str(e)},
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=[f"Vault query error: {e}"],
+            )
 
     @mcp.tool(name="wealth_system_registry_status")
     async def wealth_system_registry_status(mode: str = "registry") -> dict:

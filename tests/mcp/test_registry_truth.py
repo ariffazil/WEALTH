@@ -35,6 +35,9 @@ EXPECTED_TOOLS = [
     "wealth_market_data",
     "wealth_omni_wisdom",
     "wealth_agent_path",
+    # Vault tools (Gap Ledger Phase 1)
+    "wealth_vault_write",
+    "wealth_vault_query",
 ]
 
 
