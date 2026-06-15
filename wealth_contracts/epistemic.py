@@ -14,12 +14,49 @@ from typing import Optional
 
 
 class EpistemicTag(str, Enum):
-    """Label every claim with its epistemic strength."""
+    """Label every claim with its epistemic strength.
+    Unified system: supports both OBSERVED/DERIVED (GEOX-style)
+    and CLAIM/PLAUSIBLE (Bursa-style) via canonical mapping."""
     OBSERVED = "OBSERVED"          # Direct measurement (price, rate, balance)
     DERIVED = "DERIVED"            # Computed from observed data (NPV, IRR)
     INTERPRETED = "INTERPRETED"    # Inferred from patterns (trend, regime)
     SPECULATED = "SPECULATED"      # Hypothesis without sufficient evidence
     ASSUMED = "ASSUMED"            # Input parameter, not verified
+
+    # Aliases for Bursa/monolith compatibility
+    CLAIM = "OBSERVED"             # CLAIM = OBSERVED (strongest)
+    PLAUSIBLE = "DERIVED"          # PLAUSIBLE = DERIVED
+    ESTIMATE = "INTERPRETED"       # ESTIMATE = INTERPRETED
+    HYPOTHESIS = "SPECULATED"      # HYPOTHESIS = SPECULATED
+    UNKNOWN = "ASSUMED"            # UNKNOWN = ASSUMED (weakest)
+
+
+# Canonical ordering for comparison
+EPISTEMIC_ORDER = ["ASSUMED", "SPECULATED", "INTERPRETED", "DERIVED", "OBSERVED"]
+
+# Bursa-style aliases for compatibility
+BURSA_TAG_MAP = {
+    "CLAIM": "OBSERVED",
+    "PLAUSIBLE": "DERIVED",
+    "ESTIMATE": "INTERPRETED",
+    "HYPOTHESIS": "SPECULATED",
+    "UNKNOWN": "ASSUMED",
+    "OBS": "OBSERVED",
+    "DER": "DERIVED",
+    "INT": "INTERPRETED",
+    "SPEC": "SPECULATED",
+}
+
+
+def normalize_epistemic_tag(tag: str) -> EpistemicTag:
+    """Normalize any epistemic tag variant to canonical form."""
+    upper = tag.upper().strip()
+    if upper in BURSA_TAG_MAP:
+        upper = BURSA_TAG_MAP[upper]
+    try:
+        return EpistemicTag(upper)
+    except ValueError:
+        return EpistemicTag.ASSUMED  # Default to weakest
 
 
 class ClaimState(str, Enum):
