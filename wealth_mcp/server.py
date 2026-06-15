@@ -70,6 +70,7 @@ def create_mcp_server() -> FastMCP:
     _register_power_tools(mcp)
     _register_capital_tools(mcp)
     _register_risk_tools(mcp)
+    _register_legacy_surface_tools(mcp)  # stock, personal, market, omni, agent_path
     _register_meta_tools(mcp)
 
     return mcp
@@ -333,6 +334,139 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             evidence_quality=EvidenceQuality.MODERATE,
             source_attribution=["scenario_analysis"],
         )
+
+
+def _register_legacy_surface_tools(mcp: FastMCP) -> None:
+    """Register tools that delegate to monolith's existing implementations.
+    These are the 5 missing public tools that need the monolith's complex engines."""
+
+    @mcp.tool(name="wealth_stock_analysis")
+    async def wealth_stock_analysis(
+        mode: str = "verify_math",
+        ticker: str = "",
+        entry_price: float = 0,
+        exit_price: float | None = None,
+        current_price: float | None = None,
+        position_size: int = 0,
+        status: str = "unrealized",
+        direction: str = "long",
+    ) -> dict:
+        """D4 Stock Analysis — 16-mode capital-risk governance.
+        Delegates to internal/stock/ engines."""
+        try:
+            from internal.monolith import wealth_stock_analysis as _stock_impl
+            return await _stock_impl(
+                mode=mode, ticker=ticker, entry_price=entry_price,
+                exit_price=exit_price, current_price=current_price,
+                position_size=position_size, status=status, direction=direction,
+            )
+        except Exception as e:
+            return wrap_result(
+                tool_name="wealth_stock_analysis", domain="stock",
+                result={"error": str(e), "mode": mode, "ticker": ticker},
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=[f"Stock engine error: {e}"],
+            )
+
+    @mcp.tool(name="wealth_personal_finance")
+    async def wealth_personal_finance(
+        mode: str = "summary",
+        owner: str = "arif",
+        amount: float = 0,
+        category: str = "expense",
+        description: str = "",
+        txn_date: str | None = None,
+    ) -> dict:
+        """D1 Personal Finance — cashflow, runway, net worth, EPF, zakat.
+        Delegates to internal/personal_finance.py engines."""
+        try:
+            from internal.monolith import wealth_personal_finance as _pf_impl
+            return await _pf_impl(
+                mode=mode, owner=owner, amount=amount,
+                category=category, description=description, txn_date=txn_date,
+            )
+        except Exception as e:
+            return wrap_result(
+                tool_name="wealth_personal_finance", domain="personal",
+                result={"error": str(e), "mode": mode},
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=[f"Personal finance engine error: {e}"],
+            )
+
+    @mcp.tool(name="wealth_market_data")
+    async def wealth_market_data(
+        mode: str = "fx",
+        base: str = "USD",
+        targets: str = "MYR,SGD,GBP",
+        commodity: str = "brent_crude",
+        indicator: str = "usd_myr",
+        country: str = "MYS",
+    ) -> dict:
+        """D3 Market Data — FX rates, commodities, macro indicators.
+        Delegates to internal/market_data.py engines."""
+        try:
+            from internal.monolith import wealth_market_data as _md_impl
+            return await _md_impl(
+                mode=mode, base=base, targets=targets,
+                commodity=commodity, indicator=indicator, country=country,
+            )
+        except Exception as e:
+            return wrap_result(
+                tool_name="wealth_market_data", domain="macro",
+                result={"error": str(e), "mode": mode},
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=[f"Market data engine error: {e}"],
+            )
+
+    @mcp.tool(name="wealth_omni_wisdom")
+    async def wealth_omni_wisdom(
+        mode: str = "synthesize",
+        decision_context: dict | None = None,
+        deal_params: dict | None = None,
+        path_params: dict | None = None,
+    ) -> dict:
+        """Unified capital intelligence — synthesis + deal + hysteresis.
+        Delegates to monolith's omni_wisdom implementation."""
+        try:
+            from internal.monolith import wealth_omni_wisdom as _omni_impl
+            return await _omni_impl(
+                mode=mode, decision_context=decision_context,
+                deal_params=deal_params, path_params=path_params,
+            )
+        except Exception as e:
+            return wrap_result(
+                tool_name="wealth_omni_wisdom", domain="synthesis",
+                result={"error": str(e), "mode": mode},
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=[f"Omni wisdom engine error: {e}"],
+            )
+
+    @mcp.tool(name="wealth_agent_path")
+    async def wealth_agent_path(
+        task_description: str = "",
+        scale_mode: str = "agentic",
+        context: dict | None = None,
+    ) -> dict:
+        """Sovereign Intent Router — classifies tasks into L1/L2 paths.
+        Delegates to monolith's agent_path implementation."""
+        try:
+            from internal.monolith import wealth_agent_path as _ap_impl
+            return await _ap_impl(
+                task_description=task_description,
+                scale_mode=scale_mode, context=context,
+            )
+        except Exception as e:
+            return wrap_result(
+                tool_name="wealth_agent_path", domain="meta",
+                result={"error": str(e), "task_description": task_description},
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=[f"Agent path engine error: {e}"],
+            )
 
 
 def _register_meta_tools(mcp: FastMCP) -> None:
