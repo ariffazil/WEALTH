@@ -29,6 +29,12 @@ EXPECTED_TOOLS = [
     "wealth_confluence_check",
     "wealth_asymmetry_check",
     "wealth_system_registry_status",
+    # Legacy surface tools (delegate to monolith)
+    "wealth_stock_analysis",
+    "wealth_personal_finance",
+    "wealth_market_data",
+    "wealth_omni_wisdom",
+    "wealth_agent_path",
 ]
 
 

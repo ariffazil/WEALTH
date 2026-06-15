@@ -9,9 +9,6 @@ This is the NEW entry point that uses the federated architecture:
   wealth_arifos_bridge/ — arifOS integration
   wealth_compat/  — legacy aliases
 
-To activate: symlink or rename to server.py after migration is verified.
-To test: python server_federated.py
-
 DITEMPA BUKAN DIBERI — Forged, not given.
 """
 
@@ -32,19 +29,10 @@ mcp = create_mcp_server()
 if __name__ == "__main__":
     import uvicorn
     from starlette.applications import Starlette
-    from starlette.routing import Mount
-    from starlette.middleware.cors import CORSMiddleware
+    from starlette.routing import Mount, Route
+    from starlette.responses import JSONResponse
 
-    app = mcp.http_app(
-        transport="streamable-http",
-        stateless_http=True,
-        json_response=True,
-    )
-
-    # Health endpoint
-    @app.route("/health")
     async def health(request):
-        from starlette.responses import JSONResponse
         return JSONResponse({
             "status": "ALIVE",
             "version": "2026.06.15",
@@ -59,6 +47,23 @@ if __name__ == "__main__":
                 "wealth_compat",
             ],
         })
+
+    # Get the MCP ASGI app
+    mcp_app = mcp.http_app(
+        transport="streamable-http",
+        stateless_http=True,
+        json_response=True,
+    )
+
+    # Wrap in a Starlette app with health endpoint
+    # CRITICAL: pass lifespan from mcp_app to parent app
+    app = Starlette(
+        routes=[
+            Route("/health", health),
+            Mount("/", app=mcp_app),
+        ],
+        lifespan=mcp_app.lifespan,
+    )
 
     print("WEALTH Federated Domain starting on port 18082...")
     print("  Architecture: 5-layer federated")
