@@ -111,6 +111,14 @@ class WealthEnvelope:
         warnings: Optional[List[str]] = None,
         errors: Optional[List[str]] = None,
         tool_version: str = "2026.06.15",
+        # Constitutional fields (Gap Ledger Phase 1-3)
+        witness: Optional[Dict[str, Any]] = None,
+        shadow: bool = False,
+        kappa_r: Optional[float] = None,
+        psi_le: Optional[float] = None,
+        qdf: Optional[str] = None,
+        pipeline_stage: Optional[str] = None,
+        forge_laws: Optional[List[str]] = None,
     ):
         # Identity
         self.tool_name = tool_name
@@ -157,6 +165,15 @@ class WealthEnvelope:
         self.metadata = metadata or {}
         self.warnings = warnings or []
         self.errors = errors or []
+
+        # Constitutional fields (Gap Ledger Phase 1-3)
+        self.witness = witness
+        self.shadow = shadow
+        self.kappa_r = kappa_r
+        self.psi_le = psi_le
+        self.qdf = qdf
+        self.pipeline_stage = pipeline_stage
+        self.forge_laws = forge_laws or []
 
     def to_dict(self) -> dict:
         """Serialize to dict for MCP response."""
@@ -217,6 +234,21 @@ class WealthEnvelope:
             d["session_id"] = self.session_id
         if self.actor_id:
             d["actor_id"] = self.actor_id
+
+        # Constitutional fields
+        if self.witness:
+            d["witness"] = self.witness
+        d["shadow"] = self.shadow
+        if self.kappa_r is not None:
+            d["kappa_r"] = self.kappa_r
+        if self.psi_le is not None:
+            d["psi_le"] = self.psi_le
+        if self.qdf:
+            d["qdf"] = self.qdf
+        if self.pipeline_stage:
+            d["pipeline_stage"] = self.pipeline_stage
+        if self.forge_laws:
+            d["forge_laws"] = self.forge_laws
 
         return d
 
@@ -302,6 +334,13 @@ class WealthEnvelope:
             metadata=d.get("metadata", {}),
             warnings=d.get("warnings", []),
             errors=d.get("errors", []),
+            witness=d.get("witness"),
+            shadow=d.get("shadow", False),
+            kappa_r=d.get("kappa_r"),
+            psi_le=d.get("psi_le"),
+            qdf=d.get("qdf"),
+            pipeline_stage=d.get("pipeline_stage"),
+            forge_laws=d.get("forge_laws", []),
         )
 
 
@@ -318,7 +357,34 @@ def wrap_result(
     """
     Convenience wrapper: take a raw result and wrap it in WealthEnvelope.
     Returns dict for direct MCP tool return.
+    Automatically computes shadow flag and attaches kappar/psile/qdf.
     """
+    # Auto-compute shadow flag from violations/holds in result
+    shadow = False
+    if isinstance(result, dict):
+        violations = result.get("violations", [])
+        holds = result.get("holds", [])
+        shadow = len(violations) > 0 or len(holds) > 0
+
+    # Auto-attach constitutional fields if not provided
+    from wealth_core.math import compute_kappa_r, compute_psi_le, get_qdf_version
+
+    kappa_r = kwargs.pop("kappa_r", None)
+    psi_le = kwargs.pop("psi_le", None)
+    qdf = kwargs.pop("qdf", None)
+    witness = kwargs.pop("witness", None)
+    pipeline_stage = kwargs.pop("pipeline_stage", None)
+    forge_laws = kwargs.pop("forge_laws", None)
+
+    if kappa_r is None:
+        kappa_r = compute_kappa_r(0.9, 0.95)
+    if psi_le is None:
+        psi_le = compute_psi_le(0.3, 0.5)
+    if qdf is None:
+        qdf = get_qdf_version()
+    if witness is None:
+        witness = {"human": False, "ai": True, "earth": False, "is_complete": False, "missing": ["human", "earth"]}
+
     envelope = WealthEnvelope(
         tool_name=tool_name,
         domain=domain,
@@ -326,6 +392,13 @@ def wrap_result(
         epistemic_tag=epistemic_tag,
         evidence_quality=evidence_quality,
         source_attribution=source_attribution or [],
+        shadow=shadow,
+        kappa_r=kappa_r,
+        psi_le=psi_le,
+        qdf=qdf,
+        witness=witness,
+        pipeline_stage=pipeline_stage,
+        forge_laws=forge_laws,
         **kwargs,
     )
     return envelope.to_dict()
