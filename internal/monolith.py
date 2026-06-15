@@ -1,3 +1,21 @@
+"""
+⛔ DEPRECATED — This monolith is being replaced by the federated domain.
+
+New entry point: server_federated.py
+New architecture:
+  wealth_core/       — pure engines (no MCP, no I/O)
+  wealth_contracts/  — output envelopes, epistemic tags
+  wealth_mcp/        — MCP surface (19 tools)
+  wealth_arifos_bridge/ — arifOS integration
+  wealth_compat/     — legacy aliases
+
+This file is kept for backward compatibility during migration.
+5 tools still delegate here: stock_analysis, personal_finance, market_data,
+omni_wisdom, agent_path.
+
+DITEMPA BUKAN DIBERI — Forged, not given.
+"""
+
 from __future__ import annotations
 
 try:
