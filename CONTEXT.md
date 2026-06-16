@@ -2,7 +2,7 @@
 
 > **Organ:** WEALTH | **Port:** 18082 | **Repo:** `ariffazil/wealth`
 > **Kernel SoT:** `ariffazil/arifos` (FEDERATION_CONTRACT.md + GENESIS/000)
-> **Last Updated:** 2026-06-14
+> **Last Updated:** 2026-06-16
 
 ## Live State
 - **Service:** `wealth-organ.service` (systemd, enabled)
@@ -18,12 +18,12 @@
 
 ## Current Focus
 - Operational. D4 Stock Analysis live (12 modes). Python tests 153/153 PASS.
-- GENESIS/ still missing (pending 011+ allocation)
+- T0 canon cleanup complete: stale constitution duplicates removed.
+- T4 A-FORGE lease gate in progress.
 
 ## Known Issues
-- `raw/CONSTITUTION.md` is a stale "AGI-bot v63" duplicate with wrong floor numbering — tombstone header added; removal requires explicit F13 approval.
 - APEX (port 3002) is legacy health probe only; deliberation moved to AAA a2a-server.
-- No GENESIS/ — kernel canon unlinked.
+- GENESIS/ linked via `011_WEALTH_MANDATE.md`; canonical constitution is `/root/arifOS/static/arifos/theory/000/000_CONSTITUTION.md`.
 
 ## Federation Services Note
 - **A-FORGE** hosts MIND (port 51001) and MEMORY (port 51002) runtime services for cross-agent state and recall. These are not independent organs.
