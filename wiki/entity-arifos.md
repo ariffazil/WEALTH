@@ -56,10 +56,12 @@ arifOS provides the **kernel** and **pipeline** that WEALTH uses to govern capit
 
 ## Sources
 
-- `raw/TRINITY.md`
-- `raw/CONSTITUTION.md`
+- Canonical constitution: `/root/arifOS/static/arifos/theory/000/000_CONSTITUTION.md`
+- `raw/TRINITY.md` (historical reference)
 - `raw/ARCHITECTURE.md`
 - `kernel/floors.js`
+
+> **Note:** The stale duplicate constitution (`raw/CONSTITUTION.md`) was removed on 2026-06-16 by F13 ratification. Canonical F1–F13 constitution lives in arifOS.
 
 ---
 *999 SEAL ALIVE*
