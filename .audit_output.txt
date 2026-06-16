@@ -1,0 +1,101 @@
+2026-06-15T17:48:28Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-06-15T17:48:28Z	INFO	[secret] Secret scanning is enabled
+2026-06-15T17:48:28Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-06-15T17:48:28Z	INFO	[secret] Please see https://trivy.dev/docs/v0.70/guide/scanner/secret#recommendation for faster secret detection
+2026-06-15T17:50:16Z	WARN	[secret] Invalid UTF-8 sequences detected in file content, replacing with empty string
+2026-06-15T17:50:17Z	INFO	[npm] To collect the license information of packages, "npm install" needs to be performed beforehand	dir="node_modules"
+2026-06-15T17:50:17Z	WARN	[pip] Unable to find python `site-packages` directory. License detection is skipped.	err="site-packages directory not found"
+2026-06-15T17:50:17Z	INFO	Number of language-specific files	num=3
+2026-06-15T17:50:17Z	INFO	[cargo] Detecting vulnerabilities...
+2026-06-15T17:50:17Z	INFO	[npm] Detecting vulnerabilities...
+2026-06-15T17:50:17Z	INFO	[uv] Detecting vulnerabilities...
+
+Report Summary
+
+┌─────────────────────────────────────────────────────────────────┬───────┬─────────────────┬─────────┐
+│                             Target                              │ Type  │ Vulnerabilities │ Secrets │
+├─────────────────────────────────────────────────────────────────┼───────┼─────────────────┼─────────┤
+│ .venv/lib/python3.12/site-packages/temporalio/bridge/Cargo.lock │ cargo │        1        │    -    │
+├─────────────────────────────────────────────────────────────────┼───────┼─────────────────┼─────────┤
+│ package-lock.json                                               │  npm  │        2        │    -    │
+├─────────────────────────────────────────────────────────────────┼───────┼─────────────────┼─────────┤
+│ uv.lock                                                         │  uv   │        2        │    -    │
+├─────────────────────────────────────────────────────────────────┼───────┼─────────────────┼─────────┤
+│ internal/__pycache__/monolith.cpython-312.pyc                   │ text  │        -        │    0    │
+├─────────────────────────────────────────────────────────────────┼───────┼─────────────────┼─────────┤
+│ internal/__pycache__/monolith.cpython-313.pyc                   │ text  │        -        │    0    │
+├─────────────────────────────────────────────────────────────────┼───────┼─────────────────┼─────────┤
+│ internal/monolith.py                                            │ text  │        -        │    0    │
+└─────────────────────────────────────────────────────────────────┴───────┴─────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+
+.venv/lib/python3.12/site-packages/temporalio/bridge/Cargo.lock (cargo)
+=======================================================================
+Total: 1 (HIGH: 1, CRITICAL: 0)
+
+┌─────────┬─────────────────────┬──────────┬────────┬───────────────────┬───────────────┬──────────────────────────────────────────────────────────┐
+│ Library │    Vulnerability    │ Severity │ Status │ Installed Version │ Fixed Version │                          Title                           │
+├─────────┼─────────────────────┼──────────┼────────┼───────────────────┼───────────────┼──────────────────────────────────────────────────────────┤
+│ pyo3    │ GHSA-36hh-v3qg-5jq4 │ HIGH     │ fixed  │ 0.25.1            │ 0.29.0        │ PyO3 has an Out-of-bounds Read in `nth` / `nth_back` for │
+│         │                     │          │        │                   │               │ `PyList` and...                                          │
+│         │                     │          │        │                   │               │ https://github.com/advisories/GHSA-36hh-v3qg-5jq4        │
+└─────────┴─────────────────────┴──────────┴────────┴───────────────────┴───────────────┴──────────────────────────────────────────────────────────┘
+
+package-lock.json (npm)
+=======================
+Total: 2 (HIGH: 2, CRITICAL: 0)
+
+┌──────────┬───────────────┬──────────┬────────┬───────────────────┬───────────────┬──────────────────────────────────────────────────────────┐
+│ Library  │ Vulnerability │ Severity │ Status │ Installed Version │ Fixed Version │                          Title                           │
+├──────────┼───────────────┼──────────┼────────┼───────────────────┼───────────────┼──────────────────────────────────────────────────────────┤
+│ fast-uri │ CVE-2026-6321 │ HIGH     │ fixed  │ 3.1.0             │ 3.1.1         │ fast-uri: fast-uri: Path traversal vulnerability allows  │
+│          │               │          │        │                   │               │ bypass of security policies                              │
+│          │               │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-6321                │
+│          ├───────────────┤          │        │                   ├───────────────┼──────────────────────────────────────────────────────────┤
+│          │ CVE-2026-6322 │          │        │                   │ 3.1.2         │ fast-uri: fast-uri: URI authority bypass due to improper │
+│          │               │          │        │                   │               │ delimiter handling                                       │
+│          │               │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-6322                │
+└──────────┴───────────────┴──────────┴────────┴───────────────────┴───────────────┴──────────────────────────────────────────────────────────┘
+
+uv.lock (uv)
+============
+Total: 2 (HIGH: 2, CRITICAL: 0)
+
+┌─────────┬────────────────┬──────────┬────────┬───────────────────┬───────────────┬───────────────────────────────────────────────────────────┐
+│ Library │ Vulnerability  │ Severity │ Status │ Installed Version │ Fixed Version │                           Title                           │
+├─────────┼────────────────┼──────────┼────────┼───────────────────┼───────────────┼───────────────────────────────────────────────────────────┤
+│ urllib3 │ CVE-2026-44431 │ HIGH     │ fixed  │ 2.6.3             │ 2.7.0         │ urllib3: urllib3: Information disclosure via cross-origin │
+│         │                │          │        │                   │               │ redirects forwarding sensitive headers                    │
+│         │                │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-44431                │
+│         ├────────────────┤          │        │                   │               ├───────────────────────────────────────────────────────────┤
+│         │ CVE-2026-44432 │          │        │                   │               │ urllib3: urllib3: Denial of Service due to excessive HTTP │
+│         │                │          │        │                   │               │ response decompression                                    │
+│         │                │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-44432                │
+└─────────┴────────────────┴──────────┴────────┴───────────────────┴───────────────┴───────────────────────────────────────────────────────────┘
+
+📣 [34mNotices:[0m
+  - Version 0.71.1 of Trivy is now available, current version is 0.70.0
+
+To suppress version checks, run Trivy scans with the --skip-version-check flag
+
+               
+               
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 397 files tracked by git with 1059 Code rules:
+                                                                                                                        
+  Language      Rules   Files          Origin      Rules                                                                
+ ─────────────────────────────        ───────────────────                                                               
+  <multilang>      60     397          Community    1059                                                                
+  python          243     150                                                                                           
+  json              4      30                                                                                           
+  js              153      24                                                                                           
+  yaml             31      16                                                                                           
+  bash              4       7                                                                                           
+  html              1       2                                                                                           
+  dockerfile        6       1                                                                                           
+                                                                                                                        

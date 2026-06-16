@@ -28,7 +28,7 @@ import hashlib
 import json
 import re
 import sys
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from typing import Any
 
 
