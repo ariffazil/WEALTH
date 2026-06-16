@@ -16,9 +16,7 @@ violates the design contract and the operator should be told.
 from __future__ import annotations
 
 import json
-import re
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 

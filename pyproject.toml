@@ -32,7 +32,26 @@ dependencies = [
     "uvicorn[standard]>=0.30.0",
     "fastapi>=0.115.0",
     "yfinance>=0.2.0",
-    "klse-screener>=0.1.0",
+    # klse_screener is a custom package (not on PyPI) — installed system-wide in /usr/local/lib/python3.13/dist-packages
+    # WEALTH's internal bursa/klse_adapter.py imports it as a system package; kept out of pyproject.toml to avoid resolution failure.
+    "pydantic-ai",
+    "langgraph",
+    "opa-python-client",
+    "sigstore",
+    "openlineage-python",
+    "duckdb",
+    "polars",
+    "pandera",
+    "pyportfolioopt",
+    "networkx",
+    "pyarrow",
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "quantlib>=1.42.1",
+    "riskfolio-lib>=7.3.0",
+    "pymc>=6.0.1",
+    "arviz>=1.2.0",
+    "mesa>=3.5.1",
 ]
 
 [project.optional-dependencies]
