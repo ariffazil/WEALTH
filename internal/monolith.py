@@ -14489,6 +14489,10 @@ async def wealth_omni_wisdom(
 
     # Structural Coherence: omni mode derives density from how many sub-engines succeeded
     _semantic_density = sum([synth_ok, deal_ok, hyst_ok]) / 3.0
+    if _semantic_density < 1.0:
+        confidence = min(confidence, 0.66, round(_semantic_density, 4))
+        if final_verdict == "SEAL":
+            final_verdict = "HOLD"
     _cms = max(
         0.20, min(0.95, (0.85 + confidence * 0.1) if final_verdict == "SEAL" else 0.50)
     )
@@ -17254,7 +17258,7 @@ if __name__ == "__main__":
 
     _patch_tool_annotations(mcp)
     _patch_output_schemas(mcp)
-    mcp_app = mcp.http_app(path="/", transport="streamable-http", stateless_http=True)
+    mcp_app = mcp.http_app(path="/", transport="streamable-http", stateless_http=True, json_response=True)
 
     app = Starlette(
         routes=[
