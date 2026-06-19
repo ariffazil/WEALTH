@@ -64,3 +64,8 @@ identity.toml
 coverage.xml
 .memory/
 .ci-venv/
+
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
