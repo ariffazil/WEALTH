@@ -1,0 +1,609 @@
+# wealth_reality_contract.yaml — WEALTH Physics Layer (proof of concept)
+# Forged: 2026-06-17 by FORGE (000Ω) — Option B (Reality Contract first)
+# Audience: 333-AGI, 555-ASI, 888-APEX, A-AUDIT, A-ARCHIVE
+# Status: DRAFT (reversible; high-risk writes still gated by 888_HOLD)
+# Predecessor: routing_policy.yaml (per-agent view)
+#                emd_citation_audit.md (F2 closing chain)
+#                agent-briefing-forged.md (engineering brief)
+# Schema: arifos.reality_contract/v1
+#
+# "DITEMPA BUKAN DIBERI — Physics is forged, not given."
+# This contract codifies the WEALTH organ's implicit physics into an
+# explicit, auditable, F13-supervised YAML spec. No WEALTH tool may
+# execute outside its bounded action_class and floor chain.
+#
+# ─────────────────────────────────────────────────────────────────────
+
+version: 1
+contract: wealth_reality_contract
+organ_id: WEALTH
+organ_role: capital_intelligence
+organ_version: 2026.06.15
+federation_version: v2026.05.05-SSCT
+sovereign: ARIF_FAZIL
+f13_acknowledged: true
+forged_by: FORGE (000Ω)
+forged_at: 2026-06-17T03:55:00Z
+
+# ════════════════════════════════════════════════════════════════════
+# 0. INVARIANTS (the iron rules of the WEALTH organ)
+# ════════════════════════════════════════════════════════════════════
+# These NEVER change without F13 SOVEREIGN.
+
+invariants:
+  - id: WEALTH-001
+    rule: "WEALTH is EVIDENCE_ONLY. It computes; it does not move capital."
+    floor: F1_AMANAH
+    must: [compute, observe, evaluate, score]
+    must_never: [allocate, transfer, withdraw, deposit, buy, sell, hold-as-advice]
+  - id: WEALTH-002
+    rule: "Every output carries an epistemic label (OBS/DER/INT/SPEC/UNKNOWN)."
+    floor: F2_TRUTH
+    must: [tag_outputs_with_epistemic_level]
+    must_never: [return_naked_certainty, hide_downside]
+  - id: WEALTH-003
+    rule: "Capital allocation requires human ack_irreversible=true."
+    floor: F13_SOVEREIGN
+    must: [require_888_HOLD_for_irreversible_writes]
+    must_never: [self_authorize, bypass_judge]
+
+# ════════════════════════════════════════════════════════════════════
+# 1. ENTITIES (the world-states WEALTH can reason over)
+# ════════════════════════════════════════════════════════════════════
+# These are the L1 "Canonical Physics Organs" already implemented.
+
+entities:
+  - id: capital.conservation
+    description: "Total capital stock conserved across flows"
+    physics_organ: wealth_conservation_capital
+    state_fields: [total_capital, net_worth, assets, liabilities, equity]
+    invariant: "d(assets)/dt + d(liabilities)/dt = 0 (no creation, no destruction)"
+
+  - id: capital.flow
+    description: "Liquidity flows in/out of the system"
+    physics_organ: wealth_flow_liquidity
+    state_fields: [cash_in, cash_out, net_flow, runway_months, burn_rate]
+    invariant: "flow_rate ≥ 0 iff runway is finite"
+
+  - id: capital.gradient
+    description: "Price gradient / opportunity cost field"
+    physics_organ: wealth_gradient_price
+    state_fields: [spot_price, forward_curve, gradient_vector, time_decay]
+    invariant: "∇price(t) = forward(t+dt) − spot(t)"
+
+  - id: capital.entropy
+    description: "Risk entropy / dispersion measure"
+    physics_organ: wealth_entropy_risk
+    state_fields: [variance, std_dev, skew, kurtosis, entropy_bits]
+    invariant: "S(returns) ≤ S(uniform) over same support"
+
+  - id: capital.energy
+    description: "Energy productivity / capital efficiency"
+    physics_organ: wealth_energy_productivity
+    state_fields: [capital, output, productivity_ratio, joules_per_unit]
+    invariant: "η ≤ 1 (second-law bound)"
+
+  - id: capital.time
+    description: "Time discounting / NPV/IRR curve"
+    physics_organ: wealth_time_discount
+    state_fields: [cash_flows, discount_rate, npv, irr, dscr]
+    invariant: "NPV(r) monotone decreasing in r for cash-flow pattern"
+
+  - id: capital.inertia
+    description: "Leverage / position inertia"
+    physics_organ: wealth_inertia_leverage
+    state_fields: [position_size, leverage_ratio, margin_call_distance]
+    invariant: "leverage × volatility < liquidation_threshold"
+
+  - id: capital.field
+    description: "Macro field (rates, FX, commodities)"
+    physics_organ: wealth_field_macro
+    state_fields: [policy_rate, fx_rate, commodity_index, gdp_growth]
+    invariant: "field state is OBSERVED, not predicted"
+
+  - id: capital.signal
+    description: "Information value / signal independence"
+    physics_organ: wealth_signal_information
+    state_fields: [signal, evidence, independence_score, mutual_info]
+    invariant: "Σ independence_score ≤ 1 over correlated signals"
+
+  - id: capital.game
+    description: "Coordination / multiplayer dynamics"
+    physics_organ: wealth_game_coordination
+    state_fields: [actors, payoffs, nash_equilibria, dominant_strategies]
+    invariant: "Nash equilibrium must be subgame-perfect or flagged"
+
+  - id: capital.boundary
+    description: "Organ boundary governance / capture detection"
+    physics_organ: wealth_boundary_governance
+    state_fields: [rent_extraction, opacity, rule_asymmetry, coercion]
+    invariant: "rent_extraction > threshold → 888_HOLD"
+
+# ════════════════════════════════════════════════════════════════════
+# 2. ALLOWED TRANSITIONS (the state machine)
+# ════════════════════════════════════════════════════════════════════
+# What can move between states. Forbidden transitions are explicit.
+
+allowed_transitions:
+  - id: TX-001
+    from: capital.flow
+    to: capital.conservation
+    via_tool: wealth_cashflow_summary
+    action_class: OBSERVE
+    floors: [F2, F4]
+    gates: []
+    description: "Aggregate cashflows into conservation snapshot"
+
+  - id: TX-002
+    from: capital.conservation
+    to: capital.flow
+    via_tool: wealth_cashflow_track
+    action_class: EXECUTE_REVERSIBLE
+    floors: [F1, F2, F11]
+    gates: [GAP9_Capital_Materiality]
+    description: "Record a cashflow event (reversible)"
+
+  - id: TX-003
+    from: capital.gradient
+    to: capital.signal
+    via_tool: wealth_stock_analysis
+    action_class: OBSERVE
+    floors: [F2, F4, F7, F9]
+    gates: [GAP1_Advice_Filter, GAP2_Data_Verification, GAP3_TTM_Completeness, GAP4_False_Confluence, GAP5_Single_Catalyst, GAP6_Regime_Change, GAP7_Probability_Validation, GAP8_Negative_Beta, GAP9_Capital_Materiality, GAP10_Pre_Trade]
+    description: "Stock analysis runs all 10 gates; output is evidence, never advice"
+    required_output: "epistemic_label + uncertainty_band + floor_chain + gate_results"
+
+  - id: TX-004
+    from: capital.boundary
+    to: capital.boundary
+    via_tool: wealth_governance_risk
+    action_class: OBSERVE
+    floors: [F2, F4, F9]
+    gates: []
+    description: "Detect capture / asymmetry; output flags for arifOS judge"
+
+  - id: TX-005
+    from: capital.time
+    to: capital.time
+    via_tool: wealth_compute_irr
+    action_class: OBSERVE
+    floors: [F2, F4]
+    gates: []
+    description: "Compute IRR (math; reversible; F2 evidence)"
+
+  - id: TX-006
+    from: capital.time
+    to: capital.time
+    via_tool: wealth_compute_npv
+    action_class: OBSERVE
+    floors: [F2, F4]
+    gates: []
+    description: "Compute NPV (math; reversible; F2 evidence)"
+
+  - id: TX-007
+    from: capital.signal
+    to: capital.game
+    via_tool: wealth_omni_wisdom
+    action_class: SIMULATE
+    floors: [F2, F4, F7]
+    gates: [GAP1_Advice_Filter, GAP7_Probability_Validation]
+    description: "Multi-domain wisdom synthesis (decision-support, not decision)"
+
+  - id: TX-008
+    from: capital.entropy
+    to: capital.signal
+    via_tool: wealth_entropy_risk
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    gates: []
+    description: "Entropy → risk score → signal quality"
+
+# ════════════════════════════════════════════════════════════════════
+# 3. DENIED TRANSITIONS (structurally forbidden)
+# ════════════════════════════════════════════════════════════════════
+
+denied_transitions:
+  - id: DX-001
+    from: any
+    to: capital.conservation
+    via: direct_write
+    reason: "WEALTH does not move capital. Capital mutation requires arifOS judge + human 888_HOLD."
+  - id: DX-002
+    from: capital.flow
+    to: capital.flow
+    via_tool: wealth_runway_calculate
+    action_class_allowed: OBSERVE
+    forbidden_class: EXECUTE_HIGH_IMPACT
+    reason: "Runway is a derived metric, not a write primitive."
+  - id: DX-003
+    from: any
+    to: external_saas_api
+    via: any
+    reason: "WEALTH has no egress to external APIs. arifOS routes to A-FORGE for any external call."
+  - id: DX-004
+    from: any
+    via: wealth_stock_analysis
+    output: ["buy", "sell", "hold", "target_price", "stop_loss"]
+    reason: "GAP1 Advice Filter enforces this. Specific actionable advice is HARAM."
+
+# ════════════════════════════════════════════════════════════════════
+# 4. THE 10 CONSTITUTIONAL GATES (already implemented in wealth_gates.py)
+# ════════════════════════════════════════════════════════════════════
+# Binding surface; the code at /root/WEALTH/internal/wealth_gates.py.
+
+gates:
+  - id: GAP1_Advice_Filter
+    name: "Investment Advice Filter"
+    haram_rules: [H1_no_buy_sell_hold, H2_no_entry_stop_target]
+    floors: [F7_MARUAH, F9_ANTI_HANTU]
+    implementation: wealth_gates.py::gap1_investment_advice_filter
+    verdict_states: [PASS, WARN, BLOCK]
+    trigger_patterns: 11  # ADVICE_PATTERNS regex list
+
+  - id: GAP2_Data_Verification
+    name: "Real-Time Data Verification"
+    haram_rules: [H4_stale_data, WJ1_unverified_source]
+    floors: [F2_TRUTH, F11_AUDIT]
+    implementation: wealth_gates.py::gap2_real_time_data_verification
+
+  - id: GAP3_TTM_Completeness
+    name: "TTM-Completeness Gate"
+    haram_rules: [H5_incomplete_window, H7_partial_data, WJ2_window_gap]
+    floors: [F2_TRUTH, F7_HUMILITY]
+    implementation: wealth_gates.py::gap3_ttm_completeness
+
+  - id: GAP4_False_Confluence
+    name: "False Confluence Detector"
+    haram_rules: [H10_correlated_indicators, WJ4_phantom_signals]
+    floors: [F2_TRUTH, F4_CLARITY]
+    implementation: wealth_gates.py::gap4_false_confluence
+
+  - id: GAP5_Single_Catalyst
+    name: "Single-Catalyst Detector"
+    haram_rules: [WJ3_one_event_narrative]
+    floors: [F2_TRUTH, F7_HUMILITY]
+    implementation: wealth_gates.py::gap5_single_catalyst
+
+  - id: GAP6_Regime_Change
+    name: "Regime Change Detector"
+    haram_rules: [H8_stale_regime_assumption]
+    floors: [F2_TRUTH, F8_LAW]
+    implementation: wealth_gates.py::gap6_regime_change
+
+  - id: GAP7_Probability_Validation
+    name: "Probability Validation Gate"
+    haram_rules: [H3_fabricated_probability]
+    floors: [F2_TRUTH, F7_HUMILITY]
+    implementation: wealth_gates.py::gap7_probability_validation
+
+  - id: GAP8_Negative_Beta
+    name: "Negative Beta/Correlation Check"
+    haram_rules: [WJ8_wrong_hedge_assumption]
+    floors: [F2_TRUTH, F4_CLARITY]
+    implementation: wealth_gates.py::gap8_negative_beta
+
+  - id: GAP9_Capital_Materiality
+    name: "Capital Materiality Check"
+    haram_rules: [WJ10_trivial_amounts_treated_as_material]
+    floors: [F1_AMANAH, F2_TRUTH]
+    implementation: wealth_gates.py::gap9_capital_materiality
+
+  - id: GAP10_Pre_Trade
+    name: "Pre-Trade Gate Enforcement"
+    haram_rules: [H9_no_pre_trade_check, WJ7_bypass_pre_trade]
+    floors: [F1_AMANAH, F8_LAW, F13_SOVEREIGN]
+    implementation: wealth_gates.py::gap10_pre_trade_gate
+
+# ════════════════════════════════════════════════════════════════════
+# 5. TOOL CONTRACTS (the 20 public tools + their class/floor bindings)
+# ════════════════════════════════════════════════════════════════════
+# Sourced from WEALTH/TOOL_SURFACE.md + PUBLIC_SURFACE_WHITELIST in monolith.py
+
+tools:
+  # ── L0: Kernel Surface ──
+  - name: wealth_system_registry_status
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "Registry truth diagnostic"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_omni_wisdom
+    action_class: SIMULATE
+    floors: [F2, F4, F7]
+    purpose: "Multi-domain synthesis (decision-support, not decision)"
+    reversal: instant
+    audit: structured_event
+    gates_required: [GAP1, GAP7]
+
+  - name: wealth_agent_path
+    action_class: SUGGEST
+    floors: [F2, F4]
+    purpose: "Sovereign Intent Router (classifies L1/L2 paths)"
+    reversal: instant
+    audit: structured_event
+
+  # ── L1: 11 Canonical Physics Organs ──
+  - name: wealth_conservation_capital
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "Compute capital conservation (assets/liabilities/equity)"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_flow_liquidity
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "Cashflow / runway / burn rate"
+    reversal: instant
+    audit: structured_event
+    gates_required: [GAP9]
+
+  - name: wealth_gradient_price
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "Price gradient / time decay"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_entropy_risk
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "Risk entropy / dispersion"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_energy_productivity
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "Capital efficiency / productivity"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_time_discount
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "NPV / IRR / DSCR / time discounting"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_inertia_leverage
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "Leverage / margin / liquidation distance"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_field_macro
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "Macro field (rates, FX, commodities)"
+    reversal: instant
+    audit: structured_event
+    gates_required: [GAP2, GAP6]
+
+  - name: wealth_signal_information
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "Information value / signal independence"
+    reversal: instant
+    audit: structured_event
+    gates_required: [GAP4]
+
+  - name: wealth_game_coordination
+    action_class: SIMULATE
+    floors: [F2, F4, F7]
+    purpose: "Coordination game / Nash equilibria"
+    reversal: instant
+    audit: structured_event
+    gates_required: [GAP7]
+
+  - name: wealth_boundary_governance
+    action_class: OBSERVE
+    floors: [F2, F4, F9, F11]
+    purpose: "Organ boundary / capture detection"
+    reversal: instant
+    audit: structured_event
+    note: "Output flags → arifOS judge for 888 deliberation"
+
+  # ── L2: Mandatory Specialists (subset — see TOOL_SURFACE.md for full) ──
+  - name: wealth_stock_analysis
+    action_class: OBSERVE
+    floors: [F2, F4, F7, F9, F11]
+    purpose: "12-mode capital-risk governance"
+    reversal: instant
+    audit: structured_event
+    gates_required: [GAP1, GAP2, GAP3, GAP4, GAP5, GAP6, GAP7, GAP8, GAP9, GAP10]
+    note: "All 10 gates run on every stock_analysis call. output_contains_advice → BLOCK."
+
+  - name: wealth_personal_finance
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "D1 personal finance mode router"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_market_data
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "D3 market data mode router (FX, commodities, macro)"
+    reversal: instant
+    audit: structured_event
+    gates_required: [GAP2]
+
+  - name: wealth_cashflow_summary
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "Aggregate cashflows (read-only)"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_cashflow_track
+    action_class: EXECUTE_REVERSIBLE
+    floors: [F1, F2, F4, F11]
+    purpose: "Record a cashflow event"
+    reversal: yes (txn_id)
+    audit: VAULT999_seal
+    gates_required: [GAP9]
+
+  - name: wealth_runway_calculate
+    action_class: OBSERVE
+    floors: [F2, F4]
+    purpose: "Compute runway in months"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_net_worth_snapshot
+    action_class: OBSERVE
+    floors: [F2, F4, F11]
+    purpose: "Net worth snapshot"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_zakat_calculate
+    action_class: OBSERVE
+    floors: [F2, F4, F6, F11]
+    purpose: "Zakat computation (Muslim obligation; dignity-preserving)"
+    reversal: instant
+    audit: structured_event
+
+# ════════════════════════════════════════════════════════════════════
+# 6. PER-CALL ENVELOPE (what every WEALTH tool call must carry)
+# ════════════════════════════════════════════════════════════════════
+# See per_call_envelope.schema.json for the JSON Schema binding.
+
+per_call_envelope:
+  required_fields:
+    - trace_id              # end-to-end trace, propagated across organs
+    - session_id            # arifOS session
+    - epoch_id              # current epoch
+    - lease_id              # which arifOS lease
+    - actor_id              # calling agent
+    - agent_class           # C1 / C2 / C3 / C4 / C5
+    - organ_id              # WEALTH
+    - tool_name             # exact tool
+    - action_class          # OBSERVE / SUGGEST / SIMULATE / DRAFT / QUEUE / EXECUTE_REVERSIBLE / EXECUTE_HIGH_IMPACT / IRREVERSIBLE
+    - floors_chain          # [F2, F4, F7, ...]
+    - gates_planned         # [GAP1, GAP2, ...]
+    - risk_tier             # low / medium / high / critical
+    - approval_state        # open | 888_HOLD | sealed
+    - args_hash             # sha256 of arguments
+    - epistemic_label       # OBS / DER / INT / SPEC / UNKNOWN
+  optional_fields:
+    - human_actor           # F13 signatory (if 888_HOLD resolved)
+    - nda_token             # for restricted tools
+    - reverse_pointer       # for EXECUTE_REVERSIBLE
+
+# ════════════════════════════════════════════════════════════════════
+# 7. CROSS-ORGAN ALLOWLIST (the explicit graph)
+# ════════════════════════════════════════════════════════════════════
+# See federation_call_graph.yaml for the full federation graph.
+
+cross_organ_allowed:
+  - from: WEALTH
+    to: arifOS_kernel
+    via: MCP
+    allowed_tools: [arif_session_init, arif_judge_deliberate, arif_vault_seal, arif_organ_attest]
+    purpose: "Constitutional supervision, judge deliberation, vault seal"
+    constraints: [floor_chain_inherited, audit_structured_event]
+
+  - from: WEALTH
+    to: AAA
+    via: MCP
+    allowed_tools: [aaa_cockpit_display, aaa_a2a_route]
+    purpose: "Display state, route 888_HOLD"
+    constraints: [read_only_by_default, no_state_mutation]
+
+  - from: WEALTH
+    to: GEOX
+    via: MCP
+    allowed_tools: [geox_macro_indicator, geox_commodity_evidence]
+    purpose: "Earth evidence for commodity / energy claims"
+    constraints: [evidence_only, no_joint_advice, no_cross_signoff]
+
+  - from: WEALTH
+    to: WELL
+    via: MCP
+    allowed_tools: [well_assess_reliability, well_assess_metabolism]
+    purpose: "Operator readiness before capital decisions"
+    constraints: [read_only, never_blocking_always_advisory]
+
+  - from: WEALTH
+    to: A_FORGE
+    via: MCP
+    allowed_tools: [forge_approve, forge_dry_run]
+    purpose: "Approval / dry-run for EXECUTE_HIGH_IMPACT and IRREVERSIBLE"
+    constraints: [888_HOLD_required, ack_irreversible_required, vault_seal_on_success]
+
+cross_organ_denied:
+  - from: WEALTH
+    to: any_external_saas
+    reason: "WEALTH has no egress. arifOS routes to A-FORGE for any external call."
+  - from: WEALTH
+    to: any_organ
+    via: write_path_without_arifOS_judge
+    reason: "All writes route through arifOS judge + human 888_HOLD."
+
+# ════════════════════════════════════════════════════════════════════
+# 8. FLOOR INVARIANTS (the constitutional guarantees)
+# ════════════════════════════════════════════════════════════════════
+
+floor_invariants:
+  - "No F1 violation: every transition is reversible OR 888_HOLDed."
+  - "No F2 violation: every output carries epistemic_label + uncertainty_band + floor_chain + gate_results."
+  - "No F4 violation: every output reduces entropy vs input (or zero entropy change with explicit reason)."
+  - "No F7 violation: no naked certainty, no confidence > 0.90 without evidence."
+  - "No F9 violation: no consciousness / soul / understanding claims."
+  - "No F11 violation: every consequential action emits structured audit event to NATS / VAULT999."
+  - "No F13 violation: no self-approval of IRREVERSIBLE; human 888_HOLD required."
+
+# ════════════════════════════════════════════════════════════════════
+# 9. FAILURE MODES (what happens when a contract is violated)
+# ════════════════════════════════════════════════════════════════════
+
+failure_modes:
+  on_gate_violation:
+    action: BLOCK + log
+    sink: VAULT999
+    example: "GAP1 detects buy/sell/hold with price target → BLOCK, log, return GateResult"
+  on_action_class_mismatch:
+    action: BLOCK + escalate
+    sink: 888_HOLD
+    example: "Tool declared OBSERVE but performing EXECUTE → BLOCK + 888"
+  on_floor_violation:
+    action: BLOCK + alert
+    sink: VAULT999 + NATS alarm
+    example: "F2 violated (naked certainty) → BLOCK + 888_HOLD"
+  on_cross_organ_unallowed:
+    action: BLOCK + log
+    sink: VAULT999
+    example: "WEALTH → external_saas (denied) → BLOCK"
+  on_self_approval:
+    action: ABSOLUTE_BLOCK
+    sink: VAULT999 + sovereign_alert
+    example: "WEALTH trying to self-SEAL an IRREVERSIBLE → ABSOLUTE_BLOCK + F13 alert"
+
+# ════════════════════════════════════════════════════════════════════
+# 10. ROLLOUT / REVERSIBILITY
+# ════════════════════════════════════════════════════════════════════
+
+rollout:
+  status: DRAFT
+  reversibility: 100% (no irreversible write happens until F13 SOVEREIGN)
+  test_phase:
+    - "Wealth gates already run in production (GAP1-GAP10) — contract documents them"
+    - "Per-call envelope: requires arifOS to attach trace_id/lease_id/floors_chain — partial, needs wiring"
+    - "Cross-organ allowlist: implicit, needs explicit enforcement in arifOS kernel_route"
+  ratification_needed:
+    - "F13 SOVEREIGN sign-off on the contract (irreversible seal)"
+    - "888 judge deliberation on each EXECUTE_HIGH_IMPACT / IRREVERSIBLE"
+    - "VAULT999 seal once ratified"
+  next_step:
+    - "Use this contract as TEMPLATE for GEOX and arifOS Reality Contracts"
+    - "After 3 organs contracted, execute MVTS partition (Option A)"
+
+# ─────────────────────────────────────────────────────────────────────
+# DITEMPA BUKAN DIBERI — Physics is forged, not given.
+# F-floor compliance: F1, F2, F4, F7, F8, F9, F11, F13
+# VAULT999 seal: PENDING F13 SOVEREIGN (irreversible, requires 888_HOLD)
+# ─────────────────────────────────────────────────────────────────────
