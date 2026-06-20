@@ -3,7 +3,7 @@ F1–F13 Constitutional Floor Evaluation
 Ported from embedded JS theory (host/kernel/floors.js, canon/GOVERNANCE.md)
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from datetime import datetime, timezone
 
 FLOORS = {

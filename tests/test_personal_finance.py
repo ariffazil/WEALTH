@@ -3,8 +3,6 @@ Tests for internal/personal_finance.py — pure math tools (no DB, no MCP).
 The mcp=None branch is active in test, so we test the fallback stubs + extracted math.
 """
 import pytest
-import sys
-from unittest.mock import patch, MagicMock
 
 
 # ── Stub tests via direct import (mcp=None at module level in test env) ─────

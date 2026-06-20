@@ -25,7 +25,6 @@ from .patterns import (
     full_signature_profile,
     collapse_risk_score,
     count_matches,
-    count_axis,
 )
 
 

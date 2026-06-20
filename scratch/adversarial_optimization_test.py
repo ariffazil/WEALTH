@@ -1,14 +1,11 @@
 import sys
-import os
-import json
-import hashlib
 
 # Setup path for WEALTH
 wealth_dir = r"c:\ariffazil\arifOS\WEALTH"
 sys.path.insert(0, wealth_dir)
 
 try:
-    from server import wealth_score_kernel, HarnessEngine, LAST_RECEIPT_HASH, create_envelope
+    from server import HarnessEngine, LAST_RECEIPT_HASH, create_envelope
     
     print("--- 🜂 EXECUTING ADVERSARIAL OPTIMIZATION TEST 🜂 ---")
     lineage = HarnessEngine.get_lineage_hash()
@@ -38,7 +35,7 @@ try:
     verdict = result['verdict']
     alloc = result['allocation_signal']
     
-    print(f"\n[STEP 2] Resulting Allocation Envelope:")
+    print("\n[STEP 2] Resulting Allocation Envelope:")
     print(f"  - Verdict: {verdict}")
     print(f"  - Allocation Signal: {alloc}")
     print(f"  - Systemic Stress: {stress}")
@@ -54,7 +51,7 @@ try:
         print("\n❌ TEST FAILED: System returned APPROVE or missed systemic instability.")
 
     # 2. Identity Chaining
-    print(f"\n[STEP 4] Verifying Identity Chaining...")
+    print("\n[STEP 4] Verifying Identity Chaining...")
     first_receipt = result["receipt_hash"]
     # We call from within the script, simulating a chain
     result2 = create_envelope(
@@ -91,7 +88,7 @@ try:
         primary={"carbon_intensity": 0.05, "collapse_risk": 0.1, "sustainable_growth_rate": 0.02},
         scale_mode="civilization"
     )
-    print(f"  - Carbon Intensity: 0.05 (Floor: 0.04)")
+    print("  - Carbon Intensity: 0.05 (Floor: 0.04)")
     print(f"  - Result Verdict: {result_civ['verdict']}")
     if "CIVILIZATION_HARNESS_FAILURE" in result_civ.get("harness_audit", {}).get("violations", []):
         print("✅ CIVILIZATION FLOOR ENFORCED: Carbon budget exceeded.")

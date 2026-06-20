@@ -10,7 +10,6 @@ F8 LAW: Riskfolio computes. WEALTH audits. arifOS gates. Arif decides.
 from __future__ import annotations
 
 import hashlib
-from typing import Optional
 
 from ..wealth_contracts.envelopes import WealthEnvelope, VerdictLabel
 

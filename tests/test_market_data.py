@@ -4,7 +4,6 @@ Covers: fallback stubs (mcp=None), commodity price lookup (live module path
 via mcp mock), macro indicator static branches, FX error handling.
 """
 import pytest
-from unittest.mock import patch, MagicMock
 
 import internal.market_data as md
 
@@ -40,7 +39,6 @@ def test_stub_macro_indicator():
 @pytest.fixture
 def mock_mcp_module(monkeypatch):
     """Temporarily patch md.mcp to a real FastMCP instance mock so tools register."""
-    import sys
     # We'll just call the function bodies directly after extracting them.
     # Since personal_finance/market_data guard with `if mcp:`, we need mcp to be truthy.
     # But since the module is already imported with mcp=None, we test the bodies directly.

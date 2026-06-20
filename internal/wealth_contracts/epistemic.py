@@ -5,7 +5,7 @@ F2 TRUTH: Every claim must carry an epistemic label.
 """
 
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class EpistemicLabel(str, Enum):

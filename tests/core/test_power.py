@@ -7,7 +7,6 @@ DITEMPA BUKAN DIBERI.
 
 from __future__ import annotations
 
-import pytest
 
 from wealth_core.power import (
     audit_power,

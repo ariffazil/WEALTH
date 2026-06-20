@@ -10984,7 +10984,6 @@ def _dispatch_to(
         if inspect.isawaitable(result):
             # asyncio.run() fails inside a running event loop (FastMCP async context).
             # Use a thread executor so we don't nest event loops.
-            import concurrent.futures
 
             try:
                 loop = asyncio.get_running_loop()

@@ -11,9 +11,7 @@ F13 SOVEREIGN: Every graph node that mutates must be guarded by OPA.
 
 from __future__ import annotations
 
-import hashlib
-import time
-from typing import Any, Optional, TypedDict
+from typing import Optional, TypedDict
 
 # LangGraph is optional; check availability
 try:

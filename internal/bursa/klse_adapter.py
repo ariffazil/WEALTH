@@ -11,9 +11,8 @@ EUREKA: Free data can produce useful intelligence if you aggressively
 from __future__ import annotations
 
 import logging
-import time
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from .schemas import (
     Board,
@@ -24,7 +23,6 @@ from .schemas import (
     PriceBar,
     PriceHistory,
     ProvenanceBlock,
-    ProviderHealth,
     ProviderStatus,
     QuoteSnapshot,
     ScreenCriteria,

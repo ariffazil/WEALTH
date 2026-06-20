@@ -19,13 +19,11 @@ if str(ROOT) not in sys.path:
 
 from internal.engines.advisory import (
     DOMAIN_SEAL_VALIDITY,
-    INSUFFICIENT_INPUT_FIELDS,
     INSUFFICIENT_INPUT_STATUS,
     INSUFFICIENT_INPUT_SUMMARY,
     INSUFFICIENT_INPUT_VERDICT,
     JUDGE_SEAL_AUTHORIZATION,
     SEAL_AUTHORITY_DISCLAIMER,
-    SYNTHETIC_MARKERS,
     compute_advisory_boundary,
     detect_insufficient_input,
     detect_synthetic_inputs,
@@ -193,7 +191,7 @@ def test_wealth_synthesize_insufficient_path():
     """
     try:
         from internal.engines.canonical_tools import wealth_synthesize
-    except Exception as e:
+    except Exception:
         # engines not imported in test context — fall back to direct
         # envelope check (the doctrine is the same)
         out = wajib_envelope(

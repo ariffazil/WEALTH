@@ -67,7 +67,6 @@ Usage (TypeScript):
 from __future__ import annotations
 import hashlib
 import json
-import time
 import uuid
 from dataclasses import dataclass, field, asdict
 from enum import Enum

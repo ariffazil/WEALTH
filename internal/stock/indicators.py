@@ -20,7 +20,7 @@ DITEMPA BUKAN DIBERI — Indicators are forged on price, not hope.
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 
 # ═══════════════════════════════════════════════════════════════════════════

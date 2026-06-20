@@ -1,6 +1,8 @@
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
-import base64, math, os
+import base64
+import math
+import os
 
 FONT_CANDIDATES = [
     "/usr/share/fonts/truetype/impact/Impact.ttf",  # often missing

@@ -807,7 +807,7 @@ def run_all_gates(
 def summarize_report(report: FullGateReport) -> str:
     """Produce human-readable summary of gate report."""
     lines = [
-        f"═══ WEALTH INTELLIGENCE GATE REPORT ═══",
+        "═══ WEALTH INTELLIGENCE GATE REPORT ═══",
         f"Overall Verdict: {report.overall_verdict.value}",
         f"HARAM Violations: {report.haram_violations}",
         f"Warnings: {report.warnings}",
