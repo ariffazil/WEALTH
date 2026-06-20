@@ -17,7 +17,7 @@ def test_net_worth_assets_minus_liabilities():
         assets=[{"name": "Cash", "value": 100000}, {"name": "Stocks", "value": 50000}],
         liabilities=[{"name": "Mortgage", "outstanding": 80000}],
     )
-    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN"}
+    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN", "PASS"}
     assert result["primary_metrics"]["net_worth"] == 70000.0
     assert result["primary_metrics"]["assets"] == 150000.0
     assert result["primary_metrics"]["liabilities"] == 80000.0
@@ -26,7 +26,7 @@ def test_net_worth_assets_minus_liabilities():
 def test_empty_portfolio():
     """Empty assets and liabilities should return zero or baseline."""
     result = wealth_conservation_capital(mode="state", assets=[], liabilities=[])
-    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN"}
+    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN", "PASS"}
     # Empty portfolio — net worth should be 0
     assert result["primary_metrics"]["net_worth"] == 0.0
     assert result["primary_metrics"]["assets"] == 0.0

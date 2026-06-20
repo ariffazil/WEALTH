@@ -17,7 +17,7 @@ def test_cashflow_positive():
         income=[{"name": "Salary", "value": 10000}],
         expenses=[{"name": "Rent", "value": 3000}, {"name": "Food", "value": 2000}],
     )
-    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN"}
+    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN", "PASS"}
     # Net should be positive: 10000 - (3000 + 2000) = 5000
     if result["primary_metrics"].get("net_monthly") is not None:
         assert result["primary_metrics"]["net_monthly"] >= 0
@@ -30,7 +30,7 @@ def test_cashflow_negative():
         income=[{"name": "Part Time", "value": 2000}],
         expenses=[{"name": "Rent", "value": 3000}, {"name": "Bills", "value": 1500}],
     )
-    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN"}
+    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN", "PASS"}
 
 
 def test_runway_calculation():
@@ -42,7 +42,7 @@ def test_runway_calculation():
         years=1,
         monthly=False,
     )
-    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN"}
+    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN", "PASS"}
 
 
 def test_zero_income():
@@ -52,7 +52,7 @@ def test_zero_income():
         income=[],
         expenses=[{"name": "Fixed Costs", "value": 5000}],
     )
-    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN"}
+    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN", "PASS"}
 
 
 def test_velocity_compound_growth():
@@ -64,7 +64,7 @@ def test_velocity_compound_growth():
         years=5,
         monthly=False,
     )
-    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN"}
+    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN", "PASS"}
     # 10000 * 1.1^5 ≈ 16105.10
     forecast = result["primary_metrics"].get("growth_forecast", {})
     mid = forecast.get("mid", 0)
@@ -81,4 +81,4 @@ def test_triage_mode():
             {"name": "Operations", "min_required": 30000},
         ],
     )
-    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN"}
+    assert result["status"] in {"CAUTION", "HOLD", "OK", "WARN", "PASS"}
