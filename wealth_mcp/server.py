@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import os
 import sys
-from typing import Any
 
 # Ensure parent directory is in path
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -22,7 +21,7 @@ if base_dir not in sys.path:
 from fastmcp import FastMCP
 
 # Import contracts
-from wealth_contracts.envelope import WealthEnvelope, wrap_result
+from wealth_contracts.envelope import wrap_result
 from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality, ClaimState
 
 # Import core engines
@@ -32,15 +31,8 @@ from wealth_core.capital import (
     compute_conservation,
     compute_flow,
     compute_runway,
-    compute_gradient,
-    compute_energy,
-    compute_inertia,
     npv,
     irr,
-    profitability_index,
-    payback_period,
-    emv,
-    dscr,
 )
 from wealth_core.risk import (
     compute_emv,
@@ -49,7 +41,6 @@ from wealth_core.risk import (
     detect_false_confluence,
     compute_asymmetry,
 )
-from wealth_core.math import compute_kappa_r, compute_psi_le, get_qdf_version
 
 
 def create_mcp_server() -> FastMCP:

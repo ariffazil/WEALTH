@@ -11,7 +11,6 @@ DITEMPA BUKAN DIBERI — Numbers are forged, not hallucinated.
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
-import math
 
 
 # ─── Tool 1: verify_trade_math ──────────────────────────────────────────

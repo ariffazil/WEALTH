@@ -3,7 +3,6 @@ Tests for internal/organ_governance.py
 Covers: WEALTH_RISK_TIERS lookups, check_governance all branches,
 _call_arifOS_judge network paths (SEAL/HOLD/error).
 """
-import pytest
 import json
 from unittest.mock import patch, MagicMock
 

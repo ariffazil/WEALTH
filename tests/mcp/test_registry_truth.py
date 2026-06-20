@@ -9,7 +9,6 @@ DITEMPA BUKAN DIBERI.
 
 from __future__ import annotations
 
-import pytest
 
 from wealth_mcp.server import create_mcp_server
 

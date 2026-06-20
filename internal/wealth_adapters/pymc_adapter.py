@@ -11,7 +11,6 @@ F7 HUMILITY: confidence cap 0.90 (Bayesian posteriors exceed this for trivial re
 from __future__ import annotations
 
 import hashlib
-from typing import Optional
 
 from ..wealth_contracts.envelopes import WealthEnvelope, VerdictLabel
 

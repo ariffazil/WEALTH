@@ -1,6 +1,4 @@
 import sys
-import os
-import json
 
 # Setup path for WEALTH (use index 0 to override root server.py)
 wealth_dir = r"c:\ariffazil\arifOS\WEALTH"
@@ -43,7 +41,7 @@ try:
     print(f"  - Engine Status: {envelope['engine_status']}")
     
     audit = envelope.get("harness_audit", {})
-    print(f"\n[STEP 3] Harness Audit Breakdown:")
+    print("\n[STEP 3] Harness Audit Breakdown:")
     print(f"  - Audit Verdict: {audit.get('verdict')}")
     print(f"  - Violations: {audit.get('violations')}")
     print(f"  - Captured Hash: {audit.get('harness_lineage_hash')}")

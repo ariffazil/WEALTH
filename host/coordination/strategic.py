@@ -3,8 +3,6 @@ Strategic / non-cooperative equilibrium approximation.
 Best-response iteration for constrained linear-utility games.
 """
 
-import copy
-import math
 from typing import Any, Dict, List
 
 from host.coordination.lp_allocator import allocate

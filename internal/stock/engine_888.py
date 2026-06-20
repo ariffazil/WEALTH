@@ -28,7 +28,6 @@ DITEMPA BUKAN DIBERI — The judge does not compute. The judge deliberates.
 
 from __future__ import annotations
 
-import math
 from typing import Any, Dict, List, Optional
 
 from .indicators import (
@@ -40,7 +39,6 @@ from .indicators import (
     compute_returns,
     compute_max_drawdown,
     compute_sharpe_ratio,
-    compute_sortino_ratio,
 )
 from .market_intelligence import _match_sector
 
@@ -540,7 +538,7 @@ def compute_888(
         signal = f"1 gate triggered: {'F' if f_hold else ''}{'T' if t_hold else ''}{'W' if w_hold else ''}-HOLD. Review before action."
     elif gate_count == 2:
         verdict = "HOLD"
-        signal = f"2 gates triggered. Strong HOLD. Gather more evidence before reconsidering."
+        signal = "2 gates triggered. Strong HOLD. Gather more evidence before reconsidering."
     else:
         verdict = "SABAR"
         signal = "3 gates triggered. SABAR — sovereign review required. Do NOT enter."

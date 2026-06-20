@@ -78,7 +78,7 @@ def test_all_ghosts_remain_ghost():
         f"Ghost tools unexpectedly public: {sorted(unexpected_public)}. "
         f"These should remain in source but filtered by PUBLIC_SURFACE_WHITELIST."
     )
-    print(f"✅ test_all_ghosts_remain_ghost PASS — all 5 ghosts remain ghost")
+    print("✅ test_all_ghosts_remain_ghost PASS — all 5 ghosts remain ghost")
 
 
 def test_canonical_replacement_is_public():
@@ -122,7 +122,7 @@ def test_ghost_tools_tracked_and_filtered():
         f"Ghost tools incorrectly in PUBLIC_SURFACE_WHITELIST: {ghost_in_whitelist}"
     )
     print(
-        f"✅ test_ghost_tools_tracked_and_filtered PASS — all 5 ghosts tracked as absent, none in whitelist"
+        "✅ test_ghost_tools_tracked_and_filtered PASS — all 5 ghosts tracked as absent, none in whitelist"
     )
 
 

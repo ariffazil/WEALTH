@@ -25,7 +25,7 @@ from __future__ import annotations
 import time
 import uuid
 from enum import Enum
-from typing import Any, Generic, Optional, TypeVar
+from typing import Generic, Optional, TypeVar
 
 from pydantic import BaseModel, Field
 

@@ -2,7 +2,6 @@
 Commons-risk scoring using actual LP shadow prices and scarcity metrics.
 """
 
-import math
 from typing import Any, Dict, List
 
 from host.coordination.lp_allocator import allocate
