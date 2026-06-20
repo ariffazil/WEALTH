@@ -1,0 +1,303 @@
+# federation_call_graph.yaml — Cross-Organ Call Allowlist
+# Forged: 2026-06-17 by FORGE (000Ω)
+# Purpose: Make the implicit federation topology explicit and auditable.
+#          No organ↔organ call is allowed unless explicitly declared here.
+# Schema: arifos.federation_graph/v1
+# Status: DRAFT (pending F13 SOVEREIGN seal)
+#
+# "DITEMPA BUKAN DIBERI — The graph is forged, not assumed."
+
+version: 1
+federation_version: v2026.05.05-SSCT
+forged_by: FORGE (000Ω)
+forged_at: 2026-06-17T03:55:00Z
+
+# ════════════════════════════════════════════════════════════════════
+# 1. ORGANS (the nodes)
+# ════════════════════════════════════════════════════════════════════
+
+organs:
+  - id: arifOS
+    role: constitutional_kernel
+    port: 8088
+    transport: MCP
+    # arifOS is the law layer. Every organ's call ultimately routes through it.
+
+  - id: AAA
+    role: control_plane
+    port: 3001
+    transport: MCP + A2A
+    # AAA is the cockpit. Displays state, routes tasks, queues HOLDs.
+
+  - id: A_FORGE
+    role: execution_shell
+    port: 7071
+    transport: MCP
+    # A-FORGE is the execution shell. Runs 4-gate governance.
+
+  - id: GEOX
+    role: earth_intelligence
+    port: 8081
+    transport: MCP
+    # GEOX is EVIDENCE_ONLY. Computes, never allocates.
+
+  - id: WEALTH
+    role: capital_intelligence
+    port: 18082
+    transport: MCP
+    # WEALTH is EVIDENCE_ONLY. Computes, never moves capital.
+
+  - id: WELL
+    role: human_readiness
+    port: 18083
+    transport: MCP
+    # WELL is REFLECT_ONLY. Reports, never diagnoses.
+
+  - id: APEX
+    role: deliberation
+    port: 3002
+    transport: legacy
+    note: "APEX deliberation moved to AAA a2a-server. Port 3002 retained for legacy health."
+
+# ════════════════════════════════════════════════════════════════════
+# 2. ALLOWED EDGES (the explicit graph)
+# ════════════════════════════════════════════════════════════════════
+# An edge = a permitted call path. All others are DENIED.
+
+allowed_edges:
+  # ── arifOS is the kernel — it routes through every organ ──
+  - from: arifOS
+    to: AAA
+    via: MCP
+    purpose: "Cockpit display + state broadcast"
+    direction: bidirectional
+    constraints: [floor_chain_inherited, audit_structured_event]
+
+  - from: arifOS
+    to: A_FORGE
+    via: MCP
+    purpose: "Lease issuance, action_class enforcement, judge deliberation"
+    direction: bidirectional
+    constraints: [F8_LAW, F13_SOVEREIGN]
+
+  - from: arifOS
+    to: GEOX
+    via: MCP
+    purpose: "Earth evidence, claim seal, prospect evaluation"
+    direction: bidirectional
+    constraints: [evidence_only, epistemic_label_required]
+
+  - from: arifOS
+    to: WEALTH
+    via: MCP
+    purpose: "Capital evidence, conservation, gate enforcement"
+    direction: bidirectional
+    constraints: [evidence_only, gate_results_required]
+
+  - from: arifOS
+    to: WELL
+    via: MCP
+    purpose: "Substrate readiness, metabolic assessment"
+    direction: bidirectional
+    constraints: [reflect_only, no_diagnosis]
+
+  # ── AAA routes through arifOS, never directly to data services ──
+  - from: AAA
+    to: arifOS
+    via: MCP
+    purpose: "Cockpit reads kernel state; queues HOLDs"
+    direction: bidirectional
+    constraints: [warga_authentication_required, audit_structured_event]
+
+  - from: AAA
+    to: A_FORGE
+    via: CLI
+    purpose: "AAA delegates execution to A-FORGE"
+    direction: outbound
+    constraints: [warga_only, audit_structured_event]
+
+  # ── A-FORGE orchestrates organs via arifOS ──
+  - from: A_FORGE
+    to: arifOS
+    via: MCP
+    purpose: "Judge deliberation before IRREVERSIBLE; lease management"
+    direction: outbound
+    constraints: [4_gate_governance, F1_AMANAH]
+
+  - from: A_FORGE
+    to: GEOX
+    via: MCP
+    purpose: "Read-only earth evidence for forge tasks"
+    direction: outbound
+    constraints: [read_only_by_default, no_claim_creation]
+
+  - from: A_FORGE
+    to: WEALTH
+    via: MCP
+    purpose: "Read-only capital evidence for forge tasks"
+    direction: outbound
+    constraints: [read_only_by_default, no_cashflow_write]
+
+  - from: A_FORGE
+    to: WELL
+    via: MCP
+    purpose: "Operator readiness before high-blast-radius forge tasks"
+    direction: outbound
+    constraints: [read_only, advisory_only]
+
+  - from: A_FORGE
+    to: AAA
+    via: MCP
+    purpose: "Forge reports to cockpit; receives HOLD queue"
+    direction: bidirectional
+    constraints: [warga_path_only]
+
+  # ── GEOX / WEALTH / WELL are evidence organs — read by others, no inter-organ writes ──
+  - from: GEOX
+    to: WEALTH
+    via: MCP
+    purpose: "GEOX supplies earth evidence (commodity, basin) to WEALTH for capital analysis"
+    direction: outbound
+    constraints: [evidence_only, no_joint_signoff, no_joint_advice]
+
+  - from: WEALTH
+    to: GEOX
+    via: MCP
+    purpose: "WEALTH requests earth evidence for capital claims"
+    direction: outbound
+    constraints: [evidence_only]
+
+  - from: WELL
+    to: WEALTH
+    via: MCP
+    purpose: "WELL supplies operator readiness before capital decisions"
+    direction: outbound
+    constraints: [reflect_only, advisory_only]
+
+  - from: WELL
+    to: GEOX
+    via: MCP
+    purpose: "WELL supplies operator readiness before high-stakes earth decisions"
+    direction: outbound
+    constraints: [reflect_only, advisory_only]
+
+  # ── Every organ reads arifOS constitutional primitives ──
+  - from: GEOX
+    to: arifOS
+    via: MCP
+    purpose: "Constitutional supervision; VAULT999 seal"
+    direction: outbound
+    constraints: [audit_structured_event]
+
+  - from: WEALTH
+    to: arifOS
+    via: MCP
+    purpose: "Constitutional supervision; VAULT999 seal"
+    direction: outbound
+    constraints: [audit_structured_event]
+
+  - from: WELL
+    to: arifOS
+    via: MCP
+    purpose: "Constitutional supervision; VAULT999 seal"
+    direction: outbound
+    constraints: [audit_structured_event]
+
+# ════════════════════════════════════════════════════════════════════
+# 3. DENIED EDGES (structurally forbidden)
+# ════════════════════════════════════════════════════════════════════
+
+denied_edges:
+  - from: any
+    to: any_external_saas
+    reason: "No organ has direct egress to external SaaS. A-FORGE proxies via arifOS routing."
+  - from: GEOX
+    to: WEALTH
+    via: write_path
+    reason: "GEOX must not mutate WEALTH state. Evidence flows one way."
+  - from: WEALTH
+    to: GEOX
+    via: write_path
+    reason: "WEALTH must not mutate GEOX state. Evidence flows one way."
+  - from: any_organ
+    to: another_organ
+    via: skip_arifOS
+    reason: "All inter-organ calls route through arifOS kernel for audit + floor enforcement."
+  - from: WEALTH
+    to: capital_market_exchange
+    reason: "WEALTH does not execute trades. The boundary is inviolable."
+  - from: GEOX
+    to: drilling_decision
+    reason: "GEOX does not authorize drilling. Evidence only."
+  - from: WELL
+    to: medical_diagnosis
+    reason: "WELL is not a doctor. Reflect only."
+
+# ════════════════════════════════════════════════════════════════════
+# 4. EDGE CONSTRAINTS (rules every allowed edge must obey)
+# ════════════════════════════════════════════════════════════════════
+
+edge_constraints:
+  - id: EC-001
+    applies_to: "all_edges"
+    rule: "Every edge carries a per_call_envelope (per_call_envelope.schema.json)."
+  - id: EC-002
+    applies_to: "all_edges"
+    rule: "Every edge's audit goes to NATS governance stream and (for consequential ops) VAULT999."
+  - id: EC-003
+    applies_to: "all_write_edges"
+    rule: "Every write edge requires arifOS judge deliberation (888) before execution (900)."
+  - id: EC-004
+    applies_to: "all_IRREVERSIBLE_edges"
+    rule: "Every IRREVERSIBLE edge requires human 888_HOLD (F13 SOVEREIGN)."
+  - id: EC-005
+    applies_to: "all_inter_organ_edges"
+    rule: "Every inter-organ edge goes through arifOS as the audit/control plane."
+  - id: EC-006
+    applies_to: "evidence_flows"
+    rule: "Evidence flows are read-only by default. Mutations require explicit F13 route."
+
+# ════════════════════════════════════════════════════════════════════
+# 5. ENFORCEMENT (where the graph is enforced)
+# ════════════════════════════════════════════════════════════════════
+
+enforcement:
+  primary: arifOS_kernel_route
+  implementation:
+    - "arifOS MCP gate: every inter-organ call must pass arif_kernel_route first"
+    - "A-FORGE 4-gate: scope, intent, confirmation, audit"
+    - "FloorEnforcer wrapper: server.tool() intercepted (C1 Phase 1 in A-FORGE)"
+  failure_on_unallowed_edge:
+    action: BLOCK + log
+    sink: VAULT999
+    note: "Any edge not in allowed_edges is denied by default."
+
+# ════════════════════════════════════════════════════════════════════
+# 6. TOPOLOGY SUMMARY (the visual)
+# ════════════════════════════════════════════════════════════════════
+
+topology_summary: |
+  ┌─────────────────────────────────────────────────────────────┐
+  │                    F13 SOVEREIGN (Arif)                      │
+  │                          │                                   │
+  │                  ┌───────▼────────┐                          │
+  │                  │   arifOS (Ω)   │  Constitutional Kernel   │
+  │                  │   port 8088    │  F1-F13 + 888 + 999     │
+  │                  └─┬──┬──┬──┬──┬──┘                          │
+  │                    │  │  │  │  │                              │
+  │         ┌──────────┘  │  │  │  └────────────┐                │
+  │         │             │  │  │               │                │
+  │      ┌──▼──┐    ┌─────▼──▼──▼───┐    ┌─────▼─────┐         │
+  │      │ AAA │    │  Evidence     │    │  A-FORGE  │         │
+  │      │ 3001│    │  Organs       │    │  7071     │         │
+  │      └──┬──┘    │  GEOX  WEALTH │    │  4-gate   │         │
+  │         │       │  WELL          │    │           │         │
+  │         │       └───────┬────────┘    └─────┬─────┘         │
+  │         │               │                    │                │
+  │         └─────routes via arifOS──────────────┘                │
+  └─────────────────────────────────────────────────────────────┘
+
+# ─────────────────────────────────────────────────────────────────────
+# DITEMPA BUKAN DIBERI — The graph is forged, not assumed.
+# VAULT999 seal: PENDING F13 SOVEREIGN (irreversible, requires 888_HOLD)
+# ─────────────────────────────────────────────────────────────────────
