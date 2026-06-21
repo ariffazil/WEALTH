@@ -10,6 +10,7 @@ DITEMPA BUKAN DIBERI — Forged, not given.
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 
@@ -63,6 +64,7 @@ def create_mcp_server() -> FastMCP:
     _register_risk_tools(mcp)
     _register_legacy_surface_tools(mcp)  # stock, personal, market, omni, agent_path
     _register_meta_tools(mcp)
+    _register_resources(mcp)
 
     return mcp
 
@@ -238,15 +240,16 @@ def _register_capital_tools(mcp: FastMCP) -> None:
 def _register_risk_tools(mcp: FastMCP) -> None:
     """Register risk domain tools."""
 
-    @mcp.tool(name="wealth_emv_compute")
-    async def wealth_emv_compute(
+    # ── Canonical: wealth_compute_emv (was wealth_emv_compute) ──────────
+    @mcp.tool(name="wealth_compute_emv")
+    async def wealth_compute_emv(
         outcomes: list[float],
         probabilities: list[float],
     ) -> dict:
         """Compute Expected Monetary Value with variance and std dev."""
         result = compute_emv(outcomes, probabilities)
         return wrap_result(
-            tool_name="wealth_emv_compute",
+            tool_name="wealth_compute_emv",
             domain="risk",
             result=result,
             epistemic_tag=EpistemicTag.DERIVED,
@@ -254,8 +257,32 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             source_attribution=["user_provided_scenarios"],
         )
 
-    @mcp.tool(name="wealth_monte_carlo")
-    async def wealth_monte_carlo(
+    @mcp.tool(name="wealth_emv_compute")
+    async def wealth_emv_compute(
+        outcomes: list[float],
+        probabilities: list[float],
+    ) -> dict:
+        """[DEPRECATED — use wealth_compute_emv] Compute Expected Monetary Value with variance and std dev."""
+        result = compute_emv(outcomes, probabilities)
+        r = wrap_result(
+            tool_name="wealth_emv_compute",
+            domain="risk",
+            result=result,
+            epistemic_tag=EpistemicTag.DERIVED,
+            evidence_quality=EvidenceQuality.MODERATE,
+            source_attribution=["user_provided_scenarios"],
+        )
+        r["_advisory"] = {
+            "deprecated": True,
+            "canonical": "wealth_compute_emv",
+            "deprecation_epoch": "2026-Q3",
+            "removal_allowed": False,
+        }
+        return r
+
+    # ── Canonical: wealth_monte_carlo_simulate (was wealth_monte_carlo) ──
+    @mcp.tool(name="wealth_monte_carlo_simulate")
+    async def wealth_monte_carlo_simulate(
         initial_value: float,
         growth_rate: float,
         volatility: float,
@@ -268,12 +295,61 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             initial_value, growth_rate, volatility, periods, simulations, seed
         )
         return wrap_result(
+            tool_name="wealth_monte_carlo_simulate",
+            domain="risk",
+            result=result,
+            epistemic_tag=EpistemicTag.DERIVED,
+            evidence_quality=EvidenceQuality.MODERATE,
+            source_attribution=["monte_carlo_simulation"],
+        )
+
+    @mcp.tool(name="wealth_monte_carlo")
+    async def wealth_monte_carlo(
+        initial_value: float,
+        growth_rate: float,
+        volatility: float,
+        periods: int = 10,
+        simulations: int = 1000,
+        seed: int | None = None,
+    ) -> dict:
+        """[DEPRECATED — use wealth_monte_carlo_simulate] Run Monte Carlo simulation for value projection."""
+        result = monte_carlo_simulation(
+            initial_value, growth_rate, volatility, periods, simulations, seed
+        )
+        r = wrap_result(
             tool_name="wealth_monte_carlo",
             domain="risk",
             result=result,
             epistemic_tag=EpistemicTag.DERIVED,
             evidence_quality=EvidenceQuality.MODERATE,
             source_attribution=["monte_carlo_simulation"],
+        )
+        r["_advisory"] = {
+            "deprecated": True,
+            "canonical": "wealth_monte_carlo_simulate",
+            "deprecation_epoch": "2026-Q3",
+            "removal_allowed": False,
+        }
+        return r
+
+    # ── Canonical: wealth_compute_evoi (was wealth_evoi_compute) ──────────
+    @mcp.tool(name="wealth_compute_evoi")
+    async def wealth_compute_evoi(
+        prior_pos: float,
+        posterior_pos: float,
+        well_cost_musd: float,
+        p50_value_musd: float,
+        discount_rate: float = 0.1,
+    ) -> dict:
+        """Compute Expected Value of Information (EVOI)."""
+        result = compute_evoi(prior_pos, posterior_pos, well_cost_musd, p50_value_musd, discount_rate)
+        return wrap_result(
+            tool_name="wealth_compute_evoi",
+            domain="risk",
+            result=result,
+            epistemic_tag=EpistemicTag.DERIVED,
+            evidence_quality=EvidenceQuality.MODERATE,
+            source_attribution=["evoi_calculation"],
         )
 
     @mcp.tool(name="wealth_evoi_compute")
@@ -284,9 +360,9 @@ def _register_risk_tools(mcp: FastMCP) -> None:
         p50_value_musd: float,
         discount_rate: float = 0.1,
     ) -> dict:
-        """Compute Expected Value of Information (EVOI)."""
+        """[DEPRECATED — use wealth_compute_evoi] Compute Expected Value of Information (EVOI)."""
         result = compute_evoi(prior_pos, posterior_pos, well_cost_musd, p50_value_musd, discount_rate)
-        return wrap_result(
+        r = wrap_result(
             tool_name="wealth_evoi_compute",
             domain="risk",
             result=result,
@@ -294,6 +370,13 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             evidence_quality=EvidenceQuality.MODERATE,
             source_attribution=["evoi_calculation"],
         )
+        r["_advisory"] = {
+            "deprecated": True,
+            "canonical": "wealth_compute_evoi",
+            "deprecation_epoch": "2026-Q3",
+            "removal_allowed": False,
+        }
+        return r
 
     @mcp.tool(name="wealth_confluence_check")
     async def wealth_confluence_check(
@@ -399,7 +482,7 @@ def _register_legacy_surface_tools(mcp: FastMCP) -> None:
         Delegates to internal/market_data.py engines."""
         try:
             from internal.monolith import wealth_market_data as _md_impl
-            return await _md_impl(
+            return _md_impl(
                 mode=mode, base=base, targets=targets,
                 commodity=commodity, indicator=indicator, country=country,
             )
@@ -446,7 +529,7 @@ def _register_legacy_surface_tools(mcp: FastMCP) -> None:
         Delegates to monolith's agent_path implementation."""
         try:
             from internal.monolith import wealth_agent_path as _ap_impl
-            return await _ap_impl(
+            return _ap_impl(
                 task_description=task_description,
                 scale_mode=scale_mode, context=context,
             )
@@ -560,22 +643,118 @@ def _register_meta_tools(mcp: FastMCP) -> None:
             "version": "2026.06.15",
             "domain": "WEALTH Federated Domain",
             "public_tools": [
+                # Wisdom & Power
                 "wealth_wisdom_evaluate",
                 "wealth_power_audit",
                 "wealth_capture_scan",
+                # Capital
                 "wealth_compute_npv",
                 "wealth_compute_irr",
                 "wealth_conservation_check",
                 "wealth_flow_check",
                 "wealth_runway_check",
-                "wealth_emv_compute",
-                "wealth_monte_carlo",
-                "wealth_evoi_compute",
+                # Risk (canonical names)
+                "wealth_compute_emv",
+                "wealth_compute_evoi",
+                "wealth_monte_carlo_simulate",
                 "wealth_confluence_check",
                 "wealth_asymmetry_check",
+                # Risk (deprecated aliases — backward compat)
+                "wealth_emv_compute",
+                "wealth_evoi_compute",
+                "wealth_monte_carlo",
+                # Domain engines
+                "wealth_stock_analysis",
+                "wealth_personal_finance",
+                "wealth_market_data",
+                "wealth_omni_wisdom",
+                "wealth_agent_path",
+                # Governance
+                "wealth_vault_write",
+                "wealth_vault_query",
+                # Meta
                 "wealth_system_registry_status",
             ],
         }
+
+
+def _register_resources(mcp: FastMCP) -> None:
+    """Register MCP resources for WEALTH (remediation: previously zero resources)."""
+
+    @mcp.resource("afwealth://schema")
+    def afwealth_schema() -> str:
+        """WEALTH canonical tool surface and version info."""
+        return json.dumps({
+            "organ": "WEALTH",
+            "version": "2026.06.15",
+            "role": "Capital Intelligence for arifOS federation",
+            "authority": "WEALTH computes. arifOS judges. Arif decides.",
+            "protocol": "MCP 2025-11-25",
+            "tool_prefix": "wealth_",
+            "resource_scheme": "afwealth://",
+            "canonical_tools": [
+                "wealth_wisdom_evaluate", "wealth_power_audit", "wealth_capture_scan",
+                "wealth_compute_npv", "wealth_compute_irr",
+                "wealth_conservation_check", "wealth_flow_check", "wealth_runway_check",
+                "wealth_compute_emv", "wealth_compute_evoi", "wealth_monte_carlo_simulate",
+                "wealth_confluence_check", "wealth_asymmetry_check",
+                "wealth_stock_analysis", "wealth_personal_finance",
+                "wealth_market_data", "wealth_omni_wisdom", "wealth_agent_path",
+                "wealth_vault_write", "wealth_vault_query",
+                "wealth_system_registry_status",
+            ],
+            "deprecated_aliases": [
+                "wealth_emv_compute", "wealth_evoi_compute", "wealth_monte_carlo",
+            ],
+            "naming_convention": "wealth_<verb>_<noun>",
+        }, indent=2)
+
+    @mcp.resource("afwealth://health")
+    def afwealth_health() -> str:
+        """WEALTH organ health status."""
+        return json.dumps({
+            "status": "ALIVE",
+            "version": "2026.06.15",
+            "domain": "WEALTH Federated Domain",
+            "transport": "streamable-http",
+            "read_only": True,
+            "final_authority": "arifOS 888_JUDGE",
+        }, indent=2)
+
+    @mcp.resource("afwealth://tools/registry")
+    def afwealth_tools_registry() -> str:
+        """Full tool registry with deprecation status."""
+        tools = {
+            "active": [
+                {"name": "wealth_wisdom_evaluate", "domain": "wisdom", "verb": "evaluate"},
+                {"name": "wealth_power_audit", "domain": "power", "verb": "audit"},
+                {"name": "wealth_capture_scan", "domain": "power", "verb": "scan"},
+                {"name": "wealth_compute_npv", "domain": "capital", "verb": "compute"},
+                {"name": "wealth_compute_irr", "domain": "capital", "verb": "compute"},
+                {"name": "wealth_compute_emv", "domain": "risk", "verb": "compute"},
+                {"name": "wealth_compute_evoi", "domain": "risk", "verb": "compute"},
+                {"name": "wealth_monte_carlo_simulate", "domain": "risk", "verb": "simulate"},
+                {"name": "wealth_conservation_check", "domain": "capital", "verb": "check"},
+                {"name": "wealth_flow_check", "domain": "capital", "verb": "check"},
+                {"name": "wealth_runway_check", "domain": "capital", "verb": "check"},
+                {"name": "wealth_confluence_check", "domain": "risk", "verb": "check"},
+                {"name": "wealth_asymmetry_check", "domain": "risk", "verb": "check"},
+                {"name": "wealth_stock_analysis", "domain": "stock", "verb": "analysis"},
+                {"name": "wealth_personal_finance", "domain": "personal", "verb": "finance"},
+                {"name": "wealth_market_data", "domain": "macro", "verb": "data"},
+                {"name": "wealth_omni_wisdom", "domain": "synthesis", "verb": "wisdom"},
+                {"name": "wealth_agent_path", "domain": "meta", "verb": "path"},
+                {"name": "wealth_vault_write", "domain": "governance", "verb": "write"},
+                {"name": "wealth_vault_query", "domain": "governance", "verb": "query"},
+                {"name": "wealth_system_registry_status", "domain": "meta", "verb": "status"},
+            ],
+            "deprecated": [
+                {"name": "wealth_emv_compute", "canonical": "wealth_compute_emv", "epoch": "2026-Q3"},
+                {"name": "wealth_evoi_compute", "canonical": "wealth_compute_evoi", "epoch": "2026-Q3"},
+                {"name": "wealth_monte_carlo", "canonical": "wealth_monte_carlo_simulate", "epoch": "2026-Q3"},
+            ],
+        }
+        return json.dumps(tools, indent=2)
 
 
 def _extract_dimension(wisdom_result: dict, dimension: str) -> str | None:

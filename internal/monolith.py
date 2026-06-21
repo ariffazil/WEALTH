@@ -3961,6 +3961,28 @@ def create_envelope(
     envelope["secondary_metrics"]["allocation_signal"] = envelope["allocation_signal"]
     envelope["secondary_metrics"]["engine_status"] = envelope["engine_status"]
 
+    # ── APEX Runtime Governance Envelope (APEX-MCP-001) ──────────────────
+    # WEALTH = Capital Intelligence organ. Maps financial signals to 10 APEX gates.
+    try:
+        from apex_envelope import apex_envelope as _build_apex
+        _confidence = 0.88 if status == "PASS" else (0.60 if status == "CAUTION" else 0.30)
+        _boundary = "LIVE" if status == "PASS" else "CACHED"
+        _coherent = status not in ("VOID",) and len(failure_flags) == 0
+        envelope["apex"] = _build_apex(
+            tool_name=tool,
+            confidence=_confidence,
+            evidence_strength=max(_confidence, g_data.get("g_score", 0.5)),
+            boundary=_boundary,
+            uncertainty_declared=True,
+            coherent=_coherent,
+            cost_used=g_data.get("entropy_s", 0.0),
+            cost_budget=1.0,
+            actor_id=(governance_args or {}).get("actor_id"),
+            action_class="READ" if "read" in tool or "check" in tool else "MUTATE",
+        )
+    except Exception:
+        pass
+
     # 4. Update Global Identity Chain after governance mutations.
     envelope, _ = _json_safe_value(envelope)
     receipt_blob = json.dumps(
@@ -3973,6 +3995,24 @@ def create_envelope(
     receipt_hash = hashlib.sha256(receipt_blob.encode()).hexdigest()
     envelope["receipt_hash"] = receipt_hash
     LAST_RECEIPT_HASH = receipt_hash
+
+    # ── APEX Runtime Governance Envelope (APEX-MCP-001) ──────────────────
+    # WEALTH = Capital organ. Maps financial signals to 10 APEX gates.
+    try:
+        from internal.apex_envelope_wealth import wealth_apex_envelope
+        envelope["apex"] = wealth_apex_envelope(
+            tool_name=tool,
+            g_score=g_data.get("g_score", 0.5),
+            entropy_s=g_data.get("entropy_s", 0.0),
+            verdict=derived_governance,
+            allocation_signal=derived_allocation,
+            confidence=confidence if isinstance(confidence, (int, float)) else (0.9 if confidence == "HIGH" else 0.4),
+            epistemic_class=derived_epistemic,
+            failure_flags=failure_flags,
+            actor_id=governance_args.get("actor_id") if governance_args else None,
+        )
+    except Exception:
+        pass  # APEX envelope is additive; never breaks tool output
 
     return envelope
 
