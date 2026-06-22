@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from wealth_contracts.epistemic import EpistemicTag
 
+from . import SignalState, derive_signal_state
+
 DEPENDENCY_SIGNALS = [
     "vendor lock-in",
     "single source",
@@ -70,9 +72,19 @@ def evaluate_sovereignty_risk(
         )
         epistemic = EpistemicTag.INTERPRETED
 
+    # Derive semantic signal state (Fix 3)
+    signal_state, signal_confidence = derive_signal_state(
+        score=score,
+        pattern_count=dependency_count + autonomy_count,
+        has_positive_patterns=autonomy_count > 0,
+        has_negative_patterns=dependency_count > 0,
+    )
+
     return {
         "dimension": "sovereignty",
         "score": round(score, 3),
+        "signal_state": signal_state.value,
+        "signal_confidence": round(signal_confidence, 3),
         "evidence": evidence,
         "epistemic_tag": epistemic.value,
         "dependency_signals": dependency_count,

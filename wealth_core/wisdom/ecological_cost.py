@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from wealth_contracts.epistemic import EpistemicTag
 
+from . import SignalState, derive_signal_state
+
 HIGH_COST_SIGNALS = [
     "fossil fuel",
     "carbon emission",
@@ -70,9 +72,19 @@ def evaluate_ecological_cost(
         )
         epistemic = EpistemicTag.INTERPRETED
 
+    # Derive semantic signal state (Fix 3)
+    signal_state, signal_confidence = derive_signal_state(
+        score=score,
+        pattern_count=high_cost_count + low_cost_count,
+        has_positive_patterns=low_cost_count > 0,
+        has_negative_patterns=high_cost_count > 0,
+    )
+
     return {
         "dimension": "ecological",
         "score": round(score, 3),
+        "signal_state": signal_state.value,
+        "signal_confidence": round(signal_confidence, 3),
         "evidence": evidence,
         "epistemic_tag": epistemic.value,
         "high_cost_signals": high_cost_count,

@@ -13999,6 +13999,7 @@ async def wealth_omni_wisdom(
     decision_context: Optional[Dict[str, Any]] = None,
     deal_params: Optional[Dict[str, Any]] = None,
     path_params: Optional[Dict[str, Any]] = None,
+    memory_query: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Ω-WEALTH-OMNI: Unified capital intelligence — synthesis + deal + hysteresis in one tool.
 
@@ -14058,6 +14059,26 @@ async def wealth_omni_wisdom(
     path_params = path_params or {}
     description = decision_context.get("description", "")
     timestamp = datetime.utcnow().isoformat() + "Z"
+
+    # ── Federation memory integration (Fix 5) ────────────────────────────
+    # If memory_query provided, enrich context with arifOS recall + vault
+    _memory_results: list[dict[str, Any]] = []
+    if memory_query:
+        try:
+            from internal.federation_memory import recall
+
+            _mem = recall(memory_query, limit=5)
+            if _mem.get("status") == "ok":
+                _memory_results = _mem.get("results", [])
+                if _memory_results:
+                    decision_context["_memory_query"] = memory_query
+                    decision_context["_memory_results"] = _memory_results
+                    logger.info(
+                        f"Federation memory enrichment: {len(_memory_results)} results "
+                        f"for query '{memory_query}'"
+                    )
+        except Exception as _mem_err:
+            logger.warning(f"Federation memory enrichment failed (non-blocking): {_mem_err}")
 
     # ── mode='synthesize' ────────────────────────────────────────────────
     if mode == "synthesize":
