@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from wealth_contracts.epistemic import EpistemicTag
 
+from . import SignalState, derive_signal_state
+
 CLOSE_DOOR_SIGNALS = [
     "irreversible",
     "permanent",
@@ -70,9 +72,19 @@ def evaluate_optionality(
         )
         epistemic = EpistemicTag.INTERPRETED
 
+    # Derive semantic signal state (Fix 3)
+    signal_state, signal_confidence = derive_signal_state(
+        score=score,
+        pattern_count=close_count + open_count,
+        has_positive_patterns=open_count > 0,
+        has_negative_patterns=close_count > 0,
+    )
+
     return {
         "dimension": "optionality",
         "score": round(score, 3),
+        "signal_state": signal_state.value,
+        "signal_confidence": round(signal_confidence, 3),
         "evidence": evidence,
         "epistemic_tag": epistemic.value,
         "door_closing_signals": close_count,

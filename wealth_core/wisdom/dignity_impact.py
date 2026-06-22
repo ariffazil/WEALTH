@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from wealth_contracts.epistemic import EpistemicTag
 
+from . import SignalState, derive_signal_state
+
 # Signals that erode dignity
 DIGNITY_EROSION_SIGNALS = [
     "debt trap",
@@ -75,9 +77,19 @@ def evaluate_dignity_impact(
         )
         epistemic = EpistemicTag.INTERPRETED
 
+    # Derive semantic signal state (Fix 3)
+    signal_state, signal_confidence = derive_signal_state(
+        score=score,
+        pattern_count=erosion_count + preservation_count,
+        has_positive_patterns=preservation_count > 0,
+        has_negative_patterns=erosion_count > 0,
+    )
+
     return {
         "dimension": "dignity",
         "score": round(score, 3),
+        "signal_state": signal_state.value,
+        "signal_confidence": round(signal_confidence, 3),
         "evidence": evidence,
         "epistemic_tag": epistemic.value,
         "erosion_signals": erosion_count,
