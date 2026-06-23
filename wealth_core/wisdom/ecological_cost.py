@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from wealth_contracts.epistemic import EpistemicTag
 
-from . import SignalState, derive_signal_state
+from .signal_state import SignalState, derive_signal_state
 
 HIGH_COST_SIGNALS = [
     "fossil fuel",
