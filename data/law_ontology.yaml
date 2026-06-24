@@ -1,0 +1,29 @@
+# =============================================================================
+# WEALTH Law Ontology — REDIRECT
+# =============================================================================
+#
+# ⚠️  This file is a compatibility redirect only.
+#
+#  The canonical, machine-readable law ontology for WEALTH is now maintained at:
+#      /root/WEALTH/domains/law/ONTOLOGY.yaml
+#
+#  History:
+#    - An earlier parallel draft lived at this path (data/legal_ontology.yaml)
+#      and was merged into domains/law/ONTOLOGY.yaml during the 2026-06-24
+#      002/015 reconciliation.
+#    - This redirect exists so that older blueprints, skills, and external
+#      references still resolve to the single canonical ontology.
+#
+#  Do NOT add schema primitives here. Extend /root/WEALTH/domains/law/ONTOLOGY.yaml.
+# =============================================================================
+
+ontology_redirect:
+  canonical_path: "domains/law/ONTOLOGY.yaml"
+  status: "REDIRECT"
+  version: "1.1.0-DRAFT"
+  canon_ref: "002_HUMAN_LAW"
+  shadow_canon_ref: "002a_LAW_SHADOW"
+  note: "All ontology authority lives in domains/law/ONTOLOGY.yaml. This file is not authoritative."
+
+# If you arrived here looking for the ontology, go to:
+# /root/WEALTH/domains/law/ONTOLOGY.yaml
