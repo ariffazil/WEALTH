@@ -1,7 +1,12 @@
 # REPO_ROUTING_CONSTITUTION.md
-> **DITEMPA BUKAN DIBERI** — Routing intelligence is earned, not assumed.
+> **DITEMPA BUKAN DIBEI** — Routing intelligence is earned, not assumed.
 > **Amanah clause:** Never route faster than certainty. Refuse over misroute.
 > **Version:** 2026.05.02-KANON | **Authority:** Human Architect (Arif)
+>
+> ⚠️ **DERIVED COPY** — This file is mirrored in WEALTH for local agent reference.
+> **Canonical source:** `/root/arifOS/REPO_ROUTING_CONSTITUTION.md`
+> **Last mirror sync:** 2026-06-24 (audit)
+> If the canonical and this copy disagree, the canonical wins.
 
 ---
 

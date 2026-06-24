@@ -1,3 +1,14 @@
+"""
+⚠️ DEPRECATED — This is a development demo surface (6 tools).
+Production WEALTH runs at `wealth_mcp/server.py` (federated, 24 tools).
+This file is kept for legacy demo purposes only.
+
+Canonical production entry point: `server_federated.py`
+Canonical tool surface: `wealth_mcp/server.py` (1220 lines, 24 public tools, 6 resources, 2 prompts)
+
+DITEMPA BUKAN DIBERI — Forged, not given.
+"""
+
 from __future__ import annotations
 
 from typing import List, Optional
