@@ -1,0 +1,841 @@
+# =============================================================================
+# WEALTH Law Ontology — v0.1.0-DRAFT  [RETIRED / SUPERSEDED]
+# =============================================================================
+#
+# ⚠️  READER NOTICE (2026-06-24):
+#  This file was forged in parallel with the 002 series
+#  (canon/002_HUMAN_LAW.md + domains/law/ONTOLOGY.yaml). The sovereign (888)
+#  selected Path A: reconcile first. Useful contents below have been merged
+#  into domains/law/ONTOLOGY.yaml. This file is kept as lineage trace only.
+#
+#  Canonical schema spine: /root/WEALTH/domains/law/ONTOLOGY.yaml
+#  Shadow/anthropology layer: /root/WEALTH/canon/002a_LAW_SHADOW.md
+#  Status: RETIRED — do not wire to production.
+# =============================================================================
+#
+# This YAML is the machine-readable spine of human law as WEALTH understands it.
+# It is the FIRST instance of the Ω-WEALTH-13 LAW doctrine (see
+# /root/WEALTH/canon/015_LAW_MANIFEST.md).
+#
+# STATUS:        DRAFT — not yet wired into production organ
+# FORGED:        2026-06-24 by FORGE-000Ω on behalf of 888
+# SESSION:       SEAL-178be818bd314292 (OBSERVE_ONLY)
+# PARENT:        /root/WEALTH/canon/015_LAW_MANIFEST.md  [SUPERSEDED]
+# COMPANION:     /root/forge_work/legal/pusaka-law-pack-v1.md
+#
+# IRON RULES:
+#   1. Every citation must carry `truth_band` (F2 TRUTH).
+#   2. Every jurisdiction_level must be one of the allowed enum values.
+#   3. Every 888_hold_pattern must declare trigger + weight + action.
+#   4. No verbatim Act text in this YAML — only citations + key_sections.
+#      The body of any Act is loaded separately via WEALTH lawload_act.
+#   5. No common law precedents in v0 — provisions only.
+#   6. Any organ wiring requires 888_HOLD ratification.
+#
+# NOTE: Section numbers and fractions marked `confidence: LOW` are derived
+# from common-law memory and MUST be verified against official gazette
+# before any production advisory output.
+# =============================================================================
+
+ontology_meta:
+  ontology_id: "WEALTH-LAW-ONTO-v0.1.0"
+  parent_manifest: "015_LAW_MANIFEST.md"
+  parent_manifest_hash: "sha256:TBD_AT_LOAD_TIME"   # computed at runtime
+  forged_at: "2026-06-24T13:30:00+08:00"
+  forged_by: "FORGE-000Ω"
+  ratified_by: null                               # 888 to ratify
+  scope:
+    geography: ["MALAYSIA"]
+    jurisdictions: ["FEDERAL", "STATE", "CONCURRENT", "SYARIAH", "CIVIL"]
+    states_pilot: ["PULAU_PINANG"]
+    states_deferred:
+      - "SABAH"
+      - "SARAWAK"
+      - "PERAK"
+      - "SELANGOR"
+      - "JOHOR"
+      - "KEDAH"
+      - "KELANTAN"
+      - "TERENGGANU"
+      - "PAHANG"
+      - "NEGERI_SEMBILAN"
+      - "MELAKA"
+      - "PERLIS"
+      - "WILAYAH_PERSEKUTUAN"
+  version: "0.1.0-DRAFT"
+  status: "PROPOSAL"
+  888_hold_required_for_wiring: true
+
+# -----------------------------------------------------------------------------
+# JURISDICTION TAXONOMY
+# -----------------------------------------------------------------------------
+jurisdiction_taxonomy:
+  - id: "FEDERAL"
+    description: "Parliament + Federal Courts"
+    supreme_in: ["constitutional_matters", "national_security", "civil_law"]
+    statutes_emit: true
+    example_acts: ["Kanun Tanah Negara 1965", "Contracts Act 1950", "PDPA 2010"]
+
+  - id: "STATE"
+    description: "State Legislature + State Courts"
+    supreme_in: ["land_administration", "state_land_codes", "islamic_affairs"]
+    statutes_emit: true
+    example_acts: ["Penang Land Rules", "Sabah Land Ordinance Cap. 68", "Sarawak Land Code 1958"]
+
+  - id: "CONCURRENT"
+    description: "Both can legislate; Federal prevails on conflict"
+    supreme_in: null
+    statutes_emit: true
+    note: "Per Ninth Schedule, Federal Constitution — conflicts resolved by Article 75"
+
+  - id: "SYARIAH"
+    description: "State Syariah Court jurisdiction"
+    supreme_in: ["muslim_family_law", "muslim_inheritance", "muslim_personal_status"]
+    statutes_emit: false
+    note: "Federated through State Islamic Religious enactments"
+    grounding: "Article 121(1A) Perlembagaan Persekutuan — civil-Syariah boundary"
+
+  - id: "CIVIL"
+    description: "Civil court — non-Muslim personal law"
+    supreme_in: ["non_muslim_family", "non_muslim_inheritance", "contracts"]
+    statutes_emit: false
+    note: "Default civil court route for non-Muslim matters"
+
+  - id: "INDIGENOUS_NCR"
+    description: "Native Customary Rights — Sabah/Sarawak"
+    supreme_in: ["native_customary_land"]
+    statutes_emit: false
+    maruah_floor: true
+    note: "OUT of v0 scope. F6 binding. Requires adat witness."
+
+  - id: "ADAT_MALAY"
+    description: "Adat perpateh / temenggung / etc."
+    supreme_in: ["adat_land_customs"]
+    statutes_emit: false
+    maruah_floor: true
+    note: "OUT of v0 scope. State-specific. Requires adat scholar witness."
+
+  - id: "INTERNATIONAL"
+    description: "Treaty obligation ratified by Malaysia"
+    supreme_in: ["treaty_subjects"]
+    statutes_emit: false
+    note: "Subject to Federal Constitution supremacy — Article 4(4) constraints"
+
+# -----------------------------------------------------------------------------
+# ACTS — v0 (Pusaka + Land focused)
+# -----------------------------------------------------------------------------
+acts:
+  - id: "MY.SEA.1955"
+    title: "Small Estates (Distribution) Act 1955"
+    title_bm: "Akta Pembahagian Harta Pusaka Kecil 1955"
+    citation: "Act 98/1955"
+    jurisdiction: "FEDERAL"
+    applies_to: "PUSAKA_KECIL_NON_MUSLIM"
+    applies_when:
+      estate_value_max_myr: 2_000_000
+      religion_required: "NON_MUSLIM"
+    deciding_institution: "JKPTG"
+    institution_full: "Jabatan Ketua Pengarah Tanah dan Galian"
+    forms:
+      - "Borang A"
+    domain_tags: ["pusaka", "intestate", "small_estate", "land_transfer"]
+    maruah_floor: false
+    constitutional_weight: 5
+    confidence: 0.85
+    key_sections:
+      - id: "s.2"
+        title: "Interpretation"
+        truth_band: "HIGH"
+        note: "Definitions of 'estate', 'heir', 'spouse', 'issue'"
+      - id: "s.3"
+        title: "Application for distribution"
+        truth_band: "HIGH"
+        note: "Who may apply — spouse, issue, parents, next-of-kin"
+      - id: "s.4"
+        title: "Petition"
+        truth_band: "MEDIUM"
+        note: "Petition procedure — verify current form requirements"
+      - id: "s.5"
+        title: "Mode of distribution"
+        truth_band: "MEDIUM"
+        note: "Per stirpes vs per capita — verify against current practice"
+      - id: "s.6"
+        title: "Persons entitled"
+        truth_band: "MEDIUM"
+        note: "Entitlement hierarchy — verify ordering"
+      - id: "s.7"
+        title: "Order of distribution"
+        truth_band: "MEDIUM"
+        note: "Distribution fractions — verify against Act"
+      - id: "s.8"
+        title: "Effect of order"
+        truth_band: "MEDIUM"
+        note: "Finality of distribution order"
+      - id: "s.9"
+        title: "Appeal"
+        truth_band: "MEDIUM"
+        note: "Right of appeal — verify court route"
+    truth_band_overall: "MEDIUM"
+    amend_history:
+      - "Act 98/1955 (original)"
+      - "amendments via Act A330 (1959) and subsequent PU(A) orders — verify"
+
+  - id: "MY.PAA.1959"
+    title: "Probate and Administration Act 1959"
+    citation: "Act 97/1959"
+    jurisdiction: "FEDERAL"
+    applies_to: "PUSAKA_BESAR_OR_WITH_WILL"
+    applies_when:
+      estate_value_min_myr: 2_000_000
+      or_has_will: true
+    deciding_institution: "MAHKAMAH_TINGGI_SIVIL"
+    institution_full: "Mahkamah Tinggi (Bahagian Sivil)"
+    forms:
+      - "Borang Probet"
+      - "Surat Kuasa Mentadbir (SKM)"
+    domain_tags: ["pusaka", "probate", "administration", "will"]
+    maruah_floor: false
+    constitutional_weight: 6
+    confidence: 0.85
+    key_sections:
+      - id: "s.2"
+        title: "Interpretation"
+        truth_band: "HIGH"
+      - id: "s.5"
+        title: "Grant of probate"
+        truth_band: "MEDIUM"
+        note: "Hakim grants — agent never grants"
+      - id: "s.6"
+        title: "Administration where no will"
+        truth_band: "MEDIUM"
+      - id: "s.7"
+        title: "Administration pendente lite"
+        truth_band: "MEDIUM"
+      - id: "s.10"
+        title: "Renunciation"
+        truth_band: "MEDIUM"
+      - id: "s.13"
+        title: "Proof of will"
+        truth_band: "MEDIUM"
+      - id: "s.16"
+        title: "Caveat"
+        truth_band: "MEDIUM"
+        note: "If caveat exists — 888_HOLD (disputed)"
+    truth_band_overall: "MEDIUM"
+    amend_history:
+      - "Act 97/1959 (original)"
+      - "verify via latest PU(A) list"
+
+  - id: "MY.DA.1958"
+    title: "Distribution Act 1958"
+    citation: "Act 300/1958"
+    jurisdiction: "FEDERAL"
+    applies_to: "INTESTATE_NON_MUSLIM"
+    applies_when:
+      religion: "NON_MUSLIM"
+      has_will: false
+    deciding_institution: "MAHKAMAH_TINGGI_SIVIL"
+    forms: []
+    domain_tags: ["pusaka", "intestate", "distribution", "civil"]
+    maruah_floor: false
+    constitutional_weight: 6
+    confidence: 0.80
+    key_sections:
+      - id: "s.4"
+        title: "Spouse + issue"
+        truth_band: "MEDIUM"
+        note: "Spouse gets 1/3, residue per stirpes — verify exact fraction"
+      - id: "s.5"
+        title: "Spouse, no issue, parents alive"
+        truth_band: "MEDIUM"
+      - id: "s.6"
+        title: "Issue, no spouse"
+        truth_band: "MEDIUM"
+      - id: "s.7"
+        title: "Parents, no spouse, no issue"
+        truth_band: "MEDIUM"
+      - id: "s.8"
+        title: "Siblings, no closer kin"
+        truth_band: "MEDIUM"
+      - id: "s.9"
+        title: "More remote relatives"
+        truth_band: "MEDIUM"
+    truth_band_overall: "MEDIUM"
+    amend_history:
+      - "Act 300/1958 (original)"
+      - "verify via latest PU(A) list"
+
+  - id: "MY.KTN.1965"
+    title: "Kanun Tanah Negara 1965"
+    title_en: "National Land Code 1965"
+    citation: "Act 56/1965"
+    jurisdiction: "STATE"
+    jurisdiction_note: "Administered by PTG of each state — federal statute, state execution"
+    applies_to: "ALL_LAND_TRANSFER_SEMENANJUNG"
+    deciding_institution: "PTG"
+    forms:
+      - "Borang 14A"
+      - "Borang 11B"
+      - "Borang 12"
+    domain_tags: ["land", "title", "transfer", "registration", "pusaka"]
+    maruah_floor: false
+    constitutional_weight: 8
+    confidence: 0.90
+    key_sections:
+      - id: "s.76"
+        title: "Hakmilik (Title)"
+        truth_band: "HIGH"
+      - id: "s.83"
+        title: "Categories of land"
+        truth_band: "HIGH"
+        note: "Freehold, leasehold, etc."
+      - id: "s.214"
+        title: "Transfer by personal representative"
+        truth_band: "HIGH"
+        note: "Core section for pusaka land transfer"
+      - id: "s.215"
+        title: "Vesting on death"
+        truth_band: "MEDIUM"
+      - id: "s.219"
+        title: "Surrender of charge"
+        truth_band: "MEDIUM"
+    truth_band_overall: "HIGH"
+    amend_history:
+      - "Act 56/1965 (original)"
+      - "Act A814 (1972) major amendment"
+      - "Subsequent state-level rules — verify"
+
+  - id: "MY.FARAID"
+    title: "Hukum Faraid (Islamic Inheritance)"
+    citation: "Quran 4:11–12, 4:176; Sunnah; Ijmak; Qiyas"
+    jurisdiction: "SYARIAH"
+    applies_to: "MUSLIM_DECEASED"
+    applies_when:
+      religion: "ISLAM"
+    deciding_institution: "MAHKAMAH_SYARIAH"
+    forms:
+      - "Sijil Faraid"
+    domain_tags: ["pusaka", "faraid", "muslim_inheritance", "syariah"]
+    maruah_floor: true
+    constitutional_weight: 9
+    confidence: 0.80
+    note: "Faraid is not a single Act — derived from Quran + Hadith + Ijmak + Qiyas. Applied via State Syariah enactments."
+    calculation_steps:
+      - order: 1
+        name: "Asal-usul"
+        description: "Identify estate composition"
+      - order: 2
+        name: "Fard"
+        description: "List obligatory heirs (dzawil furudh)"
+      - order: 3
+        name: "Furudh"
+        description: "Apply fixed Quranic shares"
+      - order: 4
+        name: "Hajb"
+        description: "Exclude heirs when higher-priority present"
+      - order: 5
+        name: "Asabah"
+        description: "Agnatic male residuary heirs"
+      - order: 6
+        name: "Ausan"
+        description: "Special redistribution when sum > 1"
+      - order: 7
+        name: "Radd"
+        description: "Return residue when no asabah"
+    common_furudh:
+      - relation: "Wife"
+        with_children: "1/8"
+        without_children: "1/4"
+        source: "Quran 4:12"
+        truth_band: "HIGH"
+      - relation: "Husband"
+        with_children: "1/4"
+        without_children: "1/2"
+        source: "Quran 4:12"
+        truth_band: "HIGH"
+      - relation: "Daughter (only)"
+        with_children: "1/2 (1 daughter); 2/3 (2+ daughters)"
+        source: "Quran 4:11"
+        truth_band: "HIGH"
+      - relation: "Mother"
+        with_children: "1/6"
+        without_children: "1/3 (or 1/6 with spouse + parents per Ausan/Radd)"
+        source: "Quran 4:11"
+        truth_band: "HIGH"
+      - relation: "Father"
+        with_children: "1/6"
+        without_children: "asabah"
+        source: "Quran 4:11"
+        truth_band: "HIGH"
+    truth_band_overall: "HIGH for basic rules, MEDIUM for edge cases"
+
+# -----------------------------------------------------------------------------
+# INSTITUTIONS — Penang state
+# -----------------------------------------------------------------------------
+institutions:
+  - id: "MY.PNG.PTG"
+    name: "Pejabat Tanah dan Galian Pulau Pinang"
+    name_en: "Penang Land and Mines Office"
+    jurisdiction: "STATE"
+    state: "PULAU_PINANG"
+    address: "Teluk Air Tawar, 13100 Penaga, Pulau Pinang"
+    phone: "+60 4-575 2222"
+    website: "ptg.penang.gov.my"
+    address_truth_band: "MEDIUM"
+    note: "Address/phone approximate — verify before production use"
+    handles:
+      - "Land registration"
+      - "Title issuance"
+      - "Transfer approval (Borang 14A)"
+      - "State land alienation"
+
+  - id: "MY.PNG.MT_SIVIL"
+    name: "Mahkamah Tinggi Pulau Pinang (Bahagian Sivil)"
+    name_en: "Penang High Court (Civil Division)"
+    jurisdiction: "STATE"
+    state: "PULAU_PINANG"
+    address: "Jalan Dato' Keramat, 10150 George Town, Pulau Pinang"
+    address_truth_band: "MEDIUM"
+    handles:
+      - "Probate (PAA 1959)"
+      - "Surat Kuasa Mentadbir (PAA 1959)"
+      - "Civil estate distribution"
+      - "Will contest"
+
+  - id: "MY.PNG.MT_SYARIAH"
+    name: "Mahkamah Syariah Pulau Pinang"
+    name_en: "Penang Syariah Court"
+    jurisdiction: "SYARIAH"
+    state: "PULAU_PINANG"
+    address: "Jalan Kebun Sireh, 10460 George Town, Pulau Pinang"
+    address_truth_band: "MEDIUM"
+    handles:
+      - "Sijil Faraid"
+      - "Muslim estate distribution"
+      - "Syariah family matters"
+
+  - id: "MY.PNG.AMANAH_RAYA"
+    name: "Amanah Raya Berhad (Cawangan Pulau Pinang)"
+    jurisdiction: "FEDERAL"
+    state: "PULAU_PINANG"
+    address: "TBD — verify"
+    address_truth_band: "LOW"
+    handles:
+      - "Executor appointment"
+      - "Asset management (intestate)"
+
+  - id: "MY.JWN"
+    name: "Jabatan Warisan Negara"
+    name_en: "National Heritage Department"
+    jurisdiction: "FEDERAL"
+    handles:
+      - "Heritage property designation"
+      - "Heritage transfer restrictions"
+    note: "Consult if deceased owned gazetted heritage property"
+
+# -----------------------------------------------------------------------------
+# DOMAINS — law flavor
+# -----------------------------------------------------------------------------
+domains:
+  - id: "land-law"
+    name: "Land Law"
+    description: "Title, transfer, lease, charge, easement"
+    primary_acts: ["MY.KTN.1965"]
+    tools_required:
+      - "lawlookupact"
+      - "lawroutinstitution"
+      - "lawflagrisk"
+    priority: 1
+
+  - id: "inheritance"
+    name: "Inheritance / Pusaka"
+    description: "Estate distribution — Muslim (Faraid) and non-Muslim (Distribution Act)"
+    primary_acts:
+      - "MY.SEA.1955"
+      - "MY.PAA.1959"
+      - "MY.DA.1958"
+      - "MY.FARAID"
+    tools_required:
+      - "lawclassifycase"
+      - "lawrouteinstitution"
+      - "lawgeneratechecklist"
+    priority: 1
+    maruah_floor: true
+
+  - id: "regulatory"
+    name: "Regulatory Compliance"
+    description: "PDPA, EQA, OSH, sector regulators"
+    primary_acts: []   # deferred to v0.2
+    priority: 2
+
+  - id: "corporate"
+    name: "Corporate Law"
+    description: "Companies Act 2016, SSM filings, shareholder rights"
+    primary_acts: []
+    priority: 3
+
+  - id: "labour"
+    name: "Labour / Employment"
+    description: "Employment Act 1955, IRBA, contract terms"
+    primary_acts: []
+    priority: 3
+
+# -----------------------------------------------------------------------------
+# 888_HOLD MATRIX — asymmetric gates for law domain
+# -----------------------------------------------------------------------------
+hold_888_matrix:
+  - pattern_id: "RELIGION_BOUNDARY"
+    description: "Religion unknown or boundary case"
+    trigger:
+      field: "deceased.religion"
+      condition: "in [UNKNOWN, AMBIGUOUS]"
+    weight: 9
+    action: "ASK_888 — do not guess religion; misrouting is harm"
+    maruah_floor: true
+
+  - pattern_id: "MINOR_HEIR"
+    description: "Minor heir present"
+    trigger:
+      field: "heir.is_minor"
+      condition: "== true"
+    weight: 9
+    action: "ASK_888 — minor's share requires guardian + court oversight"
+    maruah_floor: true
+
+  - pattern_id: "DISPUTED"
+    description: "Case is disputed"
+    trigger:
+      field: "case.is_disputed"
+      condition: "== true"
+    weight: 10
+    action: "ESCALATE_TO_PEGUAM"
+    maruah_floor: true
+
+  - pattern_id: "COURT_FILING"
+    description: "Step 5-7 (file/hearing/grant)"
+    trigger:
+      field: "process.current_step"
+      condition: "in [STEP_5_FILE, STEP_6_HEARING, STEP_7_GRANT]"
+    weight: 10
+    action: "REDIRECT_TO_PEGUAM"
+
+  - pattern_id: "LAND_TRANSFER"
+    description: "Step 8 — land transfer"
+    trigger:
+      field: "process.current_step"
+      condition: "== STEP_8_TRANSFER"
+    weight: 9
+    action: "VERIFY_WITH_PTG"
+
+  - pattern_id: "FARAID_RESULT"
+    description: "After faraid calculation"
+    trigger:
+      field: "tool.last_invocation"
+      condition: "== arif_faraid_calculate"
+    weight: 9
+    action: "REVIEW_WITH_SYARIAH_COUNSEL"
+    maruah_floor: true
+
+  - pattern_id: "DISTRIBUTION_RESULT"
+    description: "After distribution calculation"
+    trigger:
+      field: "tool.last_invocation"
+      condition: "== arif_distribution_calculate"
+    weight: 8
+    action: "REVIEW_WITH_COUNSEL"
+
+  - pattern_id: "HIGH_VALUE"
+    description: "Estate > RM 2M"
+    trigger:
+      field: "case.estimated_gross_estate_value_myr"
+      condition: "> 2_000_000"
+    weight: 8
+    action: "PEGUAM_REQUIRED"
+
+  - pattern_id: "WASIAT_INTERPRETATION"
+    description: "Will contested"
+    trigger:
+      field: "case.has_will AND case.is_disputed"
+      condition: "== true"
+    weight: 10
+    action: "ESCALATE — hakim"
+
+  - pattern_id: "CROSS_BORDER"
+    description: "Cross-border asset"
+    trigger:
+      field: "asset.jurisdiction"
+      condition: "!= MY"
+    weight: 9
+    action: "ASK_888 — different law applies"
+
+  - pattern_id: "PDPA_HEIR_DATA"
+    description: "Heir personal data stored"
+    trigger:
+      field: "consent.obtained"
+      condition: "== false"
+    weight: 8
+    action: "ASK_888 — PDPA explicit consent required"
+
+  - pattern_id: "NCR_HERITAGE"
+    description: "Sabah/Sarawak NCR or heritage property"
+    trigger:
+      field: "asset.location_state"
+      condition: "in [SABAH, SARAWAK]"
+    weight: 10
+    action: "ESCALATE — heritage/NCR law"
+    maruah_floor: true
+
+# -----------------------------------------------------------------------------
+# PROPOSED WEALTH LAW TOOLS — 13 atomic verbs
+# -----------------------------------------------------------------------------
+# These follow the WEALTH_NEXT_HORIZON_BLUEPRINT naming:
+#   wealth_<physics_dimension>_<economic_operation>
+# All carry capacity_band ∈ {OBSERVE, DRAFT, NEVER_BIND}
+# All require 888_HOLD for production wiring.
+proposed_tools:
+  - name: "wealth_law_lookup_act"
+    description: "Fetch Act metadata + section list by citation"
+    capacity_band: "OBSERVE"
+    input: { citation: "string", section: "string?" }
+    output: { act_metadata: "object", sections: "list<object>" }
+    witness_required: false
+    888_hold: "never"
+
+  - name: "wealth_law_lookup_section"
+    description: "Fetch specific section text + interpretation notes"
+    capacity_band: "OBSERVE"
+    input: { citation: "string", section_id: "string" }
+    output: { section_text: "string", truth_band: "enum", notes: "string" }
+    witness_required: false
+    888_hold: "never"
+
+  - name: "wealth_law_classify_case"
+    description: "Classify pusaka case (kecil/besar, Muslim/non-Muslim)"
+    capacity_band: "OBSERVE"
+    input: { religion: "enum", estate_value_myr: "float", has_will: "bool" }
+    output: { case_category: "PUSAKA_KECIL|PUSAKA_BESAR", jurisdiction: "enum", routing: "string" }
+    witness_required: false
+    888_hold: "when religion unknown or value at boundary (2M)"
+
+  - name: "wealth_law_route_institution"
+    description: "Recommend institution given case context"
+    capacity_band: "OBSERVE"
+    input: { case_type: "enum", state: "string", religion: "enum" }
+    output: { institution: "object", routing_path: "string", appeal_path: "list<string>" }
+    witness_required: false
+    888_hold: "when religion boundary"
+
+  - name: "wealth_law_flag_risk"
+    description: "Detect legal risk surfaces in proposed action"
+    capacity_band: "OBSERVE"
+    input: { proposed_action: "string", context: "object" }
+    output: { risk_markers: "list<object>", triggers: "list<string>", recommendation: "PROCEED|HOLD|BLOCK" }
+    witness_required: true
+    888_hold: "always (high-stakes advisory)"
+
+  - name: "wealth_law_generate_checklist"
+    description: "Generate human-facing checklist (docs, steps, forms)"
+    capacity_band: "DRAFT"
+    input: { case_type: "enum", state: "string" }
+    output: { checklist: "list<object>", forms_required: "list<string>", timeline: "object" }
+    witness_required: false
+    888_hold: "never (read-only output)"
+
+  - name: "wealth_law_draft_form"
+    description: "Draft filled form template (Borang A, 14A, etc.) with DRAFT watermark"
+    capacity_band: "DRAFT"
+    input: { form_id: "string", case_data: "object" }
+    output: { form_pdf_path: "string", watermark: "DRAFT — NOT FOR FILING", disclaimer: "string" }
+    witness_required: true
+    888_hold: "before output (watermark mandatory)"
+
+  - name: "wealth_law_parse_document"
+    description: "OCR + extract fields from Geran, Sijil Kematian, etc."
+    capacity_band: "OBSERVE"
+    input: { document_path: "string", document_type: "enum" }
+    output: { extracted_fields: "object", confidence: "float", pdpa_consent_required: "bool" }
+    witness_required: false
+    888_hold: "when PDPA data involved"
+
+  - name: "wealth_law_faraid_calculate"
+    description: "Compute Faraid shares (asal-usul → fard → furudh → hajb → asabah → ausan → radd)"
+    capacity_band: "OBSERVE"
+    input: { heirs: "list<object>", estate: "object" }
+    output: { shares: "list<object>", rule_citations: "list<string>", edge_cases: "list<string>" }
+    witness_required: true
+    888_hold: "always — counsel review mandatory"
+
+  - name: "wealth_law_distribution_calculate"
+    description: "Compute Distribution Act 1958 shares for non-Muslim"
+    capacity_band: "OBSERVE"
+    input: { heirs: "list<object>", estate: "object" }
+    output: { shares: "list<object>", statute_citations: "list<string>" }
+    witness_required: true
+    888_hold: "always — counsel review recommended"
+
+  - name: "wealth_law_jurisdiction_resolve"
+    description: "Resolve which jurisdiction applies (Federal/State/Syariah/Civil/Adat)"
+    capacity_band: "OBSERVE"
+    input: { facts: "object", religion: "enum", asset_state: "string" }
+    output: { jurisdiction: "enum", deciding_authority: "string", conflicts: "list<string>" }
+    witness_required: true
+    888_hold: "when conflict detected or boundary case"
+
+  - name: "wealth_law_drift_detect"
+    description: "Watch for amendment/version drift in loaded pack"
+    capacity_band: "OBSERVE"
+    input: { pack_id: "string" }
+    output: { current_hash: "string", latest_hash: "string", drift_detected: "bool" }
+    witness_required: false
+    888_hold: "never"
+
+  - name: "wealth_law_human_ack"
+    description: "Surface legal HOLD to human for explicit acknowledgement"
+    capacity_band: "NEVER_BIND"
+    input: { trigger: "object", context: "object" }
+    output: { ack_received: "bool", ack_signature: "string" }
+    witness_required: true
+    888_hold: "always — hard human gate"
+
+# -----------------------------------------------------------------------------
+# CAPACITY BANDS — what WEALTH may emit
+# -----------------------------------------------------------------------------
+capacity_bands:
+  - band: "OBSERVE"
+    description: "May fetch, parse, classify, calculate, surface"
+    may_sign: false
+    may_seal: false
+    may_judge: false
+  - band: "DRAFT"
+    description: "May generate form templates (DRAFT watermark mandatory)"
+    may_sign: false
+    may_seal: false
+    may_judge: false
+    note: "Output is not legally binding"
+  - band: "NEVER_BIND"
+    description: "May request human acknowledgement"
+    may_sign: false
+    may_seal: false
+    may_judge: false
+    note: "Hard human gate — no autonomous progression"
+
+# -----------------------------------------------------------------------------
+# INTEGRITY GATES — HOLD conditions
+# -----------------------------------------------------------------------------
+integrity_gates:
+  - condition: "JURISDICTION_UNKNOWN"
+    action: "HOLD"
+    note: "Ask 888 before proceeding"
+  - condition: "PROVISION_UNVERIFIED"
+    action: "HOLD"
+    note: "F2 TRUTH — declare band, mark as DRAFT"
+  - condition: "CONFLICT_DETECTED"
+    action: "HOLD"
+    note: "Federal vs State / civil vs Syariah"
+  - condition: "MINOR_HEIR_PRESENT"
+    action: "HOLD"
+    note: "Guardian / court oversight required"
+  - condition: "DISPUTED_CASE"
+    action: "HOLD"
+    note: "Escalate to peguam"
+  - condition: "RELIGION_BOUNDARY_UNCLEAR"
+    action: "HOLD"
+    note: "Article 121(1A) — civil-Syariah split"
+  - condition: "CROSS_BORDER_ASSET"
+    action: "HOLD"
+    note: "Different law may apply"
+  - condition: "HERITAGE_PROPERTY"
+    action: "HOLD"
+    note: "JWN consultation mandatory"
+  - condition: "PDPA_DATA_INVOLVED"
+    action: "HOLD"
+    note: "Explicit consent required"
+  - condition: "FARAID_RESULT"
+    action: "HOLD"
+    note: "Counsel review mandatory"
+  - condition: "COURT_FILING_REQUIRED"
+    action: "HOLD"
+    note: "Peguam only"
+  - condition: "WEALTH_SELF_SEAL_ATTEMPTED"
+    action: "VOID"
+    note: "F12 violation — WEALTH never seals"
+
+# -----------------------------------------------------------------------------
+# GOVERNANCE — who decides what
+# -----------------------------------------------------------------------------
+governance:
+  wealth_may:
+    - "Fetch + parse Act / section metadata"
+    - "Classify case by deterministic rules"
+    - "Calculate faraid / distribution shares (advisory)"
+    - "Draft form templates with DRAFT watermark"
+    - "OCR + extract fields from documents"
+    - "Surface 888_HOLD triggers"
+    - "Emit receipts to VAULT999 (read-only by WEALTH, sealed by arifOS)"
+  wealth_may_not:
+    - "Grant probate (hakim only)"
+    - "Issue SKM (court only)"
+    - "Sign legal documents on behalf of heirs"
+    - "Replace peguam (statutory authority)"
+    - "Predict court outcomes"
+    - "Self-seal (arifOS seals)"
+    - "Self-judge (arifOS judges)"
+    - "Bind heirs to any agreement"
+
+  handoff:
+    - to: "arifOS"
+      for: "Constitutional judgment (F1-F13)"
+      carries: ["jurisdiction_id", "provision_citations", "conflict_markers", "trigger_flags", "maruah_floor_score"]
+    - to: "AAA"
+      for: "Institutional graph traversal (which court / PTG / agency)"
+      carries: ["domain_tags", "institution_recommendation"]
+    - to: "GEOX"
+      for: "Physical reality (basin, land coordinates, resource data)"
+      carries: ["jurisdiction_overlay"]
+    - to: "A-FORGE"
+      for: "Tool execution (form generation, lease check)"
+      carries: ["capacity_band", "888_hold_triggers"]
+    - to: "WELL"
+      for: "Maruah floor, dignity overlay, religious boundary"
+      carries: ["maruah_floor_engaged", "religion_boundary_marker"]
+
+# -----------------------------------------------------------------------------
+# CHANGE LOG
+# -----------------------------------------------------------------------------
+changelog:
+  - version: "0.1.0-DRAFT"
+    date: "2026-06-24"
+    author: "FORGE-000Ω"
+    changes:
+      - "Initial draft — 5 acts (SEA 1955, PAA 1959, DA 1958, KTN 1965, FARAID)"
+      - "Penang state institutional graph (5 institutions)"
+      - "5 law domains (land, inheritance, regulatory, corporate, labour)"
+      - "12 888_HOLD patterns"
+      - "13 proposed WEALTH law tools"
+      - "Capacity bands + integrity gates"
+      - "Governance handoff to arifOS/AAA/GEOX/A-FORGE/WELL"
+
+# -----------------------------------------------------------------------------
+# NEXT ACTIONS
+# -----------------------------------------------------------------------------
+next_actions:
+  - id: "NA-001"
+    tier: "T2"
+    action: "Ratify 015_LAW_MANIFEST.md + legal_ontology.yaml by 888"
+    blocking: true
+  - id: "NA-002"
+    tier: "T2"
+    action: "Harden section references — verify every key_sections.citation against official gazette"
+    blocking: false
+  - id: "NA-003"
+    tier: "T3 (888_HOLD)"
+    action: "Wire wealth_law_* tools into WEALTH monolith (Phase 0 of NEXT_HORIZON_BLUEPRINT)"
+    blocking: true
+  - id: "NA-004"
+    tier: "T3 (888_HOLD)"
+    action: "Cross-link to arifOS 8 legal verbs (from /root/forge_work/legal/malaysia-law-pack-v0.md)"
+    blocking: false
+
+# =============================================================================
+# END OF ONTOLOGY
+# =============================================================================
