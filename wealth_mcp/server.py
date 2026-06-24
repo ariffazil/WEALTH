@@ -57,6 +57,37 @@ def create_mcp_server() -> FastMCP:
         ),
     )
 
+    # ── Wire arifOS organ governance wrapper around tool calls ─────────────
+    try:
+        from internal.organ_governance import check_governance as _check_governance
+        from fastmcp.server.server import ToolResult
+        from mcp.types import TextContent
+
+        _original_call_tool = mcp.call_tool
+
+        async def _governance_call_tool(name, arguments=None, **kwargs):
+            if arguments is None:
+                arguments = {}
+            verdict, error = _check_governance(name, arguments)
+            if error is not None:
+                error_text = json.dumps({
+                    "tool": name,
+                    "governance_status": verdict,
+                    "error_code": "ORGAN_GOVERNANCE_BLOCKED",
+                    "message": f"arifOS {verdict}: governance check blocked execution",
+                    "guard": "ORGAN_GOVERNANCE",
+                    "floor": "L1-L13",
+                })
+                return ToolResult(
+                    content=[TextContent(type="text", text=error_text)],
+                    is_error=True,
+                )
+            return await _original_call_tool(name, arguments, **kwargs)
+
+        mcp.call_tool = _governance_call_tool
+    except Exception as e:
+        print(f"[GOVERNANCE] WEALTH federated governance wrapper failed to load: {e}")
+
     # ── Register tools ────────────────────────────────────────────────────
     _register_wisdom_tools(mcp)
     _register_power_tools(mcp)

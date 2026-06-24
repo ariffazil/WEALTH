@@ -20,13 +20,15 @@ import os
 import httpx
 from typing import Optional, Tuple
 
-ARIFOS_KERNEL_URL = os.environ.get("ARIFOS_KERNEL_URL", "http://arifosmcp:8080")
+ARIFOS_KERNEL_URL = os.environ.get("ARIFOS_KERNEL_URL", "http://127.0.0.1:8088")
 
 # Risk classification for WEALTH tools
 WEALTH_RISK_TIERS = {
     # C2/IRREVERSIBLE — require arifOS judgment
+    "wealth_vault_write": "c2",  # VAULT999 write, irreversible
     "wealth_ledger_write": "c2",  # VAULT999 write, irreversible
     "wealth_ledger_snapshot": "c2",  # VAULT999 write, irreversible
+    "wealth_vault_query": "readonly",  # Vault read
     "wealth_synthesize": "c1",  # Advisory verdict
     "wealth_governance_verdict": "c1",  # Advisory verdict
     "wealth_boundary_governance": "c1",  # Legitimacy audit, advisory
