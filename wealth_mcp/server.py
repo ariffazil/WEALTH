@@ -50,7 +50,7 @@ from wealth_arifos_bridge.judge_handoff import prepare_judge_handoff, submit_to_
 
 def create_mcp_server() -> FastMCP:
     """Create and configure the WEALTH MCP server."""
-    
+
     mcp = FastMCP(
         "WEALTH Federated Domain",
         version="2026.06.15",

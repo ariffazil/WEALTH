@@ -36,8 +36,8 @@ import subprocess
 import sys
 import uuid
 from pathlib import Path
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple, Callable
+from datetime import datetime, timezone, date as _date
+from typing import Any, Dict, List, Optional, Tuple, Callable, Literal
 from pydantic import BaseModel, Field
 import httpx
 
@@ -1113,8 +1113,6 @@ WEALTH_SCHEMA_VERSION = "wealth.physics_economics.v1"
 # db_schema.py provides async PostgreSQL helpers; we call via run_until_complete
 # --------------------------------------------------------------------------- #
 
-from datetime import date as _date
-
 
 async def _pf_init_db():
     from .db_schema import init_schema
@@ -1865,41 +1863,6 @@ def _handle_bursa_screen(
             "final_authority": "Arif",
         }
 
-    try:
-        criteria = BursaScreenCriteria(
-            min_pe=float(min_pe) if min_pe else None,
-            max_pe=float(max_pe) if max_pe else None,
-            min_dividend_yield=float(min_dy) if min_dy else None,
-            min_roe=float(min_roe) if min_roe else None,
-            max_pb=float(max_pb) if max_pb else None,
-            min_market_cap_m=float(min_mcap) if min_mcap else None,
-            sector=sector.strip() if sector else None,
-            sort_by=sort_by,
-            limit=int(limit) if limit else 20,
-        )
-        adapter = get_klse()
-        result = adapter.screen(criteria)
-        return {
-            "status": "OK",
-            "verdict": "SAFE_TO_STUDY",
-            "tool": "wealth_stock_analysis",
-            "mode": "bursa_screen",
-            "result": result.model_dump(),
-            "provenance": result.provenance.model_dump(),
-            "recommendation_only": True,
-            "final_authority": "Arif",
-        }
-    except Exception as e:
-        return {
-            "status": "ERROR",
-            "verdict": "NEEDS_DATA",
-            "tool": "wealth_stock_analysis",
-            "mode": "bursa_screen",
-            "result": {"error": str(e)},
-            "recommendation_only": True,
-            "final_authority": "Arif",
-        }
-
 
 def _handle_bursa_evidence(ticker: str) -> dict:
     """Handle bursa_evidence mode — evidence card with governance."""
@@ -2182,7 +2145,7 @@ def _handle_calhoun(symbol: str) -> dict:
                     dy = _sf4(fund.get("dividend_yield"))
                     eps = _sf4(fund.get("eps"))
                     sector = fund.get("sector", "")
-            except:
+            except Exception:
                 pass
         from internal.stock.engine_888 import compute_888
 
@@ -2222,7 +2185,7 @@ def _handle_calhoun(symbol: str) -> dict:
 def _sf4(val):
     try:
         return float(val)
-    except:
+    except Exception:
         return None
 
 
@@ -2255,7 +2218,7 @@ def _handle_888(symbol: str) -> dict:
                     dy = _sf3(fund.get("dividend_yield"))
                     eps = _sf3(fund.get("eps"))
                     sector = fund.get("sector", "")
-            except:
+            except Exception:
                 pass
         return compute_888(symbol, pe=pe, roe=roe, pb=pb, dy=dy, eps=eps, sector=sector)
     except Exception as e:
@@ -2265,7 +2228,7 @@ def _handle_888(symbol: str) -> dict:
 def _sf3(val):
     try:
         return float(val)
-    except:
+    except Exception:
         return None
 
 
@@ -2307,7 +2270,7 @@ def _handle_999(symbol: str) -> dict:
                     if isinstance(lq, dict):
                         qoq = _sf2(lq.get("qoq"))
                         yoy = _sf2(lq.get("yoy"))
-            except:
+            except Exception:
                 pass
         return compute_999(
             symbol,
@@ -2330,7 +2293,7 @@ def _handle_999(symbol: str) -> dict:
 def _sf2(val):
     try:
         return float(val)
-    except:
+    except Exception:
         return None
 
 
@@ -2364,7 +2327,7 @@ def _handle_market_intelligence(symbol: str) -> dict:
                     dy = _sf(fund.get("dividend_yield"))
                     eps = _sf(fund.get("eps"))
                     sector = fund.get("sector", "")
-            except:
+            except Exception:
                 pass
         return compute_market_intelligence(
             symbol, pe=pe, roe=roe, pb=pb, dy=dy, eps=eps, sector=sector
@@ -2376,7 +2339,7 @@ def _handle_market_intelligence(symbol: str) -> dict:
 def _sf(val):  # safe float helper for handler
     try:
         return float(val)
-    except:
+    except Exception:
         return None
 
 
@@ -4000,13 +3963,15 @@ def create_envelope(
     # WEALTH = Capital organ. Maps financial signals to 10 APEX gates.
     try:
         from internal.apex_envelope_wealth import wealth_apex_envelope
+        # Derive confidence from envelope status — same scale as _build_apex above
+        _apex_confidence = 0.88 if status == "PASS" else (0.60 if status == "CAUTION" else 0.30)
         envelope["apex"] = wealth_apex_envelope(
             tool_name=tool,
             g_score=g_data.get("g_score", 0.5),
             entropy_s=g_data.get("entropy_s", 0.0),
             verdict=derived_governance,
             allocation_signal=derived_allocation,
-            confidence=confidence if isinstance(confidence, (int, float)) else (0.9 if confidence == "HIGH" else 0.4),
+            confidence=_apex_confidence,
             epistemic_class=derived_epistemic,
             failure_flags=failure_flags,
             actor_id=governance_args.get("actor_id") if governance_args else None,
@@ -4940,8 +4905,6 @@ def cashflow_flow(
 #          wealth_velocity_runway, wealth_cashflow_summary (as wrappers)
 # Preserves: all legacy tool outputs remain identical (equivalence tested)
 # ═══════════════════════════════════════════════════════════════════════════════
-
-from typing import Literal
 
 _conservative_factor = 0.8  # runway conservative factor
 
@@ -14073,12 +14036,14 @@ async def wealth_omni_wisdom(
                 if _memory_results:
                     decision_context["_memory_query"] = memory_query
                     decision_context["_memory_results"] = _memory_results
-                    logger.info(
+                    import logging
+                    _logger = logging.getLogger("wealth.omni_wisdom")
+                    _logger.info(
                         f"Federation memory enrichment: {len(_memory_results)} results "
                         f"for query '{memory_query}'"
                     )
         except Exception as _mem_err:
-            logger.warning(f"Federation memory enrichment failed (non-blocking): {_mem_err}")
+            _logger.warning(f"Federation memory enrichment failed (non-blocking): {_mem_err}")
 
     # ── mode='synthesize' ────────────────────────────────────────────────
     if mode == "synthesize":
