@@ -206,6 +206,61 @@ CREATE TABLE IF NOT EXISTS wealth.watchlist (
 );
 
 CREATE INDEX IF NOT EXISTS idx_watchlist_owner ON wealth.watchlist(owner);
+
+-- ═══════════════════════════════════════════════════════════════════════
+-- HARDENING 2026-06-25: Macro State + Epistemic Registry
+-- WEALTH now carries macro/sovereign/personal state as first-class tables.
+-- No new tools — schema extensions only.
+-- ═══════════════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS wealth.macro_state (
+    id                  BIGSERIAL PRIMARY KEY,
+    owner               TEXT        NOT NULL DEFAULT 'system',
+    epoch               INTEGER     NOT NULL,
+    oil_price_usd       NUMERIC(10, 2),
+    usd_myr             NUMERIC(8, 4),
+    petronas_dividend_rm NUMERIC(16, 2),
+    fiscal_deficit_pct  NUMERIC(6, 3),
+    current_account_gdp NUMERIC(6, 3),
+    reserves_usd        NUMERIC(16, 2),
+    malaysia_debt_gdp   NUMERIC(6, 3),
+    mgs_10y_yield       NUMERIC(6, 3),
+    klsem_index         NUMERIC(12, 2),
+    -- epistemic anchoring
+    epistemic_tag       TEXT        NOT NULL DEFAULT 'CLAIM',
+    confidence_band     NUMERIC(3, 2) NOT NULL DEFAULT 0.50,
+    -- scenario framing
+    active_scenario     TEXT        DEFAULT 'NORMAL',  -- NORMAL|SQUEEZE|LINGKUP
+    scenario_prob       NUMERIC(4, 2) DEFAULT 0.33,
+    -- dS entropy budget
+    dS                  NUMERIC(8, 4),
+    -- audit
+    updated_at          TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(owner, epoch)
+);
+
+CREATE INDEX IF NOT EXISTS idx_macro_owner_epoch  ON wealth.macro_state(owner, epoch DESC);
+CREATE INDEX IF NOT EXISTS idx_macro_scenario     ON wealth.macro_state(owner, active_scenario);
+
+CREATE TABLE IF NOT EXISTS wealth.epistemic_registry (
+    id                  BIGSERIAL PRIMARY KEY,
+    owner               TEXT        NOT NULL DEFAULT 'system',
+    claim_key          TEXT        NOT NULL,
+    claim_value        JSONB       NOT NULL,
+    epistemic_tag      TEXT        NOT NULL,  -- CLAIM|PLAUSIBLE|HYPOTHESIS|ESTIMATE|OBSERVED
+    confidence_band     NUMERIC(3, 2) NOT NULL DEFAULT 0.50,
+    evidence_refs      TEXT[],
+    source             TEXT,
+    expires_at         TIMESTAMPTZ,
+    superseded_by     INTEGER,
+    created_at         TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(owner, claim_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_epistemic_owner    ON wealth.epistemic_registry(owner);
+CREATE INDEX IF NOT EXISTS idx_epistemic_tag      ON wealth.epistemic_registry(epistemic_tag);
+CREATE INDEX IF NOT EXISTS idx_epistemic_expires  ON wealth.epistemic_registry(expires_at)
+    WHERE expires_at IS NOT NULL;
 """
 
 

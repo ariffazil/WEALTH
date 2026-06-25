@@ -3144,6 +3144,16 @@ def _json_safe_value(value: Any) -> Tuple[Any, bool]:
         sanitized_items, changed = _json_safe_value(list(value))
         return tuple(sanitized_items), changed
 
+    # HARDENING 2026-06-25: numpy bools (numpy.bool_) slip through the
+    # `not isinstance(value, bool)` guard since numpy.bool_ is not a Python bool.
+    # Python 3.13 json encoder rejects them. Catch them here.
+    if hasattr(value, "item") and hasattr(value, "dtype"):
+        # numpy generic (bool, int, float) — convert to Python native
+        try:
+            return bool(value), True
+        except (TypeError, ValueError):
+            pass
+
     if isinstance(value, numbers.Real) and not isinstance(value, bool):
         if not math.isfinite(float(value)):
             return None, True
@@ -3979,6 +3989,24 @@ def create_envelope(
     except Exception:
         pass  # APEX envelope is additive; never breaks tool output
 
+    # HARDENING 2026-06-25: Python 3.13 json encoder rejects numpy.bool_.
+    # Recursively convert any numpy types nested in the full envelope.
+    # _json_safe_value only handles primary/secondary/governance_args —
+    # the apex/envelope layers have independent construction.
+    def _sanitize(obj):
+        if isinstance(obj, dict):
+            return {k: _sanitize(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [_sanitize(v) for v in obj]
+        # numpy bools / ints / floats — convert to Python native
+        if hasattr(obj, "item") and hasattr(obj, "dtype"):
+            try:
+                return obj.item()
+            except (TypeError, ValueError):
+                pass
+        return obj
+
+    envelope = _sanitize(envelope)
     return envelope
 
 
@@ -16039,10 +16067,15 @@ class OriginValidationMiddleware:
 
 
 # ── Tools declared in surface but not yet registered ────
-# Empty as of 2026-06-24: the 5 PHOENIX-73F ghost tools were absorbed into
-# wealth_omni_wisdom / canonical physics-organ surface and their dead
-# @mcp.tool registrations were removed during RSI forge.
-_KNOWN_MISSING: set[str] = set()
+# HARDENING 2026-06-25: populate _KNOWN_MISSING — 5 ghost tools tracked as
+# intentionally absent (absorbed into wealth_omni_wisdom per Phase 2 decision).
+_KNOWN_MISSING: set[str] = {
+    "wealth_screen_opportunity",     # absorbed: deal_frame ranking/filtering
+    "wealth_compute_viability",      # absorbed: deal_frame NPV/IRR/payback
+    "wealth_score_risk",             # absorbed: deal_frame EMV/Monte Carlo/entropy
+    "wealth_compare_scenarios",      # absorbed: deal_frame(scenarios=[...])
+    "wealth_emit_investment_memo",  # absorbed: deal_frame structured memo output
+}
 
 # ═══════════════════════════════════════════════════════════════════════
 
