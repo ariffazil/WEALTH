@@ -41,6 +41,7 @@ from wealth_core.risk import (
     compute_evoi,
     detect_false_confluence,
     compute_asymmetry,
+    fiscal_breakeven_oil_price,
 )
 from wealth_core.collapse_signature.scanner import compute_collapse_risk
 from wealth_core.collapse_signature.beautiful_mouse import compute_beautiful_mouse_score
@@ -86,6 +87,9 @@ def create_mcp_server() -> FastMCP:
                     content=[TextContent(type="text", text=error_text)],
                     is_error=True,
                 )
+            # ── MACRO CONTEXT: available via contextvar, not injection ──────────
+            # The _macro_state contextvar is set by the MCP transport layer.
+            # Tools that need macro state call get_macro_context() directly.
             return await _original_call_tool(name, arguments, **kwargs)
 
         mcp.call_tool = _governance_call_tool
@@ -277,7 +281,7 @@ def _register_capital_tools(mcp: FastMCP) -> None:
 def _register_risk_tools(mcp: FastMCP) -> None:
     """Register risk domain tools."""
 
-    # ── Canonical: wealth_compute_emv (was wealth_emv_compute) ──────────
+    # ── Canonical: wealth_compute_emv ────────────────────────────────────
     @mcp.tool(name="wealth_compute_emv")
     async def wealth_compute_emv(
         outcomes: list[float],
@@ -294,7 +298,17 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             source_attribution=["user_provided_scenarios"],
         )
 
-    # ── Canonical: wealth_monte_carlo_simulate (was wealth_monte_carlo) ──
+    # ── HARDENING 2026-06-25: legacy alias (was wealth_emv_compute) ───────
+    # Registry expects this name; compat layer maps it but never registered it.
+    @mcp.tool(name="wealth_emv_compute")
+    async def wealth_emv_compute(
+        outcomes: list[float],
+        probabilities: list[float],
+    ) -> dict:
+        """[LEGACY ALIAS] Compute Expected Monetary Value. Use wealth_compute_emv."""
+        return await wealth_compute_emv(outcomes, probabilities)
+
+    # ── Canonical: wealth_monte_carlo_simulate ──────────────────────────────
     @mcp.tool(name="wealth_monte_carlo_simulate")
     async def wealth_monte_carlo_simulate(
         initial_value: float,
@@ -317,7 +331,20 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             source_attribution=["monte_carlo_simulation"],
         )
 
-    # ── Canonical: wealth_compute_evoi (was wealth_evoi_compute) ──────────
+    # ── HARDENING 2026-06-25: legacy alias ────────────────────────────────
+    @mcp.tool(name="wealth_monte_carlo")
+    async def wealth_monte_carlo(
+        initial_value: float,
+        growth_rate: float,
+        volatility: float,
+        periods: int = 10,
+        simulations: int = 1000,
+        seed: int | None = None,
+    ) -> dict:
+        """[LEGACY ALIAS] Use wealth_monte_carlo_simulate."""
+        return await wealth_monte_carlo_simulate(initial_value, growth_rate, volatility, periods, simulations, seed)
+
+    # ── Canonical: wealth_compute_evoi ────────────────────────────────────
     @mcp.tool(name="wealth_compute_evoi")
     async def wealth_compute_evoi(
         prior_pos: float,
@@ -336,6 +363,18 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             evidence_quality=EvidenceQuality.MODERATE,
             source_attribution=["evoi_calculation"],
         )
+
+    # ── HARDENING 2026-06-25: legacy alias ────────────────────────────────
+    @mcp.tool(name="wealth_evoi_compute")
+    async def wealth_evoi_compute(
+        prior_pos: float,
+        posterior_pos: float,
+        well_cost_musd: float,
+        p50_value_musd: float,
+        discount_rate: float = 0.1,
+    ) -> dict:
+        """[LEGACY ALIAS] Compute EVOI. Use wealth_compute_evoi."""
+        return await wealth_compute_evoi(prior_pos, posterior_pos, well_cost_musd, p50_value_musd, discount_rate)
 
     @mcp.tool(name="wealth_confluence_check")
     async def wealth_confluence_check(
@@ -366,6 +405,46 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             epistemic_tag=EpistemicTag.DERIVED,
             evidence_quality=EvidenceQuality.MODERATE,
             source_attribution=["scenario_analysis"],
+        )
+
+    # ── HARDENING 2026-06-25: fiscal breakeven — highest-signal gap ──────
+    @mcp.tool(name="wealth_fiscal_breakeven")
+    async def wealth_fiscal_breakeven(
+        total_government_expenditure: float,
+        non_oil_revenue: float,
+        petronas_dividend_base_rm: float,
+        oil_price_assumption_usd: float,
+        petronas_production_boe_per_day: float = 350_000,
+        royalty_tax_effective_rate: float = 0.30,
+        target_fiscal_deficit_pct: float = 0.035,
+        gdp_nominal_rm_billion: float = 390.0,
+    ) -> dict:
+        """
+        Compute oil price at which Malaysia's fiscal path becomes unsustainable.
+
+        Returns breakeven price, fiscal pressure classification (UNSUSTAINABLE/AT_RISK/MANAGEABLE),
+        and sensitivity analysis. Answers what Monte Carlo cannot: a single threshold.
+
+        Budget 2026 calibration: total revenue RM343.1B, operating exp RM302B,
+        petroleum revenue RM43B (dividend RM20B + tax RM23B), target deficit 3.5% GDP.
+        """
+        result = fiscal_breakeven_oil_price(
+            total_government_expenditure=total_government_expenditure,
+            non_oil_revenue=non_oil_revenue,
+            petronas_dividend_base_rm=petronas_dividend_base_rm,
+            oil_price_assumption_usd=oil_price_assumption_usd,
+            petronas_production_boe_per_day=petronas_production_boe_per_day,
+            royalty_tax_effective_rate=royalty_tax_effective_rate,
+            target_fiscal_deficit_pct=target_fiscal_deficit_pct,
+            gdp_nominal_rm_billion=gdp_nominal_rm_billion,
+        )
+        return wrap_result(
+            tool_name="wealth_fiscal_breakeven",
+            domain="risk",
+            result=result,
+            epistemic_tag=EpistemicTag.CLAIM,
+            evidence_quality=EvidenceQuality.MODERATE,
+            source_attribution=["malaysia_budget_2026", "petronas_annual_report"],
         )
 
 

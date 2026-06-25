@@ -29,8 +29,8 @@ def compute_conservation(
     Compute capital conservation metrics.
     Returns net worth, asset total, liability total.
     """
-    asset_total = sum(a.get("value", 0) for a in (assets or []))
-    liability_total = sum(l.get("value", 0) for l in (liabilities or []))
+    asset_total = sum(a.get("value", a.get("amount", 0)) for a in (assets or []))
+    liability_total = sum(l.get("value", l.get("amount", 0)) for l in (liabilities or []))
     net_worth = asset_total - liability_total
 
     return {
