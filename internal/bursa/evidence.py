@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from .klse_adapter import KLSEAdapter, get_klse
+from .schemas import SourceGrade
 from .schemas import (
     EpistemicTag,
     EvidenceCard,
@@ -284,6 +285,3 @@ def _check_hold_conditions(quote, fundamentals, freshness_hours) -> list:
 
     return reasons
 
-
-# Import SourceGrade for hold check
-from .schemas import SourceGrade

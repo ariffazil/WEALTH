@@ -3,18 +3,15 @@ WEALTH Organ Governance — arifOS F1-F13 integration.
 
 Routes C2+/IRREVERSIBLE WEALTH tool calls through arifOS kernel for judgment.
 READONLY/C1 tools execute directly. C2+/IRREVERSIBLE require SEAL from arifOS.
-"""
 
-from __future__ import annotations
-
-
-"""
 Risk tiers:
   READONLY   -> execute directly
   C1         -> arifOS pre-check, execute on any verdict
   C2         -> arifOS SEAL required
   IRREVERSIBLE -> arifOS SEAL + ack_irreversible required
 """
+
+from __future__ import annotations
 
 import os
 import httpx

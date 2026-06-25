@@ -204,7 +204,7 @@ def query_portfolio_snapshots(
     filters = {"order": "epoch.desc", "limit": str(limit)}
     if asset_id:
         filters["asset_id"] = f"eq.{asset_id}"
-    
+
     rows = loop.run_until_complete(_supabase_select("arifosmcp_portfolio_snapshots", filters, limit))
     return rows
 
@@ -219,7 +219,7 @@ def get_latest_geox_volumetrics(prospect_id: str) -> Optional[Dict[str, Any]]:
         "limit": "1"
     }
     rows = loop.run_until_complete(_supabase_select("vault_sealed_events", filters, 1))
-    
+
     for row in rows:
         payload = row.get("payload", {})
         if payload.get("prospect_id") == prospect_id or not prospect_id:
@@ -298,7 +298,7 @@ def record_transaction(
 
     if result and result.get("status") == "INSERTED":
         return {"integrity": integrity, "status": "INSERTED", "tx_id": result.get("id")}
-    
+
     _fallback_jsonl({**record, "source_tool": source_tool, "verdict": "VAULT999_FAIL"})
     return {"integrity": integrity, "status": (result or {}).get("status", "ERROR")}
 
@@ -307,7 +307,7 @@ def _sync_supabase_insert(table: str, record: Dict[str, Any]) -> Dict[str, Any]:
     """Synchronous version of supabase insert using httpx.Client."""
     if not SUPABASE_ANON_KEY:
         return {"status": "ERROR", "reason": "NO_KEY"}
-    
+
     try:
         with httpx.Client(
             base_url=SUPABASE_URL,

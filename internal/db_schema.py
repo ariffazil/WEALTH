@@ -6,6 +6,7 @@ Tables: wealth.transactions, wealth.assets, wealth.liabilities, wealth.epf_snaps
 
 from __future__ import annotations
 
+import os
 from typing import Optional
 from datetime import date
 import asyncpg
@@ -21,8 +22,6 @@ WEALTH_PG_URL = (
     "postgresql://arifos_admin:ArifPostgresVault2026!@localhost:5432/vault999"
 )
 # Override via env var if different
-import os
-
 WEALTH_PG_URL = os.getenv("WEALTH_PG_URL", WEALTH_PG_URL)
 
 

@@ -13,7 +13,7 @@ class RobustRegimeKalmanFilter:
         self.x = np.array([[0.7], [0.3]])
         self.P = np.eye(2) * 0.1
         self.Q = np.eye(2) * 0.01
-        
+
         # Observation Matrix C
         self.C = np.array([
             [1.0, 0.0],   # Time
@@ -46,7 +46,7 @@ class RobustRegimeKalmanFilter:
         # Innovation
         y = z - np.dot(self.C, self.x)
         S_cov = np.dot(self.C, np.dot(self.P, self.C.T)) + base_theta
-        
+
         # Calculate Mahalanobis distance for outlier detection
         # FIX: use solve (numerically stable) instead of inv, and clamp sqrt arg to prevent NaN
         mahalanobis = 0.0
@@ -64,17 +64,17 @@ class RobustRegimeKalmanFilter:
         multiplier = 1.0
         if mahalanobis > 3.0:
             multiplier = 5.0 # Outlier down-weighting
-            
+
         effective_theta = base_theta * multiplier
-        
+
         # Standard Kalman update with effective_theta
         S_robust = np.dot(self.C, np.dot(self.P, self.C.T)) + effective_theta
         K = np.dot(np.dot(self.P, self.C.T), np.linalg.inv(S_robust))
-        
+
         self.x = self.x + np.dot(K, y)
         I = np.eye(self.x.shape[0])
         self.P = np.dot((I - np.dot(K, self.C)), self.P)
-        
+
         return self.x, multiplier > 1.0
 
 class HoltSmoothing:
@@ -90,7 +90,7 @@ class HoltSmoothing:
             self.level = value
             self.trend = 0.0
             return 0.0
-        
+
         last_level = self.level
         self.level = self.alpha * value + (1 - self.alpha) * (self.level + self.trend)
         self.trend = self.beta * (self.level - last_level) + (1 - self.beta) * self.trend

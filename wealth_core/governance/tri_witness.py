@@ -16,7 +16,7 @@ from dataclasses import dataclass
 class TriWitness:
     """
     Tri-witness validation for capital seals.
-    
+
     Three witnesses must attest:
     - human: Human confirmed the action (F13 SOVEREIGN)
     - ai: AI system processed and validated (F2 TRUTH)

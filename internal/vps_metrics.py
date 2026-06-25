@@ -2,14 +2,12 @@
 VPS Power Metrics Collector for WEALTH.
 Reads /proc, /sys, and system utilities to estimate power draw and carbon.
 No external API needed — computed from local hardware data.
-"""
-
-from __future__ import annotations
-
 
 Author: Hermes | arifOS Federation
 Forged: 2026-06-12
 """
+
+from __future__ import annotations
 
 import os
 import subprocess
@@ -71,28 +69,28 @@ def _gpu_power_estimate() -> float:
 
 def collect_power_metrics() -> Dict[str, Any]:
     """Collect current power metrics from VPS hardware.
-    
+
     Returns:
         dict with power draw, energy, cost estimates
     """
     cpu_w = _cpu_tdp_estimate()
     cpu_util = _cpu_utilization()
     gpu_w = _gpu_power_estimate()
-    
+
     # Estimate: CPU power = TDP * utilization * 0.7 (realistic load factor)
     # + 50W baseline for motherboard, RAM, storage, networking
     estimated_power_draw = cpu_w * cpu_util * 0.7 + gpu_w + 50.0
-    
+
     # Malaysia grid carbon intensity ~560 gCO2/kWh (IEA 2022)
     GRID_CARBON_INTENSITY = 560.0  # gCO2/kWh
     TNB_TARIFF_MYR_PER_KWH = 0.365  # approximate residential/commercial
-    
+
     daily_kwh = (estimated_power_draw * 24) / 1000.0
     annual_kwh = daily_kwh * 365
     daily_kg_co2e = (daily_kwh * GRID_CARBON_INTENSITY) / 1000.0
     annual_kg_co2e = daily_kg_co2e * 365
     cost_per_year_myr = annual_kwh * TNB_TARIFF_MYR_PER_KWH
-    
+
     return {
         "power_draw_watts": round(estimated_power_draw, 1),
         "cpu_tdp_watts": cpu_w,
@@ -115,7 +113,7 @@ def power_to_carbon(power_draw_watts: float, grid_intensity: float = 560.0) -> D
     daily_kwh = (power_draw_watts * 24) / 1000.0
     daily_co2e_kg = (daily_kwh * grid_intensity) / 1000.0
     annual_co2e_kg = daily_co2e_kg * 365
-    
+
     verdict = "LOW_EMITTER"
     if annual_co2e_kg > 5000:
         verdict = "HIGH_EMITTER"
@@ -123,7 +121,7 @@ def power_to_carbon(power_draw_watts: float, grid_intensity: float = 560.0) -> D
         verdict = "MODERATE"
     elif annual_co2e_kg < 50:
         verdict = "CARBON_NEUTRAL"
-    
+
     return {
         "power_draw_watts": round(power_draw_watts, 1),
         "daily_energy_kwh": round(daily_kwh, 3),

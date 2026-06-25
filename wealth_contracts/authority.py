@@ -74,21 +74,21 @@ WEALTH_AUTHORITY_RULES = {
 def validate_authority(output: dict) -> list[str]:
     """Validate that output respects WEALTH authority boundaries."""
     violations = []
-    
+
     if output.get("execution_authorized") is True:
         violations.append(
             "VIOLATION: WEALTH cannot authorize execution. "
             "execution_authorized must be False."
         )
-    
+
     if output.get("human_final_authority") != "Arif":
         violations.append(
             "VIOLATION: human_final_authority must be 'Arif' (F13 SOVEREIGN)."
         )
-    
+
     if not output.get("epistemic_tag"):
         violations.append(
             "VIOLATION: Missing epistemic_tag. F2 TRUTH requires labeling."
         )
-    
+
     return violations

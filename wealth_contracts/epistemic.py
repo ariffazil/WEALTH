@@ -80,7 +80,7 @@ class EvidenceQuality(str, Enum):
 
 class UncertaintyBand:
     """Uncertainty range for numerical outputs."""
-    
+
     def __init__(
         self,
         p10: Optional[float] = None,
@@ -92,7 +92,7 @@ class UncertaintyBand:
         self.p50 = p50
         self.p90 = p90
         self.distribution = distribution
-    
+
     def to_dict(self) -> dict:
         return {
             "p10": self.p10,
@@ -100,7 +100,7 @@ class UncertaintyBand:
             "p90": self.p90,
             "distribution": self.distribution,
         }
-    
+
     @classmethod
     def from_dict(cls, d: dict) -> "UncertaintyBand":
         return cls(
@@ -113,12 +113,12 @@ class UncertaintyBand:
 
 class MissingInput:
     """What evidence would strengthen this output?"""
-    
+
     def __init__(self, name: str, description: str, impact_if_obtained: str):
         self.name = name
         self.description = description
         self.impact_if_obtained = impact_if_obtained
-    
+
     def to_dict(self) -> dict:
         return {
             "name": self.name,
