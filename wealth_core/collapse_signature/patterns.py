@@ -290,6 +290,164 @@ REINVESTMENT_SUPPRESSION_SIGNALS: List[str] = [
     "production collapse",
 ]
 
+# ============================================================================
+# PDVSA / MALAYSIA-PETRONAS INSTITUTIONAL EXTRACTION SIGNATURE
+# The highest-probability Petronas lingkup failure mode:
+# Mandatory dividend framed as "national extraction" — extraction-first
+# architecture where reinvestment is subordinate to fiscal remittance.
+# NOT normal dividend policy — specific linguistic fingerprint of
+# dividend-mandate-as-extraction institutional decay.
+# Added: 2026-06-25 (FORGE hardening post Petronas stress-test)
+# ============================================================================
+
+FISCAL_EXTRACTION_MECHANISM_SIGNALS: List[str] = [
+    # Framing: extraction as national obligation, not capital allocation
+    "national obligation",
+    "dividend is mandatory",
+    "dividend mandatory",
+    "shareholder returns mandated",
+    "company law requires dividend",
+    "dividend first",
+    "revenue transfer is non-negotiable",
+    "state takes its share first",
+    "distribute before investing",
+    "cash flow after dividend",
+    "operational cash flow after dividend",
+    "national share",
+    "national entitlement",
+    "government takes its share",
+    "constitutional dividend",
+    "statutory dividend",
+    "national dividend policy",
+    "fiduciary duty to nation",
+    "dividend policy as national obligation",
+    # Framing: reinvestment framed as optional / secondary
+    "reinvest when possible",
+    "reinvest when affordable",
+    "subject to dividend",
+    "after dividend obligations",
+    "after dividend payments",
+    "post-dividend reinvestment",
+    "dividend buffer",
+    "dividend cushion",
+    # PDVSA-specific historical pattern
+    "advance against future dividend",
+    "advance dividend",
+    "special dividend",
+    "extraordinary dividend",
+    "supplemental dividend",
+    "supplemental dividend payment",
+    "budget support dividend",
+    "fiscal dividend",
+    "dividend in lieu of taxes",
+    "dividend in lieu of royalty",
+    "in lieu of petroleum revenue",
+    # Malaysia-specific echoes
+    "benefit the rakyat",
+    "rakyat dividend",
+    "national wealth sharing",
+    "national development contribution",
+    "contribution to national development",
+    "funds national development",
+    "national mission dividend",
+    "Petronas contributes to national",
+    "Petronas for national development",
+    "national development fund",
+    "national investment agenda",
+    "strategic investment for nation",
+    # 1MDB echo: parallel extraction via dividend from under-priced assets
+    "dividend from asset sale",
+    "asset sale proceeds dividend",
+    "strategic disposal dividend",
+    "monetisation dividend",
+    "special dividend from sale",
+    "proceeds from optimisation",
+    "asset monetisation programme",
+]
+
+# Malaysia / PETRONAS / MA63 / PETROS specific signals
+# Sovereign-subnational tension axis: when national champion faces
+# constitutional challenge from subnational entities (Sarawak, Sabah)
+MALAYSIA_PETRONAS_SPECIFIC_SIGNALS: List[str] = [
+    # Constitutional / legal tension signals
+    "MA63",
+    "Malaysia Agreement",
+    "Malaysia Agreement 1963",
+    "Sabah",
+    "Sarawak",
+    "Sabah rights",
+    "Sarawak rights",
+    "state rights",
+    "constitutional challenge",
+    "federal-state dispute",
+    "jurisdiction dispute",
+    "PETROS",
+    "Petroleum Sarawak",
+    "Petros",
+    "state petroleum company",
+    "Sarawak petroleum",
+    "Sabah petroleum",
+    "SabahPET",
+    "Borneo rights",
+    "North Borneo",
+    "20-point agreement",
+    "MA63 compliance",
+    "state consent",
+    # Lingkup decay signals
+    "monopoly under pressure",
+    "exclusive rights contested",
+    "exclusive concession",
+    "license renewal risk",
+    "concession expiry",
+    "PSC expiry",
+    "production sharing contract expiry",
+    "antique licence",
+    "legacy contract",
+    "historical entitlement",
+    "1974 concession",
+    "1974 petroleum agreement",
+    "monopoly is outdated",
+    "structural reform",
+    "deregulation pressure",
+    "market liberalisation",
+    "open access",
+    "third party access",
+    " TPA ",
+    "third party access",
+    "unbundling",
+    "entity separation",
+    # Cost recovery / capital recycling collapse signals
+    "cost recovery limit",
+    "cost recovery ceiling",
+    "capex recovery",
+    "investment not recovered",
+    "under-recovery",
+    "cost oil overrun",
+    "cost oil excess",
+    "technical override",
+    "government override",
+    # Petronas-capex signals (underinvestment narrative)
+    "lean capital programme",
+    "minimum investment",
+    "selective capex",
+    "targeted capex",
+    "capex for survival",
+    "maintenance capex only",
+    "selective reinvestment",
+    "strategic asset retention",
+    # Cash call / partner conflict signals
+    "cash call default",
+    "partner cash call",
+    "cash call dispute",
+    "farm-in dispute",
+    "farm-out",
+    "farm-down",
+    "production sharing dispute",
+    "cost sharing dispute",
+    "PSC dispute",
+    "JOAs dispute",
+]
+
 
 # ============================================================================
 # SIGNATURE AXIS 4: DOWNPLAYING OR EXTERNALISING CAUSES OF DETERIORATION
