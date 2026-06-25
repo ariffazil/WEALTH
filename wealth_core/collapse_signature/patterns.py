@@ -60,6 +60,13 @@ NATIONAL_DESTINY_SIGNALS: List[str] = [
     "national pride",
     "iconic",
     "national icon",
+    # RSI-01 fix: state-owned entity signals (2026-06-25)
+    "state-owned",
+    "state owned",
+    "government-owned",
+    "government owned",
+    "wholly owned by",
+    "fully owned by the government",
 ]
 
 TRIUMPHALISM_SIGNALS: List[str] = [
@@ -505,6 +512,23 @@ DENIAL_OF_INTERNAL_FAILURE_SIGNALS: List[str] = [
     "internal controls effective",
     "nothing to see",
     "isolated incident",
+    # RSI-01 fix: narrative denial patterns (2026-06-25)
+    "perfect performance",
+    "zero failure",
+    "no failure",
+    "denies any risk",
+    "denies fiscal risk",
+    "denied any risk",
+    "denial of risk",
+    "no risk",
+    "risk free",
+    "risk-free",
+    "minimal risk",
+    "low risk",
+    "strong fundamentals",
+    "robust fundamentals",
+    "balance sheet is strong",
+    "strong balance sheet",
 ]
 
 TIME_PRESSURE_PR_SIGNALS: List[str] = [
