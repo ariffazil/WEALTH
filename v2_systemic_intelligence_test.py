@@ -42,7 +42,7 @@ def extract_family(tool_name):
     """
     try:
         return tool_name.split("_")[1]
-    except:
+    except Exception:
         return None
 
 

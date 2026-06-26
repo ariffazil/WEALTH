@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "arifos.per_call_envelope/v1",
+  "title": "arifOS Per-Call Envelope",
+  "description": "Canonical metadata envelope attached to every tool call across the arifOS federation. Carries identity, authority, audit, and trace data. Required by WEALTH Reality Contract §6; replicated to all organs.",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "session_id",
+    "epoch_id",
+    "lease_id",
+    "actor_id",
+    "agent_class",
+    "organ_id",
+    "tool_name",
+    "action_class",
+    "floors_chain",
+    "gates_planned",
+    "risk_tier",
+    "approval_state",
+    "args_hash",
+    "epistemic_label"
+  ],
+  "properties": {
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "description": "End-to-end trace, propagated across all organs and tools. Format: trace-<uuid>."
+    },
+    "session_id": {
+      "type": "string",
+      "pattern": "^SEAL-[0-9a-f]+$",
+      "description": "arifOS constitutional session ID, returned by arif_session_init."
+    },
+    "epoch_id": {
+      "type": "string",
+      "description": "Current federation epoch (e.g. EPOCH-LIVE-1)."
+    },
+    "lease_id": {
+      "type": "string",
+      "description": "Active arifOS lease ID. Format: LEASE-<scope>-<id>. lease_required by F8 LAW."
+    },
+    "actor_id": {
+      "type": "string",
+      "description": "Calling agent identity. Must be one of: arif, hermes, openclaw, opencode, AAA warga, A-FORGE worker, GEOX/WEALTH/WELL worker."
+    },
+    "agent_class": {
+      "type": "string",
+      "enum": ["C1", "C2", "C3", "C4", "C5"],
+      "description": "Decision class per A-FORGE. C1=observe, C2=execute, C3=plan, C4=irreversible, C5=constitutional."
+    },
+    "organ_id": {
+      "type": "string",
+      "enum": ["arifOS", "AAA", "A-FORGE", "GEOX", "WEALTH", "WELL", "APEX"],
+      "description": "Originating organ (where the call originates)."
+    },
+    "tool_name": {
+      "type": "string",
+      "description": "Exact tool name as registered in the MCP server."
+    },
+    "action_class": {
+      "type": "string",
+      "enum": [
+        "OBSERVE",
+        "SUGGEST",
+        "SIMULATE",
+        "DRAFT",
+        "QUEUE",
+        "EXECUTE_REVERSIBLE",
+        "EXECUTE_HIGH_IMPACT",
+        "IRREVERSIBLE"
+      ],
+      "description": "Action class per A-FORGE/src/interfaces/mcp/forgeTools.ts CLASS_RANK. Lower rank = higher severity."
+    },
+    "floors_chain": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13"]
+      },
+      "minItems": 1,
+      "description": "Floor chain the call binds to. Always includes F1 (reversibility) and F2 (truth). EXECUTE_HIGH_IMPACT / IRREVERSIBLE must include F13."
+    },
+    "gates_planned": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^GAP[0-9]+_[A-Za-z_]+$"
+      },
+      "description": "Constitutional gates planned to run (organ-specific). For WEALTH: GAP1-GAP10 from wealth_gates.py."
+    },
+    "gates_actually_run": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Constitutional gates actually executed (post-call). Audit field."
+    },
+    "risk_tier": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "description": "Risk classification. critical → 888_HOLD."
+    },
+    "approval_state": {
+      "type": "string",
+      "enum": ["open", "888_HOLD", "sealed", "void"],
+      "description": "Approval state. open=pending, 888_HOLD=awaiting sovereign, sealed=approved, void=rejected."
+    },
+    "args_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 of the call arguments. For audit replay."
+    },
+    "epistemic_label": {
+      "type": "string",
+      "enum": ["OBS", "DER", "INT", "SPEC", "UNKNOWN"],
+      "description": "Epistemic class of the expected output. OBS=observed, DER=derived, INT=interpreted, SPEC=speculation, UNKNOWN=insufficient."
+    },
+    "human_actor": {
+      "type": "string",
+      "description": "F13 SOVEREIGN signatory ID (only if approval_state=sealed and human_888_HOLD was required)."
+    },
+    "nda_token": {
+      "type": "string",
+      "description": "Optional NDA token for restricted tools."
+    },
+    "reverse_pointer": {
+      "type": "string",
+      "description": "For EXECUTE_REVERSIBLE: pointer to the original txn / record that can revert this call."
+    },
+    "call_started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of call start."
+    },
+    "call_completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of call completion."
+    },
+    "output_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 of the output payload. For audit replay."
+    },
+    "gate_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "gate_id": { "type": "string" },
+          "verdict": { "type": "string", "enum": ["PASS", "WARN", "BLOCK", "NEEDS_DATA"] },
+          "violations": { "type": "array", "items": { "type": "string" } },
+          "warnings": { "type": "array", "items": { "type": "string" } },
+          "floors_triggered": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "description": "Per-gate results (post-call). Each gate emits a structured result."
+    },
+    "vault_seal_id": {
+      "type": "string",
+      "description": "VAULT999 seal ID for this call (if sealed). For EXECUTE_HIGH_IMPACT and IRREVERSIBLE, this is required."
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "trace_id": "trace-3b2417e0-4f8d-4a72-9c11-2e8a8b1a0c4f",
+      "session_id": "SEAL-c6434b3cdb5f4fab",
+      "epoch_id": "EPOCH-LIVE-1",
+      "lease_id": "LEASE-OPENCODE-EXECUTE_REVERSIBLE-001",
+      "actor_id": "opencode-333-agi",
+      "agent_class": "C2",
+      "organ_id": "WEALTH",
+      "tool_name": "wealth_conservation_capital",
+      "action_class": "OBSERVE",
+      "floors_chain": ["F1", "F2", "F4", "F11"],
+      "gates_planned": [],
+      "risk_tier": "low",
+      "approval_state": "open",
+      "args_hash": "sha256:7c4a8d09ca3762af61e59520943dc26494f8941b",
+      "epistemic_label": "DER"
+    },
+    {
+      "trace_id": "trace-7d92b1c3-1a45-4c8e-bf2d-9e0a7f3c8d2b",
+      "session_id": "SEAL-c6434b3cdb5f4fab",
+      "epoch_id": "EPOCH-LIVE-1",
+      "lease_id": "LEASE-OPENCODE-IRREVERSIBLE-007",
+      "actor_id": "opencode-333-agi",
+      "agent_class": "C4",
+      "organ_id": "WEALTH",
+      "tool_name": "wealth_cashflow_track",
+      "action_class": "EXECUTE_REVERSIBLE",
+      "floors_chain": ["F1", "F2", "F4", "F11"],
+      "gates_planned": ["GAP9"],
+      "risk_tier": "medium",
+      "approval_state": "open",
+      "args_hash": "sha256:9b1c3a4d5e6f7890abcdef0123456789abcdef0123456789abcdef0123456789",
+      "epistemic_label": "OBS",
+      "reverse_pointer": "txn-cashflow-2026-06-17-001"
+    }
+  ]
+}

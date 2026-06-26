@@ -1,9 +1,20 @@
 """
 F1–F13 Constitutional Floor Evaluation
 Ported from embedded JS theory (host/kernel/floors.js, canon/GOVERNANCE.md)
+
+⚠️ WEALTH-SPECIFIC WRAPPER — This is the WEALTH-domain implementation of the
+constitutional floors. The canonical F1-F13 floor system lives in arifOS:
+- Canonical kernel: /root/arifOS/arifosmcp/runtime/floors.py
+- Constitutional source: /root/arifOS/static/arifos/theory/000/000_CONSTITUTION.md
+
+This wrapper is used by WEALTH's own governance boundary (organ_governance.py,
+mcp/server.py) to evaluate per-tool floor compliance before returning verdicts.
+If the canonical and this copy disagree, the canonical wins.
+
+DITEMPA BUKAN DIBERI — Forged, not given.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from datetime import datetime, timezone
 
 FLOORS = {

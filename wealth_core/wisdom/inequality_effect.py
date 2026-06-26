@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from wealth_contracts.epistemic import EpistemicTag
 
+from .signal_state import SignalState, derive_signal_state
+
 WIDEN_SIGNALS = [
     "wealth concentration",
     "rent seeking",
@@ -70,9 +72,19 @@ def evaluate_inequality_effect(
         )
         epistemic = EpistemicTag.INTERPRETED
 
+    # Derive semantic signal state (Fix 3)
+    signal_state, signal_confidence = derive_signal_state(
+        score=score,
+        pattern_count=widen_count + narrow_count,
+        has_positive_patterns=narrow_count > 0,
+        has_negative_patterns=widen_count > 0,
+    )
+
     return {
         "dimension": "inequality",
         "score": round(score, 3),
+        "signal_state": signal_state.value,
+        "signal_confidence": round(signal_confidence, 3),
         "evidence": evidence,
         "epistemic_tag": epistemic.value,
         "widen_signals": widen_count,

@@ -7,7 +7,6 @@ DITEMPA BUKAN DIBERI.
 
 from __future__ import annotations
 
-import pytest
 
 from wealth_core.math import npv, irr, profitability_index, payback_period, emv, dscr
 

@@ -67,7 +67,7 @@ def check_pipeline_order(
 ) -> dict:
     """
     Check if a tool call respects pipeline order.
-    
+
     Returns:
         allowed: bool — whether the call should proceed
         warning: str — soft warning (may proceed with warning)

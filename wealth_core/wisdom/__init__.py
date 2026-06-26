@@ -22,6 +22,7 @@ from .resilience_score import evaluate_resilience
 from .inequality_effect import evaluate_inequality_effect
 from .ecological_cost import evaluate_ecological_cost
 from .optionality_preserve import evaluate_optionality
+from .signal_state import SignalState, derive_signal_state  # noqa: F401
 
 __all__ = [
     "evaluate_dignity_impact",
@@ -31,6 +32,8 @@ __all__ = [
     "evaluate_ecological_cost",
     "evaluate_optionality",
     "compute_wisdom",
+    "SignalState",
+    "derive_signal_state",
 ]
 
 WISDOM_DIMENSIONS = [
@@ -54,6 +57,12 @@ def compute_wisdom(
 
     This function does NOT judge. It computes wisdom dimensions.
     arifOS judges. Arif decides.
+
+    RSI-03 FIX (2026-06-25): When all 6 dimensions score in [0.45, 0.55]
+    the tool sets all_dimensions_neutral=True and caps confidence at 0.70.
+    All-neutral is itself a signal — the tool found no strong conviction
+    anywhere, which is meaningfully different from each dimension
+    independently returning neutral.
     """
     ctx = context or {}
 
@@ -69,8 +78,32 @@ def compute_wisdom(
         dim = eval_fn(proposal, capital_type, ctx)
         dimensions.append(dim)
 
+    # RSI-03 FIX: all-neutral blind spot detection
+    all_scores = [d.get("score", 0.5) for d in dimensions]
+    all_neutral = all(0.45 <= s <= 0.55 for s in all_scores)
+
+    if all_neutral:
+        advisory = (
+            "All 6 wisdom dimensions returned NEUTRAL (0.45–0.55). "
+            "This is structurally different from one neutral dimension — "
+            "it indicates the tool found no strong signal anywhere. "
+            "Confidence capped at 0.70. Treat as UNCLEAR rather than balanced."
+        )
+        overall_confidence = 0.70
+        neutral_flag = True
+    else:
+        # Average confidence across dimensions, downward-adjusted
+        dim_confidences = [d.get("signal_confidence", 0.5) for d in dimensions]
+        overall_confidence = round(sum(dim_confidences) / len(dim_confidences), 3)
+        neutral_flag = False
+        advisory = None
+
     return {
         "dimensions": dimensions,
         "dimension_count": len(dimensions),
         "all_dimensions_present": len(dimensions) == 6,
+        # RSI-03 FIX fields
+        "all_dimensions_neutral": neutral_flag,
+        "overall_wisdom_confidence": overall_confidence,
+        "neutral_advisory": advisory,
     }

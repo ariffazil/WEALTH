@@ -1,0 +1,352 @@
+# wire_contract.yaml — Per-Agent Binding Manifest
+# Forged: 2026-06-17 by FORGE (000Ω)
+# Purpose: How each agent in the federation wires to arifOS — across the
+#          3 enforcement bands (SDK / MCP / OS).
+# Status: DRAFT (reversible; agents can be re-bound by sovereign)
+# Schema: arifos.wire_contract/v1
+# Source: /root/AAA/agents/AGENT_REGISTRY.md (canonical agent index)
+#
+# "DITEMPA BUKAN DIBERI — Every agent is bound to the kernel, one band at a time."
+
+version: 1
+contract: federation_wire_contract
+federation_version: v2026.05.05-SSCT
+forged_by: FORGE (000Ω)
+forged_at: 2026-06-17T04:10:00Z
+
+# ════════════════════════════════════════════════════════════════════
+# 1. THE 3 ENFORCEMENT BANDS (the doctrine)
+# ════════════════════════════════════════════════════════════════════
+
+enforcement_bands:
+  - id: band-1-sdk
+    name: "Inside Runtime (SDK)"
+    surface: in-process hook
+    mechanism: "arifos_kernel_sdk.py / arifos-kernel-sdk npm"
+    latency: "low (ms)"
+    context: "rich (full envelope available)"
+    coverage: "agents we control"
+    agents: [opencode, kimi-code, openclaw, hermes-asi, claude-code, continue-cli, copilot]
+    cost: "minimal (local in-process check)"
+
+  - id: band-2-mcp
+    name: "Transport (MCP Gateway)"
+    surface: MCP server
+    mechanism: "arifOS MCP at port 8088 (MVTS-pruned)"
+    latency: "medium (10-50ms)"
+    context: "tool-call-only (no cognitive visibility)"
+    coverage: "MCP-speaking clients (any)"
+    agents: [claude-desktop, cursor, third-party MCP, future IDEs]
+    cost: "schema loading + judge deliberation per call"
+
+  - id: band-3-os
+    name: "OS-Level (EDR Sidecar)"
+    surface: syscall intercept
+    mechanism: "eBPF / KubeArmor / ClawEDR-style sidecar"
+    latency: "lowest (kernel)"
+    context: "process tree + syscalls"
+    coverage: "anything that escapes band-1 and band-2"
+    agents: [openclaw when untrusted, third-party runtimes, future hostile]
+    cost: "operational complexity; last resort"
+
+band_priority: [band-1-sdk, band-2-mcp, band-3-os]
+band_fallback: "if band-1 unavailable, fall back to band-2; if band-2 unavailable, escalate to band-3 or HOLD"
+
+# ════════════════════════════════════════════════════════════════════
+# 2. PER-AGENT BINDING (the wire manifest)
+# ════════════════════════════════════════════════════════════════════
+
+agents:
+  # ── HEXAGON (constitutional) ──
+  - id: 333-AGI
+    class: AGI
+    ring: Δ_MIND
+    host_organs: [arifOS, GEOX, WEALTH]
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [arifos, geox, wealth]
+    reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml]
+    lease_max: EXECUTE_HIGH_IMPACT
+    risk: YELLOW
+    notes: "Primary reasoning + execution. SDK mandatory."
+
+  - id: 555-ASI
+    class: ASI
+    ring: Ω_HEART
+    host_organs: [arifOS, WELL]
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [arifos, well]
+    reality_contracts: []
+    lease_max: EXECUTE_HIGH_IMPACT
+    risk: YELLOW
+    notes: "Memory synthesis + ethical critique. Read-mostly."
+
+  - id: 888-APEX
+    class: APEX
+    ring: ΦΙ_JUDGE
+    host_organs: [arifOS]
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [arifos]
+    reality_contracts: []
+    lease_max: EXECUTE_HIGH_IMPACT
+    risk: YELLOW
+    notes: "Constitutional verdicts. SDK mandatory; no IRREVERSIBLE without sovereign."
+
+  # ── Runtime (Telegram / live) ──
+  - id: hermes-asi
+    class: ASI
+    lane: SOUL/OMEGA
+    telegram: "@ASI_arifos_bot"
+    port: 18001
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [arifos, well, geox, wealth]
+    lease_max: EXECUTE_REVERSIBLE
+    risk: YELLOW
+    notes: "Live Telegram agent. Read-mostly; no IRREVERSIBLE without sovereign."
+
+  - id: openclaw
+    class: AGI
+    lane: C2-Execute
+    telegram: "@AGI_ASI_bot"
+    port: 18789
+    band: band-1-sdk + band-3-os
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [arifos, geox, wealth, well, aforge]
+    reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml, /root/geox/reality_contracts/geox_reality_contract.yaml]
+    lease_max: EXECUTE_HIGH_IMPACT
+    risk: HIGH
+    notes: "High-privilege runtime. SDK + OS band (ClawEDR if available)."
+
+  - id: 777-forge
+    class: forge
+    lane: witness/spawn
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [arifos, aforge]
+    lease_max: EXECUTE_REVERSIBLE
+    risk: YELLOW
+    notes: "Spawns other agents. Read-mostly; delegates execution."
+
+  - id: antigravity
+    class: AGI
+    lane: L3-Autonomous
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [arifos, geox, wealth, well]
+    lease_max: EXECUTE_REVERSIBLE
+    risk: GREEN
+    notes: "Autonomous analyst. SDK sufficient (low risk)."
+
+  # ── Coding Federation (forge instruments) ──
+  - id: opencode
+    class: AGI
+    model: tokenplan-mimo/mimo-v2.5-pro
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [arifos, aforge, geox, wealth, well, playwright, hostinger-vps, meyhem, brave-search, perplexity, sequential-thinking, postgres, supabase, qdrant, cloudflare, docker, github, context7]
+    mcp_count: 18
+    reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml, /root/geox/reality_contracts/geox_reality_contract.yaml]
+    lease_max: EXECUTE_HIGH_IMPACT
+    risk: YELLOW
+    notes: "Primary forge instrument. SDK loaded via AAA/agents/opencode/config/."
+
+  - id: claude-code
+    class: AGI
+    model: deepseek-chat
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [arifos, aforge, geox, wealth, well]
+    mcp_count: 10
+    reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml, /root/geox/reality_contracts/geox_reality_contract.yaml]
+    lease_max: EXECUTE_HIGH_IMPACT
+    risk: YELLOW
+    notes: "Mirror of opencode. SDK in /root/.claude/."
+
+  - id: qwen-code
+    class: AGI
+    model: qwen
+    band: band-2-mcp
+    mcp_servers: []
+    mcp_count: 0
+    lease_max: OBSERVE
+    risk: LOW
+    notes: "Not connected. When activated, must use band-2 (no SDK)."
+
+  - id: codex
+    class: AGI
+    model: gpt-5.5
+    band: band-2-mcp
+    mcp_servers: [unverified]
+    mcp_count: unverified
+    lease_max: OBSERVE
+    risk: YELLOW
+    notes: "OpenAI Codex. MCP ready but unverified. Must use band-2; SDK pending."
+
+  - id: copilot
+    class: AGI
+    model: gpt-4o
+    band: band-1-sdk + band-2-mcp
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [arifos, aforge, geox, wealth, well]
+    mcp_count: 8
+    lease_max: EXECUTE_REVERSIBLE
+    risk: GREEN
+    notes: "Hybrid. SDK primary; MCP for cross-process."
+
+  - id: aider
+    class: AGI
+    model: MiniMax-M3
+    band: band-2-mcp
+    mcp_servers: []
+    mcp_count: 0
+    lease_max: OBSERVE
+    risk: YELLOW
+    notes: "Bridge mode. MCP-only."
+
+  - id: kimi-code
+    class: AGI
+    model: kimi
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [arifos, aforge, geox, wealth, well, brave-search, perplexity, sequential-thinking, meyhem]
+    mcp_count: 9
+    reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml, /root/geox/reality_contracts/geox_reality_contract.yaml]
+    lease_max: EXECUTE_REVERSIBLE
+    risk: YELLOW
+    notes: "Kimi CLI. SDK in /root/.kimi/."
+
+  - id: continue-cli
+    class: AGI
+    model: MiniMax-M3
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [arifos, aforge, geox, wealth, well, postgres, supabase, qdrant, brave-search, perplexity, sequential-thinking, meyhem, cloudflare, docker, github, context7, hostinger]
+    mcp_count: 17
+    lease_max: EXECUTE_REVERSIBLE
+    risk: YELLOW
+    notes: "Continue CLI. SDK + heavy MCP."
+
+  # ── Role Agents (bounded specialists) ──
+  - id: kernel-scribe
+    class: C2
+    ring: SERVICE
+    host_organs: [arifOS, AAA]
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [arifos, aaa]
+    lease_max: PROPOSE
+    risk: LOW
+    notes: "OBSERVE + PROPOSE only. No execute."
+
+  - id: ops-planner
+    class: C2
+    ring: SERVICE
+    host_organs: [AAA, WEALTH, WELL]
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [aaa, wealth, well]
+    lease_max: PROPOSE
+    risk: LOW
+    notes: "OBSERVE + PROPOSE. Plans ops; does not execute."
+
+  - id: self-forge-advisor
+    class: C3
+    ring: Δ_MIND
+    host_organs: [A-FORGE, arifOS]
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [aforge, arifos]
+    lease_max: MUTATE
+    risk: MEDIUM
+    notes: "PROPOSE + MUTATE (gated). Highest among role agents."
+
+  - id: external-watcher
+    class: C1
+    ring: SERVICE
+    host_organs: [AAA]
+    band: band-1-sdk
+    sdk_install: "arifos_kernel_sdk.py"
+    mcp_servers: [aaa]
+    lease_max: OBSERVE
+    risk: LOW
+    notes: "OBSERVE only. Watchdog role."
+
+# ════════════════════════════════════════════════════════════════════
+# 3. WIRING RULES (the doctrine)
+# ════════════════════════════════════════════════════════════════════
+
+wiring_rules:
+  - id: WR-001
+    rule: "All HEXAGON agents (333-AGI, 555-ASI, 888-APEX) MUST use band-1-sdk."
+    reason: "Constitutional agents need full envelope visibility."
+  - id: WR-002
+    rule: "All agents in the Coding Federation (opencode, claude-code, etc.) MUST load the SDK before any tool call."
+    reason: "Coding federation has high-blast-radius tools; SDK is the cheapest enforcement."
+  - id: WR-003
+    rule: "Runtime agents with Telegram presence (hermes-asi, openclaw) MUST use band-1-sdk + band-3-os."
+    reason: "External surface; OS-band catches anything SDK misses."
+  - id: WR-004
+    rule: "Role agents (kernel-scribe, ops-planner, etc.) MUST NOT exceed their lease_max."
+    reason: "Role agents are bounded; lease ceiling is the line."
+  - id: WR-005
+    rule: "Any agent without SDK falls back to band-2-mcp; if MCP is also unavailable, escalation is 888_HOLD."
+    reason: "Capability is not permission. Unbound agent has no authority."
+  - id: WR-006
+    rule: "Reality Contracts are loaded per agent at session_init; relevant organs only."
+    reason: "WEALTH contract loaded for agents touching WEALTH; GEOX for agents touching GEOX; etc."
+  - id: WR-007
+    rule: "Cross-organ calls MUST go through arifOS MCP (port 8088); direct organ-to-organ is denied."
+    reason: "Federation call graph: 0 direct inter-organ edges. arifOS is the audit plane."
+
+# ════════════════════════════════════════════════════════════════════
+# 4. ENFORCEMENT VERIFICATION
+# ════════════════════════════════════════════════════════════════════
+
+verification:
+  - check: "agent.session_id is bound at boot"
+    method: "arif_session_init"
+    fail_action: "BLOCK until bound"
+  - check: "agent.sdk is loaded"
+    method: "import arifos_kernel_sdk"
+    fail_action: "fall back to band-2-mcp"
+  - check: "agent.lease_max is respected"
+    method: "arif_lease_inspect"
+    fail_action: "BLOCK + 888_HOLD"
+  - check: "agent.reality_contracts is loaded (if touching organs)"
+    method: "load yaml at session_init"
+    fail_action: "HOLD (no offline check)"
+  - check: "agent.band includes at least one of band-1, band-2, band-3"
+    method: "static analysis of wire_contract"
+    fail_action: "DENY deployment"
+
+# ════════════════════════════════════════════════════════════════════
+# 5. ENTRY POINTS (where agents bootstrap the kernel)
+# ════════════════════════════════════════════════════════════════════
+
+entry_points:
+  opencode:
+    config: /root/AAA/agents/opencode/config/config.yaml
+    sdk_init: "from arifos_kernel_sdk import ArifOSKernel; k = ArifOSKernel(organ='WEALTH', agent_id='opencode-333-agi')"
+  claude-code:
+    config: /root/.claude/CLAUDE.md
+    sdk_init: "arifos-kernel-sdk npm init --organ=WEALTH"
+  kimi-code:
+    config: /root/.kimi/config.toml
+    sdk_init: "arifos-kernel-sdk init --organ=WEALTH"
+  openclaw:
+    config: /root/.openclaw/workspace/AGENTS.md
+    sdk_init: "arifos_kernel_sdk init --agent=openclaw --bands=band-1-sdk+band-3-os"
+  hermes-asi:
+    config: /root/.hermes/config.yaml
+    sdk_init: "arifos_kernel_sdk init --agent=hermes-asi"
+  antigravity:
+    config: /root/.gemini/system.md
+    sdk_init: "arifos_kernel_sdk init --agent=antigravity"
+
+# ─────────────────────────────────────────────────────────────────────
+# DITEMPA BUKAN DIBERI — Every agent is bound. One band at a time.
+# VAULT999 seal: PENDING F13 SOVEREIGN (irreversible, requires 888_HOLD)
+# ─────────────────────────────────────────────────────────────────────

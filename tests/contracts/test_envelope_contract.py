@@ -10,7 +10,6 @@ DITEMPA BUKAN DIBERI.
 from __future__ import annotations
 
 import json
-import pytest
 
 from wealth_contracts.envelope import (
     WealthEnvelope,
@@ -25,7 +24,7 @@ from wealth_contracts.epistemic import (
     UncertaintyBand,
     MissingInput,
 )
-from wealth_contracts.authority import ExecutionAuthority, validate_authority
+from wealth_contracts.authority import validate_authority
 
 
 class TestEpistemicTags:

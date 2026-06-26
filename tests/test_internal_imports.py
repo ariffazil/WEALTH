@@ -8,7 +8,6 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import internal.monolith as monolith
 from internal.invariants import get_g_score
 from internal.monolith import (
     _PUBLIC_TOOLS,

@@ -9,7 +9,6 @@ Tests for WEALTH Intelligence Gates — Constitutional Enforcement Layer
 DITEMPA BUKAN DIBERI — Tests are forged, not given.
 """
 
-import pytest
 from datetime import datetime, timezone, timedelta
 
 from internal.wealth_gates import (

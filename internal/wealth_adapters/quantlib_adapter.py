@@ -14,7 +14,6 @@ Phase 3 substrate — adapter (not core).
 from __future__ import annotations
 
 import hashlib
-import time
 from datetime import date
 from typing import Optional
 

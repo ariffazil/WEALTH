@@ -1,0 +1,778 @@
+# WEALTH Law Ontology — v1.1.0-DRAFT
+# Canon binding: /root/WEALTH/canon/002_HUMAN_LAW.md (draft pending 888 ratification)
+# Shadow companion: /root/WEALTH/canon/002a_LAW_SHADOW.md
+# Owner: WEALTH (Ξ Capital + Law). Witness: arifOS (L01-L13).
+# Status: DRAFT pending 888 ratification. Reconciled 2026-06-24 from parallel
+#   002 series + 015 series (canon/015_LAW_MANIFEST.md + data/legal_ontology.yaml).
+#   The 015 series is now retired; its useful contents merged here.
+#
+# This file is the machine-readable spine. Every law pack YAML, every tool
+# input/output, every advisory record must validate against these shapes.
+# Extend by ADDING new types, never by mutating existing ones (append-only
+# like the vault).
+
+version: "1.1.0-DRAFT"
+canon_ref: "002_HUMAN_LAW"
+issued_at: "2026-06-24T00:00:00+08:00"
+issuer: "WEALTH_FORGE"
+ratified_by: null  # 888 to ratify
+jurisdictions_supported:
+  - MY-FED      # Federal — Acts of Parliament, Federal Constitution
+  - MY-PG       # Penang — state land, Penang-specific
+  - MY-SBH      # Sabah — MA63 territory
+  - MY-SWK      # Sarawak — MA63 territory
+  - MY-SYR      # Syariah — family, inheritance, faraid (Muslim subjects)
+  # v2 candidates (NOT in scope v1, listed for completeness):
+  # - MY-KL, MY-SEL, MY-JHR, MY-KDH, MY-KTN, MY-PER, MY-NSE, MY-PHG, MY-TGA
+
+# ---------------------------------------------------------------------------
+# PRIMITIVE 1 — Jurisdiction
+# Every legal record is anchored to one (or more, tagged) jurisdiction(s).
+# ---------------------------------------------------------------------------
+Jurisdiction:
+  type: object
+  required: [code, label, level]
+  properties:
+    code:
+      type: string
+      enum: [MY-FED, MY-PG, MY-SBH, MY-SWK, MY-SYR]
+    label:
+      type: string
+      example: "Federal"
+    level:
+      type: string
+      enum: [federal, state, ma63, syariah]
+
+# ---------------------------------------------------------------------------
+# PRIMITIVE 2 — Act (a written law)
+# ---------------------------------------------------------------------------
+Act:
+  type: object
+  required:
+    [id, title, citation, jurisdiction, year, status, sections]
+  properties:
+    id:
+      type: string
+      pattern: "^[A-Z0-9_]+$"
+      example: "KTN_1965"
+    title:
+      type: string
+      example: "Kanun Tanah Negara 1965"
+    short_title:
+      type: string
+      example: "KTN"
+    citation:
+      type: string
+      example: "Act 56 of 1965"
+    jurisdiction:
+      $ref: "#/Jurisdiction"
+    year:
+      type: integer
+      minimum: 1957
+      maximum: 2030
+    status:
+      type: string
+      enum: [in_force, amended, repealed, pending]
+    source_url:
+      type: string
+      format: uri
+    source_version:
+      type: string
+      description: "Gazette date or amendment version (e.g. '2020-P.U.(B)215')."
+    language:
+      type: string
+      enum: [en, ms, bilingual]
+    sections:
+      type: array
+      items:
+        $ref: "#/Section"
+
+# ---------------------------------------------------------------------------
+# PRIMITIVE 3 — Section (a discrete unit of an Act)
+# ---------------------------------------------------------------------------
+Section:
+  type: object
+  required: [number, heading, kind, text, domain_tags]
+  properties:
+    number:
+      type: string
+      example: "Section 5"
+    heading:
+      type: string
+      example: "Restriction on dealings with Malay reservations"
+    kind:
+      type: string
+      enum: [definition, procedure, remedy, prohibition, duty, power, penalty, schedule]
+    text:
+      type: string
+      description: "Verbatim section text. Citation-grade: do not paraphrase."
+    domain_tags:
+      type: array
+      items:
+        $ref: "#/DomainTag"
+    related_sections:
+      type: array
+      items:
+        type: string
+        description: "Other section ids this one depends on or amends."
+    amendment_history:
+      type: array
+      items:
+        type: object
+        required: [year, note]
+        properties:
+          year: {type: integer}
+          note: {type: string}
+
+# ---------------------------------------------------------------------------
+# PRIMITIVE 4 — DomainTag (cross-cutting classification)
+# ---------------------------------------------------------------------------
+DomainTag:
+  type: string
+  enum:
+    - land.title          # geran, strata, leasehold
+    - land.transfer       # sale, gift, lease
+    - land.encumbrance    # caveat, lien, charge
+    - land.restriction    # Malay reservation, bumi quota, MA63 carve-out
+    - inheritance.will    # wasiat
+    - inheritance.intestate
+    - inheritance.faraid
+    - inheritance.small_estate
+    - inheritance.probate
+    - corporate.share     # share transfer, director duties
+    - corporate.director
+    - regulatory.pdpa
+    - regulatory.environmental
+    - regulatory.safety
+    - regulatory.licence
+    - rights.native       # orang asli, native customary
+    - rights.ma63         # MA63 protections (Sabah/Sarawak)
+    - rights.syariah      # Syariah-specific rights
+    - procedure.court
+    - procedure.administrative
+
+# ---------------------------------------------------------------------------
+# PRIMITIVE 5 — Institution (who administers)
+# ---------------------------------------------------------------------------
+Institution:
+  type: object
+  required: [id, name, kind, jurisdiction]
+  properties:
+    id:
+      type: string
+      pattern: "^[A-Z0-9_]+$"
+      example: "PTG_PG"
+    name:
+      type: string
+      example: "Pejabat Pengarah Tanah dan Galian, Pulau Pinang"
+    kind:
+      type: string
+      enum: [court, registry, agency, tribunal, ministry, syariah_court, trust]
+    jurisdiction:
+      $ref: "#/Jurisdiction"
+    powers:
+      type: array
+      items:
+        type: string
+      description: "Powers delegated by Act (cite Act.id)."
+    appeal_path:
+      type: array
+      items:
+        type: string
+      description: "Ordered list of institution ids to escalate to."
+
+# ---------------------------------------------------------------------------
+# PRIMITIVE 6 — AdvisoryRecord (what WEALTH tools emit)
+# This is the OUTPUT envelope for every legal tool. Always present.
+# ---------------------------------------------------------------------------
+AdvisoryRecord:
+  type: object
+  required:
+    [canon_id, scope, jurisdiction, risk_class, advisory_class,
+     subject, sources, issued_at, human_floor, vault_receipt]
+  properties:
+    canon_id:
+      type: string
+      const: "002_HUMAN_LAW"
+    scope:
+      type: string
+      enum: [MY-FED, MY-PG, MY-SBH, MY-SWK, MY-SYR, MULTI]
+    jurisdiction:
+      oneOf:
+        - $ref: "#/Jurisdiction"
+        - type: array
+          items:
+            $ref: "#/Jurisdiction"
+    risk_class:
+      type: string
+      enum: [LOW, MEDIUM, HIGH, CRITICAL]
+    advisory_class:
+      type: string
+      enum: [lookup, classify, route, flag, compute, check, synthesize]
+    subject:
+      type: string
+      description: "Human-readable summary, one line."
+    detail:
+      type: string
+      description: "Full advisory body. Cite sources inline."
+    sources:
+      type: array
+      items:
+        type: object
+        required: [act_id, section]
+        properties:
+          act_id: {type: string}
+          section: {type: string}
+          quote: {type: string}
+    cross_jurisdiction_notes:
+      type: string
+      description: "Mandatory if scope=MULTI. Names the conflicting or layered rules."
+    flags:
+      type: array
+      items:
+        type: string
+      description: "Machine-readable tags (e.g. ['MA63_CRITICAL', '888_HOLD'])."
+    witness:
+      type: string
+      enum: [arifOS:auto, "888", "AAA:consensus"]
+    human_floor:
+      type: string
+      enum: [none, "888_signoff", "888_HOLD", "epoch_seal"]
+    vault_receipt:
+      type: string
+      enum: [T1, T2]
+    issued_at:
+      type: string
+      format: date-time
+    expires_at:
+      type: string
+      format: date-time
+      description: "Required for risk_class in {HIGH, CRITICAL}."
+
+# ---------------------------------------------------------------------------
+# DOMAIN — minimum v1 law pack bindings
+# These are the canonical sources canon 002 mandates at /root/WEALTH/data/law_pack/ACTS/.
+# ---------------------------------------------------------------------------
+v1_law_pack:
+  description: |
+    First binding law pack — canonical source list. Each file must validate
+    against Act/Section above. As of 2026-06-24 the listed YAML files under
+    data/law_pack/ACTS/ are not yet populated; only this index and the pack
+    manifest exist. No tool may reference a law pack file that is not listed
+    here.
+  acts:
+    - id: KTN_1965
+      path: data/law_pack/ACTS/KANUN_TANAH_NEGARA_1965.yaml
+      title: "Kanun Tanah Negara 1965"
+      priority: P0
+    - id: FED_CONSTITUTION
+      path: data/law_pack/ACTS/FEDERAL_CONSTITUTION_articles.yaml
+      title: "Federal Constitution — selected articles affecting capital"
+      priority: P0
+    - id: MA63
+      path: data/law_pack/ACTS/MA63_constitution_articles.yaml
+      title: "Malaysia Agreement 1963 — constitutional protections"
+      priority: P0
+    - id: SMA_PENANG
+      path: data/law_pack/ACTS/SMA_PENANG_1957.yaml
+      title: "State Land Rules (Penang) — short title varies"
+      priority: P0
+    - id: DISTRIBUTION_ACT_1958
+      path: data/law_pack/ACTS/DISTRIBUTION_ACT_1958.yaml
+      title: "Distribution Act 1958 (Non-Muslim intestate)"
+      priority: P0
+    - id: SMALL_ESTATES_1955
+      path: data/law_pack/ACTS/SMALL_ESTATES_1955.yaml
+      title: "Small Estates Act 1955 (Non-Muslim, simplified)"
+      priority: P0
+    - id: FARAID
+      path: data/law_pack/ACTS/FARAID_schedule.yaml
+      title: "Faraid — Syariah inheritance schedule"
+      priority: P0
+    - id: PDPA_2010
+      path: data/law_pack/ACTS/PDPA_2010.yaml
+      title: "Personal Data Protection Act 2010"
+      priority: P0
+
+# ---------------------------------------------------------------------------
+# INVARIANTS — hard rules any record must satisfy
+# Enforced at parse-time. A violation is a canon breach, not a soft warning.
+# ---------------------------------------------------------------------------
+invariants:
+  I1_jurisdiction_required: "Every AdvisoryRecord carries jurisdiction. No exceptions."
+  I2_source_citation_required: "Every claim in `detail` cites an act_id+section. Unsourced = reject."
+  I3_verdict_prohibition: "AdvisoryRecord.advice_class ∈ {lookup, classify, route, flag, compute, check, synthesize}. 'verdict' is forbidden."
+  I4_high_requires_hold: "If risk_class in {HIGH, CRITICAL} then human_floor in {888_HOLD, epoch_seal} and expires_at is set."
+  I5_cross_jurisdiction_explicit: "If scope=MULTI then cross_jurisdiction_notes is non-empty and each jurisdiction's rules are listed separately before synthesis."
+  I6_pdpa_default: "Any record involving a natural person auto-tags domain 'regulatory.pdpa' and flags PDPA_HUMAN_REVIEW for HIGH."
+  I7_no_self_judge: "Tool never returns 'this is illegal' / 'you must'. Only 'appears to', 'may', 'consider'."
+  I8_no_phantoms: "Tool never invents an Act or section not in the law pack. Missing source => law_missing_source flag."
+  I9_merged_015: "Retired 015 series contents (institutional graph, hold matrix, proposed tools, capacity bands) merged here as draft."
+
+# ---------------------------------------------------------------------------
+# CAPACITY BANDS — what WEALTH law tools may emit
+# ---------------------------------------------------------------------------
+capacity_bands:
+  - band: OBSERVE
+    description: "Fetch, parse, classify, calculate, surface"
+    may_sign: false
+    may_seal: false
+    may_judge: false
+  - band: DRAFT
+    description: "Generate form templates (DRAFT watermark mandatory)"
+    may_sign: false
+    may_seal: false
+    may_judge: false
+    note: "Output is not legally binding"
+  - band: NEVER_BIND
+    description: "Request human acknowledgement"
+    may_sign: false
+    may_seal: false
+    may_judge: false
+    note: "Hard human gate — no autonomous progression"
+
+# ---------------------------------------------------------------------------
+# INTEGRITY GATES — explicit HOLD conditions
+# ---------------------------------------------------------------------------
+integrity_gates:
+  - condition: JURISDICTION_UNKNOWN
+    action: HOLD
+    note: "Ask 888 before proceeding"
+  - condition: PROVISION_UNVERIFIED
+    action: HOLD
+    note: "F2 TRUTH — declare band, mark as DRAFT"
+  - condition: CONFLICT_DETECTED
+    action: HOLD
+    note: "Federal vs State / civil vs Syariah"
+  - condition: MINOR_HEIR_PRESENT
+    action: HOLD
+    note: "Guardian / court oversight required"
+  - condition: DISPUTED_CASE
+    action: HOLD
+    note: "Escalate to peguam"
+  - condition: RELIGION_BOUNDARY_UNCLEAR
+    action: HOLD
+    note: "Article 121(1A) — civil-Syariah split"
+  - condition: CROSS_BORDER_ASSET
+    action: HOLD
+    note: "Different law may apply"
+  - condition: HERITAGE_PROPERTY
+    action: HOLD
+    note: "JWN consultation mandatory"
+  - condition: PDPA_DATA_INVOLVED
+    action: HOLD
+    note: "Explicit consent required"
+  - condition: FARAID_RESULT
+    action: HOLD
+    note: "Counsel review mandatory"
+  - condition: COURT_FILING_REQUIRED
+    action: HOLD
+    note: "Peguam only"
+  - condition: WEALTH_SELF_SEAL_ATTEMPTED
+    action: VOID
+    note: "F12 violation — WEALTH never seals"
+
+# ---------------------------------------------------------------------------
+# 888 HOLD MATRIX — asymmetric gates for law domain
+# ---------------------------------------------------------------------------
+hold_matrix:
+  - pattern_id: RELIGION_BOUNDARY
+    description: "Religion unknown or boundary case"
+    trigger:
+      field: "deceased.religion"
+      condition: "in [UNKNOWN, AMBIGUOUS]"
+    weight: 9
+    action: "ASK_888 — do not guess religion; misrouting is harm"
+    maruah_floor: true
+
+  - pattern_id: MINOR_HEIR
+    description: "Minor heir present"
+    trigger:
+      field: "heir.is_minor"
+      condition: "== true"
+    weight: 9
+    action: "ASK_888 — minor's share requires guardian + court oversight"
+    maruah_floor: true
+
+  - pattern_id: DISPUTED
+    description: "Case is disputed"
+    trigger:
+      field: "case.is_disputed"
+      condition: "== true"
+    weight: 10
+    action: "ESCALATE_TO_PEGUAM"
+    maruah_floor: true
+
+  - pattern_id: COURT_FILING
+    description: "Step 5-7 (file/hearing/grant)"
+    trigger:
+      field: "process.current_step"
+      condition: "in [STEP_5_FILE, STEP_6_HEARING, STEP_7_GRANT]"
+    weight: 10
+    action: "REDIRECT_TO_PEGUAM"
+
+  - pattern_id: LAND_TRANSFER
+    description: "Step 8 — land transfer"
+    trigger:
+      field: "process.current_step"
+      condition: "== STEP_8_TRANSFER"
+    weight: 9
+    action: "VERIFY_WITH_PTG"
+
+  - pattern_id: FARAID_RESULT
+    description: "After faraid calculation"
+    trigger:
+      field: "tool.last_invocation"
+      condition: "== arif_faraid_calculate"
+    weight: 9
+    action: "REVIEW_WITH_SYARIAH_COUNSEL"
+    maruah_floor: true
+
+  - pattern_id: DISTRIBUTION_RESULT
+    description: "After distribution calculation"
+    trigger:
+      field: "tool.last_invocation"
+      condition: "== arif_distribution_calculate"
+    weight: 8
+    action: "REVIEW_WITH_COUNSEL"
+
+  - pattern_id: HIGH_VALUE
+    description: "Estate > RM 2M"
+    trigger:
+      field: "case.estimated_gross_estate_value_myr"
+      condition: "> 2_000_000"
+    weight: 8
+    action: "PEGUAM_REQUIRED"
+
+  - pattern_id: WASIAT_INTERPRETATION
+    description: "Will contested"
+    trigger:
+      field: "case.has_will AND case.is_disputed"
+      condition: "== true"
+    weight: 10
+    action: "ESCALATE — hakim"
+
+  - pattern_id: CROSS_BORDER
+    description: "Cross-border asset"
+    trigger:
+      field: "asset.jurisdiction"
+      condition: "!= MY"
+    weight: 9
+    action: "ASK_888 — different law applies"
+
+  - pattern_id: PDPA_HEIR_DATA
+    description: "Heir personal data stored"
+    trigger:
+      field: "consent.obtained"
+      condition: "== false"
+    weight: 8
+    action: "ASK_888 — PDPA explicit consent required"
+
+  - pattern_id: NCR_HERITAGE
+    description: "Sabah/Sarawak NCR or heritage property"
+    trigger:
+      field: "asset.location_state"
+      condition: "in [SABAH, SARAWAK]"
+    weight: 10
+    action: "ESCALATE — heritage/NCR law"
+    maruah_floor: true
+
+# ---------------------------------------------------------------------------
+# INSTITUTIONAL GRAPH — v1 Penang pilot (merged from 015 series)
+# ---------------------------------------------------------------------------
+institutional_graph:
+  version: "1.0.0-DRAFT"
+  pilot_state: MY-PG
+  note: "Addresses and contact details are approximate — verify before production use."
+  institutions:
+    - id: MY.PNG.PTG
+      name: "Pejabat Tanah dan Galian Pulau Pinang"
+      name_en: "Penang Land and Mines Office"
+      kind: registry
+      jurisdiction:
+        code: MY-PG
+        label: "Pulau Pinang"
+        level: state
+      address: "Teluk Air Tawar, 13100 Penaga, Pulau Pinang"
+      phone: "+60 4-575 2222"
+      website: "ptg.penang.gov.my"
+      address_truth_band: MEDIUM
+      handles:
+        - "Land registration"
+        - "Title issuance"
+        - "Transfer approval (Borang 14A)"
+        - "State land alienation"
+      powers:
+        - "KTN_1965"
+
+    - id: MY.PNG.MT_SIVIL
+      name: "Mahkamah Tinggi Pulau Pinang (Bahagian Sivil)"
+      name_en: "Penang High Court (Civil Division)"
+      kind: court
+      jurisdiction:
+        code: MY-PG
+        label: "Pulau Pinang"
+        level: state
+      address: "Jalan Dato' Keramat, 10150 George Town, Pulau Pinang"
+      address_truth_band: MEDIUM
+      handles:
+        - "Probate (PAA 1959)"
+        - "Surat Kuasa Mentadbir (PAA 1959)"
+        - "Civil estate distribution"
+        - "Will contest"
+      appeal_path:
+        - "MY.FED.COA"
+        - "MY.FED.FC"
+
+    - id: MY.PNG.MT_SYARIAH
+      name: "Mahkamah Syariah Pulau Pinang"
+      name_en: "Penang Syariah Court"
+      kind: syariah_court
+      jurisdiction:
+        code: MY-SYR
+        label: "Syariah — Pulau Pinang"
+        level: syariah
+      address: "Jalan Kebun Sireh, 10460 George Town, Pulau Pinang"
+      address_truth_band: MEDIUM
+      handles:
+        - "Sijil Faraid"
+        - "Muslim estate distribution"
+        - "Syariah family matters"
+      appeal_path:
+        - "MY.PNG.MT_SYARIAH_APPEAL"
+
+    - id: MY.PNG.AMANAH_RAYA
+      name: "Amanah Raya Berhad (Cawangan Pulau Pinang)"
+      kind: trust
+      jurisdiction:
+        code: MY-FED
+        label: "Federal — Pulau Pinang"
+        level: federal
+      address: "TBD — verify"
+      address_truth_band: LOW
+      handles:
+        - "Executor appointment"
+        - "Asset management (intestate)"
+
+    - id: MY.JWN
+      name: "Jabatan Warisan Negara"
+      name_en: "National Heritage Department"
+      kind: agency
+      jurisdiction:
+        code: MY-FED
+        label: "Federal"
+        level: federal
+      address_truth_band: LOW
+      handles:
+        - "Heritage property designation"
+        - "Heritage transfer restrictions"
+      note: "Consult if deceased owned gazetted heritage property"
+
+# ---------------------------------------------------------------------------
+# PROPOSED TOOLS — 13 atomic law verbs (merged from 015 series)
+# ---------------------------------------------------------------------------
+proposed_tools:
+  - name: wealth_law_lookup_act
+    description: "Fetch Act metadata + section list by citation"
+    capacity_band: OBSERVE
+    input: { citation: "string", section: "string?" }
+    output: { act_metadata: "object", sections: "list<object>" }
+    witness_required: false
+    888_hold: never
+
+  - name: wealth_law_lookup_section
+    description: "Fetch specific section text + interpretation notes"
+    capacity_band: OBSERVE
+    input: { citation: "string", section_id: "string" }
+    output: { section_text: "string", truth_band: "enum", notes: "string" }
+    witness_required: false
+    888_hold: never
+
+  - name: wealth_law_classify_case
+    description: "Classify pusaka case (kecil/besar, Muslim/non-Muslim)"
+    capacity_band: OBSERVE
+    input: { religion: "enum", estate_value_myr: "float", has_will: "bool" }
+    output: { case_category: "enum", jurisdiction: "enum", routing: "string" }
+    witness_required: false
+    888_hold: "when religion unknown or value at boundary (2M)"
+
+  - name: wealth_law_route_institution
+    description: "Recommend institution given case context"
+    capacity_band: OBSERVE
+    input: { case_type: "enum", state: "string", religion: "enum" }
+    output: { institution: "object", routing_path: "string", appeal_path: "list<string>" }
+    witness_required: false
+    888_hold: "when religion boundary"
+
+  - name: wealth_law_flag_risk
+    description: "Detect legal risk surfaces in proposed action"
+    capacity_band: OBSERVE
+    input: { proposed_action: "string", context: "object" }
+    output: { risk_markers: "list<object>", triggers: "list<string>", recommendation: "enum" }
+    witness_required: true
+    888_hold: "always (high-stakes advisory)"
+
+  - name: wealth_law_generate_checklist
+    description: "Generate human-facing checklist (docs, steps, forms)"
+    capacity_band: DRAFT
+    input: { case_type: "enum", state: "string" }
+    output: { checklist: "list<object>", forms_required: "list<string>", timeline: "object" }
+    witness_required: false
+    888_hold: never
+
+  - name: wealth_law_draft_form
+    description: "Draft filled form template (Borang A, 14A, etc.) with DRAFT watermark"
+    capacity_band: DRAFT
+    input: { form_id: "string", case_data: "object" }
+    output: { form_pdf_path: "string", watermark: "string", disclaimer: "string" }
+    witness_required: true
+    888_hold: "before output (watermark mandatory)"
+
+  - name: wealth_law_parse_document
+    description: "OCR + extract fields from Geran, Sijil Kematian, etc."
+    capacity_band: OBSERVE
+    input: { document_path: "string", document_type: "enum" }
+    output: { extracted_fields: "object", confidence: "float", pdpa_consent_required: "bool" }
+    witness_required: false
+    888_hold: "when PDPA data involved"
+
+  - name: wealth_law_faraid_calculate
+    description: "Compute Faraid shares (asal-usul → fard → furudh → hajb → asabah → ausan → radd)"
+    capacity_band: OBSERVE
+    input: { heirs: "list<object>", estate: "object" }
+    output: { shares: "list<object>", rule_citations: "list<string>", edge_cases: "list<string>" }
+    witness_required: true
+    888_hold: "always — counsel review mandatory"
+
+  - name: wealth_law_distribution_calculate
+    description: "Compute Distribution Act 1958 shares for non-Muslim"
+    capacity_band: OBSERVE
+    input: { heirs: "list<object>", estate: "object" }
+    output: { shares: "list<object>", statute_citations: "list<string>" }
+    witness_required: true
+    888_hold: "always — counsel review recommended"
+
+  - name: wealth_law_jurisdiction_resolve
+    description: "Resolve which jurisdiction applies (Federal/State/Syariah/Civil/Adat)"
+    capacity_band: OBSERVE
+    input: { facts: "object", religion: "enum", asset_state: "string" }
+    output: { jurisdiction: "enum", deciding_authority: "string", conflicts: "list<string>" }
+    witness_required: true
+    888_hold: "when conflict detected or boundary case"
+
+  - name: wealth_law_drift_detect
+    description: "Watch for amendment/version drift in loaded pack"
+    capacity_band: OBSERVE
+    input: { pack_id: "string" }
+    output: { current_hash: "string", latest_hash: "string", drift_detected: "bool" }
+    witness_required: false
+    888_hold: never
+
+  - name: wealth_law_human_ack
+    description: "Surface legal HOLD to human for explicit acknowledgement"
+    capacity_band: NEVER_BIND
+    input: { trigger: "object", context: "object" }
+    output: { ack_received: "bool", ack_signature: "string" }
+    witness_required: true
+    888_hold: "always — hard human gate"
+
+# ---------------------------------------------------------------------------
+# LAW LAYERS — soul / shadow / anthropology schema
+# ---------------------------------------------------------------------------
+law_layers:
+  description: |
+    Every legal event in WEALTH is read through three layers.
+    The soul layer is sealed canon. The shadow layer is institutional reality.
+    The anthropology layer is the living human who must translate between
+    incompatible grammars (adat, Syariah, state) while pretending they are one.
+  layers:
+    - id: sealed_canon
+      name: "Soul of Law"
+      note: "Rules exist, persist, bind even the ruler."
+      primitives: [Act, Section, Jurisdiction]
+      witness: arifOS
+      examples:
+        - "Kanun Tanah Negara 1965, Section 5"
+        - "Federal Constitution Article 153"
+        - "Faraid Quranic shares"
+
+    - id: institutional_shadow
+      name: "Shadow of the Human Behind It"
+      note: "Law is scar tissue crystallised into text."
+      primitives: [Institution, institutional_graph, hold_matrix]
+      witness: WEALTH
+      examples:
+        - "PTG Penang counters take N weeks; Borang 14A needs X"
+        - "Mahkamah Tinggi probate backlog"
+        - "Amanah Raya fee structure"
+
+    - id: living_human_gap
+      name: "Anthropology / Living Human Gap"
+      note: "The Mak cik who doesn't know Form A."
+      primitives: [AnthropologyRecord, HumanNarrative]
+      witness: WELL
+      examples:
+        - "Adat says tanah pusaka cannot jual; KTN says boleh with consent"
+        - "Faraid fixed shares vs family agreement (ta'wil)"
+        - "No one told the widow about Small Estates Act"
+
+  record_types:
+    AnthropologyRecord:
+      type: object
+      required: [layer, subject, narrative, dignity_risk, source_acts, witness]
+      properties:
+        layer:
+          type: string
+          enum: [sealed_canon, institutional_shadow, living_human_gap]
+        subject:
+          type: string
+          description: "One-line human subject, e.g. 'Mak cik, heir to kampung lot'"
+        narrative:
+          type: string
+          description: "Plain-language gap story. No legal verdict."
+        dignity_risk:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        source_acts:
+          type: array
+          items: { type: string }
+        missing_tests:
+          type: array
+          items: { type: string }
+        flags:
+          type: array
+          items: { type: string }
+        witness:
+          type: string
+          enum: [WELL, arifOS, WEALTH, human]
+
+    HumanNarrative:
+      type: object
+      required: [who, what_they_know, what_they_need, translation_gap]
+      properties:
+        who: { type: string }
+        what_they_know: { type: string }
+        what_they_need: { type: string }
+        translation_gap: { type: string }
+        grammar_clash:
+          type: array
+          items:
+            type: string
+            enum: [adat, syariah, state, ncr]
+
+# ---------------------------------------------------------------------------
+# CHANGELOG
+# ---------------------------------------------------------------------------
+changelog:
+  - version: "1.1.0-DRAFT"
+    date: "2026-06-24"
+    note: |
+      Reconciled 002 series with retired 015 series. Merged: capacity bands,
+      integrity gates, 888_HOLD matrix, Penang institutional graph, 13 proposed
+      law tools, and the soul/shadow/anthropology 3-layer schema.
+      Status: DRAFT pending 888 ratification.
+    witness: "WEALTH_FORGE"
+  - version: "1.0.0"
+    date: "2026-06-24"
+    note: "Initial binding schema. Six-act minimum pack. MY-FED/MY-PG/MY-SBH/MY-SWK/MY-SYR."
+    witness: "888 (claim; superseded by 1.1.0-DRAFT reconciliation)"

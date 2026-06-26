@@ -14,14 +14,6 @@ LEGACY_TO_CANONICAL = {
         "sunset": None,
         "note": "Renamed 2026-06-03 from mcp_health_check. Old name retained as legacy alias for backward compat.",
     },
-    "wealth_synthesize": {
-        "canonical": "wealth_omni_wisdom",
-        "mode": "synthesize",
-        "decision_class": "W0",
-        "new_schema": "wealth_omni_wisdom(mode='synthesize', decision_context={description, capital_type, ...})",
-        "sunset": None,
-        "note": "Path D 2026-06-03: absorbed into wealth_omni_wisdom (mode='synthesize'). Old name retained as legacy alias for backward compat.",
-    },
     "wealth_deal_frame": {
         "canonical": "wealth_omni_wisdom",
         "mode": "deal",
@@ -163,13 +155,6 @@ LEGACY_TO_CANONICAL = {
         "mode": "write",
         "decision_class": "W4",
         "new_schema": "wealth_ledger(mode='write', ...)",
-        "sunset": "v2",
-    },
-    "wealth_hysteresis_ledger": {
-        "canonical": "wealth_ledger",
-        "mode": "hysteresis",
-        "decision_class": "W2",
-        "new_schema": "wealth_ledger(mode='hysteresis', ...)",
         "sunset": "v2",
     },
     "wealth_ledger_init": {
