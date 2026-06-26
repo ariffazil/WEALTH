@@ -9,14 +9,14 @@ DITEMPA BUKAN DIBERI — Forged, not given.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass
 
 
 @dataclass
 class TriWitness:
     """
     Tri-witness validation for capital seals.
-    
+
     Three witnesses must attest:
     - human: Human confirmed the action (F13 SOVEREIGN)
     - ai: AI system processed and validated (F2 TRUTH)

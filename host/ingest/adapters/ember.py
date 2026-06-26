@@ -6,7 +6,6 @@ Docs: https://ember-energy.org/data/
 import csv
 import io
 from typing import List, Optional
-from urllib.parse import urlencode
 from urllib.request import urlopen, Request
 
 from host.ingest.schema import DataRecord

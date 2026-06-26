@@ -17,7 +17,10 @@ Tests:
 Authority: Arif approved additive Phase 1 only.
 """
 
+import os
+import pytest
 import asyncio
+import os
 import sys
 from pathlib import Path
 
@@ -334,6 +337,10 @@ def test_legacy_runway_wrapper_equivalence():
 # This test checks the engine equivalence only.
 
 
+@pytest.mark.skipif(
+    not os.environ.get("WEALTH_DB_URL"),
+    reason="Skipping: Postgres DB required. Set WEALTH_DB_URL env var to enable.",
+)
 def test_legacy_cashflow_summary_wrapper_equivalence():
     """wealth_cashflow_summary → DB-backed, distinct from engine. Skip net comparison."""
     # wealth_cashflow_summary is async DB query - not equivalent to in-memory engine

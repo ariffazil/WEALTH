@@ -39,16 +39,16 @@ class GScoreEngine:
         # --- Observation Vector z(t) ---
         time_sig = np.clip(params.get("horizon_years", 5) / 50.0, 0.0, 1.0)
         uncertainty_sig = np.clip(params.get("volatility", 0.2) * 2.0, 0.0, 1.0)
-        
+
         runway = params.get("runway_months", 12.0)
         if runway is None or runway == float('inf'):
             runway = 60.0
         survival_sig = np.clip(runway / 36.0, 0.0, 1.0)
-        
+
         truth_sig = np.clip(params.get("trust_index", 0.5), 0.0, 1.0)
         constraint_sig = np.clip(len(params.get("violations", [])) * 0.2, 0.0, 1.0)
         coordination_sig = np.clip(params.get("maruah_score", 0.5), 0.0, 1.0)
-        
+
         # MEPP Boundary Amplification
         boundary_stress = params.get("resource_utilization", 0.8) # Default 80%
         if boundary_stress > 0.90:
@@ -57,7 +57,7 @@ class GScoreEngine:
             boundary_sig = np.clip(1.0 * mepp_factor, 0.0, 5.0) # Entropy spike
         else:
             boundary_sig = 1.0 if params.get("critical", False) else 0.0
-            
+
         z = np.array([
             time_sig, uncertainty_sig, survival_sig, 
             truth_sig, constraint_sig, coordination_sig, 
@@ -69,42 +69,42 @@ class GScoreEngine:
         # Base Noise: Truth > Coordination > DCF > Liquidity > Constraints
         # [Time, Uncertainty, Survival, Truth, Constraints, Coordination, Boundaries]
         theta_diag = [0.2, 0.2, 0.1, 0.5, 0.2, 0.4, 0.2]
-        
+
         if regime in ("extractive", "simulative"):
             # Inflate noise for Truth, Constraints, and Boundaries (manipulation risk)
             theta_diag[3] *= 2.0 # Truth noise ++
             theta_diag[4] *= 1.5 # Constraints noise +
             theta_diag[6] *= 1.5 # Boundaries noise +
-            
+
         return z, np.diag(theta_diag)
 
     def evaluate(self, params: Dict[str, Any]) -> Dict[str, Any]:
         regime = self.get_regime(params)
         z, theta = self.compute_signals(params)
-        
+
         # Kalman Cycle
         self.kf.predict(regime=regime)
         state, is_outlier = self.kf.update_robust(z, theta)
-        
+
         omega, s = state[0][0], state[1][0]
         g_score = calculate_g_score(omega, s)
-        
+
         # Delta S via Holt Smoothing
         delta_s = self.holt.update(s)
-        
+
         self.g_history.append(g_score)
         self.s_history.append(s)
         self.mahalanobis_flags.append(is_outlier)
-        
+
         lyapunov_lambda = estimate_lyapunov(self.g_history)
-        
+
         # Decision Logic (G-Score + Delta S + Lyapunov)
         verdict = "GO"
         if g_score < 0.45 or lyapunov_lambda > 0.1:
             verdict = "STOP"
         elif g_score < 0.60 or delta_s > 0.05:
             verdict = "HOLD"
-            
+
         return {
             "g_score": round(g_score, 4),
             "delta_s": round(delta_s, 4),

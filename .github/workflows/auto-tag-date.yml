@@ -15,12 +15,15 @@ jobs:
   tag:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Create date-stamped tag
         run: |
+          git config user.name "arifOS Forge"
+          git config user.email "forge@arif-fazil.com"
+
           TODAY="v$(date -u +'%Y.%m.%d')"
 
           if git rev-parse "$TODAY" >/dev/null 2>&1; then

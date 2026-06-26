@@ -76,13 +76,13 @@ def _pg_connection():
     if not PSYCOPG_AVAILABLE:
         import sys
 
-        sys.stderr.write(f"VAULT999_PG: psycopg not available\n")
+        sys.stderr.write("VAULT999_PG: psycopg not available\n")
         return None
     url = os.environ.get("DATABASE_URL") or os.environ.get("POSTGRES_URL")
     if not url:
         import sys
 
-        sys.stderr.write(f"VAULT999_PG: DATABASE_URL/POSTGRES_URL not set in env\n")
+        sys.stderr.write("VAULT999_PG: DATABASE_URL/POSTGRES_URL not set in env\n")
         return None
     try:
         conn = psycopg.connect(url, autocommit=True, connect_timeout=5)

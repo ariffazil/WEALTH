@@ -158,7 +158,7 @@ def test_omni_registered_in_mcp():
     # 26 (pre-Next-Horizon) - 7 (Next Horizon absorption 2026-06-05) + 1 (D4 Stock Analysis 2026-06-10) = 20
     assert len(runtime_tools) == 20, f"Expected 20 tools, got {len(runtime_tools)}"
     print(
-        f"test_omni_registered_in_mcp PASS (20 tools, omni present, 7 absorbed internal)"
+        "test_omni_registered_in_mcp PASS (20 tools, omni present, 7 absorbed internal)"
     )
 
 

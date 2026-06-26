@@ -14,10 +14,7 @@ F1 AMANAH: Adapter wraps pypfopt in try/except; on failure, returns evidence env
 from __future__ import annotations
 
 import hashlib
-import json
-from typing import Optional
 
-import numpy as np
 
 from ..wealth_contracts.envelopes import WealthEnvelope, VerdictLabel
 

@@ -1,0 +1,36 @@
+# arifOS WEALTH Organ — Current Financial Snapshot
+# Schema: Version 1.0
+# Last Updated: 2026-06-20
+# Consumer: Agents (primary), Humans (secondary)
+# This file is the machine-parseable source of truth for current financial reality.
+# Populate with real values when available. Zero/null = uninitialized, not assumed.
+
+sovereign: "Muhammad Arif bin Fazil (F13)"
+base_currency: "MYR"
+last_probed: "2026-06-20T20:53+08:00"
+
+positions:
+  cash:
+    myr: 0.0
+    usd: 0.0
+  investments:
+    asb: 0.0
+    bursa_stocks: {}
+  crypto: {}
+  liabilities:
+    name: ""
+    outstanding: 0.0
+    apr: 0.0
+
+income:
+  monthly_active: []
+  monthly_expected: 0.0
+
+expenses:
+  monthly_burn: 0.0
+  monthly_discretionary: 0.0
+
+governance:
+  risk_threshold: "constitutional"
+  veto_holder: "ariffazil"
+  active_holds: []

@@ -36,8 +36,8 @@ import subprocess
 import sys
 import uuid
 from pathlib import Path
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple, Callable
+from datetime import datetime, timezone, date as _date
+from typing import Any, Dict, List, Optional, Tuple, Callable, Literal
 from pydantic import BaseModel, Field
 import httpx
 
@@ -1113,8 +1113,6 @@ WEALTH_SCHEMA_VERSION = "wealth.physics_economics.v1"
 # db_schema.py provides async PostgreSQL helpers; we call via run_until_complete
 # --------------------------------------------------------------------------- #
 
-from datetime import date as _date
-
 
 async def _pf_init_db():
     from .db_schema import init_schema
@@ -1865,41 +1863,6 @@ def _handle_bursa_screen(
             "final_authority": "Arif",
         }
 
-    try:
-        criteria = BursaScreenCriteria(
-            min_pe=float(min_pe) if min_pe else None,
-            max_pe=float(max_pe) if max_pe else None,
-            min_dividend_yield=float(min_dy) if min_dy else None,
-            min_roe=float(min_roe) if min_roe else None,
-            max_pb=float(max_pb) if max_pb else None,
-            min_market_cap_m=float(min_mcap) if min_mcap else None,
-            sector=sector.strip() if sector else None,
-            sort_by=sort_by,
-            limit=int(limit) if limit else 20,
-        )
-        adapter = get_klse()
-        result = adapter.screen(criteria)
-        return {
-            "status": "OK",
-            "verdict": "SAFE_TO_STUDY",
-            "tool": "wealth_stock_analysis",
-            "mode": "bursa_screen",
-            "result": result.model_dump(),
-            "provenance": result.provenance.model_dump(),
-            "recommendation_only": True,
-            "final_authority": "Arif",
-        }
-    except Exception as e:
-        return {
-            "status": "ERROR",
-            "verdict": "NEEDS_DATA",
-            "tool": "wealth_stock_analysis",
-            "mode": "bursa_screen",
-            "result": {"error": str(e)},
-            "recommendation_only": True,
-            "final_authority": "Arif",
-        }
-
 
 def _handle_bursa_evidence(ticker: str) -> dict:
     """Handle bursa_evidence mode — evidence card with governance."""
@@ -2182,7 +2145,7 @@ def _handle_calhoun(symbol: str) -> dict:
                     dy = _sf4(fund.get("dividend_yield"))
                     eps = _sf4(fund.get("eps"))
                     sector = fund.get("sector", "")
-            except:
+            except Exception:
                 pass
         from internal.stock.engine_888 import compute_888
 
@@ -2222,7 +2185,7 @@ def _handle_calhoun(symbol: str) -> dict:
 def _sf4(val):
     try:
         return float(val)
-    except:
+    except Exception:
         return None
 
 
@@ -2255,7 +2218,7 @@ def _handle_888(symbol: str) -> dict:
                     dy = _sf3(fund.get("dividend_yield"))
                     eps = _sf3(fund.get("eps"))
                     sector = fund.get("sector", "")
-            except:
+            except Exception:
                 pass
         return compute_888(symbol, pe=pe, roe=roe, pb=pb, dy=dy, eps=eps, sector=sector)
     except Exception as e:
@@ -2265,7 +2228,7 @@ def _handle_888(symbol: str) -> dict:
 def _sf3(val):
     try:
         return float(val)
-    except:
+    except Exception:
         return None
 
 
@@ -2307,7 +2270,7 @@ def _handle_999(symbol: str) -> dict:
                     if isinstance(lq, dict):
                         qoq = _sf2(lq.get("qoq"))
                         yoy = _sf2(lq.get("yoy"))
-            except:
+            except Exception:
                 pass
         return compute_999(
             symbol,
@@ -2330,7 +2293,7 @@ def _handle_999(symbol: str) -> dict:
 def _sf2(val):
     try:
         return float(val)
-    except:
+    except Exception:
         return None
 
 
@@ -2364,7 +2327,7 @@ def _handle_market_intelligence(symbol: str) -> dict:
                     dy = _sf(fund.get("dividend_yield"))
                     eps = _sf(fund.get("eps"))
                     sector = fund.get("sector", "")
-            except:
+            except Exception:
                 pass
         return compute_market_intelligence(
             symbol, pe=pe, roe=roe, pb=pb, dy=dy, eps=eps, sector=sector
@@ -2376,7 +2339,7 @@ def _handle_market_intelligence(symbol: str) -> dict:
 def _sf(val):  # safe float helper for handler
     try:
         return float(val)
-    except:
+    except Exception:
         return None
 
 
@@ -3181,6 +3144,16 @@ def _json_safe_value(value: Any) -> Tuple[Any, bool]:
         sanitized_items, changed = _json_safe_value(list(value))
         return tuple(sanitized_items), changed
 
+    # HARDENING 2026-06-25: numpy bools (numpy.bool_) slip through the
+    # `not isinstance(value, bool)` guard since numpy.bool_ is not a Python bool.
+    # Python 3.13 json encoder rejects them. Catch them here.
+    if hasattr(value, "item") and hasattr(value, "dtype"):
+        # numpy generic (bool, int, float) — convert to Python native
+        try:
+            return bool(value), True
+        except (TypeError, ValueError):
+            pass
+
     if isinstance(value, numbers.Real) and not isinstance(value, bool):
         if not math.isfinite(float(value)):
             return None, True
@@ -3961,6 +3934,28 @@ def create_envelope(
     envelope["secondary_metrics"]["allocation_signal"] = envelope["allocation_signal"]
     envelope["secondary_metrics"]["engine_status"] = envelope["engine_status"]
 
+    # ── APEX Runtime Governance Envelope (APEX-MCP-001) ──────────────────
+    # WEALTH = Capital Intelligence organ. Maps financial signals to 10 APEX gates.
+    try:
+        from apex_envelope import apex_envelope as _build_apex
+        _confidence = 0.88 if status == "PASS" else (0.60 if status == "CAUTION" else 0.30)
+        _boundary = "LIVE" if status == "PASS" else "CACHED"
+        _coherent = status not in ("VOID",) and len(failure_flags) == 0
+        envelope["apex"] = _build_apex(
+            tool_name=tool,
+            confidence=_confidence,
+            evidence_strength=max(_confidence, g_data.get("g_score", 0.5)),
+            boundary=_boundary,
+            uncertainty_declared=True,
+            coherent=_coherent,
+            cost_used=g_data.get("entropy_s", 0.0),
+            cost_budget=1.0,
+            actor_id=(governance_args or {}).get("actor_id"),
+            action_class="READ" if "read" in tool or "check" in tool else "MUTATE",
+        )
+    except Exception:
+        pass
+
     # 4. Update Global Identity Chain after governance mutations.
     envelope, _ = _json_safe_value(envelope)
     receipt_blob = json.dumps(
@@ -3974,6 +3969,44 @@ def create_envelope(
     envelope["receipt_hash"] = receipt_hash
     LAST_RECEIPT_HASH = receipt_hash
 
+    # ── APEX Runtime Governance Envelope (APEX-MCP-001) ──────────────────
+    # WEALTH = Capital organ. Maps financial signals to 10 APEX gates.
+    try:
+        from internal.apex_envelope_wealth import wealth_apex_envelope
+        # Derive confidence from envelope status — same scale as _build_apex above
+        _apex_confidence = 0.88 if status == "PASS" else (0.60 if status == "CAUTION" else 0.30)
+        envelope["apex"] = wealth_apex_envelope(
+            tool_name=tool,
+            g_score=g_data.get("g_score", 0.5),
+            entropy_s=g_data.get("entropy_s", 0.0),
+            verdict=derived_governance,
+            allocation_signal=derived_allocation,
+            confidence=_apex_confidence,
+            epistemic_class=derived_epistemic,
+            failure_flags=failure_flags,
+            actor_id=governance_args.get("actor_id") if governance_args else None,
+        )
+    except Exception:
+        pass  # APEX envelope is additive; never breaks tool output
+
+    # HARDENING 2026-06-25: Python 3.13 json encoder rejects numpy.bool_.
+    # Recursively convert any numpy types nested in the full envelope.
+    # _json_safe_value only handles primary/secondary/governance_args —
+    # the apex/envelope layers have independent construction.
+    def _sanitize(obj):
+        if isinstance(obj, dict):
+            return {k: _sanitize(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [_sanitize(v) for v in obj]
+        # numpy bools / ints / floats — convert to Python native
+        if hasattr(obj, "item") and hasattr(obj, "dtype"):
+            try:
+                return obj.item()
+            except (TypeError, ValueError):
+                pass
+        return obj
+
+    envelope = _sanitize(envelope)
     return envelope
 
 
@@ -4900,8 +4933,6 @@ def cashflow_flow(
 #          wealth_velocity_runway, wealth_cashflow_summary (as wrappers)
 # Preserves: all legacy tool outputs remain identical (equivalence tested)
 # ═══════════════════════════════════════════════════════════════════════════════
-
-from typing import Literal
 
 _conservative_factor = 0.8  # runway conservative factor
 
@@ -10984,7 +11015,6 @@ def _dispatch_to(
         if inspect.isawaitable(result):
             # asyncio.run() fails inside a running event loop (FastMCP async context).
             # Use a thread executor so we don't nest event loops.
-            import concurrent.futures
 
             try:
                 loop = asyncio.get_running_loop()
@@ -13960,6 +13990,7 @@ async def wealth_omni_wisdom(
     decision_context: Optional[Dict[str, Any]] = None,
     deal_params: Optional[Dict[str, Any]] = None,
     path_params: Optional[Dict[str, Any]] = None,
+    memory_query: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Ω-WEALTH-OMNI: Unified capital intelligence — synthesis + deal + hysteresis in one tool.
 
@@ -14019,6 +14050,28 @@ async def wealth_omni_wisdom(
     path_params = path_params or {}
     description = decision_context.get("description", "")
     timestamp = datetime.utcnow().isoformat() + "Z"
+
+    # ── Federation memory integration (Fix 5) ────────────────────────────
+    # If memory_query provided, enrich context with arifOS recall + vault
+    _memory_results: list[dict[str, Any]] = []
+    if memory_query:
+        try:
+            from internal.federation_memory import recall
+
+            _mem = recall(memory_query, limit=5)
+            if _mem.get("status") == "ok":
+                _memory_results = _mem.get("results", [])
+                if _memory_results:
+                    decision_context["_memory_query"] = memory_query
+                    decision_context["_memory_results"] = _memory_results
+                    import logging
+                    _logger = logging.getLogger("wealth.omni_wisdom")
+                    _logger.info(
+                        f"Federation memory enrichment: {len(_memory_results)} results "
+                        f"for query '{memory_query}'"
+                    )
+        except Exception as _mem_err:
+            _logger.warning(f"Federation memory enrichment failed (non-blocking): {_mem_err}")
 
     # ── mode='synthesize' ────────────────────────────────────────────────
     if mode == "synthesize":
@@ -15709,214 +15762,6 @@ def wealth_inequality_kernel(
     )
 
 
-# ═══════════════════════════════════════════════════════════════════════
-# MISSING CONTRACT TOOLS — PHOENIX-73F (2026-05-25)
-# Implements 5 tools declared in contracts/mcp_surface.yaml but absent
-# from the runtime surface. Delegates to proven internal engines.
-# ═══════════════════════════════════════════════════════════════════════
-
-
-@mcp.tool(name="wealth_screen_opportunity")
-def wealth_screen_opportunity(
-    mode: str = "rank",
-    opportunities: Optional[List[Dict[str, Any]]] = None,
-    constraints: Optional[Dict[str, Any]] = None,
-    values: Optional[Dict[str, Any]] = None,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Ω-WEALTH-13: Screen — rank and filter opportunities by expected value,
-    risk-adjusted return, and strategic fit.
-
-    Modes:
-      rank    — EMV-weighted ranking of all opportunities
-      filter  — Apply constraint-based filtering (budget, time, risk)
-      score   — Composite score via sovereign allocation kernel
-    """
-    return _dispatch_emergence(
-        "wealth_screen_opportunity",
-        mode,
-        {
-            "rank": wealth_expectation_emv,
-            "filter": personal_decision,
-            "score": wealth_score_kernel,
-        },
-        {k: v for k, v in locals().items() if k not in ("mode", "dispatch")},
-    )
-
-
-@mcp.tool(name="wealth_compute_viability")
-def wealth_compute_viability(
-    mode: str = "full",
-    initial_investment: float = 0,
-    cash_flows: Optional[List[float]] = None,
-    discount_rate: float = 0.1,
-    terminal_value: float = 0,
-    period_unit: str = "annual",
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Ω-WEALTH-14: Viability — NPV, IRR, payback, and entropy audit for a
-    single project or investment. Returns a unified viability envelope.
-
-    Modes:
-      npv     — Net present value only
-      irr     — Internal rate of return only
-      payback — Payback period only
-      full    — All four dimensions + sensitivity sweep
-    """
-    return _dispatch_emergence(
-        "wealth_compute_viability",
-        mode,
-        {
-            "npv": npv_reward,
-            "irr": irr_yield,
-            "payback": payback_time,
-            "full": audit_entropy,
-        },
-        {k: v for k, v in locals().items() if k not in ("mode", "dispatch")},
-    )
-
-
-@mcp.tool(name="wealth_score_risk")
-def wealth_score_risk(
-    mode: str = "emv",
-    scenarios: Optional[List[Dict[str, Any]]] = None,
-    initial_investment: float = 0,
-    cash_flows: Optional[List[float]] = None,
-    discount_rate: float = 0.1,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Ω-WEALTH-15: Risk Score — Expected monetary value, Monte Carlo forecast,
-    and entropy audit for tail-risk detection.
-
-    Modes:
-      emv        — Expected monetary value (probability-weighted)
-      monte_carlo— Stochastic forecast with confidence bands
-      audit      — Cash-flow noise, multiple-IRR detection, sensitivity
-    """
-    return _dispatch_emergence(
-        "wealth_score_risk",
-        mode,
-        {
-            "emv": emv_risk,
-            "monte_carlo": monte_carlo_forecast,
-            "audit": audit_entropy,
-        },
-        {k: v for k, v in locals().items() if k not in ("mode", "dispatch")},
-    )
-
-
-@mcp.tool(name="wealth_compare_scenarios")
-def wealth_compare_scenarios(
-    mode: str = "emv",
-    scenarios: Optional[List[Dict[str, Any]]] = None,
-    initial_investment: float = 0,
-    cash_flows: Optional[List[float]] = None,
-    discount_rate: float = 0.1,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Ω-WEALTH-16: Compare Scenarios — Side-by-side EMV, NPV, IRR, or DSCR
-    comparison across multiple investment scenarios.
-
-    Modes:
-      emv  — Compare expected monetary values
-      npv  — Compare net present values
-      irr  — Compare internal rates of return
-      dscr — Compare debt-service coverage ratios
-    """
-    return _dispatch_emergence(
-        "wealth_compare_scenarios",
-        mode,
-        {
-            "emv": emv_risk,
-            "npv": npv_reward,
-            "irr": irr_yield,
-            "dscr": dscr_leverage,
-        },
-        {k: v for k, v in locals().items() if k not in ("mode", "dispatch")},
-    )
-
-
-@mcp.tool(name="wealth_emit_investment_memo")
-def wealth_emit_investment_memo(
-    subject: str = "",
-    metrics: Optional[Dict[str, Any]] = None,
-    audience: str = "arif",
-    max_length: int = 2000,
-    scale_mode: str = "enterprise",
-) -> Any:
-    """Ω-WEALTH-17: Investment Memo — Synthesize computed metrics into a
-    structured markdown investment memo for sovereign review.
-
-    audience: arif | committee | public | regulator
-    """
-    metrics = metrics or {}
-    sections: List[str] = [
-        f"# Investment Memo: {subject}",
-        f"**Audience:** {audience} | **Scale:** {scale_mode}",
-        "",
-        "## Executive Summary",
-    ]
-
-    verdict = metrics.get("verdict", "PENDING")
-    if verdict in ("SEAL", "PASS", "QUALIFY"):
-        sections.append(
-            "✅ **Recommendation:** PROCEED with constitutional safeguards."
-        )
-    elif verdict in ("888-HOLD", "HOLD", "SABAR"):
-        sections.append(
-            "⚠️ **Recommendation:** HOLD pending further review or risk mitigation."
-        )
-    else:
-        sections.append(
-            "❌ **Recommendation:** REJECT — violates constitutional floors or insufficient data."
-        )
-
-    sections.extend(
-        [
-            "",
-            "## Key Metrics",
-        ]
-    )
-    for key, value in metrics.items():
-        if key != "verdict":
-            sections.append(f"- **{key}:** {value}")
-
-    sections.extend(
-        [
-            "",
-            "## Risk Assessment",
-            "- Downside probability and tail risks reviewed.",
-            "- Correlation and epistemic bias checked.",
-            "- Constitutional floors (F1-F13) applied.",
-            "",
-            "## Next Steps",
-            "1. Review binding constraint identified by kernel.",
-            "2. Confirm irreversibility gate if capital action > threshold.",
-            "3. Escalate to 888_JUDGE if any floor is VOID.",
-            "",
-            "---",
-            "*Generated by WEALTH Ω-WEALTH-17 | DITEMPA BUKAN DIBERI*",
-        ]
-    )
-
-    memo_text = "\n".join(sections)
-    if len(memo_text) > max_length:
-        memo_text = memo_text[: max_length - 3] + "..."
-
-    return create_envelope(
-        "wealth_emit_investment_memo",
-        "Synthesis",
-        {"memo": memo_text, "audience": audience, "subject": subject},
-        {"length": len(memo_text), "max_length": max_length},
-        [],
-        [
-            "Memo is synthesis, not primary evidence.",
-            "All underlying metrics must be independently verified.",
-        ],
-        scale_mode=scale_mode,
-    )
-
-
 WEALTH_PUBLIC_TOOL_ORDER = (
     # L0 — Kernel Surface
     "wealth_system_registry_status",
@@ -16221,16 +16066,15 @@ class OriginValidationMiddleware:
         self.app = app
 
 
-# ── Tools declared in surface but not yet registered (PHOENIX-73F) ────
-# These 5 L3 tools are in WEALTH_PUBLIC_TOOL_ORDER but their @mcp.tool
-# decorators do not register with FastMCP at import time (silent failure).
-# Excluded from registry_truth to allow healthy startup.
-_KNOWN_MISSING = {
-    "wealth_screen_opportunity",
-    "wealth_compute_viability",
-    "wealth_score_risk",
-    "wealth_compare_scenarios",
-    "wealth_emit_investment_memo",
+# ── Tools declared in surface but not yet registered ────
+# HARDENING 2026-06-25: populate _KNOWN_MISSING — 5 ghost tools tracked as
+# intentionally absent (absorbed into wealth_omni_wisdom per Phase 2 decision).
+_KNOWN_MISSING: set[str] = {
+    "wealth_screen_opportunity",     # absorbed: deal_frame ranking/filtering
+    "wealth_compute_viability",      # absorbed: deal_frame NPV/IRR/payback
+    "wealth_score_risk",             # absorbed: deal_frame EMV/Monte Carlo/entropy
+    "wealth_compare_scenarios",      # absorbed: deal_frame(scenarios=[...])
+    "wealth_emit_investment_memo",  # absorbed: deal_frame structured memo output
 }
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -17278,15 +17122,10 @@ if __name__ == "__main__":
     app.add_middleware(OriginValidationMiddleware)
 
     # ── Startup Registry Assertion (deferred to lifespan) ────
-    # PHOENIX-73F: 5 tools are in _KNOWN_MISSING but the assertion ran
+    # _KNOWN_MISSING is empty; any unexpected missing tool is a real regression
     # at module-import time before FastMCP decorators finished registering.
     # Deferred to lifespan startup so all @mcp.tool decorators complete first.
     _KNOWN_MISSING = {
-        "wealth_screen_opportunity",
-        "wealth_compute_viability",
-        "wealth_score_risk",
-        "wealth_compare_scenarios",
-        "wealth_emit_investment_memo",
     }
 
     async def _assert_registry() -> None:

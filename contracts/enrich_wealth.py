@@ -37,9 +37,7 @@ from typing import Any
 from contracts.schemas.metabolic import (
     ClaimState,
     ConfidenceLevel,
-    MetabolicOutput,
     OrganType,
-    UncertaintyBand,
     WitnessType,
 )
 

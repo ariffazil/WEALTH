@@ -8,7 +8,6 @@ with inputs, outputs, and the job that produced them.
 
 from __future__ import annotations
 
-import hashlib
 import time
 import uuid
 from typing import Any, Optional

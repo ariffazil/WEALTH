@@ -6,7 +6,6 @@ Per executive verdict Phase 1: "Add OpenTelemetry spans for every MCP call."
 
 from __future__ import annotations
 
-import os
 import time
 from contextlib import contextmanager
 from typing import Any, Optional

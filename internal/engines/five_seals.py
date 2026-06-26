@@ -17,6 +17,14 @@ except ImportError:  # pragma: no cover — defensive only
     compute_advisory_boundary = None  # type: ignore[assignment]
     _ADVISORY_LOADED = False
 
+# Exergy gate (Tier 5 DRAFT — 888 HOLD ACTIVE)
+try:
+    from internal.engines.exergy import calculate_exergy
+    _EXERGY_LOADED = True
+except ImportError:  # pragma: no cover — defensive only
+    calculate_exergy = None  # type: ignore[assignment]
+    _EXERGY_LOADED = False
+
 # ─── EVIDENCE LEVELS ───────────────────────────────────────────────────
 EVIDENCE_LEVELS: Dict[str, str] = {
     "E0": "assumption — no verification",
@@ -149,18 +157,43 @@ def compute_five_seals(
     tool: str,
     capital_at_risk: Optional[Dict[str, Any]] = None,
     evidence_level: str = "E3",
-) -> Dict[str, str]:
+) -> Dict[str, Any]:
     """Compute all Five Seals for a WEALTH tool output.
 
     WAJIB: Every WEALTH output must carry the Five Seals.
+
+    Tier 5 DRAFT: If metrics include npv_realized + allocated_capital,
+    an exergy gate is computed and attached under `exergy_gate`.
     """
-    return {
+    seals = {
         "value_seal": _seal_value(metrics, tool),
         "risk_seal": _seal_risk(metrics, tool),
         "liquidity_seal": _seal_liquidity(metrics, tool),
         "legitimacy_seal": _seal_legitimacy(metrics, tool),
         "sovereignty_seal": _seal_sovereignty(metrics, tool),
     }
+
+    # Exergy gate (DRAFT — not ratified)
+    if (
+        _EXERGY_LOADED
+        and calculate_exergy is not None
+        and "npv_realized" in metrics
+        and "allocated_capital" in metrics
+    ):
+        try:
+            ex = calculate_exergy(
+                npv_realized=metrics["npv_realized"],
+                allocated_capital=metrics["allocated_capital"],
+                delta_s_allocation=metrics.get("delta_s_allocation", 0.0),
+            )
+            seals["exergy_gate"] = ex.to_dict()
+            # Downgrade VALUE_SEAL to HEAT_WASTE if exergy gate fails
+            if not ex.meets_threshold:
+                seals["value_seal"] = "HEAT_WASTE"
+        except Exception as exc:
+            seals["exergy_gate"] = {"error": str(exc), "tier": "DRAFT — TIER 5"}
+
+    return seals
 
 
 def compute_five_seals_legacy(envelope: Dict[str, Any]) -> Dict[str, str]:

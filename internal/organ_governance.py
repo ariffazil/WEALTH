@@ -3,12 +3,7 @@ WEALTH Organ Governance — arifOS F1-F13 integration.
 
 Routes C2+/IRREVERSIBLE WEALTH tool calls through arifOS kernel for judgment.
 READONLY/C1 tools execute directly. C2+/IRREVERSIBLE require SEAL from arifOS.
-"""
 
-from __future__ import annotations
-
-
-"""
 Risk tiers:
   READONLY   -> execute directly
   C1         -> arifOS pre-check, execute on any verdict
@@ -16,17 +11,21 @@ Risk tiers:
   IRREVERSIBLE -> arifOS SEAL + ack_irreversible required
 """
 
+from __future__ import annotations
+
 import os
 import httpx
 from typing import Optional, Tuple
 
-ARIFOS_KERNEL_URL = os.environ.get("ARIFOS_KERNEL_URL", "http://arifosmcp:8080")
+ARIFOS_KERNEL_URL = os.environ.get("ARIFOS_KERNEL_URL", "http://127.0.0.1:8088")
 
 # Risk classification for WEALTH tools
 WEALTH_RISK_TIERS = {
     # C2/IRREVERSIBLE — require arifOS judgment
+    "wealth_vault_write": "c2",  # VAULT999 write, irreversible
     "wealth_ledger_write": "c2",  # VAULT999 write, irreversible
     "wealth_ledger_snapshot": "c2",  # VAULT999 write, irreversible
+    "wealth_vault_query": "readonly",  # Vault read
     "wealth_synthesize": "c1",  # Advisory verdict
     "wealth_governance_verdict": "c1",  # Advisory verdict
     "wealth_boundary_governance": "c1",  # Legitimacy audit, advisory

@@ -24,12 +24,10 @@ DITEMPA BUKAN DIBERI — The complete system forged from first principles.
 
 from __future__ import annotations
 
-import math
 from typing import Any, Dict, List, Optional
 
 from .indicators import (
     compute_rsi,
-    compute_macd,
     compute_sma,
     compute_bollinger,
     compute_atr,
@@ -37,13 +35,8 @@ from .indicators import (
     compute_returns,
     compute_max_drawdown,
     compute_sharpe_ratio,
-    compute_sortino_ratio,
 )
 from .market_intelligence import (
-    compute_invariant_score,
-    compute_dynamic_score,
-    compute_entropy_score,
-    compute_energy_profile,
     _match_sector,
 )
 
