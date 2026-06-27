@@ -1,0 +1,41 @@
+{
+  "card_id": "dtc-geox-well-field-risk-v1",
+  "from_domain": "geology",
+  "to_domain": "vitality",
+  "version": "1.0.0",
+  "translations": [
+    {
+      "source_field": "geox.field.hazard_count",
+      "target_field": "well.human.stress_trigger_count",
+      "rule": "Number of active geological hazards (shallow gas, faults, subsidence zones) in field area maps to stress_trigger_count for Arif's WELL profile. More hazards → more vigilance load.",
+      "default_assumption": "0-1 hazard = no stress trigger. 2-3 = moderate trigger. 4+ = significant stress load.",
+      "confidence_ceiling": 0.65,
+      "if_wrong_cost": "Arif receives allocation memo for a high-hazard field without WELL hazard flag → Arif's stress load not accounted for → decision made under elevated stress without acknowledgment."
+    },
+    {
+      "source_field": "geox.field.complexity_score",
+      "target_field": "well.human.cognitive_clarity_threshold",
+      "rule": "High geological complexity (structural complexity, fault compartmentalization, pressure windows) increases cognitive load. WELL cognitive_clarity threshold should be raised for complex fields.",
+      "default_assumption": "Structural complexity 1-2 → no threshold raise. 3-4 → raise clarity threshold by 0.1. 5+ → raise by 0.2.",
+      "confidence_ceiling": 0.60,
+      "if_wrong_cost": "Complex field presented without cognitive load flag → Arif commits to appraisal program without recognizing the complexity premium needed."
+    },
+    {
+      "source_field": "geox.field.location.offshore_distance_km",
+      "target_field": "well.human.operational_exhaustion_risk",
+      "rule": "Distance from shore maps to logistics burden and operational fatigue risk. Offshore > 200km → extended rotation, sleep disruption, operational fatigue accumulates.",
+      "default_assumption": " onshore = 0 additional fatigue. 50-200km = moderate offshore rotation fatigue. >200km = full offshore rotation.",
+      "confidence_ceiling": 0.70,
+      "if_wrong_cost": "Arif approves offshore work program without recognizing logistics fatigue factor → personnel risk elevated."
+    },
+    {
+      "source_field": "geox.field.eia.status",
+      "target_field": "well.human.decision_regret_risk",
+      "rule": "If EIA is PENDING or NOT STARTED, WEALTH→WELL handoff should flag that the field cannot be activated even if capital is approved. Prevents premature commitment.",
+      "default_assumption": "EIA APPROVED → no regret flag. EIA PENDING → flag regulatory dependency. EIA NOT STARTED → block progress.",
+      "confidence_ceiling": 0.85,
+      "if_wrong_cost": "Capital committed before EIA approval → project paused after expenditure → capital locked without output → regret risk HIGH."
+    }
+  ],
+  "note": "GEOX field risk signals do NOT diagnose human health. GEOX maps substrate conditions. WELL reflects human readiness. Arif decides."
+}

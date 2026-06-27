@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wealth://registry/tools",
+  "title": "WEALTH Tools Registry",
+  "description": "Canonical WEALTH tool registry. 24 active tools grouped by domain. Read-only.",
+  "type": "object",
+  "required": ["version", "tool_count", "tools"],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "tool_count": {
+      "type": "integer",
+      "const": 24
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "domain", "verb", "mutation"],
+        "properties": {
+          "name": {"type": "string"},
+          "domain": {
+            "type": "string",
+            "enum": ["wisdom", "power", "capital", "risk", "stock", "personal", "macro", "synthesis", "meta", "governance"]
+          },
+          "verb": {"type": "string"},
+          "mutation": {"type": "boolean"},
+          "irreversible": {"type": "boolean"},
+          "affordance": {
+            "type": "string",
+            "enum": ["read", "compute", "mutate"]
+          },
+          "risk_level": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"]
+          },
+          "requires_human_hold": {"type": "boolean"},
+          "requires_preload": {
+            "type": "array",
+            "items": {"type": "string", "format": "uri"}
+          },
+          "forbidden_uses": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    }
+  }
+}

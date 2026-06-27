@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wealth://sources/catalog",
+  "title": "WEALTH Source Catalog",
+  "description": "Official data sources for WEALTH capital intelligence. P1 = Malaysia/ASEAN primary. P2 = global comparators. P3 = US/EU-specific.",
+  "type": "object",
+  "required": ["version", "p1_malaysia_asean", "p2_global", "p3_us_eu", "access_rules"],
+  "properties": {
+    "version": {"type": "string"},
+    "p1_malaysia_asean": {
+      "type": "object",
+      "description": "Primary sources — Arif's operating reality",
+      "properties": {
+        "macro_monetary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["source", "coverage", "access_url", "api_type"],
+            "properties": {
+              "source": {"type": "string"},
+              "coverage": {"type": "string"},
+              "access_url": {"type": "string", "format": "uri"},
+              "api_type": {"type": "string"},
+              "refresh_interval_seconds": {"type": "integer"},
+              "key_metrics": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "energy": {
+          "type": "array",
+          "items": {"type": "object"}
+        },
+        "equity": {
+          "type": "array",
+          "items": {"type": "object"}
+        },
+        "regime_law": {
+          "type": "array",
+          "items": {"type": "object"}
+        },
+        "geospatial": {
+          "type": "array",
+          "items": {"type": "object"}
+        }
+      }
+    },
+    "p2_global": {
+      "type": "object",
+      "description": "Global official comparators — use when query touches international"
+    },
+    "p3_us_eu": {
+      "type": "object",
+      "description": "US/EU-specific — E&P counterparties, not primary"
+    },
+    "access_rules": {
+      "type": "object",
+      "properties": {
+        "require_preload": {
+          "type": "array",
+          "items": {"type": "string", "format": "uri"}
+        },
+        "freshness_ttl_seconds": {
+          "type": "integer",
+          "description": "300 for market data, 3600 for macro, 86400 for static"
+        }
+      }
+    }
+  }
+}

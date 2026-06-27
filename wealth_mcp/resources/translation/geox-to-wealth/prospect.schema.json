@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wealth://translation/geox-to-wealth/prospect",
+  "title": "Domain Translation Card: GEOX Prospect → WEALTH Capital",
+  "description": "Converts GEOX geological prospect evidence into WEALTH capital/valuation inputs. Typed transformation, auditable lineage.",
+  "type": "object",
+  "required": ["card_id", "from_domain", "to_domain", "translations", "note"],
+  "properties": {
+    "card_id": {
+      "type": "string",
+      "const": "dtc-geox-wealth-prospect-v1"
+    },
+    "from_domain": {
+      "type": "string",
+      "const": "geology"
+    },
+    "to_domain": {
+      "type": "string",
+      "const": "capital"
+    },
+    "version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "translations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source_field", "target_field", "rule", "confidence_ceiling"],
+        "properties": {
+          "source_field": {"type": "string"},
+          "target_field": {"type": "string"},
+          "rule": {
+            "type": "string",
+            "description": "How to transform the geological value into a capital value"
+          },
+          "default_assumption": {"type": "string"},
+          "confidence_ceiling": {"type": "number"},
+          "if_wrong_cost": {
+            "type": "string",
+            "description": "What it costs if this translation is wrong"
+          },
+          "requires_preload": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    "note": {
+      "type": "string",
+      "const": "A seismic confidence value does NOT automatically become a WEALTH risk-discount rate. This card governs the typed transformation. Without it, WEALTH reasons on prose."
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "version": "2026.06.27",
+  "origin": "WEALTH",
+  "destination": "arifOS",
+  "capsule_id": "caps-wealth-arifos-demo",
+  "trace_id": "trace-wealth-arifos-demo-001",
+  "artifact_kind": "allocation_memo",
+  "created_at": "2026-06-27T12:30:00Z",
+  "payload": {
+    "decision_requested": "Appraisal well authorization for North Sabah prospect",
+    "source_tools_called": [
+      "wealth_compute_evoi",
+      "wealth_compute_emv",
+      "wealth_monte_carlo_simulate",
+      "wealth_fiscal_breakeven"
+    ],
+    "summary": {
+      "evoi": {
+        "value_musd": 8.4,
+        "grade": "DER",
+        "note": "EVOI = value of perfect information vs drilling now"
+      },
+      "emv": {
+        "upside_musd": 42.1,
+        "downside_musd": -18.5,
+        "base_musd": 12.3,
+        "grade": "DER",
+        "note": "EMV based on 35% POS, USD 80/bbl base case"
+      },
+      "monte_carlo_pctl_5": -22.1,
+      "monte_carlo_pctl_95": 68.4,
+      "irreversible": true,
+      "irreversible_note": "Drilling contract is binding once committed"
+    },
+    "blast_radius": "MEDIUM",
+    "reversibility": "NONE",
+    "domain": "capital",
+    "arifos_handoff_required": true,
+    "fiscal_sensitivity": {
+      "royalty_rate": "38% floor in Sabah PSC",
+      "pttp_rate": "38%",
+      "breakeven_price_usd_bbl": 72,
+      "grade": "DER"
+    },
+    "malaysian_context": {
+      "psc_terms": "Sabah shallow water PSC",
+      "petronas_role": "PSC partner, technical operator",
+      "eia_timeline_months": 18,
+      "grade": "OBS"
+    },
+    "recommendation": "PROCEED with caution — EVOI positive, EMV favorable, fiscal sensitivity acceptable at USD 80/bbl. 888_HOLD required due to irreversible drilling commitment. Prepare arifOS judge envelope.",
+    "arifos_judge_envelope": {
+      "tool_name": "wealth_arifos_judge_handoff",
+      "intent": "Authorize appraisal well drilling commitment",
+      "capability": "WEALTH computes EVOI and EMV. WEALTH does not authorize capital movement.",
+      "blast_radius": "MEDIUM",
+      "reversibility_level": "NONE",
+      "epistemic_state": "DER",
+      "domain": "capital",
+      "evidence_uris": [
+        "wealth://replay/trace-wealth-arifos-demo-001",
+        "geox://prospect/north_sabah/POS_summary"
+      ]
+    }
+  },
+  "refs": ["caps-geox-wealth-prospect-demo"],
+  "manifest_hash": "sha256:placeholder-compute-at-emit-time",
+  "signatures": [],
+  "replay_receipt_ref": "wealth://replay/trace-wealth-arifos-demo-001"
+}
