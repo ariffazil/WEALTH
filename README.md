@@ -22,11 +22,12 @@
 > Capital intelligence is not handed out. It is built through sweat, scar tissue, and
 > a federated kernel that never lied about a single decimal point. This is not a
 > startup. This is not a SaaS. This is the capital organ of a constitutional AI
-> federation — it computes, it warns, it seals. It never allocates alone.
+> federation — it computes. It warns. It prepares evidence for sealing.
+> It never seals itself. It never allocates alone.
 
 [![CI](https://img.shields.io/badge/tests-153%2F153%20PASS-brightgreen)](tests/)
 [![Python](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](pyproject.toml)
-[![MCP Tools](https://img.shields.io/badge/MCP-24%20canonical%20tools-10b981?logo=anthropic)](wealth_mcp/server.py)
+[![MCP Tools](https://img.shields.io/badge/MCP-28%20canonical%20tools-10b981?logo=anthropic)](wealth_mcp/server.py)
 [![Federation](https://img.shields.io/badge/organ-CAPITAL-f59e0b)](FEDERATION_CONTRACT.md)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-ef4444?logo=gnu)](LICENSE)
 [![Port](https://img.shields.io/badge/port-18082-64748b)](RUNBOOK.md)
@@ -39,22 +40,23 @@
 ## Table of Contents
 
 1. [What Is WEALTH?](#1-what-is-wealth)
-2. [The Federation Position](#2-the-federation-position)
-3. [The 13 Thermodynamics Primitives + LAW](#3-the-13-thermodynamics-primitives--law)
-4. [Full Capability Map](#4-full-capability-map)
-5. [Boundary Declaration](#5-boundary-declaration)
-6. [Constitutional Binding](#6-constitutional-binding)
-7. [Quick Start](#7-quick-start)
-8. [Architecture](#8-architecture)
-9. [For Human Operators (Arif)](#9-for-human-operators-arif)
-10. [For AI Agents](#10-for-ai-agents)
-11. [For Institutions](#11-for-institutions)
-12. [Build, Test, Deploy](#12-build-test-deploy)
-13. [Known Limitations](#13-known-limitations)
-14. [Federation Cross-Reference](#14-federation-cross-reference)
-15. [GENESIS Chain](#15-genesis-chain)
-16. [License & Sovereignty](#16-license--sovereignty)
-17. [Change Log — 2026-06-24 SOT Sync](#17-change-log--2026-06-24-sot-sync)
+2. [Source of Truth Layers](#2-source-of-truth-layers)
+3. [The Federation Position](#3-the-federation-position)
+4. [The 13 Thermodynamics Primitives + LAW](#4-the-13-thermodynamics-primitives--law)
+5. [Full Capability Map](#5-full-capability-map)
+6. [Boundary Declaration](#6-boundary-declaration)
+7. [Constitutional Binding](#7-constitutional-binding)
+8. [Quick Start](#8-quick-start)
+9. [Architecture](#9-architecture)
+10. [For Human Operators (Arif)](#10-for-human-operators-arif)
+11. [For AI Agents](#11-for-ai-agents)
+12. [For Institutions](#12-for-institutions)
+13. [Build, Test, Deploy](#13-build-test-deploy)
+14. [Known Limitations](#14-known-limitations)
+15. [Federation Cross-Reference](#15-federation-cross-reference)
+16. [GENESIS Chain](#16-genesis-chain)
+17. [License & Sovereignty](#17-license--sovereignty)
+18. [Change Log — 2026-06-24 SOT Sync](#18-change-log--2026-06-24-sot-sync)
 
 ---
 
@@ -92,7 +94,34 @@
 
 ---
 
-## 2. The Federation Position
+## 2. Source of Truth Layers
+
+### Runtime SOT
+
+Call `wealth_system_registry_status(mode="registry")` to get currently callable public tools.
+Live registry command:
+
+```bash
+curl -s -X POST http://127.0.0.1:18082/mcp \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"wealth_system_registry_status","arguments":{"mode":"registry"}},"id":1}'
+```
+
+Expected invariant: `status = ALIVE`, `public_tools.length = 28` (live 2026-06-27).
+
+### Code SOT
+
+`wealth_mcp/server.py` — canonical MCP implementation.
+
+### Doctrine SOT
+
+`BOUNDARY.md`, `INVARIANTS.md`, `FEDERATION_CONTRACT.md`, `GENESIS/011_WEALTH_MANDATE.md`.
+
+**Conflict resolution:** Runtime registry wins for callable tools. Doctrine wins for authority. Code wins for implementation. File an 888_HOLD for reconciliation.
+
+---
+
+## 3. The Federation Position
 
 WEALTH sits in the middle of the arifOS constitutional chain. It receives intent,
 computes value, and passes verdicts upward to the kernel. It never executes.
@@ -173,7 +202,7 @@ Arif (F13 SOVEREIGN)
 
 ---
 
-## 3. The 13 Thermodynamics Primitives + LAW
+## 4. The 13 Thermodynamics Primitives + LAW
 
 Every capital question maps to one or more of these primitives. Twelve are
 thermodynamic invariants applied to finance; the thirteenth (Survival) is the
@@ -196,7 +225,7 @@ is jurisdictional capital geometry.
 | **Ω-11** | Boundary | Constitutional floors (maruah) | `wealth_power_audit` | Is this permissible? |
 | **Ω-12** | Hysteresis | Path dependence (ledger memory) | `wealth_omni_wisdom` (path_params) | Where were we before? |
 | **Ω-13** | **Survival** | Liquidity horizon, runway | `wealth_runway_check` | Can the system still be alive at horizon? |
-| **Ω-LAW** | **LAW** | Jurisdictional capital geometry — sealed canon, institutional shadow, living human gap | `wealth_law_*` (per `wealth-law-anthropology` skill) | What rules bind this capital, and who bleeds through them? |
+| **Ω-LAW** | **LAW** | Jurisdictional capital geometry — sealed canon, institutional shadow, living human gap | `afwealth://canon/002-human-law` (canon resource) | What rules bind this capital, and who bleeds through them? |
 
 **Start with `wealth_omni_wisdom(mode='synthesize')`** — it orchestrates across the
 primitives and returns a unified verdict. For counterfactual analysis use
@@ -204,12 +233,13 @@ primitives and returns a unified verdict. For counterfactual analysis use
 
 ---
 
-## 4. Full Capability Map
+## 5. Full Capability Map
 
-### 4.1 Public MCP Surface — 24 Canonical Tools
+### 5.1 Public MCP Surface — 28 Canonical Tools
 
 ```
-24 public tools · 6 resources · 2 prompts (live 2026-06-24)
+28 public tools · 6 resources · 2 prompts (live 2026-06-27)
+(4 alias tools for legacy compat: emv_compute, monte_carlo, evoi_compute)
 ```
 
 | # | Tool | Domain | Verb | What It Does |
@@ -223,30 +253,34 @@ primitives and returns a unified verdict. For counterfactual analysis use
 | 7 | `wealth_flow_check` | capital | check | Income / expense / monthly burn |
 | 8 | `wealth_runway_check` | capital | check | Runway in months at current burn |
 | 9 | `wealth_compute_emv` | risk | compute | Expected Monetary Value + variance |
-| 10 | `wealth_compute_evoi` | risk | compute | Expected Value of Information |
+| 10 | `wealth_emv_compute` | risk | compute | Alias of wealth_compute_emv (legacy compat) |
 | 11 | `wealth_monte_carlo_simulate` | risk | simulate | Monte Carlo value projection |
-| 12 | `wealth_confluence_check` | risk | check | Detect false confluence in indicators |
-| 13 | `wealth_asymmetry_check` | risk | check | Risk distribution skew detection |
-| 14 | `wealth_stock_analysis` | D4 | analyze | 16-mode stock safety gate |
-| 15 | `wealth_personal_finance` | D1 | finance | Cashflow, net worth, EPF, zakat, runway |
-| 16 | `wealth_market_data` | D3 | fetch | FX, commodities, macro indicators |
-| 17 | `wealth_omni_wisdom` | synthesis | synthesize | Multi-mode orchestrator (synthesize/deal/path_params/**counterfactual**) |
-| 18 | `wealth_agent_path` | meta | route | Sovereign intent routing |
-| 19 | `wealth_vault_write` | governance | write | Write transaction to VAULT999 |
-| 20 | `wealth_vault_query` | governance | query | Query VAULT999 ledger |
-| 21 | `wealth_system_registry_status` | meta | status | Live tool registry truth |
-| 22 | `wealth_collapse_signature_scan` | collapse | scan | Institutional collapse pattern match (Phase D imminent) |
-| 23 | `wealth_beautiful_mouse_scan` | collapse | scan | Calhoun Phase C early warning (Phase C entry) |
-| 24 | `wealth_arifos_judge_handoff` | governance | handoff | Hand WEALTH verdict to arifOS 888_JUDGE |
+| 12 | `wealth_monte_carlo` | risk | simulate | Alias of wealth_monte_carlo_simulate (legacy compat) |
+| 13 | `wealth_compute_evoi` | risk | compute | Expected Value of Information |
+| 14 | `wealth_evoi_compute` | risk | compute | Alias of wealth_compute_evoi (legacy compat) |
+| 15 | `wealth_confluence_check` | risk | check | Detect false confluence in indicators |
+| 16 | `wealth_asymmetry_check` | risk | check | Risk distribution skew detection |
+| 17 | `wealth_fiscal_breakeven` | capital | compute | Fiscal breakeven analysis (PSC) |
+| 18 | `wealth_stock_analysis` | D4 | analyze | Governed multi-mode stock safety gate |
+| 19 | `wealth_personal_finance` | D1 | finance | Cashflow, net worth, EPF, zakat, runway |
+| 20 | `wealth_market_data` | D3 | fetch | FX, commodities, macro indicators |
+| 21 | `wealth_omni_wisdom` | synthesis | synthesize | Multi-mode orchestrator (synthesize/deal/path_params/**counterfactual**) |
+| 22 | `wealth_agent_path` | meta | route | Sovereign intent routing |
+| 23 | `wealth_vault_write` | governance | write | Write transaction to VAULT999 |
+| 24 | `wealth_vault_query` | governance | query | Query VAULT999 ledger |
+| 25 | `wealth_system_registry_status` | meta | status | Live tool registry truth |
+| 26 | `wealth_collapse_signature_scan` | collapse | scan | Institutional collapse pattern match (Phase D imminent) |
+| 27 | `wealth_beautiful_mouse_scan` | collapse | scan | Calhoun Phase C early warning (Phase C entry) |
+| 28 | `wealth_arifos_judge_handoff` | governance | handoff | Hand WEALTH verdict to arifOS 888_JUDGE |
 
 ### 4.2 D4 Stock Analysis — Modes
 
-`wealth_stock_analysis(mode='...')` is the governed stock safety gate. It computes.
-It warns. It never recommends.
+`wealth_stock_analysis(mode='...')` is the governed multi-mode stock safety gate.
+It computes. It warns. It never recommends.
 
 | Mode | What It Checks | Verdict |
 |------|---------------|---------|
-| `verify_math` | Recalculate P/L from entry/exit — detect AI number hallucination | MATH_ERROR or SAFE_TO_STUDY |
+| `verify_math` | Recalculate P/L from entry/exit — detect AI hallucination | MATH_ERROR or SAFE_TO_STUDY |
 | `separate_pl` | Separate realized vs unrealized P/L | Advisory |
 | `position_size` | Risk-based position sizing (max 1% risk per trade) | Risk-bounded |
 | `r_multiple` | Risk-reward geometry (R = reward / risk) | Ratio check |
@@ -258,20 +292,19 @@ It warns. It never recommends.
 | `TAC-9` | TAC-9 technical: regime → structure → risk-reward | Structure analysis |
 | `contrast` | Anomalous contrast — market layer disagreement detection | Contrast alert |
 | `confluence` | False confluence — same-class indicator collapse | Confluence warning |
-| `pre_trade` | Full pre-trade safety gate (9 checks) | SAFE_TO_STUDY / UNSAFE |
 
 **Iron rule:** `recommendation_only: True`. `final_authority: "Arif"`. No buy/sell signal.
 No trading coach. No stock promotion. The math is the math. You decide what to do with it.
 
 ### 4.3 D3 Market Data
 
-`wealth_market_data` provides live economic indicators:
+`wealth_market_data` provides economic indicators via free public APIs (not Bloomberg/Reuters grade):
 
-| Mode | Source | Example |
-|------|--------|---------|
-| `fx` | Frankfurter API | USD/MYR = 4.68 (live) |
-| `commodity` | Approximate markets | Brent crude ~$72/bbl |
-| `macro` | World Bank API | Malaysia GDP, inflation, rates |
+| Mode | Source | Output |
+|------|--------|--------|
+| `fx` | Frankfurter API | Latest available FX rate |
+| `commodity` | Market adapter | Latest available commodity reference |
+| `macro` | World Bank API | GDP, inflation, rates, country indicators |
 
 ### 4.4 D1 Personal Finance
 
@@ -304,20 +337,21 @@ No trading coach. No stock promotion. The math is the math. You decide what to d
 | `wealth_capital_deal_brief` | Sequenced 13-primitive capital brief before any irreversible decision |
 | `wealth_d4_stock_pre_trade` | 12-mode pre-trade checklist before entering any position > 1% of portfolio |
 
-### 4.7 Ω-LAW — Human Law as Capital Geometry
+### 4.7 Ω-LAW — Human Law as Capital Geometry (CANON / RESOURCE)
 
-WEALTH now holds Malaysian human law through three layers:
+WEALTH holds Malaysian human law through three layers (canon artifacts, not callable tools):
 
-| Layer | Artifact | What it computes |
+| Layer | Artifact | What it provides |
 |-------|----------|------------------|
 | **Soul / Sealed Canon** | `canon/002_HUMAN_LAW.md` + law pack | Statute text, section numbers, jurisdiction |
 | **Shadow / Institutional Reality** | `domains/law/ONTOLOGY.yaml` § institutional_graph + hold_matrix | PTG, courts, forms, delays, costs, 888_HOLD triggers |
-| **Anthropology / Living Human Gap** | `canon/002a_LAW_SHADOW.md` + `AnthropologyRecord` | The Mak cik who does not know Form A; dignity risk |
+| **Anthropology / Living Human Gap** | `canon/002a_LAW_SHADOW.md` + `AnthropologyRecord` | The Mak cuk who does not know Form A; dignity risk |
 
 **Subdomains:** `domains/law/`, `domains/land-law/`, `domains/inheritance/`, `domains/regulatory/`, `domains/contracts/`.
 
 **Rule:** WEALTH computes the shadow. arifOS judges the soul. WELL witnesses the human gap.
 No binding legal verdicts. No self-sealing.
+Ω-LAW is exposed through canon resources (`afwealth://canon/002-human-law`), not a standalone `wealth_law_*` tool family.
 
 ### 4.8 Three Eurekas — Forged 2026-06-24
 
@@ -374,7 +408,7 @@ await wealth_arifos_judge_handoff(
 
 ---
 
-## 5. Boundary Declaration
+## 6. Boundary Declaration
 
 ### OWNS (Compute Territory)
 
@@ -425,7 +459,7 @@ await wealth_arifos_judge_handoff(
 
 ---
 
-## 6. Constitutional Binding
+## 7. Constitutional Binding
 
 WEALTH operates under the F1-F13 floors of the arifOS constitution. Every tool call,
 every computation, every output is governed.
@@ -446,7 +480,7 @@ WEALTH provides the evidence. The kernel makes the law.
 
 ---
 
-## 7. Quick Start
+## 8. Quick Start
 
 ### For Human Operators (Non-Coders)
 
@@ -550,7 +584,7 @@ curl -s -X POST http://127.0.0.1:18082/mcp \
 
 ---
 
-## 8. Architecture
+## 9. Architecture
 
 ### Directory Tree — Federated (live 2026-06-24)
 
@@ -558,7 +592,7 @@ curl -s -X POST http://127.0.0.1:18082/mcp \
 WEALTH/
 │
 ├── wealth_mcp/                         # CANONICAL MCP server (federated)
-│   ├── server.py                       # THE KERNEL — 1220 lines, 24 public tools
+│   ├── server.py                       # THE KERNEL — 1220+ lines, 28 public tools
 │   │                                  #   13 Ω-WEALTH primitives, 6 resources, 2 prompts
 │   ├── tools/                          # Tool sub-modules (future expansion)
 │   ├── prompts/                        # Prompt sub-modules (future expansion)
@@ -695,13 +729,13 @@ as back-compat for now.
 
 | Runtime | Path | Status | Use |
 |---------|------|--------|-----|
-| **Python (federated)** | `wealth_mcp/server.py` (1220 lines) | ✅ **CANONICAL** | All 24 MCP tools, 6 resources, 2 prompts |
+| **Python (federated)** | `wealth_mcp/server.py` (1220+ lines) | ✅ **CANONICAL** | All 28 MCP tools, 6 resources, 2 prompts |
 | **Python (monolith)** | `internal/monolith.py` (16K lines) | ⚠️ DEPRECATED | Back-compat only; 5 tools delegate here |
 | **Node.js** | `src/`, `host/kernel/` | ⚠️ Legacy | Numerical parity testing, `cli.js` operations |
 
 ---
 
-## 9. For Human Operators (Arif)
+## 10. For Human Operators (Arif)
 
 You don't need to code. You need to know three things:
 
@@ -764,11 +798,11 @@ Any one flag = `UNSAFE`. All nine green = `SAFE_TO_STUDY`.
 
 ---
 
-## 10. For AI Agents
+## 11. For AI Agents
 
 ### Connection
 
-WEALTH exposes **24 governed MCP tools + 6 resources + 2 prompts**. Connect via:
+WEALTH exposes **28 governed MCP tools + 6 resources + 2 prompts**. Connect via:
 
 ```
 MCP Endpoint:  https://wealth.arif-fazil.com/mcp
@@ -776,12 +810,12 @@ Transport:     streamable-http (public) or stdio (local)
 Port:          18082
 ```
 
-### Tool Categories (live 2026-06-24)
+### Tool Categories (live 2026-06-27)
 
 | Category | Tools | Use When |
 |----------|-------|----------|
-| **Routing** | `wealth_agent_path`, `wealth_system_registry_status` | "What tool should I use?" |
-| **Core Finance** | `wealth_compute_npv`, `wealth_compute_irr`, `wealth_compute_emv`, `wealth_compute_evoi`, `wealth_monte_carlo_simulate` | NPV, IRR, EMV, EVOI, risk |
+| **Routing** | `wealth_agent_path`, `wealth_system_registry_status` | "What tool do I use?" |
+| **Core Finance** | `wealth_compute_npv`, `wealth_compute_irr`, `wealth_compute_emv`, `wealth_emv_compute`, `wealth_compute_evoi`, `wealth_evoi_compute`, `wealth_monte_carlo_simulate`, `wealth_monte_carlo`, `wealth_fiscal_breakeven` | NPV, IRR, EMV, EVOI, Monte Carlo, fiscal breakeven |
 | **Conservation + Flow + Survival** | `wealth_conservation_check`, `wealth_flow_check`, `wealth_runway_check` | Net worth, cashflow, runway |
 | **Risk geometry** | `wealth_asymmetry_check`, `wealth_confluence_check` | Skew detection, false confluence |
 | **Macro** | `wealth_market_data` | FX rates, GDP, commodities |
@@ -805,6 +839,18 @@ Port:          18082
 8. **Collapse signature is diagnostic, not adversarial.** Always pair with `wealth_capture_scan` + `wealth_power_audit` first.
 9. **Beautiful Mouse = early warning.** Fire this BEFORE the collapse scanner when scanning new institutions.
 10. **Counterfactual = MOF watch meets V3 model.** Use this when "if X AND if Y" needs a joint answer.
+
+### Agent Invariants
+
+1. Call `wealth_system_registry_status(mode="registry")` before assuming tool availability.
+2. Treat WEALTH outputs as advisory evidence, not decisions.
+3. Never convert `SAFE_TO_STUDY` into `BUY`.
+4. Never convert `HYPOTHESIS` or `ESTIMATE` into `CLAIM`.
+5. Surface downside before upside.
+6. Route irreversible capital action through `wealth_arifos_judge_handoff`.
+7. Do not call deprecated monolith paths (`internal/monolith.py`) unless testing compatibility.
+8. If `TOOL_SURFACE.md` conflicts with registry, registry wins.
+9. If a legal, trade, or capital allocation decision is requested, return compute evidence plus 888_HOLD.
 
 ### The WEALTH Call Chain (Standard Pattern)
 
@@ -876,7 +922,7 @@ Port:          18082
 
 ---
 
-## 11. For Institutions
+## 12. For Institutions
 
 ### Governance-Compliant Capital Intelligence
 
@@ -928,7 +974,7 @@ WEALTH outputs are compatible with:
 
 ---
 
-## 12. Build, Test, Deploy
+## 13. Build, Test, Deploy
 
 ### Python (Canonical — Federated)
 
@@ -1011,7 +1057,7 @@ git tag vYYYY.MM.DD            # Date-stamp tag only (no semver)
 
 ---
 
-## 13. Known Limitations
+## 14. Known Limitations
 
 | Issue | Severity | Status | Notes |
 |-------|----------|--------|-------|
@@ -1020,7 +1066,7 @@ git tag vYYYY.MM.DD            # Date-stamp tag only (no semver)
 | **Node.js harness bug** | LOW | ⚠️ Known | 17 Node tests fail due to stdout pollution from Python `runPython` — filter `runPython` output. Python canonical suite is clean (153/153). |
 | **Dual runtime** | MEDIUM | ⚠️ Legacy | Python is canonical. Node.js is legacy. Should eventually be deprecated. |
 | **A-FORGE reimplements WEALTH** | MEDIUM | ⚠️ Drift | `A-FORGE/src/tools/WealthTools.ts` duplicates ROI/EMV/portfolio logic. Should delegate to WEALTH MCP instead. |
-| **TOOL_SURFACE.md stale** | LOW | ⚠️ Known | Still says 65 decorators / 17 public / 40 UNKNOWN. Federated surface is 24 canonical. Will be reconciled in next forge cycle. |
+| **TOOL_SURFACE.md stale** | LOW | ⚠️ Known | Still says 65 decorators / 17 public / 40 UNKNOWN. README now correctly reflects 28 live tools. `TOOL_SURFACE.md` itself is separate and still stale. |
 | **No real-time market feed** | MEDIUM | ℹ️ Design | D3 market data uses free APIs (Frankfurter, World Bank) — not Bloomberg/Reuters grade. Sufficient for modeling, not for HFT. |
 | **Collapse scanner calibration** | LOW | ⚠️ Filed | Initial smoke test returned risk 0.163 on a textbook pre-collapse scenario. Threshold review needed. Filed for next forge cycle. |
 | **arifos_seal block** | INFO | ℹ️ Architectural | `arif_seal` MCP blocks on `actor_verified: false` sessions. Use local epoch ledger (F1 AMANAH alternative) until session upgrade. |
@@ -1039,7 +1085,7 @@ git tag vYYYY.MM.DD            # Date-stamp tag only (no semver)
 
 ---
 
-## 14. Federation Cross-Reference
+## 15. Federation Cross-Reference
 
 WEALTH is one of seven organs in the arifOS Constitutional Federation.
 
@@ -1077,7 +1123,7 @@ WEALTH is one of seven organs in the arifOS Constitutional Federation.
 
 ---
 
-## 15. GENESIS Chain
+## 16. GENESIS Chain
 
 ```
 000_KERNEL_CANON.md         ← arifOS (Source of Truth)
@@ -1098,7 +1144,7 @@ are enforced at runtime regardless of canon formalization status.
 
 ---
 
-## 16. License & Sovereignty
+## 17. License & Sovereignty
 
 ### License
 
@@ -1142,7 +1188,7 @@ The human veto is not a formality. This is not SaaS. This is not a startup.
 
 ---
 
-## 17. Change Log — 2026-06-24 SOT Sync
+## 18. Change Log — 2026-06-24 SOT Sync
 
 ### Major rewrites (sections touched)
 
