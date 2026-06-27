@@ -72,13 +72,58 @@ def create_mcp_server() -> FastMCP:
         from mcp.types import TextContent
 
         _original_call_tool = mcp.call_tool
+        _original_read_resource = mcp.read_resource
         import datetime as _dt
         import uuid as _uuid
 
         _RECEIPT_PATH = "/root/VAULT999/wealth/receipts.jsonl"
+        _SCHEMA_VERSION = "2026.06.27"
+
+        # ── Session-scoped preload tracking ─────────────────────────────
+        # Maps session_id -> set of resource URIs that have been read.
+        # PLUS a global "_global" set: any preload seen in any session is
+        # available to all sessions. This avoids the failure mode where
+        # a resources/read call (which has no session_id) drops its preload
+        # into _default but a subsequent tools/call with _meta session_id
+        # checks a different (empty) set.
+        _session_preloads: dict[str, set[str]] = {"_global": set()}
+        _REQUIRED_PRELOADS = {
+            "wealth_compute_emv": ["wealth://reality/context"],
+            "wealth_compute_evoi": [
+                "wealth://reality/context",
+                "wealth://risk/thresholds",
+            ],
+            "wealth_monte_carlo_simulate": ["wealth://reality/context"],
+            "wealth_arifos_judge_handoff": [
+                "wealth://handoff/arifos-schema",
+                "wealth://risk/thresholds",
+                "wealth://affordance/contracts",
+            ],
+            "wealth_vault_write": [
+                "wealth://handoff/arifos-schema",
+                "wealth://replay/receipt-schema",
+            ],
+            "wealth_collapse_signature_scan": [
+                "wealth://risk/thresholds",
+                "wealth://federation/contract",
+            ],
+            "wealth_power_audit": ["wealth://federation/contract"],
+            "wealth_stock_analysis": ["wealth://market/sources"],
+            "wealth_market_data": ["wealth://market/sources"],
+        }
+
+        def _now_iso() -> str:
+            return _dt.datetime.now(_dt.timezone.utc).isoformat()
 
         def _emit_receipt(
-            tool_name: str, arguments: dict, status: str, verdict: str = ""
+            tool_name: str,
+            arguments: dict,
+            status: str,
+            verdict: str = "",
+            actor_id: str = None,
+            session_id: str = None,
+            evidence_quality: str = None,
+            missing_preload: list = None,
         ):
             """Emit a receipt for every consequential tool call.
 
@@ -86,23 +131,36 @@ def create_mcp_server() -> FastMCP:
             Schema: wealth://replay/receipt-schema
             """
             try:
+                if actor_id is None:
+                    actor_id = "wealth-mcp"
+                if evidence_quality is None:
+                    evidence_quality = (
+                        "SEALED"
+                        if tool_name == "wealth_vault_write" and status == "PASS"
+                        else "OBSERVED"
+                        if status == "PASS"
+                        else "MISSING"
+                    )
                 receipt = {
                     "receipt_id": str(_uuid.uuid4()),
-                    "timestamp_utc": _dt.datetime.now(_dt.timezone.utc).isoformat(),
-                    "actor_id": arguments.get("actor_id", "wealth-mcp"),
+                    "timestamp_utc": _now_iso(),
+                    "actor_id": actor_id,
                     "tool_name": tool_name,
                     "arguments": {
                         k: v
                         for k, v in (arguments or {}).items()
-                        if k not in ("actor_signature", "nonce")
+                        if k not in ("actor_signature", "nonce", "_meta")
                     },
                     "epistemic_state": "DERIVED",
-                    "evidence_quality": "OBSERVED" if status == "PASS" else "MISSING",
+                    "evidence_quality": evidence_quality,
                     "domain": _infer_domain(tool_name),
-                    "session_id": arguments.get("session_id"),
+                    "session_id": session_id,
                     "governance_status": verdict or status,
                     "transport": "mcp_call_tool",
+                    "schema_version": _SCHEMA_VERSION,
                 }
+                if missing_preload:
+                    receipt["non_compliant_preload"] = missing_preload
                 os.makedirs(os.path.dirname(_RECEIPT_PATH), exist_ok=True)
                 with open(_RECEIPT_PATH, "a", encoding="utf-8") as f:
                     f.write(json.dumps(receipt) + "\n")
@@ -148,9 +206,119 @@ def create_mcp_server() -> FastMCP:
                 return "capital"
             return "meta"
 
+        def _wrap_envelope(
+            tool_name: str,
+            arguments: dict,
+            result: ToolResult,
+            verdict: str,
+            actor_id: str,
+            session_id: str,
+            receipt_id: str,
+        ) -> ToolResult:
+            """Append envelope as a second TextContent block.
+
+            The original content[0] is preserved unchanged so any
+            outputSchema validation still passes. Envelope metadata
+            is appended as content[1] for downstream parsing.
+            """
+            try:
+                envelope_payload = {
+                    "envelope": {
+                        "receipt_id": receipt_id,
+                        "schema_version": _SCHEMA_VERSION,
+                        "epistemic_state": _domain_default_epistemic(
+                            _infer_domain(tool_name)
+                        ),
+                        "freshness_utc": _now_iso(),
+                        "actor_id": actor_id,
+                        "session_id": session_id,
+                        "governance_status": verdict or "PASS",
+                        "transport": "mcp_call_tool",
+                        "domain": _infer_domain(tool_name),
+                        "tool_name": tool_name,
+                    }
+                }
+                envelope_text = json.dumps(envelope_payload, indent=2)
+                envelope_content = TextContent(
+                    type="text",
+                    text=f"\n\n--- wealth://envelope ---\n{envelope_text}",
+                    annotations={"audience": ["assistant"], "priority": 0.9},
+                )
+                new_content = list(result.content) + [envelope_content]
+                return ToolResult(content=new_content, is_error=result.is_error)
+            except Exception as e:
+                print(f"[ENVELOPE] wrap failed for {tool_name}: {e}")
+                return result
+
+        def _domain_default_epistemic(domain: str) -> str:
+            return {
+                "capital": "DERIVED",
+                "risk": "DERIVED",
+                "market": "RETRIEVED",
+                "personal": "OBSERVED",
+                "stock": "RETRIEVED",
+                "wisdom": "INTERPRETED",
+                "governance": "DERIVED",
+                "meta": "OBSERVED",
+            }.get(domain, "DERIVED")
+
         async def _governance_call_tool(name, arguments=None, **kwargs):
             if arguments is None:
                 arguments = {}
+
+            # ── Pull _meta for actor_id / session_id binding ──────────
+            meta = arguments.get("_meta", {}) if isinstance(arguments, dict) else {}
+            actor_id = meta.get("actor_id") or kwargs.get("actor_id") or "wealth-mcp"
+            session_id = (
+                meta.get("session_id") or kwargs.get("session_id") or "_default"
+            )
+
+            # ── Preload enforcement ────────────────────────────────────
+            required = _REQUIRED_PRELOADS.get(name, [])
+            if required:
+                # Preload set = union of session-keyed set + global set.
+                # Resources without _meta session_id land in _global; tools
+                # with _meta session_id see both their own preloads AND
+                # all preloads loaded in any prior session.
+                read = _session_preloads.get(session_id, set()) | _session_preloads.get(
+                    "_global", set()
+                )
+                missing = [r for r in required if r not in read]
+                if missing:
+                    error_text = json.dumps(
+                        {
+                            "tool": name,
+                            "error_code": "PRELOAD_REQUIRED",
+                            "message": (
+                                f"wealth://runtime/policy requires these resources "
+                                f"to be read in session '{session_id}' before calling "
+                                f"{name}: {missing}"
+                            ),
+                            "guard": "WEALTH_PRELOAD",
+                            "missing_preload": missing,
+                            "policy_resource": "wealth://runtime/policy",
+                            "remedy": (
+                                "Read each missing resource via resources/read, "
+                                "then retry the tool call."
+                            ),
+                        },
+                        indent=2,
+                    )
+                    _emit_receipt(
+                        name,
+                        arguments,
+                        status="BLOCKED_NON_COMPLIANT",
+                        verdict="PRELOAD_MISSING",
+                        actor_id=actor_id,
+                        session_id=session_id,
+                        missing_preload=missing,
+                    )
+                    return ToolResult(
+                        content=[TextContent(type="text", text=error_text)],
+                        is_error=True,
+                    )
+
+            # ── arifOS governance check ────────────────────────────────
             verdict, error = _check_governance(name, arguments)
             if error is not None:
                 error_text = json.dumps(
@@ -163,16 +331,55 @@ def create_mcp_server() -> FastMCP:
                         "floor": "L1-L13",
                     }
                 )
-                _emit_receipt(name, arguments, status="BLOCKED", verdict=verdict)
+                _emit_receipt(
+                    name,
+                    arguments,
+                    status="BLOCKED",
+                    verdict=verdict,
+                    actor_id=actor_id,
+                    session_id=session_id,
+                )
                 return ToolResult(
                     content=[TextContent(type="text", text=error_text)],
                     is_error=True,
                 )
-            result = await _original_call_tool(name, arguments, **kwargs)
-            _emit_receipt(name, arguments, status="PASS", verdict=verdict)
+
+            # ── Execute + envelope + receipt ───────────────────────────
+            # Strip _meta before passing to original tool — Pydantic tool
+            # signatures reject unknown kwargs. _meta was already extracted
+            # above for actor/session binding.
+            clean_arguments = (
+                {k: v for k, v in arguments.items() if k != "_meta"}
+                if isinstance(arguments, dict)
+                else arguments
+            )
+            result = await _original_call_tool(name, clean_arguments, **kwargs)
+            _emit_receipt(
+                name,
+                arguments,
+                status="PASS",
+                verdict=verdict or "PASS",
+                actor_id=actor_id,
+                session_id=session_id,
+            )
             return result
 
         mcp.call_tool = _governance_call_tool
+
+        # ── Wrap read_resource to track preloads ──────────────────────
+        async def _tracking_read_resource(uri, **kwargs):
+            session_id = kwargs.get("session_id", "_default")
+            uri_str = str(uri)
+            # Always add to _global (cross-session visibility) AND to
+            # the caller's session key. _global ensures a tools/call with
+            # _meta session_id sees preloads loaded via resources/read
+            # which doesn't carry _meta.
+            _session_preloads.setdefault("_global", set()).add(uri_str)
+            _session_preloads.setdefault(session_id, set()).add(uri_str)
+            return await _original_read_resource(uri, **kwargs)
+
+        mcp.read_resource = _tracking_read_resource
+
     except Exception as e:
         print(f"[GOVERNANCE] WEALTH federated governance wrapper failed to load: {e}")
 
@@ -2046,7 +2253,7 @@ def _register_resources(mcp: FastMCP) -> None:
                     "wealth_arifos_judge_handoff(mode='submit')",
                 ],
                 "prompt_layer_count": 7,
-                "resource_layer_count": 14,
+                "resource_layer_count": 15,
                 "law": "Resources store the reality frame that prevents bad answers.",
             },
             indent=2,
@@ -2064,8 +2271,18 @@ def _register_resources(mcp: FastMCP) -> None:
     )
     def wealth_market_sources() -> str:
         """Market source map with freshness rules."""
+        import datetime as _dt
+
+        now = _dt.datetime.now(_dt.timezone.utc)
         return json.dumps(
             {
+                "as_of_utc": now.isoformat(),
+                "freshness_enforcement": {
+                    "fx_max_lag_minutes": 15,
+                    "commodity_max_lag_minutes": 60,
+                    "macro_max_lag_days": 30,
+                    "bursa_max_lag_minutes": 15,
+                },
                 "sources": {
                     "fx": {
                         "tool": "wealth_market_data",
