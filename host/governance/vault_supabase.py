@@ -157,6 +157,36 @@ async def _supabase_select(
         return []
 
 
+def _sync_supabase_select(
+    table: str,
+    params: Dict[str, Any],
+    limit: int = 10,
+) -> List[Dict[str, Any]]:
+    """Synchronous version of _supabase_select using httpx.Client."""
+    if not SUPABASE_ANON_KEY:
+        return []
+    try:
+        with httpx.Client(
+            base_url=SUPABASE_URL,
+            headers={
+                "apikey": SUPABASE_ANON_KEY,
+                "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+                "Content-Type": "application/json",
+            },
+            timeout=10.0,
+        ) as client:
+            query_params = "&".join(f"{k}={v}" for k, v in params.items())
+            response = client.get(
+                f"/rest/v1/{table}?{query_params}&limit={limit}",
+                headers={"Prefer": "count=none"},
+            )
+            if response.status_code == 200:
+                return response.json()
+            return []
+    except Exception:
+        return []
+
+
 def query_vault999(
     query: str,
     limit: int = 10,
@@ -165,14 +195,35 @@ def query_vault999(
     """
     Query the VAULT999 ledger via Supabase REST API.
     """
-    loop = __import__("asyncio").get_event_loop()
     filters = {"order": "epoch.desc", "limit": str(limit)}
     if session_id:
         filters["session_id"] = f"eq.{session_id}"
     if query:
         filters["action"] = f"ilike.%{query}%"
 
-    rows = loop.run_until_complete(_supabase_select("arifosmcp_transactions", filters, limit))
+    # P0 FIX (2026-06-28): Detect running event loop.
+    # When called from FastMCP async context, loop.run_until_complete()
+    # crashes with "this event loop is already running".
+    # Use sync httpx client instead — same REST endpoint, no loop nesting.
+    try:
+        import asyncio
+
+        loop = asyncio.get_running_loop()
+        if loop.is_running():
+            rows = _sync_supabase_select("arifosmcp_transactions", filters, limit)
+        else:
+            rows = loop.run_until_complete(
+                _supabase_select("arifosmcp_transactions", filters, limit)
+            )
+    except RuntimeError:
+        # No running loop — safe to use asyncio.run
+        rows = (
+            __import__("asyncio")
+            .get_event_loop()
+            .run_until_complete(
+                _supabase_select("arifosmcp_transactions", filters, limit)
+            )
+        )
 
     earth_refs = []
     for row in rows:
@@ -200,25 +251,59 @@ def query_portfolio_snapshots(
     limit: int = 1,
 ) -> List[Dict[str, Any]]:
     """Query the latest portfolio snapshots from Supabase."""
-    loop = __import__("asyncio").get_event_loop()
     filters = {"order": "epoch.desc", "limit": str(limit)}
     if asset_id:
         filters["asset_id"] = f"eq.{asset_id}"
 
-    rows = loop.run_until_complete(_supabase_select("arifosmcp_portfolio_snapshots", filters, limit))
+    # P0 FIX (2026-06-28): Same running-loop fix as query_vault999.
+    try:
+        import asyncio
+
+        loop = asyncio.get_running_loop()
+        if loop.is_running():
+            rows = _sync_supabase_select(
+                "arifosmcp_portfolio_snapshots", filters, limit
+            )
+        else:
+            rows = loop.run_until_complete(
+                _supabase_select("arifosmcp_portfolio_snapshots", filters, limit)
+            )
+    except RuntimeError:
+        rows = (
+            __import__("asyncio")
+            .get_event_loop()
+            .run_until_complete(
+                _supabase_select("arifosmcp_portfolio_snapshots", filters, limit)
+            )
+        )
     return rows
 
 
 def get_latest_geox_volumetrics(prospect_id: str) -> Optional[Dict[str, Any]]:
     """Query VAULT999 for the latest GEOX volumetric seal for a prospect."""
-    loop = __import__("asyncio").get_event_loop()
-    # Search for geox_volumetrics event in the global seals table
     filters = {
         "event_type": "eq.geox_volumetrics",
         "order": "sealed_at.desc",
-        "limit": "1"
+        "limit": "1",
     }
-    rows = loop.run_until_complete(_supabase_select("vault_sealed_events", filters, 1))
+
+    # P0 FIX (2026-06-28): Same running-loop fix.
+    try:
+        import asyncio
+
+        loop = asyncio.get_running_loop()
+        if loop.is_running():
+            rows = _sync_supabase_select("vault_sealed_events", filters, 1)
+        else:
+            rows = loop.run_until_complete(
+                _supabase_select("vault_sealed_events", filters, 1)
+            )
+    except RuntimeError:
+        rows = (
+            __import__("asyncio")
+            .get_event_loop()
+            .run_until_complete(_supabase_select("vault_sealed_events", filters, 1))
+        )
 
     for row in rows:
         payload = row.get("payload", {})
@@ -293,7 +378,14 @@ def record_transaction(
         else:
             result = asyncio.run(_supabase_insert("arifosmcp_transactions", record))
     except Exception as e:
-        _fallback_jsonl({**record, "source_tool": source_tool, "verdict": "VAULT999_ERROR", "error": str(e)})
+        _fallback_jsonl(
+            {
+                **record,
+                "source_tool": source_tool,
+                "verdict": "VAULT999_ERROR",
+                "error": str(e),
+            }
+        )
         return {"status": "ERROR", "integrity": integrity, "error": str(e)}
 
     if result and result.get("status") == "INSERTED":
@@ -325,7 +417,11 @@ def _sync_supabase_insert(table: str, record: Dict[str, Any]) -> Dict[str, Any]:
                 if isinstance(res_data, list) and len(res_data) > 0:
                     return {**res_data[0], "status": "INSERTED"}
                 return {"status": "INSERTED"}
-            return {"status": "ERROR", "code": response.status_code, "body": response.text}
+            return {
+                "status": "ERROR",
+                "code": response.status_code,
+                "body": response.text,
+            }
     except Exception as e:
         return {"status": "ERROR", "exception": str(e)}
 
@@ -385,7 +481,11 @@ def snapshot_portfolio(
         return {"status": "ERROR", "integrity": integrity, "error": str(e)}
 
     if res and res.get("status") == "INSERTED":
-        return {"integrity": integrity, "status": "INSERTED", "snapshot_id": res.get("id")}
+        return {
+            "integrity": integrity,
+            "status": "INSERTED",
+            "snapshot_id": res.get("id"),
+        }
 
     _fallback_jsonl({**record, "verdict": "VAULT999_FAIL"})
     return {"integrity": integrity, "status": (res or {}).get("status", "ERROR")}
@@ -460,14 +560,29 @@ def health_check() -> Dict[str, Any]:
     """Check vault Supabase connectivity and table readiness."""
     try:
         client = _get_client()
-        loop = __import__("asyncio").get_event_loop()
-        if loop.is_running():
+        # P0 FIX (2026-06-28): Same running-loop fix.
+        try:
             import asyncio
 
-            response = asyncio.run(
-                client.get("/rest/v1/arifosmcp_transactions?select=id&limit=1")
-            )
-        else:
+            loop = asyncio.get_running_loop()
+            if loop.is_running():
+                with httpx.Client(
+                    base_url=SUPABASE_URL,
+                    headers={
+                        "apikey": SUPABASE_ANON_KEY,
+                        "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+                    },
+                    timeout=10.0,
+                ) as sync_client:
+                    response = sync_client.get(
+                        "/rest/v1/arifosmcp_transactions?select=id&limit=1"
+                    )
+            else:
+                response = loop.run_until_complete(
+                    client.get("/rest/v1/arifosmcp_transactions?select=id&limit=1")
+                )
+        except RuntimeError:
+            loop = __import__("asyncio").get_event_loop()
             response = loop.run_until_complete(
                 client.get("/rest/v1/arifosmcp_transactions?select=id&limit=1")
             )
@@ -475,7 +590,9 @@ def health_check() -> Dict[str, Any]:
         if response.status_code == 200:
             return {
                 "status": "CONNECTED",
-                "supabase_url": SUPABASE_URL.split(".")[0] + ".***.co" if "." in SUPABASE_URL else "***",
+                "supabase_url": SUPABASE_URL.split(".")[0] + ".***.co"
+                if "." in SUPABASE_URL
+                else "***",
                 "pg_available": True,
                 "wealth_tables_exist": True,
             }
