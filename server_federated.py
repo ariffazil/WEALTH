@@ -48,6 +48,12 @@ if __name__ == "__main__":
             ],
         })
 
+    async def tools_endpoint(request):
+        tools_list = await mcp.list_tools()
+        return JSONResponse({
+            "tools": [{"name": t.name} for t in tools_list]
+        })
+
     # Get the MCP ASGI app
     mcp_app = mcp.http_app(
         transport="streamable-http",
@@ -60,6 +66,7 @@ if __name__ == "__main__":
     app = Starlette(
         routes=[
             Route("/health", health),
+            Route("/tools", tools_endpoint),
             Mount("/", app=mcp_app),
         ],
         lifespan=mcp_app.lifespan,

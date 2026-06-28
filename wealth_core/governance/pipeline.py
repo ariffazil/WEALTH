@@ -33,9 +33,6 @@ TOOL_STAGE_MAP = {
     # reason
     "wealth_compute_npv": "reason",
     "wealth_compute_irr": "reason",
-    "wealth_emv_compute": "reason",
-    "wealth_monte_carlo": "reason",
-    "wealth_evoi_compute": "reason",
     "wealth_asymmetry_check": "reason",
     "wealth_wisdom_evaluate": "reason",
     "wealth_power_audit": "reason",
@@ -77,7 +74,13 @@ def check_pipeline_order(
     """
     stage = get_tool_stage(tool_name)
     if stage is None:
-        return {"allowed": True, "warning": "", "block": "", "stage": "unknown", "history_stages": []}
+        return {
+            "allowed": True,
+            "warning": "",
+            "block": "",
+            "stage": "unknown",
+            "history_stages": [],
+        }
 
     # Map session history to stages
     history_stages = []
@@ -94,7 +97,7 @@ def check_pipeline_order(
                 "allowed": False,
                 "warning": "",
                 "block": f"HARD BLOCK: {tool_name} (stage={stage}) requires {required_stage} to have been called first. "
-                         f"History stages: {history_stages}",
+                f"History stages: {history_stages}",
                 "stage": stage,
                 "history_stages": history_stages,
             }
@@ -107,10 +110,16 @@ def check_pipeline_order(
             return {
                 "allowed": True,
                 "warning": f"SOFT WARN: {tool_name} (stage={stage}) called before {prev_stage}. "
-                           f"Results may be incomplete.",
+                f"Results may be incomplete.",
                 "block": "",
                 "stage": stage,
                 "history_stages": history_stages,
             }
 
-    return {"allowed": True, "warning": "", "block": "", "stage": stage, "history_stages": history_stages}
+    return {
+        "allowed": True,
+        "warning": "",
+        "block": "",
+        "stage": stage,
+        "history_stages": history_stages,
+    }

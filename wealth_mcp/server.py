@@ -630,9 +630,9 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             source_attribution=["user_provided_scenarios"],
         )
 
-    # ── HARDENING 2026-06-25: legacy alias (was wealth_emv_compute) ───────
-    # Registry expects this name; compat layer maps it but never registered it.
-    @mcp.tool(name="wealth_emv_compute")
+    # ── HARDENING 2026-06-28: removed from tools/list (legacy alias). ─────
+    # Hidden from MCP surface but kept as internal function for compat layer.
+    # Use wealth_compute_emv instead.
     async def wealth_emv_compute(
         outcomes: list[float],
         probabilities: list[float],
@@ -719,8 +719,9 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             source_attribution=["monte_carlo_simulation"],
         )
 
-    # ── HARDENING 2026-06-25: legacy alias ────────────────────────────────
-    @mcp.tool(name="wealth_monte_carlo")
+    # ── HARDENING 2026-06-28: removed from tools/list (legacy alias). ─────
+    # Hidden from MCP surface but kept for v1 compat.
+    # Use wealth_monte_carlo_simulate instead.
     async def wealth_monte_carlo(
         initial_value: float,
         growth_rate: float,
@@ -756,8 +757,9 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             source_attribution=["evoi_calculation"],
         )
 
-    # ── HARDENING 2026-06-25: legacy alias ────────────────────────────────
-    @mcp.tool(name="wealth_evoi_compute")
+    # ── HARDENING 2026-06-28: removed from tools/list (legacy alias). ─────
+    # Hidden from MCP surface but kept for v1 compat.
+    # Use wealth_compute_evoi instead.
     async def wealth_evoi_compute(
         prior_pos: float,
         posterior_pos: float,
