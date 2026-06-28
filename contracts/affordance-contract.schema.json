@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wealth://contracts/affordance-contract.schema.json",
+  "title": "AffordanceContract",
+  "type": "object",
+  "required": ["name", "kind", "mode", "input_schema_uri", "risk_level"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Canonical tool/prompt/resource name."
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["tool", "prompt", "resource"]
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["read", "compute", "mutate"],
+      "description": "read = no side effects. compute = CPU-bound only. mutate = state change."
+    },
+    "input_schema_uri": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI of the JSON Schema for this tool's input."
+    },
+    "output_schema_uri": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI of the JSON Schema for this tool's output."
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "requires_human_hold": {
+      "type": "boolean",
+      "default": false
+    },
+    "preconditions": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Resource URIs that must be loaded before this tool is called."
+    },
+    "forbidden_uses": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Explicitly forbidden use cases."
+    },
+    "rate_limit_hint": {
+      "type": "string",
+      "description": "Human-readable rate limit note."
+    }
+  }
+}
