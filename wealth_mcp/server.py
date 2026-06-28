@@ -969,8 +969,8 @@ def _register_legacy_surface_tools(mcp: FastMCP) -> None:
         """Unified capital intelligence — synthesis + deal + hysteresis.
         Modes:
           - synthesize: monolith synthesis (default)
-          - deal_frame: monolith deal framing
-          - path_params: hysteresis-aware path analysis
+          - deal / deal_frame: monolith deal framing
+          - hysteresis / path_params: hysteresis-aware path analysis
           - counterfactual: structured counterfactual across 13 primitives
                             (LOCAL, forged 2026-06-24)
 
@@ -1011,6 +1011,21 @@ def _register_legacy_surface_tools(mcp: FastMCP) -> None:
                     evidence_quality=EvidenceQuality.MISSING,
                     errors=[f"Counterfactual engine error: {e}"],
                 )
+        # P1 FIX (2026-06-28): Public schema advertised 'deal_frame' and 'path_params';
+        # monolith accepts 'deal' and 'hysteresis'. Alias them for compatibility.
+        mode_aliases = {"deal_frame": "deal", "path_params": "hysteresis"}
+        if mode in mode_aliases:
+            mode = mode_aliases[mode]
+
+        # P1 FIX (2026-06-28): Empty decision_context makes synthesizer emit
+        # conversion_integrity=ERROR. Provide a transparent default description.
+        if not decision_context:
+            decision_context = {"description": "(no decision context provided)"}
+        elif not decision_context.get("description"):
+            decision_context["description"] = decision_context.get(
+                "question", "(no decision context provided)"
+            )
+
         # Other modes delegate to monolith
         # P0 FIX (2026-06-28): institutional_trust is a Phase 3 extension that
         # monolith.wealth_omni_wisdom does not yet accept. Instead of crashing
