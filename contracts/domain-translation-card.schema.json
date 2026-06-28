@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wealth://contracts/domain-translation-card.schema.json",
+  "title": "DomainTranslationCard",
+  "type": "object",
+  "required": ["card_id", "from_domain", "to_domain", "translations"],
+  "properties": {
+    "card_id": {
+      "type": "string",
+      "description": "Unique card ID. Format: dtc-{source}-{target}-{seq}."
+    },
+    "from_domain": {
+      "type": "string",
+      "enum": ["geology", "infrastructure", "capital", "law", "energy", "climate", "social"],
+      "description": "Source domain."
+    },
+    "to_domain": {
+      "type": "string",
+      "enum": ["geology", "infrastructure", "capital", "law", "energy", "climate", "social"],
+      "description": "Target domain."
+    },
+    "translations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source_field", "target_field", "rule"],
+        "properties": {
+          "source_field": {"type": "string"},
+          "target_field": {"type": "string"},
+          "rule": {"type": "string"}
+        }
+      }
+    },
+    "note": {
+      "type": "string",
+      "description": "One-sentence rule: when does this translation apply and what does it cost if wrong?"
+    }
+  }
+}
