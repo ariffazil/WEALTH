@@ -301,6 +301,14 @@ def create_mcp_server() -> FastMCP:
                                 "Read each missing resource via resources/read, "
                                 "then retry the tool call."
                             ),
+                            # P1 FIX (2026-06-28): Exact callable resource URIs
+                            # so agents can self-repair without guessing.
+                            "exact_resource_uris": missing,
+                            "example_call": (
+                                f"resources/read {{ uri: '{missing[0]}' }}"
+                                if missing
+                                else None
+                            ),
                         },
                         indent=2,
                     )
@@ -1004,6 +1012,14 @@ def _register_legacy_surface_tools(mcp: FastMCP) -> None:
                     errors=[f"Counterfactual engine error: {e}"],
                 )
         # Other modes delegate to monolith
+        # P0 FIX (2026-06-28): institutional_trust is a Phase 3 extension that
+        # monolith.wealth_omni_wisdom does not yet accept. Instead of crashing
+        # with "unexpected keyword argument", inject it into decision_context
+        # so sub-engines can use it if present, without breaking the call.
+        if institutional_trust is not None:
+            _ctx = dict(decision_context or {})
+            _ctx["_institutional_trust"] = institutional_trust
+            decision_context = _ctx
         try:
             from internal.monolith import wealth_omni_wisdom as _omni_impl
 
@@ -1012,7 +1028,6 @@ def _register_legacy_surface_tools(mcp: FastMCP) -> None:
                 decision_context=decision_context,
                 deal_params=deal_params,
                 path_params=path_params,
-                institutional_trust=institutional_trust,
                 memory_query=memory_query,
             )
         except Exception as e:
@@ -1070,7 +1085,23 @@ def _register_meta_tools(mcp: FastMCP) -> None:
         notes: str = "",
     ) -> dict:
         """Write a transaction to the VAULT999 ledger.
-        Irreversible — requires human confirmation for SEAL."""
+
+        Authority: draft_receipt only unless arifOS judge approval.
+        Irreversible — requires human confirmation for SEAL.
+        WEALTH does NOT self-seal capital truth.
+
+        capital_primitive: conservation
+        """
+        # P1 FIX (2026-06-28): Vault write is advisory receipt only.
+        # arifOS must approve before SEAL. WEALTH never self-seals.
+        _vault_auth = {
+            "authority": "draft_receipt_only",
+            "arifos_approval_required": True,
+            "human_confirmation_required": True,
+            "seal_authority": "arifOS_888_JUDGE",
+            "capital_primitive": "conservation",
+            "rule": "WEALTH computes. arifOS judges. Arif decides.",
+        }
         try:
             from host.governance.vault_supabase import record_transaction
 
@@ -1090,11 +1121,11 @@ def _register_meta_tools(mcp: FastMCP) -> None:
             return wrap_result(
                 tool_name="wealth_vault_write",
                 domain="governance",
-                result=result,
+                result={"vault_authority": _vault_auth, **result},
                 epistemic_tag=EpistemicTag.OBSERVED,
-                evidence_quality=EvidenceQuality.STRONG,
+                evidence_quality=EvidenceQuality.MODERATE,  # P1: was STRONG, downgraded
                 source_attribution=["vault999_supabase"],
-                claim_state=ClaimState.SEALED,
+                claim_state=ClaimState.DRAFT,  # P1: was SEALED — WEALTH cannot self-seal
             )
         except Exception as e:
             return wrap_result(
@@ -1112,21 +1143,34 @@ def _register_meta_tools(mcp: FastMCP) -> None:
         limit: int = 10,
         asset_id: str = "",
     ) -> dict:
-        """Query the VAULT999 ledger for portfolio memory and transactions."""
+        """Query the VAULT999 ledger for portfolio memory and transactions.
+
+        Authority: read_only observe. WEALTH never mutates vault via query.
+        capital_primitive: conservation
+        """
         try:
             from host.governance.vault_supabase import (
                 query_vault999,
                 query_portfolio_snapshots,
             )
 
+            _query_auth = {
+                "authority": "read_only",
+                "capital_primitive": "conservation",
+                "rule": "WEALTH observes vault. arifOS judges. Arif decides.",
+            }
             if asset_id:
                 snapshots = query_portfolio_snapshots(asset_id=asset_id, limit=limit)
                 return wrap_result(
                     tool_name="wealth_vault_query",
                     domain="governance",
-                    result={"snapshots": snapshots, "count": len(snapshots)},
+                    result={
+                        "vault_authority": _query_auth,
+                        "snapshots": snapshots,
+                        "count": len(snapshots),
+                    },
                     epistemic_tag=EpistemicTag.OBSERVED,
-                    evidence_quality=EvidenceQuality.STRONG,
+                    evidence_quality=EvidenceQuality.MODERATE,
                     source_attribution=["vault999_supabase"],
                 )
             else:
@@ -1136,7 +1180,7 @@ def _register_meta_tools(mcp: FastMCP) -> None:
                     domain="governance",
                     result=records,
                     epistemic_tag=EpistemicTag.OBSERVED,
-                    evidence_quality=EvidenceQuality.STRONG,
+                    evidence_quality=EvidenceQuality.MODERATE,
                     source_attribution=["vault999_supabase"],
                 )
         except Exception as e:
@@ -1189,6 +1233,9 @@ def _register_meta_tools(mcp: FastMCP) -> None:
                 # Governance
                 "wealth_vault_write",
                 "wealth_vault_query",
+                # Boundary & Survival (P0 FIX 2026-06-28)
+                "wealth_boundary_governance",
+                "wealth_survival_engine",
                 # Meta
                 "wealth_system_registry_status",
                 # Collapse signature (forged 2026-06-24)
@@ -1198,6 +1245,154 @@ def _register_meta_tools(mcp: FastMCP) -> None:
                 "wealth_arifos_judge_handoff",
             ],
         }
+
+    # ── Ω-WEALTH-11: Boundary Governance (P0 FIX 2026-06-28) ─────────────────
+    # Restored from monolith.py. WEALTH without boundary governance is clever
+    # capitalism, not wisdom. This tool checks reversibility, blast_radius,
+    # maruah, legitimacy, capture, and stewardship risk.
+    # Authority: WEALTH computes. arifOS judges. Arif decides.
+    @mcp.tool(name="wealth_boundary_governance")
+    async def wealth_boundary_governance(
+        mode: str = "floors",
+        reversible: bool = True,
+        human_confirmed: bool = False,
+        epistemic: str = "ESTIMATE",
+        proposal: dict | None = None,
+        constraints: dict | None = None,
+        scale_mode: str = "enterprise",
+        population: float = 0,
+        energy_budget_twh: float = 0,
+        carbon_budget_gt: float = 0,
+        tech_readiness: float = 0.5,
+        alternatives: list[dict] | None = None,
+        values: dict | None = None,
+        maruah_score: float | None = None,
+        context: dict | None = None,
+        mode_params: dict | None = None,
+    ) -> dict:
+        """Ω-WEALTH-11: Boundary — constitutional floors, maruah, stewardship, constraint.
+
+        Checks F1-F13 compliance, reversibility, blast_radius, legitimacy risk,
+        capture risk, and stewardship risk for a capital proposal.
+
+        Modes:
+          floors             — F1-F13 floor compliance check
+          federation_readiness — organ federation health probe
+          legitimacy_audit    — institutional legitimacy scoring
+
+        Pass context={'foreign_entity': True, 'opaque_valuation': True, ...}
+        for smart maruah scoring.
+        Pass scale_mode='sovereign' for Malaysian national resource context.
+
+        Authority: WEALTH computes. arifOS judges. Arif decides.
+        WEALTH does NOT self-seal. WEALTH does NOT emit final constitutional approval.
+        """
+        try:
+            from internal.monolith import wealth_boundary_governance as _impl
+
+            result = _impl(
+                mode=mode,
+                reversible=reversible,
+                human_confirmed=human_confirmed,
+                epistemic=epistemic,
+                proposal=proposal,
+                constraints=constraints,
+                scale_mode=scale_mode,
+                population=population,
+                energy_budget_twh=energy_budget_twh,
+                carbon_budget_gt=carbon_budget_gt,
+                tech_readiness=tech_readiness,
+                alternatives=alternatives,
+                values=values,
+                maruah_score=maruah_score,
+                context=context,
+                mode_params=mode_params,
+            )
+            return wrap_result(
+                tool_name="wealth_boundary_governance",
+                domain="governance",
+                result=result,
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=[
+                    "WEALTH:internal/monolith",
+                    "WEALTH:tool/wealth_boundary_governance",
+                ],
+            )
+        except Exception as e:
+            return wrap_result(
+                tool_name="wealth_boundary_governance",
+                domain="governance",
+                result={"error": str(e), "mode": mode},
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=[f"Boundary governance error: {e}"],
+            )
+
+    # ── Ω-SURVIVAL-ENGINE: Survival Intelligence (P0 FIX 2026-06-28) ────────
+    # Restored from monolith.py. Civilization dies first through liquidity,
+    # energy, legitimacy, or trust starvation. This engine answers:
+    # How long can the organism survive? Where is burn rate leaking?
+    # Authority: WEALTH computes. arifOS judges. Arif decides.
+    @mcp.tool(name="wealth_survival_engine")
+    async def wealth_survival_engine(
+        mode: str = "personal_finance",
+        monthly_income: float | None = None,
+        monthly_expenses: float | None = None,
+        liquid_assets: float | None = None,
+        cashflows: list[dict] | None = None,
+        horizon_months: int = 12,
+        conservative_factor: float = 0.8,
+        legacy_compat: bool = False,
+    ) -> dict:
+        """Ω-SURVIVAL-ENGINE: Unified survival intelligence — cashflow, runway, burn, liquidity.
+
+        Physics analogy: metabolic engine — how the capital organism
+        maintains survival under cash flow stress.
+
+        Modes:
+          cashflow         — net monthly position from income/expenses
+          runway          — months of survival from liquid assets / burn rate
+          burn            — monthly burn rate (expenses - income)
+          liquidity       — liquidity health including cashflow + assets
+          personal_finance — comprehensive survival dashboard
+
+        Authority: WEALTH computes. arifOS judges. Arif decides.
+        WEALTH does NOT move capital. WEALTH does NOT self-seal.
+        """
+        try:
+            from internal.monolith import wealth_survival_engine as _impl
+
+            result = await _impl(
+                mode=mode,
+                monthly_income=monthly_income,
+                monthly_expenses=monthly_expenses,
+                liquid_assets=liquid_assets,
+                cashflows=cashflows,
+                horizon_months=horizon_months,
+                conservative_factor=conservative_factor,
+                legacy_compat=legacy_compat,
+            )
+            return wrap_result(
+                tool_name="wealth_survival_engine",
+                domain="survival",
+                result=result,
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=[
+                    "WEALTH:internal/monolith",
+                    "WEALTH:tool/wealth_survival_engine",
+                ],
+            )
+        except Exception as e:
+            return wrap_result(
+                tool_name="wealth_survival_engine",
+                domain="survival",
+                result={"error": str(e), "mode": mode},
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=[f"Survival engine error: {e}"],
+            )
 
     # ── Collapse Signature (forged 2026-06-24) ────────────────────────────
     # Forensic tool: pattern-matches a scenario text against the institutional
