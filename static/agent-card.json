@@ -1,0 +1,69 @@
+{
+  "schema_version": "0.2",
+  "organ_id": "wealth",
+  "name": "WEALTH Capital Intelligence",
+  "role": "capital",
+  "description": "Capital thermodynamics organ for the arifOS federation. Computes NPV, IRR, EMV, risk, conservation, flow, and institutional collapse signatures.",
+  "url": "https://wealth.arif-fazil.com",
+  "a2a_endpoint": "http://127.0.0.1:18082/a2a",
+  "agent_card_url": "http://127.0.0.1:18082/.well-known/agent-card.json",
+  "health_url": "http://127.0.0.1:18082/health",
+  "mcp_url": "http://127.0.0.1:18082/mcp",
+  "version": "2026.06.15",
+  "protocol_version": "1.0.0",
+  "provider": {
+    "organization": "arifOS Federation",
+    "url": "https://arif-fazil.com"
+  },
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "authentication": {
+    "schemes": ["Bearer"],
+    "required": true
+  },
+  "defaultInputModes": ["application/json"],
+  "defaultOutputModes": ["application/json"],
+  "skills": [
+    {
+      "id": "capital.evidence",
+      "name": "Capital Evidence",
+      "description": "Provide capital, risk, and thermodynamic evidence for constitutional judgment.",
+      "tags": ["finance", "risk", "capital"]
+    }
+  ],
+  "owned_mcp": [
+    "wealth_wisdom_evaluate",
+    "wealth_power_audit",
+    "wealth_capture_scan",
+    "wealth_compute_npv",
+    "wealth_compute_irr",
+    "wealth_conservation_check",
+    "wealth_flow_check",
+    "wealth_runway_check",
+    "wealth_compute_emv",
+    "wealth_compute_evoi",
+    "wealth_monte_carlo_simulate",
+    "wealth_confluence_check",
+    "wealth_asymmetry_check",
+    "wealth_stock_analysis",
+    "wealth_personal_finance",
+    "wealth_market_data",
+    "wealth_omni_wisdom",
+    "wealth_agent_path",
+    "wealth_vault_write",
+    "wealth_vault_query",
+    "wealth_collapse_signature_scan",
+    "wealth_beautiful_mouse_scan",
+    "wealth_arifos_judge_handoff"
+  ],
+  "judge_skills": [],
+  "governance": {
+    "constitutional_floors": ["F1", "F2", "F4", "F7", "F9", "F11", "F13"],
+    "authority_class": "specialist",
+    "self_approval_forbidden": true,
+    "requires_human_for": []
+  }
+}

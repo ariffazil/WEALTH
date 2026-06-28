@@ -58,8 +58,10 @@ if __name__ == "__main__":
     # FORGE 2026-06-28: /.well-known/agent.json for AAA A2A mesh discovery.
 
     _WEALTH_AGENT_CARD = {
-        "schema": "agent-manifest/v1",
+        "schema_version": "0.2",
+        "organ_id": "wealth",
         "name": "WEALTH — Capital Intelligence",
+        "role": "capital",
         "description": (
             "Capital intelligence for arifOS federation. Computes capital, "
             "risk, wisdom, and power metrics. Does NOT authorize execution. "
@@ -67,6 +69,8 @@ if __name__ == "__main__":
         ),
         "version": "2026.06.15",
         "url": "https://wealth.arif-fazil.com",
+        "a2a_endpoint": "http://127.0.0.1:18082/a2a",
+        "agent_card_url": "http://127.0.0.1:18082/.well-known/agent-card.json",
         "endpoints": {
             "mcp": "https://wealth.arif-fazil.com/mcp",
             "health": "https://wealth.arif-fazil.com/health",
@@ -81,28 +85,32 @@ if __name__ == "__main__":
             "peer_coordinator": "https://aaa.arif-fazil.com",
             "constitutional_kernel": "https://arifos.arif-fazil.com",
         },
-        "owned_mcp": {
-            "server": "wealth-mcp",
-            "transport": "streamable-http",
-            "tool_count": 25,
-            "canonical_tools": [
-                "wealth_wisdom_evaluate",
-                "wealth_power_audit",
-                "wealth_capture_scan",
-                "wealth_compute_npv",
-                "wealth_compute_irr",
-                "wealth_conservation_check",
-                "wealth_flow_check",
-                "wealth_runway_check",
-                "wealth_compute_emv",
-                "wealth_monte_carlo_simulate",
-                "wealth_compute_evoi",
-                "wealth_stock_analysis",
-                "wealth_omni_wisdom",
-                "wealth_collapse_signature_scan",
-                "wealth_beautiful_mouse_scan",
-            ],
-        },
+        "owned_mcp": [
+            "wealth_wisdom_evaluate",
+            "wealth_power_audit",
+            "wealth_capture_scan",
+            "wealth_compute_npv",
+            "wealth_compute_irr",
+            "wealth_conservation_check",
+            "wealth_flow_check",
+            "wealth_runway_check",
+            "wealth_compute_emv",
+            "wealth_compute_evoi",
+            "wealth_monte_carlo_simulate",
+            "wealth_confluence_check",
+            "wealth_asymmetry_check",
+            "wealth_stock_analysis",
+            "wealth_personal_finance",
+            "wealth_market_data",
+            "wealth_omni_wisdom",
+            "wealth_agent_path",
+            "wealth_vault_write",
+            "wealth_vault_query",
+            "wealth_collapse_signature_scan",
+            "wealth_beautiful_mouse_scan",
+            "wealth_arifos_judge_handoff",
+        ],
+        "judge_skills": [],
         "skills": [
             {
                 "id": "capital.thermodynamics",
