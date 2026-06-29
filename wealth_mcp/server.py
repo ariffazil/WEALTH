@@ -1165,8 +1165,8 @@ def _register_meta_tools(mcp: FastMCP) -> None:
         """
         try:
             from host.governance.vault_supabase import (
-                query_vault999,
-                query_portfolio_snapshots,
+                query_portfolio_snapshots_async,
+                query_vault999_async,
             )
 
             _query_auth = {
@@ -1175,7 +1175,9 @@ def _register_meta_tools(mcp: FastMCP) -> None:
                 "rule": "WEALTH observes vault. arifOS judges. Arif decides.",
             }
             if asset_id:
-                snapshots = query_portfolio_snapshots(asset_id=asset_id, limit=limit)
+                snapshots = await query_portfolio_snapshots_async(
+                    asset_id=asset_id, limit=limit
+                )
                 return wrap_result(
                     tool_name="wealth_vault_query",
                     domain="governance",
@@ -1189,7 +1191,7 @@ def _register_meta_tools(mcp: FastMCP) -> None:
                     source_attribution=["vault999_supabase"],
                 )
             else:
-                records = query_vault999(query=query, limit=limit)
+                records = await query_vault999_async(query=query, limit=limit)
                 return wrap_result(
                     tool_name="wealth_vault_query",
                     domain="governance",
