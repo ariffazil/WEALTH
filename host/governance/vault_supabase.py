@@ -9,6 +9,7 @@ Tables: public.arifosmcp_transactions, public.vault_sealed_events,
 DITEMPA BUKAN DIBERI — 999 SEAL ALIVE
 """
 
+import asyncio
 import hashlib
 import json
 import os
@@ -166,15 +167,7 @@ def _sync_supabase_select(
     if not SUPABASE_ANON_KEY:
         return []
     try:
-        with httpx.Client(
-            base_url=SUPABASE_URL,
-            headers={
-                "apikey": SUPABASE_ANON_KEY,
-                "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
-                "Content-Type": "application/json",
-            },
-            timeout=10.0,
-        ) as client:
+        with _make_sync_client() as client:
             query_params = "&".join(f"{k}={v}" for k, v in params.items())
             response = client.get(
                 f"/rest/v1/{table}?{query_params}&limit={limit}",
@@ -187,43 +180,61 @@ def _sync_supabase_select(
         return []
 
 
-def query_vault999(
+def _make_sync_client(prefer: str = "") -> httpx.Client:
+    """Create a sync httpx.Client for Supabase REST calls with timeout."""
+    headers = {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+        "Content-Type": "application/json",
+    }
+    if prefer:
+        headers["Prefer"] = prefer
+    return httpx.Client(
+        base_url=SUPABASE_URL,
+        headers=headers,
+        timeout=10.0,
+    )
+
+
+def _run_select_sync(
+    table: str,
+    params: Dict[str, Any],
+    limit: int = 10,
+) -> List[Dict[str, Any]]:
+    """Select rows from Supabase for synchronous callers only."""
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(_supabase_select(table, params, limit))
+
+    raise RuntimeError(
+        "Synchronous Supabase reads cannot run on an active event loop. "
+        "Use the async query helpers instead."
+    )
+
+
+async def _run_select_async(
+    table: str,
+    params: Dict[str, Any],
+    limit: int = 10,
+) -> List[Dict[str, Any]]:
+    """Select rows from Supabase without blocking the async MCP loop."""
+    return await _supabase_select(table, params, limit)
+
+
+async def query_vault999_async(
     query: str,
     limit: int = 10,
     session_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """
-    Query the VAULT999 ledger via Supabase REST API.
-    """
+    """Async VAULT999 query path for FastMCP tools."""
     filters = {"order": "epoch.desc", "limit": str(limit)}
     if session_id:
         filters["session_id"] = f"eq.{session_id}"
     if query:
         filters["action"] = f"ilike.%{query}%"
 
-    # P0 FIX (2026-06-28): Detect running event loop.
-    # When called from FastMCP async context, loop.run_until_complete()
-    # crashes with "this event loop is already running".
-    # Use sync httpx client instead — same REST endpoint, no loop nesting.
-    try:
-        import asyncio
-
-        loop = asyncio.get_running_loop()
-        if loop.is_running():
-            rows = _sync_supabase_select("arifosmcp_transactions", filters, limit)
-        else:
-            rows = loop.run_until_complete(
-                _supabase_select("arifosmcp_transactions", filters, limit)
-            )
-    except RuntimeError:
-        # No running loop — safe to use asyncio.run
-        rows = (
-            __import__("asyncio")
-            .get_event_loop()
-            .run_until_complete(
-                _supabase_select("arifosmcp_transactions", filters, limit)
-            )
-        )
+    rows = await _run_select_async("arifosmcp_transactions", filters, limit)
 
     earth_refs = []
     for row in rows:
@@ -246,6 +257,55 @@ def query_vault999(
     }
 
 
+def query_vault999(
+    query: str,
+    limit: int = 10,
+    session_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Query the VAULT999 ledger via Supabase REST API.
+    """
+    filters = {"order": "epoch.desc", "limit": str(limit)}
+    if session_id:
+        filters["session_id"] = f"eq.{session_id}"
+    if query:
+        filters["action"] = f"ilike.%{query}%"
+
+    rows = _run_select_sync("arifosmcp_transactions", filters, limit)
+
+    earth_refs = []
+    for row in rows:
+        earth_refs.append(
+            {
+                "tx_id": row.get("id"),
+                "tool": row.get("tool"),
+                "action": row.get("action"),
+                "epoch": row.get("epoch"),
+                "integrity": row.get("integrity", "")[:16],
+            }
+        )
+
+    return {
+        "query": query,
+        "records": rows,
+        "earth_refs": earth_refs,
+        "count": len(rows),
+        "vault_seal": "VAULT999",
+    }
+
+
+async def query_portfolio_snapshots_async(
+    asset_id: Optional[str] = None,
+    limit: int = 1,
+) -> List[Dict[str, Any]]:
+    """Async snapshot query path for FastMCP tools."""
+    filters = {"order": "epoch.desc", "limit": str(limit)}
+    if asset_id:
+        filters["asset_id"] = f"eq.{asset_id}"
+
+    return await _run_select_async("arifosmcp_portfolio_snapshots", filters, limit)
+
+
 def query_portfolio_snapshots(
     asset_id: Optional[str] = None,
     limit: int = 1,
@@ -255,28 +315,27 @@ def query_portfolio_snapshots(
     if asset_id:
         filters["asset_id"] = f"eq.{asset_id}"
 
-    # P0 FIX (2026-06-28): Same running-loop fix as query_vault999.
-    try:
-        import asyncio
-
-        loop = asyncio.get_running_loop()
-        if loop.is_running():
-            rows = _sync_supabase_select(
-                "arifosmcp_portfolio_snapshots", filters, limit
-            )
-        else:
-            rows = loop.run_until_complete(
-                _supabase_select("arifosmcp_portfolio_snapshots", filters, limit)
-            )
-    except RuntimeError:
-        rows = (
-            __import__("asyncio")
-            .get_event_loop()
-            .run_until_complete(
-                _supabase_select("arifosmcp_portfolio_snapshots", filters, limit)
-            )
-        )
+    rows = _run_select_sync("arifosmcp_portfolio_snapshots", filters, limit)
     return rows
+
+
+async def get_latest_geox_volumetrics_async(
+    prospect_id: str,
+) -> Optional[Dict[str, Any]]:
+    """Async latest GEOX volumetrics lookup for FastMCP tools."""
+    filters = {
+        "event_type": "eq.geox_volumetrics",
+        "order": "sealed_at.desc",
+        "limit": "1",
+    }
+
+    rows = await _run_select_async("vault_sealed_events", filters, 1)
+
+    for row in rows:
+        payload = row.get("payload", {})
+        if payload.get("prospect_id") == prospect_id or not prospect_id:
+            return payload
+    return None
 
 
 def get_latest_geox_volumetrics(prospect_id: str) -> Optional[Dict[str, Any]]:
@@ -287,23 +346,7 @@ def get_latest_geox_volumetrics(prospect_id: str) -> Optional[Dict[str, Any]]:
         "limit": "1",
     }
 
-    # P0 FIX (2026-06-28): Same running-loop fix.
-    try:
-        import asyncio
-
-        loop = asyncio.get_running_loop()
-        if loop.is_running():
-            rows = _sync_supabase_select("vault_sealed_events", filters, 1)
-        else:
-            rows = loop.run_until_complete(
-                _supabase_select("vault_sealed_events", filters, 1)
-            )
-    except RuntimeError:
-        rows = (
-            __import__("asyncio")
-            .get_event_loop()
-            .run_until_complete(_supabase_select("vault_sealed_events", filters, 1))
-        )
+    rows = _run_select_sync("vault_sealed_events", filters, 1)
 
     for row in rows:
         payload = row.get("payload", {})
@@ -559,31 +602,24 @@ def append_vault999(
 def health_check() -> Dict[str, Any]:
     """Check vault Supabase connectivity and table readiness."""
     try:
-        client = _get_client()
-        # P0 FIX (2026-06-28): Same running-loop fix.
+        # P0 FIX (2026-06-28): Use sync client when in running event loop.
         try:
             import asyncio
 
             loop = asyncio.get_running_loop()
             if loop.is_running():
-                with httpx.Client(
-                    base_url=SUPABASE_URL,
-                    headers={
-                        "apikey": SUPABASE_ANON_KEY,
-                        "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
-                    },
-                    timeout=10.0,
-                ) as sync_client:
+                with _make_sync_client() as sync_client:
                     response = sync_client.get(
                         "/rest/v1/arifosmcp_transactions?select=id&limit=1"
                     )
             else:
+                client = _get_client()
                 response = loop.run_until_complete(
                     client.get("/rest/v1/arifosmcp_transactions?select=id&limit=1")
                 )
         except RuntimeError:
-            loop = __import__("asyncio").get_event_loop()
-            response = loop.run_until_complete(
+            client = _get_client()
+            response = asyncio.run(
                 client.get("/rest/v1/arifosmcp_transactions?select=id&limit=1")
             )
 
