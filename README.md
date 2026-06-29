@@ -6,6 +6,15 @@
 
 It does not move money. It does not authorize capital. It does not self-seal.
 
+[![Python](https://img.shields.io/badge/python-3.12+-3776AB?logo=python&logoColor=white)](pyproject.toml)
+[![MCP Tools](https://img.shields.io/badge/MCP-28%20public%20tools-10b981)](internal/monolith.py)
+[![Organ](https://img.shields.io/badge/organ-CAPITAL-f59e0b)](FEDERATION_CONTRACT.md)
+[![License](https://img.shields.io/badge/license-AGPL--3.0-ef4444?logo=gnu)](LICENSE)
+[![Port](https://img.shields.io/badge/port-18082-64748b)](INVARIANTS.md)
+[![Authority](https://img.shields.io/badge/authority-COMPUTE__ONLY-f97316)](GENESIS/)
+[![Status](https://img.shields.io/badge/status-active-success)](CONTEXT.md)
+[![Live](https://img.shields.io/badge/live-wealth.arif--fazil.com-blueviolet)](https://wealth.arif-fazil.com)
+
 ---
 
 ## Current Runtime SOT
@@ -13,11 +22,13 @@ It does not move money. It does not authorize capital. It does not self-seal.
 WEALTH is the capital intelligence organ of arifOS.
 
 **Runtime:**
+- Version: **2026.06.15**
 - Public MCP tools: **28**
 - Prompts: **7 canonical loops**
 - Resources: **15** (7 SOT + 1 policy + 7 dynamic reality)
 - Transport: FastMCP (streamable-HTTP, Python 3.12)
 - Port: **18082** (`wealth-organ.service`)
+- License: **AGPL-3.0** — strong copyleft, network services must disclose source
 
 **Authority:**
 - WEALTH computes
@@ -25,11 +36,20 @@ WEALTH is the capital intelligence organ of arifOS.
 - WEALTH does not authorize capital
 - WEALTH does not self-seal
 
-**Flow:**
+**Federation Position (canonical organ map):**
 
 ```
-WEALTH  →  arifOS  →  Arif
-(computes) (judges)  (decides)
+Arif (F13 SOVEREIGN)
+    ↓
+AAA / Hermes / OpenClaw (A2A)
+    ↓
+arifOS KERNEL (F1-F13, :8088)
+    ↓
+WEALTH (CAPITAL, :18082)  ← computes, never allocates
+    ↓
+A-FORGE (:7071)  ← executes after SEAL
+    ↓
+VAULT999  ← immutable record
 ```
 
 > **If README and runtime disagree → runtime registry is source of truth.**

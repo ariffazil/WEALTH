@@ -1,17 +1,17 @@
 {
-  "project": "MakCikGPT",
-  "version": "0.2.0",
+  "project": "WEALTH",
+  "version": "2026.06.29",
   "spec_version": "2025-02-28",
   "category": "columns",
   "description": "Op-eds, analyses, and articles on governance, PETRONAS, and Malaysian socio-political issues",
-  "base_url": "https://makcikgpt.arif-fazil.com/columns",
+  "base_url": "https://wealth.arif-fazil.com/columns",
   "language": "ms",
   "author": {
     "name": "Arif Fazil",
     "url": "https://arif-fazil.com"
   },
   "license": "AGPL-3.0",
-  "attribution": "MakCikGPT by Arif Fazil",
+  "attribution": "WEALTH by Arif Fazil",
   "last_updated": "2025-02-28",
   "git_commit": "3e176c3",
   "checksum_algorithm": "sha256",
