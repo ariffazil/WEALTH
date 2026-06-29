@@ -1,8 +1,8 @@
 <!-- ⚠️ STALE 2026-06-26 — STALE DUPLICATE (federation-horizon clone, ~12 commits behind). DO NOT EDIT. See /root/WEALTH/AGENTS.md (canonical) and /root/AGENTS_LANDING.md. --><!-- SOT-MANIFEST
 owner: Arif
-last_verified: 2026-06-28
+last_verified: 2026-06-29
 valid_from: 2026-06-14
-valid_until: 2026-07-28
+valid_until: 2026-07-29
 confidence: high
 scope: /root/WEALTH
 -->
