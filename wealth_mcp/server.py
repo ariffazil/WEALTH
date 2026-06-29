@@ -28,6 +28,7 @@ from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality, ClaimState
 # Import core engines
 from wealth_core.wisdom import compute_wisdom
 from wealth_core.power import audit_power
+from wealth_core.epistemic import audit_epistemic
 from wealth_core.capital import (
     compute_conservation,
     compute_flow,
@@ -394,6 +395,7 @@ def create_mcp_server() -> FastMCP:
     # ── Register tools ────────────────────────────────────────────────────
     _register_wisdom_tools(mcp)
     _register_power_tools(mcp)
+    _register_epistemic_tools(mcp)
     _register_capital_tools(mcp)
     _register_risk_tools(mcp)
     _register_legacy_surface_tools(mcp)  # stock, personal, market, omni, agent_path
@@ -522,6 +524,43 @@ def _register_power_tools(mcp: FastMCP) -> None:
             evidence_quality=EvidenceQuality.WEAK,
             source_attribution=[f"model:{source_model}" if source_model else "unknown"],
             capture_risk_level=result.get("overall_capture_risk"),
+        )
+
+
+def _register_epistemic_tools(mcp: FastMCP) -> None:
+    """Register Epistemic Intelligence tools."""
+
+    @mcp.tool(name="wealth_epistemic_audit")
+    async def wealth_epistemic_audit(
+        scenario: str,
+        actors: list[str] | None = None,
+        context: dict | None = None,
+    ) -> dict:
+        """
+        Audit epistemic bias in institutional decision-making.
+
+        Detects 7 dimensions of epistemic failure:
+        - Model Ownership: Who proposed it defends it (identity risk)
+        - Signal Demotion: Evidence seen but ranked secondary
+        - Analog Anchoring: Success template overrides evidence
+        - Pipeline Inertia: Approval system makes pivot hard
+        - Governance Constraint: Challenge without breaking system
+        - Contradiction Density: Wells disagreeing with models
+        - Zweig Alignment: Incentive-truth mapping (3 rules)
+
+        People do not defend what is true.
+        People defend what their incentives make survivable.
+
+        WEALTH computes. arifOS judges. Arif decides.
+        """
+        result = audit_epistemic(scenario, actors, context)
+        return wrap_result(
+            tool_name="wealth_epistemic_audit",
+            domain="epistemic",
+            result=result,
+            epistemic_tag=EpistemicTag.INTERPRETED,
+            evidence_quality=EvidenceQuality.MODERATE,
+            source_attribution=["epistemic_engine_v1", "peka_case_study"],
         )
 
 

@@ -2852,6 +2852,8 @@ PUBLIC_SURFACE_WHITELIST = {
     # L2 — Mandatory Specialists
     "wealth_governance_verdict",
     "wealth_inequality_kernel",
+    # Epistemic Intelligence (forged 2026-06-29)
+    "wealth_epistemic_audit",
     # Phase 1 Survival Engine
     "wealth_survival_engine",
     # D1 — Personal Finance (absorbs epf, zakat)
@@ -3938,7 +3940,10 @@ def create_envelope(
     # WEALTH = Capital Intelligence organ. Maps financial signals to 10 APEX gates.
     try:
         from apex_envelope import apex_envelope as _build_apex
-        _confidence = 0.88 if status == "PASS" else (0.60 if status == "CAUTION" else 0.30)
+
+        _confidence = (
+            0.88 if status == "PASS" else (0.60 if status == "CAUTION" else 0.30)
+        )
         _boundary = "LIVE" if status == "PASS" else "CACHED"
         _coherent = status not in ("VOID",) and len(failure_flags) == 0
         envelope["apex"] = _build_apex(
@@ -3973,8 +3978,11 @@ def create_envelope(
     # WEALTH = Capital organ. Maps financial signals to 10 APEX gates.
     try:
         from internal.apex_envelope_wealth import wealth_apex_envelope
+
         # Derive confidence from envelope status — same scale as _build_apex above
-        _apex_confidence = 0.88 if status == "PASS" else (0.60 if status == "CAUTION" else 0.30)
+        _apex_confidence = (
+            0.88 if status == "PASS" else (0.60 if status == "CAUTION" else 0.30)
+        )
         envelope["apex"] = wealth_apex_envelope(
             tool_name=tool,
             g_score=g_data.get("g_score", 0.5),
@@ -7259,6 +7267,11 @@ CANONICAL_TOOL_METADATA = {
         "family": "MIND",
         "stage": "200-MIND",
         "display": "wealth_truth_validate",
+    },
+    "wealth_epistemic_audit": {
+        "family": "MIND",
+        "stage": "200-MIND",
+        "display": "wealth_epistemic_audit",
     },
     "wealth_survival_liquidity": {
         "family": "SURVIVAL",
@@ -11782,19 +11795,29 @@ def wealth_entropy_risk(
             _commit = initial_commitment or initial_investment
             _terminal = terminal_value or 0
             _disc = discount_rate or 0.1
+
             # Discount each period to present value
             def _pv(series):
-                return sum(
-                    x / ((1 + _disc) ** (i + 1))
-                    for i, x in enumerate(series)
-                )
+                return sum(x / ((1 + _disc) ** (i + 1)) for i, x in enumerate(series))
 
-            _base_outcome = _pv(_means) + (_terminal / ((1 + _disc) ** len(_means))) - _commit
-            _agg_vol = math.sqrt(sum(v * v for v in _vols)) / ((1 + _disc) ** (len(_means) / 2))
+            _base_outcome = (
+                _pv(_means) + (_terminal / ((1 + _disc) ** len(_means))) - _commit
+            )
+            _agg_vol = math.sqrt(sum(v * v for v in _vols)) / (
+                (1 + _disc) ** (len(_means) / 2)
+            )
             scenarios = [
-                {"name": "downside", "probability": 0.25, "outcome": _base_outcome - _agg_vol},
+                {
+                    "name": "downside",
+                    "probability": 0.25,
+                    "outcome": _base_outcome - _agg_vol,
+                },
                 {"name": "base", "probability": 0.50, "outcome": _base_outcome},
-                {"name": "upside", "probability": 0.25, "outcome": _base_outcome + _agg_vol},
+                {
+                    "name": "upside",
+                    "probability": 0.25,
+                    "outcome": _base_outcome + _agg_vol,
+                },
             ]
     _mp = mode_params or {}
     if mode == "asymmetry_map":
@@ -11974,6 +11997,7 @@ def wealth_energy_productivity(
     if mode == "load":
         try:
             from internal.vps_metrics import collect_power_metrics
+
             metrics = collect_power_metrics()
             power_w = metrics["power_draw_watts"]
             verdict = "BELOW_THRESHOLD"
@@ -12016,6 +12040,7 @@ def wealth_energy_productivity(
     if mode == "carbon":
         try:
             from internal.vps_metrics import collect_power_metrics, power_to_carbon
+
             metrics = collect_power_metrics()
             carbon = power_to_carbon(metrics["power_draw_watts"])
             return _inject_emergence(
@@ -12315,10 +12340,22 @@ def wealth_field_macro(
     if mode == "labor":
         entity = payload["entity_code"]
         labor_indicators = {
-            "unemployment_rate": ("SL.UEM.TOTL.ZS", "Unemployment, total (% of labor force)"),
-            "youth_unemployment": ("SL.UEM.1524.ZS", "Youth unemployment (% ages 15-24)"),
-            "labor_force_participation": ("SL.TLF.CACT.ZS", "Labor force participation rate"),
-            "vulnerable_employment": ("SL.EMP.VULN.ZS", "Vulnerable employment (% of total)"),
+            "unemployment_rate": (
+                "SL.UEM.TOTL.ZS",
+                "Unemployment, total (% of labor force)",
+            ),
+            "youth_unemployment": (
+                "SL.UEM.1524.ZS",
+                "Youth unemployment (% ages 15-24)",
+            ),
+            "labor_force_participation": (
+                "SL.TLF.CACT.ZS",
+                "Labor force participation rate",
+            ),
+            "vulnerable_employment": (
+                "SL.EMP.VULN.ZS",
+                "Vulnerable employment (% of total)",
+            ),
         }
         labor_data: Dict[str, Any] = {}
         errors: List[str] = []
@@ -12355,7 +12392,13 @@ def wealth_field_macro(
             vuln = labor_data.get("vulnerable_employment", {}).get("value", 0) or 0
             # AI exposure index: weighted composite of structural vulnerability signals
             # Higher = more displacement risk. 0-1 normalized.
-            ai_exposure_index = round(min(1.0, (unemp / 15.0) * 0.3 + (youth / 30.0) * 0.3 + (vuln / 50.0) * 0.4), 4)
+            ai_exposure_index = round(
+                min(
+                    1.0,
+                    (unemp / 15.0) * 0.3 + (youth / 30.0) * 0.3 + (vuln / 50.0) * 0.4,
+                ),
+                4,
+            )
             if ai_exposure_index < 0.3:
                 displacement_verdict = "STABLE"
             elif ai_exposure_index < 0.55:
@@ -14065,13 +14108,16 @@ async def wealth_omni_wisdom(
                     decision_context["_memory_query"] = memory_query
                     decision_context["_memory_results"] = _memory_results
                     import logging
+
                     _logger = logging.getLogger("wealth.omni_wisdom")
                     _logger.info(
                         f"Federation memory enrichment: {len(_memory_results)} results "
                         f"for query '{memory_query}'"
                     )
         except Exception as _mem_err:
-            _logger.warning(f"Federation memory enrichment failed (non-blocking): {_mem_err}")
+            _logger.warning(
+                f"Federation memory enrichment failed (non-blocking): {_mem_err}"
+            )
 
     # ── mode='synthesize' ────────────────────────────────────────────────
     if mode == "synthesize":
@@ -15456,7 +15502,9 @@ def _fetch_inequality_inputs_from_wb(
         params["ownership_concentration"] = composite_oc
         provenance["ownership_concentration"] = {
             "composite": True,
-            "signals": ["gini", "income_share_top20", "poverty_depth_inv"][:len(oc_signals)],
+            "signals": ["gini", "income_share_top20", "poverty_depth_inv"][
+                : len(oc_signals)
+            ],
             "weights": oc_weights,
             "note": "Composite from multiple WB signals. WID.world top10/top1 wealth share not yet wired (needs WID adapter).",
         }
@@ -16070,10 +16118,10 @@ class OriginValidationMiddleware:
 # HARDENING 2026-06-25: populate _KNOWN_MISSING — 5 ghost tools tracked as
 # intentionally absent (absorbed into wealth_omni_wisdom per Phase 2 decision).
 _KNOWN_MISSING: set[str] = {
-    "wealth_screen_opportunity",     # absorbed: deal_frame ranking/filtering
-    "wealth_compute_viability",      # absorbed: deal_frame NPV/IRR/payback
-    "wealth_score_risk",             # absorbed: deal_frame EMV/Monte Carlo/entropy
-    "wealth_compare_scenarios",      # absorbed: deal_frame(scenarios=[...])
+    "wealth_screen_opportunity",  # absorbed: deal_frame ranking/filtering
+    "wealth_compute_viability",  # absorbed: deal_frame NPV/IRR/payback
+    "wealth_score_risk",  # absorbed: deal_frame EMV/Monte Carlo/entropy
+    "wealth_compare_scenarios",  # absorbed: deal_frame(scenarios=[...])
     "wealth_emit_investment_memo",  # absorbed: deal_frame structured memo output
 }
 
@@ -16955,7 +17003,9 @@ if __name__ == "__main__":
             _manifest_path = "/root/WEALTH/canon/001_CAPITAL_MANIFEST.md"
             if os.path.exists(_manifest_path):
                 with open(_manifest_path, "rb") as f:
-                    capital_manifest_hash = f"sha256:{hashlib.sha256(f.read()).hexdigest()}"
+                    capital_manifest_hash = (
+                        f"sha256:{hashlib.sha256(f.read()).hexdigest()}"
+                    )
         except Exception:
             pass
 
@@ -17102,7 +17152,9 @@ if __name__ == "__main__":
 
     _patch_tool_annotations(mcp)
     _patch_output_schemas(mcp)
-    mcp_app = mcp.http_app(path="/", transport="streamable-http", stateless_http=True, json_response=True)
+    mcp_app = mcp.http_app(
+        path="/", transport="streamable-http", stateless_http=True, json_response=True
+    )
 
     app = Starlette(
         routes=[
@@ -17125,8 +17177,7 @@ if __name__ == "__main__":
     # _KNOWN_MISSING is empty; any unexpected missing tool is a real regression
     # at module-import time before FastMCP decorators finished registering.
     # Deferred to lifespan startup so all @mcp.tool decorators complete first.
-    _KNOWN_MISSING = {
-    }
+    _KNOWN_MISSING = {}
 
     async def _assert_registry() -> None:
         registered = {t.name for t in await mcp.list_tools()}
