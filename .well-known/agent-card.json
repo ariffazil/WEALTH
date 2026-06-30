@@ -1,9 +1,9 @@
 {
   "name": "WEALTH Capital Intelligence",
-  "description": "Capital intelligence engine for the arifOS federation. Provides 20 governed MCP tools for NPV, EMV, valuation, risk scoring, and portfolio optimization under constitutional floors F1-F13.",
+  "description": "Capital intelligence engine for the arifOS federation. Provides 25 canonical + 5 ZEN alias MCP tools for NPV, EMV, valuation, risk scoring, portfolio optimization, collapse signatures, and wisdom evaluation under constitutional floors F1-F13.",
   "url": "https://wealth.arif-fazil.com",
   "provider": { "organization": "arifOS", "system": "WEALTH" },
-  "version": "2026.06.14",
+  "version": "2026.06.30",
   "protocol_version": "1.0.0",
   "capabilities": { "streaming": false, "push_notifications": false, "authenticated_extended_card": false },
   "authentication": { "schemes": ["bearer"] },
