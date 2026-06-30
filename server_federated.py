@@ -108,7 +108,7 @@ if __name__ == "__main__":
             "wealth_vault_query",
             "wealth_collapse_signature_scan",
             "wealth_beautiful_mouse_scan",
-            "wealth_arifos_judge_handoff",
+            "wealth_judge_handoff",
         ],
         "judge_skills": [],
         "skills": [
@@ -159,6 +159,7 @@ if __name__ == "__main__":
             },
             headers={"Access-Control-Allow-Origin": "*"},
         )
+
     async def _wealth_oauth_authorization_server(request):
         return JSONResponse(
             {
