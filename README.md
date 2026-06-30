@@ -57,6 +57,16 @@ VAULT999  ← immutable record
 
 ---
 
+## APEX STACK Bridge
+
+> APEX THEORY defines the constitutional dynamics of governed intelligence through ΔΩΨ. arifOS compiles those dynamics into an AGI substrate kernel. AAA renders the substrate as visible ASI civilization state. A-FORGE gives the system governed hands. GEOX, WEALTH, and WELL anchor those hands to earth, capital, and human reality. VAULT999 preserves consequence. Arif/F13 remains the sovereign witness and final veto.
+
+**WEALTH must never:** move capital, issue final investment decisions, or make allocation calls without arifOS SEAL.
+
+Full doctrine: [GENESIS/040_APEX_STACK.md](https://github.com/ariffazil/arifos/blob/main/GENESIS/040_APEX_STACK.md)
+
+---
+
 ## What WEALTH Is
 
 WEALTH is the **capital intelligence organ** of the arifOS federation. It models cashflow, valuation, risk, market reality, institutional power, and capital wisdom as **computable primitives** — never as opinions.
