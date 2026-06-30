@@ -385,9 +385,47 @@ def create_mcp_server() -> FastMCP:
             # which doesn't carry _meta.
             _session_preloads.setdefault("_global", set()).add(uri_str)
             _session_preloads.setdefault(session_id, set()).add(uri_str)
-            return await _original_read_resource(uri, **kwargs)
-
         mcp.read_resource = _tracking_read_resource
+
+        # ── Wealth Surface Filtering Middleware ───────────────────────
+        from fastmcp.server.middleware import Middleware
+        class WealthSurfaceFilterMiddleware(Middleware):
+            async def on_list_tools(self, context, call_next):
+                result = await call_next(context)
+                if result is None:
+                    return result
+                public_names = {
+                    "wealth_wisdom_evaluate",
+                    "wealth_power_audit",
+                    "wealth_capture_scan",
+                    "wealth_compute_npv",
+                    "wealth_compute_irr",
+                    "wealth_compute_emv",
+                    "wealth_compute_evoi",
+                    "wealth_conservation_check",
+                    "wealth_flow_check",
+                    "wealth_runway_check",
+                    "wealth_monte_carlo_simulate",
+                    "wealth_confluence_check",
+                    "wealth_asymmetry_check",
+                    "wealth_stock_analysis",
+                    "wealth_personal_finance",
+                    "wealth_market_data",
+                    "wealth_omni_wisdom",
+                    "wealth_agent_path",
+                    "wealth_vault_write",
+                    "wealth_vault_query",
+                    "wealth_boundary_governance",
+                    "wealth_survival_engine",
+                    "wealth_registry_status",
+                    "wealth_collapse_signature_scan",
+                    "wealth_beautiful_mouse_scan",
+                    "wealth_arifos_judge_handoff",
+                    "wealth_fiscal_breakeven",
+                }
+                return [t for t in result if getattr(t, "name", None) in public_names]
+
+        mcp.add_middleware(WealthSurfaceFilterMiddleware())
 
     except Exception as e:
         print(f"[GOVERNANCE] WEALTH federated governance wrapper failed to load: {e}")
@@ -1249,8 +1287,8 @@ def _register_meta_tools(mcp: FastMCP) -> None:
                 errors=[f"Vault query error: {e}"],
             )
 
-    @mcp.tool(name="wealth_system_registry_status")
-    async def wealth_system_registry_status(mode: str = "registry") -> dict:
+    @mcp.tool(name="wealth_registry_status")
+    async def wealth_registry_status(mode: str = "registry") -> dict:
         """Registry truth diagnostic — intended vs registered vs callable."""
         if mode == "health":
             return {
@@ -1293,7 +1331,7 @@ def _register_meta_tools(mcp: FastMCP) -> None:
                 "wealth_boundary_governance",
                 "wealth_survival_engine",
                 # Meta
-                "wealth_system_registry_status",
+                "wealth_registry_status",
                 # Collapse signature (forged 2026-06-24)
                 "wealth_collapse_signature_scan",
                 "wealth_beautiful_mouse_scan",
@@ -1301,6 +1339,11 @@ def _register_meta_tools(mcp: FastMCP) -> None:
                 "wealth_arifos_judge_handoff",
             ],
         }
+
+    @mcp.tool(name="wealth_system_registry_status")
+    async def wealth_system_registry_status(mode: str = "registry") -> dict:
+        """[LEGACY ALIAS] Registry truth diagnostic. Use wealth_registry_status."""
+        return await wealth_registry_status(mode)
 
     # ── Ω-WEALTH-11: Boundary Governance (P0 FIX 2026-06-28) ─────────────────
     # Restored from monolith.py. WEALTH without boundary governance is clever
@@ -1824,7 +1867,7 @@ def _register_resources(mcp: FastMCP) -> None:
                     "wealth_agent_path",
                     "wealth_vault_write",
                     "wealth_vault_query",
-                    "wealth_system_registry_status",
+                    "wealth_registry_status",
                     "wealth_collapse_signature_scan",
                     "wealth_beautiful_mouse_scan",
                     "wealth_arifos_judge_handoff",
@@ -1971,7 +2014,7 @@ def _register_resources(mcp: FastMCP) -> None:
                         "mutation": False,
                     },
                     {
-                        "name": "wealth_system_registry_status",
+                        "name": "wealth_registry_status",
                         "domain": "meta",
                         "verb": "status",
                         "mutation": False,
@@ -2233,7 +2276,7 @@ def _register_resources(mcp: FastMCP) -> None:
                             "wealth_omni_wisdom",
                             "wealth_wisdom_evaluate",
                             "wealth_agent_path",
-                            "wealth_system_registry_status",
+                            "wealth_registry_status",
                         ],
                         "prompts": [
                             "wealth_capital_diagnosis_loop",
@@ -2794,7 +2837,7 @@ def _register_resources(mcp: FastMCP) -> None:
                         "requires_888_hold": False,
                         "side_effects": "none",
                     },
-                    "wealth_system_registry_status": {
+                    "wealth_registry_status": {
                         "action_class": "META",
                         "mutation": False,
                         "irreversible": False,
