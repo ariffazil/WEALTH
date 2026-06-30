@@ -34,6 +34,13 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=8082
 EXPOSE 8082
 
+LABEL org.opencontainers.image.source="https://github.com/ariffazil/WEALTH" \
+      org.opencontainers.image.description="Capital intelligence — 28-tool federation surface" \
+      org.opencontainers.image.version="2026.06.30" \
+      org.opencontainers.image.licenses="BSL-1.1" \
+      arifos.organ="WEALTH" \
+      arifos.authority="COMPUTE_ONLY"
+
 # Default command: Run the FastMCP server
 # Use --transport sse if deploying to cloud, or keep default for stdio
 # Canonical implementation is internal/monolith.py (AGENTS.md Tier A).

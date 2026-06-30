@@ -95,7 +95,7 @@ def create_mcp_server() -> FastMCP:
                 "wealth://risk/thresholds",
             ],
             "wealth_monte_carlo_simulate": ["wealth://reality/context"],
-            "wealth_arifos_judge_handoff": [
+            "wealth_judge_handoff": [
                 "wealth://handoff/arifos-schema",
                 "wealth://risk/thresholds",
                 "wealth://affordance/contracts",
@@ -385,10 +385,12 @@ def create_mcp_server() -> FastMCP:
             # which doesn't carry _meta.
             _session_preloads.setdefault("_global", set()).add(uri_str)
             _session_preloads.setdefault(session_id, set()).add(uri_str)
+
         mcp.read_resource = _tracking_read_resource
 
         # ── Wealth Surface Filtering Middleware ───────────────────────
         from fastmcp.server.middleware import Middleware
+
         class WealthSurfaceFilterMiddleware(Middleware):
             async def on_list_tools(self, context, call_next):
                 result = await call_next(context)
@@ -420,8 +422,14 @@ def create_mcp_server() -> FastMCP:
                     "wealth_registry_status",
                     "wealth_collapse_signature_scan",
                     "wealth_beautiful_mouse_scan",
-                    "wealth_arifos_judge_handoff",
+                    "wealth_judge_handoff",
                     "wealth_fiscal_breakeven",
+                    # ── ZEN aliases (FORGE 2026-06-30) ─────────────────────
+                    "wealth_system_registry_status",
+                    "wealth_emv_compute",
+                    "wealth_monte_carlo",
+                    "wealth_evoi_compute",
+                    "wealth_reason_agent",
                 }
                 return [t for t in result if getattr(t, "name", None) in public_names]
 
@@ -715,9 +723,9 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             source_attribution=["user_provided_scenarios"],
         )
 
-    # ── HARDENING 2026-06-28: removed from tools/list (legacy alias). ─────
-    # Hidden from MCP surface but kept as internal function for compat layer.
-    # Use wealth_compute_emv instead.
+    # ── FORGE 2026-06-30: promoted from hidden function to @mcp.tool (ZEN alias). ──
+    # ZEN Strike 2: agent-visible alias for migration compat.
+    @mcp.tool(name="wealth_emv_compute")
     async def wealth_emv_compute(
         outcomes: list[float],
         probabilities: list[float],
@@ -804,9 +812,9 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             source_attribution=["monte_carlo_simulation"],
         )
 
-    # ── HARDENING 2026-06-28: removed from tools/list (legacy alias). ─────
-    # Hidden from MCP surface but kept for v1 compat.
-    # Use wealth_monte_carlo_simulate instead.
+    # ── FORGE 2026-06-30: promoted from hidden function to @mcp.tool (ZEN alias). ──
+    # ZEN Strike 2: agent-visible alias for migration compat.
+    @mcp.tool(name="wealth_monte_carlo")
     async def wealth_monte_carlo(
         initial_value: float,
         growth_rate: float,
@@ -842,9 +850,9 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             source_attribution=["evoi_calculation"],
         )
 
-    # ── HARDENING 2026-06-28: removed from tools/list (legacy alias). ─────
-    # Hidden from MCP surface but kept for v1 compat.
-    # Use wealth_compute_evoi instead.
+    # ── FORGE 2026-06-30: promoted from hidden function to @mcp.tool (ZEN alias). ──
+    # ZEN Strike 2: agent-visible alias for migration compat.
+    @mcp.tool(name="wealth_evoi_compute")
     async def wealth_evoi_compute(
         prior_pos: float,
         posterior_pos: float,
@@ -1158,6 +1166,20 @@ def _register_legacy_surface_tools(mcp: FastMCP) -> None:
                 errors=[f"Agent path engine error: {e}"],
             )
 
+    # ── FORGE 2026-06-30: ZEN alias — routes to wealth_agent_path ──────────
+    @mcp.tool(name="wealth_reason_agent")
+    async def wealth_reason_agent(
+        task_description: str = "",
+        scale_mode: str = "agentic",
+        context: dict | None = None,
+    ) -> dict:
+        """[LEGACY ALIAS] Sovereign Intent Router. Use wealth_agent_path."""
+        return await wealth_agent_path(
+            task_description=task_description,
+            scale_mode=scale_mode,
+            context=context,
+        )
+
 
 def _register_meta_tools(mcp: FastMCP) -> None:
     """Register meta/diagnostic tools."""
@@ -1336,7 +1358,7 @@ def _register_meta_tools(mcp: FastMCP) -> None:
                 "wealth_collapse_signature_scan",
                 "wealth_beautiful_mouse_scan",
                 # Federation bridge (forged 2026-06-24)
-                "wealth_arifos_judge_handoff",
+                "wealth_judge_handoff",
             ],
         }
 
@@ -1653,8 +1675,8 @@ def _register_advanced_tools(mcp: FastMCP) -> None:
     # This is the architectural property that makes F13 SOVEREIGN a
     # substrate guarantee, not an agent discipline. WEALTH cannot make
     # constitutional decisions; the bridge is the only path that does.
-    @mcp.tool(name="wealth_arifos_judge_handoff")
-    async def wealth_arifos_judge_handoff(
+    @mcp.tool(name="wealth_judge_handoff")
+    async def wealth_judge_handoff(
         tool_name: str,
         result: str,
         intent: str,
@@ -1705,7 +1727,7 @@ def _register_advanced_tools(mcp: FastMCP) -> None:
                 result_dict = json.loads(result) if isinstance(result, str) else result
             except json.JSONDecodeError:
                 return wrap_result(
-                    tool_name="wealth_arifos_judge_handoff",
+                    tool_name="wealth_judge_handoff",
                     domain="governance",
                     result={
                         "error": "result_must_be_valid_json",
@@ -1741,7 +1763,7 @@ def _register_advanced_tools(mcp: FastMCP) -> None:
             if mode == "submit" and handoff["readiness"] == "READY":
                 submission = await submit_to_arif_judge(handoff["handoff_envelope"])
                 return wrap_result(
-                    tool_name="wealth_arifos_judge_handoff",
+                    tool_name="wealth_judge_handoff",
                     domain="governance",
                     result={
                         "handoff": handoff,
@@ -1754,7 +1776,7 @@ def _register_advanced_tools(mcp: FastMCP) -> None:
                 )
 
             return wrap_result(
-                tool_name="wealth_arifos_judge_handoff",
+                tool_name="wealth_judge_handoff",
                 domain="governance",
                 result=handoff,
                 epistemic_tag=EpistemicTag.OBSERVED,
@@ -1763,13 +1785,45 @@ def _register_advanced_tools(mcp: FastMCP) -> None:
             )
         except Exception as e:
             return wrap_result(
-                tool_name="wealth_arifos_judge_handoff",
+                tool_name="wealth_judge_handoff",
                 domain="governance",
                 result={"error": str(e), "tool_name": tool_name, "mode": mode},
                 epistemic_tag=EpistemicTag.ASSUMED,
                 evidence_quality=EvidenceQuality.MISSING,
                 errors=[f"Judge handoff error: {e}"],
             )
+
+    # ── Backward-compat alias: wealth_arifos_judge_handoff → wealth_judge_handoff ──
+    @mcp.tool(name="wealth_arifos_judge_handoff")
+    async def wealth_arifos_judge_handoff_alias(
+        tool_name: str,
+        result: str,
+        intent: str,
+        capability: str,
+        blast_radius: str = "MEDIUM",
+        reversibility_level: str = "PARTIAL",
+        epistemic_state: str = "DERIVED",
+        domain: str = "capital",
+        mode: str = "prepare",
+        session_id: str = "",
+        actor_id: str = "WEALTH",
+        evidence: str = "[]",
+    ) -> dict:
+        """[DEPRECATED] Use wealth_judge_handoff instead."""
+        return await wealth_judge_handoff(
+            tool_name=tool_name,
+            result=result,
+            intent=intent,
+            capability=capability,
+            blast_radius=blast_radius,
+            reversibility_level=reversibility_level,
+            epistemic_state=epistemic_state,
+            domain=domain,
+            mode=mode,
+            session_id=session_id,
+            actor_id=actor_id,
+            evidence=evidence,
+        )
 
 
 def _register_resources(mcp: FastMCP) -> None:
@@ -1870,7 +1924,7 @@ def _register_resources(mcp: FastMCP) -> None:
                     "wealth_registry_status",
                     "wealth_collapse_signature_scan",
                     "wealth_beautiful_mouse_scan",
-                    "wealth_arifos_judge_handoff",
+                    "wealth_judge_handoff",
                     "wealth_fiscal_breakeven",
                 ],
             },
@@ -2032,7 +2086,7 @@ def _register_resources(mcp: FastMCP) -> None:
                         "mutation": False,
                     },
                     {
-                        "name": "wealth_arifos_judge_handoff",
+                        "name": "wealth_judge_handoff",
                         "domain": "governance",
                         "verb": "handoff",
                         "mutation": False,
@@ -2049,6 +2103,8 @@ def _register_resources(mcp: FastMCP) -> None:
                     "wealth_emv_compute": "wealth_compute_emv",
                     "wealth_evoi_compute": "wealth_compute_evoi",
                     "wealth_monte_carlo": "wealth_monte_carlo_simulate",
+                    "wealth_system_registry_status": "wealth_registry_status",
+                    "wealth_reason_agent": "wealth_agent_path",
                 },
             },
             indent=2,
@@ -2264,7 +2320,7 @@ def _register_resources(mcp: FastMCP) -> None:
                     },
                     "governance": {
                         "tools": [
-                            "wealth_arifos_judge_handoff",
+                            "wealth_judge_handoff",
                             "wealth_vault_write",
                             "wealth_vault_query",
                         ],
@@ -2320,7 +2376,7 @@ def _register_resources(mcp: FastMCP) -> None:
                         "wealth://risk/thresholds",
                     ],
                     "wealth_monte_carlo_simulate": ["wealth://reality/context"],
-                    "wealth_arifos_judge_handoff": [
+                    "wealth_judge_handoff": [
                         "wealth://handoff/arifos-schema",
                         "wealth://risk/thresholds",
                         "wealth://affordance/contracts",
@@ -2542,11 +2598,11 @@ def _register_resources(mcp: FastMCP) -> None:
                 "authority_chain": "WEALTH computes → arifOS judges → Arif decides",
                 "session_id_required_for": [
                     "wealth_vault_write",
-                    "wealth_arifos_judge_handoff",
+                    "wealth_judge_handoff",
                 ],
                 "actor_verification_required_for": [
                     "wealth_vault_write",
-                    "wealth_arifos_judge_handoff(mode='submit')",
+                    "wealth_judge_handoff(mode='submit')",
                 ],
                 "prompt_layer_count": 7,
                 "resource_layer_count": 15,
@@ -2661,7 +2717,7 @@ def _register_resources(mcp: FastMCP) -> None:
                 "required_action": {
                     "LOW": "proceed with standard reporting",
                     "MEDIUM": "flag risk in output; consider handoff if other factors elevate",
-                    "HIGH": "wealth_arifos_judge_handoff(mode='prepare')",
+                    "HIGH": "wealth_judge_handoff(mode='prepare')",
                     "CRITICAL": "888_HOLD — do not proceed without Arif",
                 },
                 "scope_note": (
@@ -2860,7 +2916,7 @@ def _register_resources(mcp: FastMCP) -> None:
                         "actor_verification_required": True,
                         "session_id_required": True,
                     },
-                    "wealth_arifos_judge_handoff": {
+                    "wealth_judge_handoff": {
                         "action_class": "HANDOFF",
                         "mutation": False,
                         "irreversible": False,
@@ -2881,7 +2937,7 @@ def _register_resources(mcp: FastMCP) -> None:
     @mcp.resource(
         uri="wealth://handoff/arifos-schema",
         name="WEALTH arifOS Handoff Schema",
-        description="Required fields for wealth_arifos_judge_handoff envelope. Read before preparing any irreversible or governance-sensitive handoff.",
+        description="Required fields for wealth_judge_handoff envelope. Read before preparing any irreversible or governance-sensitive handoff.",
         mime_type="application/json",
         tags={"wealth", "handoff", "arifos", "schema", "governance"},
         annotations={"readOnlyHint": True, "idempotentHint": True},
@@ -2891,7 +2947,7 @@ def _register_resources(mcp: FastMCP) -> None:
         """Handoff envelope schema."""
         return json.dumps(
             {
-                "endpoint": "wealth_arifos_judge_handoff",
+                "endpoint": "wealth_judge_handoff",
                 "modes": ["prepare", "submit"],
                 "mode_default": "prepare",
                 "submit_requires_explicit_authority": True,
@@ -3228,7 +3284,7 @@ def _register_prompts(mcp: FastMCP) -> None:
             "   - is one assumption carrying the whole thesis?\n"
             "   - what evidence would reverse the conclusion?\n\n"
             "5. **BOUNDARY** — if irreversible=true or downside is "
-            "HIGH/CRITICAL: prepare `wealth_arifos_judge_handoff(mode='prepare')`.\n\n"
+            "HIGH/CRITICAL: prepare `wealth_judge_handoff(mode='prepare')`.\n\n"
             "6. **OUTPUT** — return:\n"
             "   - risk verdict: LOW / MEDIUM / HIGH / CRITICAL\n"
             "   - dominant risk\n"
@@ -3369,7 +3425,7 @@ def _register_prompts(mcp: FastMCP) -> None:
             "   - dignity always\n\n"
             "5. **AUTHORITY** — if recommendation implies actual capital "
             "movement: do not authorize. Prepare "
-            "`wealth_arifos_judge_handoff(mode='prepare')`.\n\n"
+            "`wealth_judge_handoff(mode='prepare')`.\n\n"
             "6. **OUTPUT** — return:\n"
             "   - preferred option for study\n"
             "   - rejected options and why\n"
@@ -3431,7 +3487,7 @@ def _register_prompts(mcp: FastMCP) -> None:
             "   - what would falsify the concern?\n"
             "   - what is merely rhetoric?\n\n"
             "6. **BOUNDARY** — HIGH/CRITICAL institutional claim requires: "
-            "`wealth_arifos_judge_handoff(mode='prepare')`.\n\n"
+            "`wealth_judge_handoff(mode='prepare')`.\n\n"
             "7. **OUTPUT** — return:\n"
             "   - diagnostic level: ABSENT / EMERGING / ACTIVE / DOMINANT\n"
             "   - evidence for\n"
@@ -3503,7 +3559,7 @@ def _register_prompts(mcp: FastMCP) -> None:
             "   - if blast_radius is HIGH or CRITICAL: requires arifOS judge.\n"
             "   - if actor is not verified: observe-only or advisory-only.\n\n"
             "4. **CALL** — use:\n"
-            "   `wealth_arifos_judge_handoff(mode='prepare')`\n\n"
+            "   `wealth_judge_handoff(mode='prepare')`\n\n"
             "5. **OUTPUT** — return:\n"
             "   - readiness\n"
             "   - missing fields\n"
