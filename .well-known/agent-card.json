@@ -1,36 +1,54 @@
 {
-  "name": "WEALTH Capital Intelligence",
-  "description": "Capital intelligence engine for the arifOS federation. Provides 25 canonical + 5 ZEN alias MCP tools for NPV, EMV, valuation, risk scoring, portfolio optimization, collapse signatures, and wisdom evaluation under constitutional floors F1-F13.",
-  "url": "https://wealth.arif-fazil.com",
-  "provider": { "organization": "arifOS", "system": "WEALTH" },
-  "version": "2026.06.30",
-  "protocol_version": "1.0.0",
-  "capabilities": { "streaming": false, "push_notifications": false, "authenticated_extended_card": false },
-  "authentication": { "schemes": ["bearer"] },
-  "default_input_modes": ["text/plain", "application/json"],
-  "default_output_modes": ["text/plain", "application/json"],
-  "skills": [
-    { "id": "wealth-npv-reward", "name": "NPV Reward", "description": "Net Present Value computation for capital allocation decisions.", "tags": ["finance", "npv", "valuation"], "examples": ["Calculate NPV of this project", "Evaluate investment reward"] },
-    { "id": "wealth-emv-risk", "name": "EMV Risk", "description": "Expected Monetary Value and risk-adjusted return analysis.", "tags": ["finance", "emv", "risk"], "examples": ["Compute EMV for this scenario", "Risk-adjusted expected value"] },
-    { "id": "wealth-allocate-optimize", "name": "Portfolio Optimization", "description": "Optimal capital allocation across competing opportunities.", "tags": ["finance", "portfolio", "optimization"], "examples": ["Optimize my portfolio allocation", "Best capital distribution"] },
-    { "id": "wealth-stock-analysis", "name": "D4 Stock Analysis", "description": "12-mode governed stock safety gate.", "tags": ["finance", "stocks", "risk"], "examples": ["Analyze TENAGA fundamentals", "Pre-trade safety gate"] },
-    { "id": "wealth-personal-finance", "name": "Personal Finance", "description": "Malaysian personal finance: EPF, zakat, runway, net worth.", "tags": ["finance", "personal", "malaysia"], "examples": ["Calculate zakat", "Project EPF at 55"] },
-    { "id": "wealth-field-macro", "name": "Macro Field", "description": "Live FX, commodity, and macro indicators.", "tags": ["finance", "macro", "fx"], "examples": ["MYR/USD rate", "Malaysia GDP snapshot"] }
-  ],
-  "governance": {
-    "constitutional_floors": ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13"],
-    "verdict_authority": "888_JUDGE",
-    "vault": "VAULT999",
-    "irreversible_requires_human": true,
-    "self_approval_forbidden": true,
-    "federation_trust_model": "untrusted_peers"
-  },
-  "a2a_endpoints": {
-    "health": "GET /health",
-    "mcp": "POST /mcp"
-  },
-  "honesty_disclaimer": {
-    "transport_note": "MCP primary; A2A agent card for federation discovery only. APEX is legacy — deliberation moved to AAA a2a-server.",
-    "last_audited": "2026-06-14"
-  }
+    "$schema": "arifOS/agent-card/v2.0.0",
+    "id": "wealth-mcp",
+    "name": "WEALTH Capital Intelligence",
+    "description": "Capital intelligence engine for the arifOS federation. Provides 25 canonical + 5 ZEN alias MCP tools for NPV, EMV, valuation, risk scoring, portfolio optimization, collapse signatures, and wisdom evaluation under constitutional floors F1-F13.",
+    "version": "2026.07.01",
+    "protocolVersion": "1.0.0",
+    "url": "https://wealth.arif-fazil.com",
+    "provider": {
+        "organization": "arifOS Federation",
+        "url": "https://arif-fazil.com"
+    },
+    "capabilities": {
+        "streaming": false,
+        "pushNotifications": false,
+        "stateTransitionHistory": true
+    },
+    "owned_mcp": [
+        "wealth_wisdom_evaluate", "wealth_power_audit", "wealth_capture_scan",
+        "wealth_compute_npv", "wealth_compute_irr", "wealth_conservation_check",
+        "wealth_flow_check", "wealth_runway_check", "wealth_compute_emv",
+        "wealth_compute_evoi", "wealth_monte_carlo_simulate", "wealth_confluence_check",
+        "wealth_asymmetry_check", "wealth_stock_analysis", "wealth_personal_finance",
+        "wealth_market_data", "wealth_omni_wisdom", "wealth_agent_path",
+        "wealth_vault_write", "wealth_vault_query", "wealth_collapse_signature_scan",
+        "wealth_beautiful_mouse_scan", "wealth_arifos_judge_handoff"
+    ],
+    "skills": [
+        {"id": "wealth-npv-reward", "name": "NPV Reward", "description": "Net Present Value computation for capital allocation decisions.", "tags": ["finance","npv","valuation"], "floor_scope": ["F2","F11"]},
+        {"id": "wealth-emv-risk", "name": "EMV Risk", "description": "Expected Monetary Value and risk-adjusted return analysis.", "tags": ["finance","emv","risk"], "floor_scope": ["F2","F11"]},
+        {"id": "wealth-allocate-optimize", "name": "Portfolio Optimization", "description": "Optimal capital allocation across competing opportunities.", "tags": ["finance","portfolio","optimization"], "floor_scope": ["F1","F11"]},
+        {"id": "wealth-stock-analysis", "name": "D4 Stock Analysis", "description": "12-mode governed stock safety gate.", "tags": ["finance","stocks","risk"], "floor_scope": ["F1","F2","F11"]},
+        {"id": "wealth-personal-finance", "name": "Personal Finance", "description": "Malaysian personal finance: EPF, zakat, runway, net worth.", "tags": ["finance","personal","malaysia"], "floor_scope": ["F2","F6","F11"]},
+        {"id": "wealth-field-macro", "name": "Macro Field", "description": "Live FX, commodity, and macro indicators.", "tags": ["finance","macro","fx"], "floor_scope": ["F2","F11"]}
+    ],
+    "governance": {
+        "constitutional_floors": ["F1","F2","F4","F7","F9","F11","F13"],
+        "verdict_authority": "888_JUDGE",
+        "vault": "VAULT999",
+        "irreversible_requires_human": true,
+        "self_approval_forbidden": true,
+        "federation_trust_model": "untrusted_peers",
+        "authority_class": "specialist"
+    },
+    "a2a_endpoints": {
+        "health": "GET /health",
+        "mcp": "POST /mcp"
+    },
+    "metadata": {
+        "consolidated": "2026-07-01T20:00:00Z",
+        "consolidated_by": "FORGE (000Ω) — Phase 2 entropy reduction",
+        "source": "merged from static/agent-card.json (owned_mcp) + .well-known/agent-card.json"
+    }
 }
