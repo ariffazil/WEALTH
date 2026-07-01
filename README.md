@@ -6,14 +6,10 @@
 
 It does not move money. It does not authorize capital. It does not self-seal.
 
-[![Python](https://img.shields.io/badge/python-3.12+-3776AB?logo=python&logoColor=white)](pyproject.toml)
-[![MCP Tools](https://img.shields.io/badge/MCP-28%20public%20tools-10b981)](internal/monolith.py)
-[![Organ](https://img.shields.io/badge/organ-CAPITAL-f59e0b)](FEDERATION_CONTRACT.md)
-[![License](https://img.shields.io/badge/license-AGPL--3.0-ef4444?logo=gnu)](LICENSE)
-[![Port](https://img.shields.io/badge/port-18082-64748b)](INVARIANTS.md)
-[![Authority](https://img.shields.io/badge/authority-COMPUTE__ONLY-f97316)](GENESIS/)
-[![Status](https://img.shields.io/badge/status-active-success)](CONTEXT.md)
-[![Live](https://img.shields.io/badge/live-wealth.arif--fazil.com-blueviolet)](https://wealth.arif-fazil.com)
+[![Agentic CI](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml/badge.svg?branch=main)](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml)
+[![Governance Gate](https://github.com/ariffazil/wealth/actions/workflows/governance-gate.yml/badge.svg?branch=main)](https://github.com/ariffazil/wealth/actions/workflows/governance-gate.yml)
+[![Build Validation](https://github.com/ariffazil/wealth/actions/workflows/publish-image.yml/badge.svg?branch=main)](https://github.com/ariffazil/wealth/actions/workflows/publish-image.yml)
+[![License](https://img.shields.io/github/license/ariffazil/wealth?label=License)](LICENSE)
 
 ---
 
@@ -23,7 +19,7 @@ WEALTH is the capital intelligence organ of arifOS.
 
 **Runtime:**
 - Version: **2026.06.15**
-- Public MCP tools: **28**
+- Public MCP tools: **20**
 - Prompts: **7 canonical loops**
 - Resources: **15** (7 SOT + 1 policy + 7 dynamic reality)
 - Transport: FastMCP (streamable-HTTP, Python 3.12)
