@@ -81,8 +81,8 @@ WEALTH provides **evidence-only**. It computes. It never allocates, never execut
 
 ## Stale SOT Files
 
-- ~~CLAUDE.md~~ — ✅ Updated 2026-06-29
-- ~~RUNBOOK.md~~ — ✅ Updated 2026-06-21
+- ~~CLAUDE.md~~ — ✅ Updated 2026-07-01
+- ~~RUNBOOK.md~~ — ✅ Updated 2026-07-01
 
 ---
 

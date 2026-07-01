@@ -19,9 +19,9 @@ WEALTH is the capital intelligence organ of arifOS.
 
 **Runtime:**
 - Version: **2026.06.15**
-- Public MCP tools: **20**
+- Public MCP tools: **26** (32 total decorated tools including 6 backward-compat aliases)
 - Prompts: **7 canonical loops**
-- Resources: **15** (7 SOT + 1 policy + 7 dynamic reality)
+- Resources: **15** (8 SOT + 7 dynamic reality)
 - Transport: FastMCP (streamable-HTTP, Python 3.12)
 - Port: **18082** (`wealth-organ.service`)
 - License: **AGPL-3.0** — strong copyleft, network services must disclose source
@@ -126,7 +126,7 @@ Resources provide the context that prevents incorrect computation.
 | URI | Purpose |
 |-----|---------|
 | `wealth://schema` | Full tool/prompt/resource manifest + version |
-| `wealth://tools/registry` | 28 tools with action_class + mutation flags |
+| `wealth://tools/registry` | 26 public tools + 6 aliases (32 total) with action_class + mutation flags |
 | `wealth://prompts/index` | 7 prompts with required args + outputs |
 | `wealth://domains/index` | 4 federated domain maps |
 | `wealth://runtime/policy` | Discipline contract — required resources per tool class |
@@ -210,7 +210,7 @@ If any of these is implied by a tool output, the output is malformed — escalat
 
 **If irreversible (e.g. > 888_HOLD threshold):**
 
-6. `wealth_arifos_judge_handoff(mode="prepare")` — builds envelope
+6. `wealth_judge_handoff(mode="prepare")` — builds envelope
 7. arifOS `arif_judge` returns verdict
 8. Arif decides
 9. A-FORGE executes (if SEAL)
@@ -243,11 +243,11 @@ echo '{"jsonrpc":"2.0","id":1,"method":"resources/read","params":{"uri":"wealth:
 # 3. Initialize MCP session, then:
 #    prompts/list         → discover 7 prompts
 #    prompts/get wealth_reality_intake_loop
-#    tools/list           → 28 tools
-#    resources/list       → 14 resources
+#    tools/list           → 32 tools (26 canonical + 6 aliases)
+#    resources/list       → 15 resources
 
 # 4. Handoff to arifOS
-wealth_arifos_judge_handoff(
+wealth_judge_handoff(
     tool_name="wealth_compute_npv",
     result=...,
     intent="...",
@@ -264,24 +264,28 @@ Full runtime guide: `RUNBOOK.md`. Constitutional mandate: `GENESIS/011_WEALTH_MA
 
 ---
 
-## Tools (Canonical, 28)
+## Tools (Public Canonical, 26)
 
 Categories:
 
 | Category | Count | Examples |
 |----------|-------|----------|
 | Capital | 4 | `wealth_compute_npv`, `wealth_compute_irr`, `wealth_conservation_check`, `wealth_flow_check` |
-| Risk | 6 | `wealth_compute_emv`, `wealth_compute_evoi`, `wealth_monte_carlo_simulate`, `wealth_asymmetry_check`, `wealth_runway_check`, `wealth_fiscal_breakeven` |
+| Risk | 5 | `wealth_compute_emv`, `wealth_compute_evoi`, `wealth_monte_carlo_simulate`, `wealth_asymmetry_check`, `wealth_runway_check` |
+| Survival | 1 | `wealth_survival_engine` |
 | Personal Finance | 1 | `wealth_personal_finance` |
 | Market Data | 1 | `wealth_market_data` |
 | Stock | 1 | `wealth_stock_analysis` |
 | Wisdom | 2 | `wealth_wisdom_evaluate`, `wealth_omni_wisdom` |
 | Power | 2 | `wealth_power_audit`, `wealth_capture_scan` |
 | Collapse | 2 | `wealth_collapse_signature_scan`, `wealth_beautiful_mouse_scan` |
-| Meta | 4 | `wealth_agent_path`, `wealth_system_registry_status`, `wealth_arifos_judge_handoff`, `wealth_confluence_check` |
+| Governance | 1 | `wealth_boundary_governance` |
+| Meta | 4 | `wealth_agent_path`, `wealth_registry_status`, `wealth_judge_handoff`, `wealth_confluence_check` |
 | Vault | 2 | `wealth_vault_query`, `wealth_vault_write` (irreversible) |
 
-**Aliases** (legacy surface, deprecated but live for backward compat): `wealth_emv_compute`, `wealth_evoi_compute`, `wealth_monte_carlo`.
+**Aliases** (legacy surface, deprecated but live for backward compat): `wealth_emv_compute`, `wealth_evoi_compute`, `wealth_monte_carlo`, `wealth_reason_agent`, `wealth_system_registry_status`.
+
+**Additional callable tools** (exposed via `tools/list` but not in the 26-public canonical surface): `wealth_fiscal_breakeven`.
 
 Full registry: `resources/read wealth://tools/registry`.
 
@@ -319,6 +323,6 @@ AGPL-3.0. See `LICENSE`.
 
 ---
 
-*Forged: 2026-06-27. Runtime SOT is canonical — README defers to `wealth://schema`.*
+*Forged: 2026-07-01. Runtime SOT is canonical — README defers to `wealth://schema`.*
 *Prior README content archived to `GENESIS/README-archive-2026-06-27.md`.*
 *DITEMPA BUKAN DIBEI*

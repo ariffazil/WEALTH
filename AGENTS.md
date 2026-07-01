@@ -24,7 +24,7 @@ Arif. This is the **WEALTH** organ of the arifOS federation — Resource Intelli
 
 The canonical capital engine. It models conservation, flow, gradient, entropy, energy, time, inertia, field, signal, game, boundary, and hysteresis as thermodynamic invariants over financial and resource systems.
 
-**20 public MCP tools** across kernel, physics organs, specialists, survival, personal finance, market data, and stock analysis. Dual runtime: Python (canonical) + Node.js (legacy). 34 hidden alias tools.
+**26 public MCP tools** across kernel, physics organs, specialists, survival, personal finance, market data, and stock analysis. Dual runtime: Python (canonical) + Node.js (legacy). 6 hidden alias tools (32 total decorated tools).
 
 ## Authority & Autonomy
 
@@ -60,7 +60,7 @@ docker build -t wealth .
 
 | Path | Purpose |
 |------|---------|
-| `internal/monolith.py` | Canonical kernel — 20 public MCP tools (~16,000 lines) |
+| `internal/monolith.py` | Canonical kernel — 26 public MCP tools (~16,000 lines) |
 | `internal/stock/` | D4 Stock Analysis — 12-mode capital-risk governance (verify_math, pre_trade, fundamentals, TAC-9, contrast, confluence) |
 | `internal/market_data.py` | D3 Market Data — FX rates, commodities, macro indicators |
 | `internal/personal_finance.py` | D1 Personal Finance — cashflow, net worth, EPF, zakat |
