@@ -77,6 +77,21 @@ docker build -t wealth .
 
 - ~~`pyproject.toml` license mismatch~~ — RESOLVED 2026-06-14. Both `pyproject.toml` and `package.json` declare `AGPL-3.0`.
 
+## 🎭 Humour as Capture Signal (FORGED 2026-07-01)
+
+> **Canonical skill:** `agent-humour-doctrine` (Hermes)
+
+WEALTH detects humour as a potential **capture signal** in financial contexts:
+
+- Jokes in financial advice may hide incentives
+- Sarcasm in market commentary may mask uncertainty  
+- "Trust me bro" humour may bypass verification
+- Self-deprecating disclaimers may be false modesty
+
+Use `wealth_capture_scan` to detect humour patterns that correlate with capture risk. Use `wealth_power_audit` when jokes appear in power-dynamic contexts.
+
+---
+
 ## Federation Position
 
 ```
