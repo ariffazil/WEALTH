@@ -3,7 +3,7 @@
 
 > ⚰️ **DESIGN HISTORY — SUPERSEDED BY 2026-06-12 FEDERATION ALIGNMENT**
 > This spec predates the canonical topology ratification. The **live surface** is:
-> - **20 public MCP tools** + **34 hidden aliases** (65 `@mcp.tool` decorators)
+> - **26 public MCP tools** + **6 hidden aliases** = 32 total exposed (59 `@mcp.tool` decorators; verified 2026-07-01)
 > - Port **18082**, bound to **127.0.0.1**
 > - arifOS kernel port **8088**
 > The target architecture below remains aspirational.
@@ -205,7 +205,7 @@ After rebuild (target, not current):
 - `/prompts/list` returns exactly 12 prompts
 - `/resources/list` returns exactly 21 resources
 
-Current canonical surface (2026-06-14): 20 public tools + 34 hidden aliases.
+Current canonical surface (2026-07-01): 26 public tools + 6 hidden aliases = 32 total exposed.
 - No umbrella tool remains on the primary surface
 - V2 aliases removed (backward compatibility via redirect)
 - HTTP transport exposes all three primitives correctly
