@@ -362,7 +362,19 @@ def create_mcp_server() -> FastMCP:
                 if isinstance(arguments, dict)
                 else arguments
             )
-            result = await _original_call_tool(name, clean_arguments, **kwargs)
+            try:
+                result = await _original_call_tool(name, clean_arguments, **kwargs)
+            except Exception as e:
+                # Discovery 3: Structured error envelope on failure
+                from wealth_mcp.federation_safety import classify_error
+
+                err_env = classify_error(e, source_tool=name, source_organ="wealth")
+                return ToolResult(
+                    content=[
+                        TextContent(type="text", text=json.dumps(err_env, default=str))
+                    ],
+                    is_error=True,
+                )
             _emit_receipt(
                 name,
                 arguments,
