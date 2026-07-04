@@ -331,6 +331,41 @@ AGPL-3.0. See `LICENSE`.
 
 ---
 
+## 🔌 MCP Connection
+
+Connect to WEALTH via the Model Context Protocol:
+
+| Property | Value |
+|----------|-------|
+| **Endpoint** | `https://wealth.arif-fazil.com/mcp` |
+| **Transport** | Streamable HTTP (JSON-RPC 2.0) |
+| **Tools** | 32 tools |
+| **Health** | `https://wealth.arif-fazil.com/health` |
+
+### Claude Code / Cursor
+
+Add to your MCP client config:
+```json
+{
+  "mcpServers": {
+    "wealth": {
+      "url": "https://wealth.arif-fazil.com/mcp"
+    }
+  }
+}
+```
+
+### Direct Usage
+
+```bash
+curl -X POST https://wealth.arif-fazil.com/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
+```
+
+---
+
 *Forged: 2026-07-01. Runtime SOT is canonical — README defers to `wealth://schema`.*
 *Prior README content archived to `GENESIS/README-archive-2026-06-27.md`.*
 *DITEMPA BUKAN DIBEI*
