@@ -18,11 +18,12 @@ import asyncpg
 
 _pool: Optional[asyncpg.Pool] = None
 
-WEALTH_PG_URL = (
-    "postgresql://arifos_admin:ArifPostgresVault2026!@localhost:5432/vault999"
+# Canonical: Supabase cloud (durable, survives machine death)
+# Override via WEALTH_PG_URL env var for local/dev/testing
+WEALTH_PG_URL = os.getenv(
+    "WEALTH_PG_URL",
+    "postgresql://postgres.utbmmjmbolmuahwixjqc:cWZ228S72IaC9UzRD5i7UHh8s8NUbaXT@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres",
 )
-# Override via env var if different
-WEALTH_PG_URL = os.getenv("WEALTH_PG_URL", WEALTH_PG_URL)
 
 
 async def get_pool() -> asyncpg.Pool:
