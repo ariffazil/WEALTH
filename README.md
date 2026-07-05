@@ -27,7 +27,7 @@ WEALTH is the capital intelligence organ of arifOS.
 
 **Runtime:**
 - Version: **2026.06.15**
-- Public MCP tools: **26** (32 total decorated tools including 6 backward-compat aliases)
+- Public MCP tools: canonical surface (no legacy/back-compat surface)
 - Prompts: **7 canonical loops**
 - Resources: **15** (8 SOT + 7 dynamic reality)
 - Transport: FastMCP (streamable-HTTP, Python 3.12)
@@ -291,7 +291,7 @@ Categories:
 | Meta | 4 | `wealth_agent_path`, `wealth_registry_status`, `wealth_judge_handoff`, `wealth_confluence_check` |
 | Vault | 2 | `wealth_vault_query`, `wealth_vault_write` (irreversible) |
 
-**Aliases** (legacy surface, deprecated but live for backward compat): `wealth_emv_compute`, `wealth_evoi_compute`, `wealth_monte_carlo`, `wealth_reason_agent`, `wealth_system_registry_status`.
+Only canonical surface. No legacy aliases exposed.
 
 **Additional callable tools** (exposed via `tools/list` but not in the 26-public canonical surface): `wealth_fiscal_breakeven`.
 
