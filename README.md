@@ -1,6 +1,6 @@
 <!-- SOT-MANIFEST
 federation_release: v2026.07.04-MCP-A2A
-last_verified: 2026-07-04
+last_verified: 2026-07-05
 changelog: /root/CHANGELOG-2026-07-04.md
 audit_finding: actor_id self-report pattern at wealth_mcp/server.py:272 — deferred
 a2a_agent_json: /root/WEALTH/.well-known/agent.json
