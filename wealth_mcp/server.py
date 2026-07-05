@@ -269,9 +269,10 @@ def create_mcp_server() -> FastMCP:
 
             # ── Pull _meta for actor_id / session_id binding ──────────
             meta = arguments.get("_meta", {}) if isinstance(arguments, dict) else {}
-            actor_id = meta.get("actor_id") or kwargs.get("actor_id") or "wealth-mcp"
+            # Prioritize verified system kwargs over self-reported _meta to prevent spoofing (P0)
+            actor_id = kwargs.get("actor_id") or meta.get("actor_id") or "wealth-mcp"
             session_id = (
-                meta.get("session_id") or kwargs.get("session_id") or "_default"
+                kwargs.get("session_id") or meta.get("session_id") or "_default"
             )
 
             # ── Preload enforcement ────────────────────────────────────
@@ -328,7 +329,13 @@ def create_mcp_server() -> FastMCP:
                     )
 
             # ── arifOS governance check ────────────────────────────────
-            verdict, error = _check_governance(name, arguments)
+            # Pass extracted system actor_id and session_id (Gap-C alignment)
+            verdict, error = _check_governance(
+                name,
+                arguments,
+                actor_id=actor_id,
+                session_id=session_id,
+            )
             if error is not None:
                 error_text = json.dumps(
                     {
