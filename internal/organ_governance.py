@@ -51,7 +51,7 @@ WEALTH_RISK_TIERS = {
 
 
 def _call_arifOS_judge(
-    tool_name: str, arguments: dict, actor_id: str
+    tool_name: str, arguments: dict, actor_id: str, session_id: Optional[str] = None
 ) -> Tuple[str, Optional[dict]]:
     """
     Call arifOS kernel arif_judge_deliberate.
@@ -80,6 +80,7 @@ def _call_arifOS_judge(
                 "mode": "judge",
                 "candidate": candidate,
                 "actor_id": actor_id,
+                "session_id": session_id,
             },
         },
     }
@@ -131,12 +132,12 @@ def check_governance(
 
     # C1 tools: arifOS pre-check, proceed regardless
     if risk == "c1":
-        verdict, err = _call_arifOS_judge(tool_name, arguments, actor_id)
+        verdict, err = _call_arifOS_judge(tool_name, arguments, actor_id, session_id)
         return verdict, None  # C1 proceeds even if HOLD
 
     # C2 tools: require SEAL
     if risk == "c2":
-        verdict, err = _call_arifOS_judge(tool_name, arguments, actor_id)
+        verdict, err = _call_arifOS_judge(tool_name, arguments, actor_id, session_id)
         if verdict != "SEAL":
             return verdict, {
                 "jsonrpc": "2.0",
@@ -154,5 +155,5 @@ def check_governance(
         return "SEAL", None
 
     # Unknown risk: default to C1 (advisory check, proceed)
-    verdict, _ = _call_arifOS_judge(tool_name, arguments, actor_id)
+    verdict, _ = _call_arifOS_judge(tool_name, arguments, actor_id, session_id)
     return verdict, None
