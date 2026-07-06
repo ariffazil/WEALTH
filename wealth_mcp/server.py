@@ -288,7 +288,12 @@ def create_mcp_server() -> FastMCP:
             )
 
             # ── Preload enforcement ────────────────────────────────────
-            required = _REQUIRED_PRELOADS.get(name, [])
+            # Kelly mode uses user-provided data (win_rate, avg_win, avg_loss)
+            # and does NOT need market sources — exempt from preload guard.
+            _mode = (arguments or {}).get("mode", "")
+            required = (
+                [] if _mode == "kelly" else _REQUIRED_PRELOADS.get(name, [])
+            )
             if required:
                 # Preload set = union of session-keyed set + global set.
                 # Resources without _meta session_id land in _global; tools
@@ -1021,9 +1026,16 @@ def _register_legacy_surface_tools(mcp: FastMCP) -> None:
         status: str = "unrealized",
         direction: str = "long",
         factors: dict | None = None,
+        # Kelly criterion params
+        account_balance: float = 0,
+        win_rate: float = 0,
+        avg_win: float = 0,
+        avg_loss: float = 0,
+        kelly_fraction: float = 0.5,
     ) -> dict:
         """D4 Stock Analysis — 17-mode capital-risk governance.
-        mode='nash_multi_factor' uses Nash product (APEX Pillar IV)."""
+        mode='nash_multi_factor' uses Nash product (APEX Pillar IV).
+        mode='kelly' uses Kelly criterion for optimal position sizing."""
         try:
             from internal.monolith import wealth_stock_analysis as _stock_impl
 
@@ -1037,6 +1049,11 @@ def _register_legacy_surface_tools(mcp: FastMCP) -> None:
                 status=status,
                 direction=direction,
                 factors=factors,
+                account_balance=account_balance,
+                win_rate=win_rate,
+                avg_win=avg_win,
+                avg_loss=avg_loss,
+                kelly_fraction=kelly_fraction,
             )
         except Exception as e:
             return wrap_result(
