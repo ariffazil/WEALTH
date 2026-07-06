@@ -2,7 +2,7 @@
 owner: Arif
 last_verified: 2026-07-06
 valid_from: 2026-06-14
-valid_until: 2026-08-04
+valid_until: 2026-08-05
 confidence: high
 scope: /root/WEALTH
 -->
@@ -61,7 +61,7 @@ docker build -t wealth .
 | Path | Purpose |
 |------|---------|
 | `internal/monolith.py` | Canonical kernel — 37 public MCP tools (~16,000 lines) |
-| `internal/stock/` | D4 Stock Analysis — 12-mode capital-risk governance (verify_math, pre_trade, fundamentals, TAC-9, contrast, confluence) |
+| `internal/stock/` | D4 Stock Analysis — 27-mode capital-risk governance (verify_math, pre_trade, fundamentals, TAC-9, contrast, confluence, kelly, nash_multi_factor) |
 | `internal/market_data.py` | D3 Market Data — FX rates, commodities, macro indicators |
 | `internal/personal_finance.py` | D1 Personal Finance — cashflow, net worth, EPF, zakat |
 | `internal/db_schema.py` | PostgreSQL schema — transactions, assets, trades, positions, watchlist |
