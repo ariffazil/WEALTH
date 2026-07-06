@@ -184,6 +184,18 @@ def create_mcp_server() -> FastMCP:
             if any(
                 k in t
                 for k in (
+                    "markowitz",
+                    "kelly",
+                    "robust_portfolio",
+                    "chance_constrained",
+                    "two_stage_recourse",
+                    "optimizer",
+                )
+            ):
+                return "optimization"
+            if any(
+                k in t
+                for k in (
                     "power",
                     "capture",
                     "collapse",
@@ -449,6 +461,12 @@ def create_mcp_server() -> FastMCP:
                     "wealth_monte_carlo",
                     "wealth_evoi_compute",
                     "wealth_reason_agent",
+                    # ── APEX optimizers (FORGE 2026-07-06) ──────────────
+                    "wealth_markowitz_frontier",
+                    "wealth_kelly_sizing",
+                    "wealth_robust_portfolio",
+                    "wealth_chance_constrained",
+                    "wealth_two_stage_recourse",
                 }
                 return [t for t in result if getattr(t, "name", None) in public_names]
 
@@ -466,6 +484,7 @@ def create_mcp_server() -> FastMCP:
     _register_legacy_surface_tools(mcp)  # stock, personal, market, omni, agent_path
     _register_meta_tools(mcp)
     _register_advanced_tools(mcp)  # beautiful mouse, judge handoff (forged 2026-06-24)
+    _register_optimizer_tools(mcp)  # APEX optimization engines (forged 2026-07-06)
     _register_resources(mcp)
     _register_prompts(mcp)
 
@@ -1842,6 +1861,151 @@ def _register_advanced_tools(mcp: FastMCP) -> None:
             session_id=session_id,
             actor_id=actor_id,
             evidence=evidence,
+        )
+
+
+def _register_optimizer_tools(mcp: FastMCP) -> None:
+    """Register APEX optimization engines (forged 2026-07-06).
+
+    Mathematical optimization engines bridging MO-book patterns to APEX governance:
+    - markowitz_frontier: Mean-variance portfolio (Reality organ)
+    - kelly_sizing: Kelly criterion bet sizing (Execution organ)
+    - robust_portfolio: Robust optimization under uncertainty (Governance organ)
+    - chance_constrained: VaR/CVaR optimization (Witness organ)
+    - two_stage_recourse: Two-stage stochastic program (Memory organ)
+    """
+    from wealth_core.optimizers import (
+        markowitz_frontier as _markowitz_frontier,
+        markowitz_frontier_sweep as _markowitz_frontier_sweep,
+        kelly_sizing as _kelly_sizing,
+        robust_portfolio as _robust_portfolio,
+        chance_constrained as _chance_constrained,
+        cvar_portfolio as _cvar_portfolio,
+        two_stage_recourse as _two_stage_recourse,
+    )
+
+    @mcp.tool(name="wealth_markowitz_frontier")
+    async def wealth_markowitz_frontier(
+        returns: list[float],
+        covariances: list[list[float]],
+        risk_aversion: float = 1.0,
+        risk_free_rate: float = 0.0,
+    ) -> dict:
+        """
+        Compute Markowitz mean-variance optimal portfolio.
+
+        Solves: max μᵀx - (γ/2)·xᵀΣx  s.t. Σxᵢ=1, x≥0
+        APEX Organ: Reality (ΔR) — Energy conservation.
+
+        Returns optimal weights, expected return, variance, Sharpe ratio,
+        APEX verdict, and uncertainty bands.
+
+        F2 TRUTH: Returns are DER (derived from historical data).
+        F7 HUMILITY: Confidence cap 0.90.
+        """
+        return _markowitz_frontier(
+            expected_returns=returns,
+            covariances=covariances,
+            risk_aversion=risk_aversion,
+            risk_free_rate=risk_free_rate,
+        )
+
+    @mcp.tool(name="wealth_kelly_sizing")
+    async def wealth_kelly_sizing(
+        win_prob: float,
+        odds: float,
+        risk_constraint: float | None = None,
+    ) -> dict:
+        """
+        Compute Kelly criterion optimal bet fraction.
+
+        Maximizes expected log-growth: E[log(1 + f·R)]
+        APEX Organ: Execution (W) — Work conservation law.
+
+        Returns optimal fraction, expected log-growth, Monte Carlo simulation,
+        and APEX verdict.
+
+        F2 TRUTH: Win probability is INTERPRETED, not OBS.
+        F9 ANTI-HANTU: Monte Carlo simulation provides uncertainty bands.
+        """
+        return _kelly_sizing(
+            win_prob=win_prob,
+            odds=odds,
+            risk_constraint=risk_constraint,
+        )
+
+    @mcp.tool(name="wealth_robust_portfolio")
+    async def wealth_robust_portfolio(
+        returns: list[float],
+        uncertainty_radius: float = 0.1,
+        robust_type: str = "budget",
+        covariances: list[list[float]] | None = None,
+    ) -> dict:
+        """
+        Compute robust optimal portfolio under uncertainty.
+
+        Solves: max min_{z∈Z} (μ+z)ᵀx  s.t. Σxᵢ=1, x≥0
+        APEX Organ: Governance (ΔG) — Entropy reduction.
+
+        Supports box, budget (Bertsimas-Sim), and ellipsoidal uncertainty sets.
+        Returns worst-case optimal allocation and APEX verdict.
+
+        F2 TRUTH: Uncertainty set is SPEC (modeled, not observed).
+        """
+        return _robust_portfolio(
+            returns=returns,
+            uncertainty_radius=uncertainty_radius,
+            robust_type=robust_type,
+            covariances=covariances,
+        )
+
+    @mcp.tool(name="wealth_chance_constrained")
+    async def wealth_chance_constrained(
+        returns: list[float],
+        covariances: list[list[float]],
+        confidence: float = 0.95,
+        threshold: float = 0.0,
+    ) -> dict:
+        """
+        Compute chance-constrained optimal portfolio (VaR/CVaR).
+
+        Solves: max μᵀx  s.t. P(rᵀx ≤ threshold) ≤ (1-confidence)
+        APEX Organ: Witness (Ω) — Gödel incompleteness.
+
+        Returns optimal weights, VaR, CVaR, and APEX verdict.
+
+        F2 TRUTH: Returns distribution is DER (derived from historical data).
+        F9 ANTI-HANTU: VaR/CVaR are risk measures, not guarantees.
+        """
+        return _chance_constrained(
+            returns=returns,
+            covariances=covariances,
+            confidence=confidence,
+            threshold=threshold,
+        )
+
+    @mcp.tool(name="wealth_two_stage_recourse")
+    async def wealth_two_stage_recourse(
+        first_stage_costs: dict,
+        scenario_data: list[dict],
+        first_stage_constraints: list[dict] | None = None,
+    ) -> dict:
+        """
+        Two-stage stochastic optimization with recourse.
+
+        First stage: decide x (here-and-now decisions)
+        Second stage: after scenario revealed, choose recourse action y
+        APEX Organ: Memory (∂M/∂t) — Landauer cost.
+
+        Returns first-stage decisions, here-and-now value, wait-and-see value,
+        expected total value, and APEX verdict.
+
+        F2 TRUTH: Scenarios are SPEC (sampled from distribution).
+        """
+        return _two_stage_recourse(
+            first_stage_costs=first_stage_costs,
+            scenario_data=scenario_data,
+            first_stage_constraints=first_stage_constraints,
         )
 
 
