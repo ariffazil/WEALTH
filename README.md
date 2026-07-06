@@ -1,7 +1,7 @@
 <!-- SOT-MANIFEST
-federation_release: v2026.07.06-APEX-IV
+federation_release: v2026.07.06-KELLY-APEX
 last_verified: 2026-07-06
-changelog: APEX Pillar IV — robust EVOI, Nash multi-factor, scar accumulation
+changelog: Kelly criterion + optimizer suite + APEX Pillar IV
 audit_finding: actor_id self-report pattern at wealth_mcp/server.py:272 — deferred
 a2a_agent_json: /root/WEALTH/.well-known/agent.json
 -->
@@ -27,10 +27,12 @@ WEALTH is the capital intelligence organ of arifOS.
 
 **Runtime:**
 - Version: **2026.07.06**
-- Public MCP tools: **37** (canonical surface)
+- Public MCP tools: **39** (server.py) + **19** (monolith) = **~45 unique**
+- Stock analysis modes: **27** (including Kelly, Nash multi-factor, TAC-9)
+- Optimizer suite: **5 engines** (Markowitz, Kelly, Robust, Chance-constrained, Two-stage)
 - Prompts: **7 canonical loops**
 - Resources: **15** (8 SOT + 7 dynamic reality)
-- Transport: FastMCP (streamable-HTTP, Python 3.12)
+- Transport: FastMCP 3.4.2 (streamable-HTTP, Python 3.12)
 - Port: **18082** (`wealth.service`)
 - License: **AGPL-3.0** — strong copyleft, network services must disclose source
 
@@ -40,7 +42,7 @@ WEALTH is the capital intelligence organ of arifOS.
 - WEALTH does not authorize capital
 - WEALTH does not self-seal
 
-**Federation Position (canonical organ map):**
+**Federation Position:**
 
 ```
 Arif (F13 SOVEREIGN)
@@ -79,49 +81,24 @@ WEALTH tells you what the capital looks like. It does not move the money. The so
 
 ---
 
-## APEX Pillar IV — Mathematical Optimization Foundation
+## Optimizer Suite (APEX × Pyomo)
 
-> **Added: 2026-07-06.** Derived from Postek et al. *"Hands-On Mathematical Optimization with Python"* (Cambridge UP 2025) × APEX Theory v36Ω.
+Five mathematical optimization engines forged from first principles. Each maps to an APEX conservation law.
 
-WEALTH now carries three optimization primitives from APEX Pillar IV:
+| Engine | Mode | APEX Organ | What It Does |
+|--------|------|------------|--------------|
+| **Markowitz** | `markowitz` | ΔR Reality | Mean-variance frontier — optimal portfolio weights |
+| **Kelly** | `kelly` | W Execution | Optimal bet sizing — half-Kelly default, C_dark detection |
+| **Robust** | `robust` | ΔG Governance | Worst-case optimization under uncertainty |
+| **Chance-Constrained** | `chance_constrained` | Ω Witness | VaR/CVaR optimization — P(loss > threshold) ≤ α |
+| **Two-Stage** | `two_stage` | ∂M/∂t Memory | Stochastic recourse — invest now, adjust later |
 
-### Robust EVOI (`wealth_evoi_compute`)
+**Forge verdict (2026-07-06):**
+- Markowitz: Equal-weight wins for correlated assets. Kept as reference.
+- Kelly: **FORGED** — 13x better on strong edge, adapts to edge quality.
+- Robust/Chance: Concentrates risk, marginal improvement. Kept as reference.
 
-When `robust=True`, computes EVOI under uncertainty ranges (prior ± 0.10, posterior ± 0.15) across 400 scenario pairs. Returns worst-case EVOI, CVaR(5%), and robust regret alongside expected EVOI. Verdicts: `ROBUST_SEAL` / `ROBUST_SABAR` / `ROBUST_VOID`.
-
-```
-max-min over uncertainty set → worst-case EVOI → robust decision
-```
-
-### Nash Multi-Factor (`wealth_stock_analysis`)
-
-When `mode="nash_multi_factor"`, computes Nash bargaining product across factors (value, momentum, quality, risk). The Nash product forbids trade-offs between factors — zero in any factor collapses the score. Compares Nash (geometric mean) vs additive (arithmetic mean) and flags divergence >5% as trade-off detected.
-
-```
-G = ∏(f_i ^ w_i)   — Nash 1950, log-transformed for stability
-```
-
-### Scar Accumulation (`wealth_survival_engine`)
-
-When `scar_history` is provided, computes scar pressure (loss events / total periods), builds forbidden zones from >5% loss events, and escalates boundary from GREEN → YELLOW when scar pressure > 0.3. Constraints accumulate permanently — feasible region shrinks monotonically.
-
-```
-F_{t+1} = F_t ∩ {scar_t}   — cutting-plane method applied to learning
-```
-
-### The Mathematical Foundation
-
-APEX theory IS mathematical optimization applied to intelligence:
-
-| APEX Concept | Optimization Analog |
-|---|---|
-| G = A·P·E·X·Φ | Nash bargaining product (multiplicative objective) |
-| F1-F13 floors | Constraints on the feasible region |
-| C_dark | Dual variable — shadow price of relaxing P and X |
-| MALU-Gödel repair | Cutting-plane constraint accumulation |
-| dS/dt ≤ 0 | Optimal control — entropy management over time |
-
-Full theory: [arifOS/static/arifos/theory/000/APEX_THEORY.md](https://github.com/ariffazil/arifos/blob/main/static/arifos/theory/000/APEX_THEORY.md) — Pillar IV.
+**APEX mapping:** Each optimizer returns `apex.organ`, `apex.conservation_law`, `apex.G_score`, `apex.C_dark`, `apex.verdict`.
 
 ---
 
@@ -151,44 +128,73 @@ This loop is implemented through **7 canonical MCP prompts**:
 
 ---
 
-## Tools (Public Canonical, 37)
+## Tools (Public Canonical)
 
-| Category | Tools | APEX Upgrade |
-|----------|-------|--------------|
-| **Capital** | `wealth_compute_npv`, `wealth_compute_irr`, `wealth_conservation_check`, `wealth_flow_check` | — |
-| **Risk** | `wealth_compute_emv`, `wealth_compute_evoi`, `wealth_monte_carlo_simulate`, `wealth_asymmetry_check`, `wealth_runway_check` | `wealth_compute_evoi` +`robust=True` |
-| **Optimization** | `wealth_markowitz_frontier`, `wealth_kelly_sizing`, `wealth_robust_portfolio`, `wealth_chance_constrained`, `wealth_two_stage_recourse` | **NEW** — APEX Pillar IV |
-| **Survival** | `wealth_survival_engine` | +`scar_history` |
-| **Personal Finance** | `wealth_personal_finance` | — |
-| **Market Data** | `wealth_market_data`, `wealth_fiscal_breakeven` | — |
-| **Stock** | `wealth_stock_analysis` | +`mode="nash_multi_factor"` |
-| **Wisdom** | `wealth_wisdom_evaluate`, `wealth_omni_wisdom` | — |
-| **Power** | `wealth_power_audit`, `wealth_capture_scan` | — |
-| **Collapse** | `wealth_collapse_signature_scan`, `wealth_beautiful_mouse_scan` | — |
-| **Governance** | `wealth_boundary_governance` | — |
-| **Meta** | `wealth_agent_path`, `wealth_registry_status`, `wealth_judge_handoff`, `wealth_confluence_check` | — |
-| **Vault** | `wealth_vault_query`, `wealth_vault_write` (irreversible) | — |
+### Core Capital
+| Tool | Purpose |
+|------|---------|
+| `wealth_compute_npv` | Net Present Value |
+| `wealth_compute_irr` | Internal Rate of Return |
+| `wealth_conservation_check` | Capital conservation audit |
+| `wealth_flow_check` | Cash flow analysis |
 
-Full registry: `resources/read wealth://tools/registry`.
+### Risk & Simulation
+| Tool | Purpose |
+|------|---------|
+| `wealth_compute_emv` | Expected Monetary Value |
+| `wealth_compute_evoi` | Expected Value of Information |
+| `wealth_monte_carlo_simulate` | Monte Carlo simulation |
+| `wealth_asymmetry_check` | Risk asymmetry detection |
+| `wealth_runway_check` | Financial runway calculation |
 
----
+### Stock Analysis (27 modes)
+| Tool | Key Modes |
+|------|-----------|
+| `wealth_stock_analysis` | `verify_math` · `position_size` · `kelly` · `nash_multi_factor` · `tac9` · `fundamentals` · `pre_trade` · `contrast` · `confluence` · `risk_metrics` · `calhoun_survival` · `888` · `999` |
 
-## Prompt Layer (MCP)
+### Optimizers
+| Tool | Purpose |
+|------|---------|
+| `wealth_markowitz_frontier` | Mean-variance portfolio optimization |
+| `wealth_kelly_sizing` | Kelly criterion position sizing |
+| `wealth_robust_portfolio` | Robust optimization under uncertainty |
+| `wealth_chance_constrained` | VaR/CVaR constrained optimization |
+| `wealth_two_stage_recourse` | Two-stage stochastic programming |
 
-WEALTH exposes structured prompts via MCP:
+### Wisdom & Power
+| Tool | Purpose |
+|------|---------|
+| `wealth_wisdom_evaluate` | 6-dimension wisdom scoring |
+| `wealth_omni_wisdom` | Unified capital intelligence |
+| `wealth_power_audit` | Power dynamics audit |
+| `wealth_capture_scan` | Capture signal detection |
+| `wealth_collapse_signature_scan` | Institutional collapse detection |
+| `wealth_beautiful_mouse_scan` | Calhoun Phase C detection |
 
-- Discover: `prompts/list`
-- Retrieve: `prompts/get`
+### Personal & Market
+| Tool | Purpose |
+|------|---------|
+| `wealth_personal_finance` | Cashflow, net worth, EPF, zakat |
+| `wealth_market_data` | FX, commodities, macro indicators |
+| `wealth_survival_engine` | Cashflow, runway, burn, liquidity |
+| `wealth_fiscal_breakeven` | Malaysia fiscal breakeven oil price |
 
-**Prompts are not answers. Prompts enforce reasoning discipline.**
+### Governance & Meta
+| Tool | Purpose |
+|------|---------|
+| `wealth_boundary_governance` | F1-F13 floor compliance |
+| `wealth_judge_handoff` | Prepare arifOS judge envelope |
+| `wealth_registry_status` | Tool registry diagnostic |
+| `wealth_agent_path` | Intent routing |
+| `wealth_confluence_check` | False confluence detection |
 
-Each prompt:
-- defines a loop
-- defines tool sequence
-- defines forbidden conclusions
-- defines authority boundary
+### Vault (Irreversible)
+| Tool | Purpose |
+|------|---------|
+| `wealth_vault_query` | Query VAULT999 ledger |
+| `wealth_vault_write` | Write to VAULT999 (requires SEAL) |
 
-**Prompt → Tool → Resource mapping is enforced server-side.** A prompt cannot call a tool without the context resource loaded first.
+Full registry: `resources/read wealth://tools/registry`
 
 ---
 
@@ -202,18 +208,18 @@ Resources provide the context that prevents incorrect computation.
 | URI | Purpose |
 |-----|---------|
 | `wealth://schema` | Full tool/prompt/resource manifest + version |
-| `wealth://tools/registry` | 37 public tools with action_class + mutation flags |
+| `wealth://tools/registry` | All tools with action_class + mutation flags |
 | `wealth://prompts/index` | 7 prompts with required args + outputs |
-| `wealth://domains/index` | 4 federated domain maps |
+| `wealth://domains/index` | Federated domain maps |
 | `wealth://runtime/policy` | Discipline contract — required resources per tool class |
-| `wealth://canon/002-human-law` | CANON 002 — human law as capital geometry |
+| `wealth://canon/002-human-law` | Human law as capital geometry |
 | `wealth://glossary` | arifOS/WEALTH canonical glossary |
 | `wealth://federation/contract` | Authority chain, handoffs, never-list |
 
 ### Dynamic Reality (7)
 | URI | Purpose |
 |-----|---------|
-| `wealth://health` | Liveness + timestamp (dynamic) |
+| `wealth://health` | Liveness + timestamp |
 | `wealth://reality/context` | Current reality assumptions |
 | `wealth://market/sources` | What counts as "real" market data |
 | `wealth://risk/thresholds` | LOW/MEDIUM/HIGH/CRITICAL definitions |
@@ -268,29 +274,21 @@ If any of these is implied by a tool output, the output is malformed — escalat
 
 ## Example Flow
 
-**User:** *"Should I invest in X?"*
+**User:** *"What's the optimal position size for PETRONAS?"*
 
 **Flow:**
 
-1. `wealth_reality_intake_loop` — establish facts, unknowns, time horizon
-2. `wealth_capital_diagnosis_loop` — model cashflow / NPV / IRR
-3. `wealth_risk_downside_loop` — EMV, asymmetry, missing downside
-4. `wealth_market_reality_loop` — current FX / market context
-5. `wealth_allocation_judgment_loop` — compare options, advisory only
+1. `wealth_reality_intake_loop` — establish account, risk tolerance, edge quality
+2. `wealth_stock_analysis(mode="kelly")` — Kelly criterion: half-Kelly, C_dark check
+3. `wealth_stock_analysis(mode="risk_metrics")` — VaR, CVaR, max drawdown
+4. `wealth_market_reality_loop` — current MYR/USD, oil price, Bursa context
 
 **Output:**
-- advisory comparison (no recommendation to act)
-- downside risks
-- missing data
-- required additional evidence
-
-**If irreversible (e.g. > 888_HOLD threshold):**
-
-6. `wealth_judge_handoff(mode="prepare")` — builds envelope
-7. arifOS `arif_judge` returns verdict
-8. Arif decides
-9. A-FORGE executes (if SEAL)
-10. VAULT999 seals
+- Kelly fraction: 13.44% of account (half-Kelly)
+- Position value: RM13,437.50
+- Edge per trade: 0.0215
+- APEX verdict: SABAR (C_dark=0.2, G=0.8)
+- Advisory only — Arif decides
 
 ---
 
@@ -310,21 +308,20 @@ This is non-negotiable. A WEALTH output that hides ignorance is a constitutional
 # 1. Health
 curl https://wealth.arif-fazil.com/health
 
-# 2. MCP initialize + tools/list
+# 2. Initialize MCP session
 curl -X POST https://wealth.arif-fazil.com/mcp \
   -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
-  -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"cli","version":"1.0"}},"id":1}'
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"cli","version":"1.0"}}}'
 
-# 3. Discover
-#    tools/list           → 37 tools
-#    prompts/list         → 7 prompts
-#    resources/list       → 15 resources
+# 3. List tools
+# tools/list → ~45 tools
 
-# 4. APEX Pillar IV quick test
-#    wealth_evoi_compute(robust=true)  → robust EVOI with CVaR
-#    wealth_stock_analysis(mode="nash_multi_factor")  → Nash vs additive
-#    wealth_survival_engine(scar_history=[...])  → scar pressure + forbidden zones
+# 4. Kelly example
+curl -X POST https://wealth.arif-fazil.com/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"wealth_stock_analysis","arguments":{"mode":"kelly","account_balance":100000,"win_rate":0.55,"avg_win":0.08,"avg_loss":0.05,"kelly_fraction":0.5}}}'
 ```
 
 Full runtime guide: `RUNBOOK.md`. Constitutional mandate: `GENESIS/011_WEALTH_MANDATE.md`.
@@ -353,7 +350,19 @@ A-FORGE :7071 (Execution Shell — never adjudicates)
 VAULT999       (Append-only immutable ledger)
 ```
 
-Five-layer runtime: `wealth_core`, `wealth_contracts`, `wealth_mcp`, `wealth_arifos_bridge`, `wealth_compat`.
+**Five-layer runtime:** `wealth_core` (engines + optimizers), `wealth_contracts` (output envelopes), `wealth_mcp` (tools + resources + prompts), `wealth_arifos_bridge` (kernel integration), `wealth_compat` (legacy aliases).
+
+**Key directories:**
+
+| Path | Purpose |
+|------|---------|
+| `internal/monolith.py` | Canonical kernel — 19 named tools, 27 stock modes |
+| `wealth_mcp/server.py` | MCP surface — 39 tools, preload guards, governance |
+| `wealth_core/optimizers/` | Pyomo optimizer suite (Markowitz, Kelly, Robust, Chance, Two-stage) |
+| `internal/stock/` | D4 Stock Analysis — 27-mode capital-risk governance |
+| `internal/market_data.py` | D3 Market Data — FX, commodities, macro |
+| `internal/personal_finance.py` | D1 Personal Finance — cashflow, net worth, EPF, zakat |
+| `tests/` | Test suite — optimizers, stock analysis, survival engine, governance |
 
 ---
 
@@ -365,12 +374,11 @@ Connect to WEALTH via the Model Context Protocol:
 |----------|-------|
 | **Endpoint** | `https://wealth.arif-fazil.com/mcp` |
 | **Transport** | Streamable HTTP (JSON-RPC 2.0) |
-| **Tools** | 37 tools |
+| **Tools** | ~45 tools |
 | **Health** | `https://wealth.arif-fazil.com/health` |
 
 ### Claude Code / Cursor
 
-Add to your MCP client config:
 ```json
 {
   "mcpServers": {
@@ -381,15 +389,6 @@ Add to your MCP client config:
 }
 ```
 
-### Direct Usage
-
-```bash
-curl -X POST https://wealth.arif-fazil.com/mcp \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
-  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
-```
-
 ---
 
 ## License
@@ -398,5 +397,6 @@ AGPL-3.0. See `LICENSE`.
 
 ---
 
-*Forged: 2026-07-01. Upgraded: 2026-07-06 (APEX Pillar IV). Runtime SOT is canonical — README defers to `wealth://schema`.*
+*Forged: 2026-07-06. Runtime SOT is canonical — README defers to `wealth://schema`.*
+*Prior README content archived to `GENESIS/README-archive-2026-06-27.md`.*
 *DITEMPA BUKAN DIBERI*
