@@ -1,7 +1,7 @@
 <!-- SOT-MANIFEST
-federation_release: v2026.07.04-MCP-A2A
+federation_release: v2026.07.06-APEX-IV
 last_verified: 2026-07-06
-changelog: /root/CHANGELOG-2026-07-04.md
+changelog: APEX Pillar IV — robust EVOI, Nash multi-factor, scar accumulation
 audit_finding: actor_id self-report pattern at wealth_mcp/server.py:272 — deferred
 a2a_agent_json: /root/WEALTH/.well-known/agent.json
 -->
@@ -26,12 +26,12 @@ It does not move money. It does not authorize capital. It does not self-seal.
 WEALTH is the capital intelligence organ of arifOS.
 
 **Runtime:**
-- Version: **2026.06.15**
-- Public MCP tools: canonical surface (no legacy/back-compat surface)
+- Version: **2026.07.06**
+- Public MCP tools: **37** (canonical surface)
 - Prompts: **7 canonical loops**
 - Resources: **15** (8 SOT + 7 dynamic reality)
 - Transport: FastMCP (streamable-HTTP, Python 3.12)
-- Port: **18082** (`wealth-organ.service`)
+- Port: **18082** (`wealth.service`)
 - License: **AGPL-3.0** — strong copyleft, network services must disclose source
 
 **Authority:**
@@ -79,6 +79,52 @@ WEALTH tells you what the capital looks like. It does not move the money. The so
 
 ---
 
+## APEX Pillar IV — Mathematical Optimization Foundation
+
+> **Added: 2026-07-06.** Derived from Postek et al. *"Hands-On Mathematical Optimization with Python"* (Cambridge UP 2025) × APEX Theory v36Ω.
+
+WEALTH now carries three optimization primitives from APEX Pillar IV:
+
+### Robust EVOI (`wealth_evoi_compute`)
+
+When `robust=True`, computes EVOI under uncertainty ranges (prior ± 0.10, posterior ± 0.15) across 400 scenario pairs. Returns worst-case EVOI, CVaR(5%), and robust regret alongside expected EVOI. Verdicts: `ROBUST_SEAL` / `ROBUST_SABAR` / `ROBUST_VOID`.
+
+```
+max-min over uncertainty set → worst-case EVOI → robust decision
+```
+
+### Nash Multi-Factor (`wealth_stock_analysis`)
+
+When `mode="nash_multi_factor"`, computes Nash bargaining product across factors (value, momentum, quality, risk). The Nash product forbids trade-offs between factors — zero in any factor collapses the score. Compares Nash (geometric mean) vs additive (arithmetic mean) and flags divergence >5% as trade-off detected.
+
+```
+G = ∏(f_i ^ w_i)   — Nash 1950, log-transformed for stability
+```
+
+### Scar Accumulation (`wealth_survival_engine`)
+
+When `scar_history` is provided, computes scar pressure (loss events / total periods), builds forbidden zones from >5% loss events, and escalates boundary from GREEN → YELLOW when scar pressure > 0.3. Constraints accumulate permanently — feasible region shrinks monotonically.
+
+```
+F_{t+1} = F_t ∩ {scar_t}   — cutting-plane method applied to learning
+```
+
+### The Mathematical Foundation
+
+APEX theory IS mathematical optimization applied to intelligence:
+
+| APEX Concept | Optimization Analog |
+|---|---|
+| G = A·P·E·X·Φ | Nash bargaining product (multiplicative objective) |
+| F1-F13 floors | Constraints on the feasible region |
+| C_dark | Dual variable — shadow price of relaxing P and X |
+| MALU-Gödel repair | Cutting-plane constraint accumulation |
+| dS/dt ≤ 0 | Optimal control — entropy management over time |
+
+Full theory: [arifOS/static/arifos/theory/000/APEX_THEORY.md](https://github.com/ariffazil/arifos/blob/main/static/arifos/theory/000/APEX_THEORY.md) — Pillar IV.
+
+---
+
 ## WEALTH Intelligence Loop
 
 Every query flows through a structured loop:
@@ -102,6 +148,28 @@ This loop is implemented through **7 canonical MCP prompts**:
 | 5 | `wealth_allocation_judgment_loop` | Advisory comparison of options |
 | 6 | `wealth_institutional_power_loop` | Capture, Beautiful Mouse, collapse signature |
 | 7 | `wealth_arifos_handoff_loop` | Prepare judge envelope (irreversible, high-risk) |
+
+---
+
+## Tools (Public Canonical, 37)
+
+| Category | Tools | APEX Upgrade |
+|----------|-------|--------------|
+| **Capital** | `wealth_compute_npv`, `wealth_compute_irr`, `wealth_conservation_check`, `wealth_flow_check` | — |
+| **Risk** | `wealth_compute_emv`, `wealth_compute_evoi`, `wealth_monte_carlo_simulate`, `wealth_asymmetry_check`, `wealth_runway_check` | `wealth_compute_evoi` +`robust=True` |
+| **Optimization** | `wealth_markowitz_frontier`, `wealth_kelly_sizing`, `wealth_robust_portfolio`, `wealth_chance_constrained`, `wealth_two_stage_recourse` | **NEW** — APEX Pillar IV |
+| **Survival** | `wealth_survival_engine` | +`scar_history` |
+| **Personal Finance** | `wealth_personal_finance` | — |
+| **Market Data** | `wealth_market_data`, `wealth_fiscal_breakeven` | — |
+| **Stock** | `wealth_stock_analysis` | +`mode="nash_multi_factor"` |
+| **Wisdom** | `wealth_wisdom_evaluate`, `wealth_omni_wisdom` | — |
+| **Power** | `wealth_power_audit`, `wealth_capture_scan` | — |
+| **Collapse** | `wealth_collapse_signature_scan`, `wealth_beautiful_mouse_scan` | — |
+| **Governance** | `wealth_boundary_governance` | — |
+| **Meta** | `wealth_agent_path`, `wealth_registry_status`, `wealth_judge_handoff`, `wealth_confluence_check` | — |
+| **Vault** | `wealth_vault_query`, `wealth_vault_write` (irreversible) | — |
+
+Full registry: `resources/read wealth://tools/registry`.
 
 ---
 
@@ -134,7 +202,7 @@ Resources provide the context that prevents incorrect computation.
 | URI | Purpose |
 |-----|---------|
 | `wealth://schema` | Full tool/prompt/resource manifest + version |
-| `wealth://tools/registry` | 26 public tools + 6 aliases (32 total) with action_class + mutation flags |
+| `wealth://tools/registry` | 37 public tools with action_class + mutation flags |
 | `wealth://prompts/index` | 7 prompts with required args + outputs |
 | `wealth://domains/index` | 4 federated domain maps |
 | `wealth://runtime/policy` | Discipline contract — required resources per tool class |
@@ -240,62 +308,26 @@ This is non-negotiable. A WEALTH output that hides ignorance is a constitutional
 
 ```bash
 # 1. Health
-curl http://localhost:18082/health
+curl https://wealth.arif-fazil.com/health
 
-# 2. Schema
-echo '{"jsonrpc":"2.0","id":1,"method":"resources/read","params":{"uri":"wealth://schema"}}' \
-  | curl -X POST -H "Content-Type: application/json" \
-    -H "Accept: application/json, text/event-stream" \
-    --data-binary @- http://localhost:18082/mcp
+# 2. MCP initialize + tools/list
+curl -X POST https://wealth.arif-fazil.com/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"cli","version":"1.0"}},"id":1}'
 
-# 3. Initialize MCP session, then:
-#    prompts/list         → discover 7 prompts
-#    prompts/get wealth_reality_intake_loop
-#    tools/list           → 32 tools (26 canonical + 6 aliases)
+# 3. Discover
+#    tools/list           → 37 tools
+#    prompts/list         → 7 prompts
 #    resources/list       → 15 resources
 
-# 4. Handoff to arifOS
-wealth_judge_handoff(
-    tool_name="wealth_compute_npv",
-    result=...,
-    intent="...",
-    capability="issue_capital_recommendation",
-    blast_radius="HIGH",
-    reversibility_level="PARTIAL",
-    epistemic_state="DERIVED",
-    domain="capital",
-    mode="prepare"
-)
+# 4. APEX Pillar IV quick test
+#    wealth_evoi_compute(robust=true)  → robust EVOI with CVaR
+#    wealth_stock_analysis(mode="nash_multi_factor")  → Nash vs additive
+#    wealth_survival_engine(scar_history=[...])  → scar pressure + forbidden zones
 ```
 
 Full runtime guide: `RUNBOOK.md`. Constitutional mandate: `GENESIS/011_WEALTH_MANDATE.md`.
-
----
-
-## Tools (Public Canonical, 26)
-
-Categories:
-
-| Category | Count | Examples |
-|----------|-------|----------|
-| Capital | 4 | `wealth_compute_npv`, `wealth_compute_irr`, `wealth_conservation_check`, `wealth_flow_check` |
-| Risk | 5 | `wealth_compute_emv`, `wealth_compute_evoi`, `wealth_monte_carlo_simulate`, `wealth_asymmetry_check`, `wealth_runway_check` |
-| Survival | 1 | `wealth_survival_engine` |
-| Personal Finance | 1 | `wealth_personal_finance` |
-| Market Data | 1 | `wealth_market_data` |
-| Stock | 1 | `wealth_stock_analysis` |
-| Wisdom | 2 | `wealth_wisdom_evaluate`, `wealth_omni_wisdom` |
-| Power | 2 | `wealth_power_audit`, `wealth_capture_scan` |
-| Collapse | 2 | `wealth_collapse_signature_scan`, `wealth_beautiful_mouse_scan` |
-| Governance | 1 | `wealth_boundary_governance` |
-| Meta | 4 | `wealth_agent_path`, `wealth_registry_status`, `wealth_judge_handoff`, `wealth_confluence_check` |
-| Vault | 2 | `wealth_vault_query`, `wealth_vault_write` (irreversible) |
-
-Only canonical surface. No legacy aliases exposed.
-
-**Additional callable tools** (exposed via `tools/list` but not in the 26-public canonical surface): `wealth_fiscal_breakeven`.
-
-Full registry: `resources/read wealth://tools/registry`.
 
 ---
 
@@ -325,12 +357,6 @@ Five-layer runtime: `wealth_core`, `wealth_contracts`, `wealth_mcp`, `wealth_ari
 
 ---
 
-## License
-
-AGPL-3.0. See `LICENSE`.
-
----
-
 ## 🔌 MCP Connection
 
 Connect to WEALTH via the Model Context Protocol:
@@ -339,7 +365,7 @@ Connect to WEALTH via the Model Context Protocol:
 |----------|-------|
 | **Endpoint** | `https://wealth.arif-fazil.com/mcp` |
 | **Transport** | Streamable HTTP (JSON-RPC 2.0) |
-| **Tools** | 32 tools |
+| **Tools** | 37 tools |
 | **Health** | `https://wealth.arif-fazil.com/health` |
 
 ### Claude Code / Cursor
@@ -366,6 +392,11 @@ curl -X POST https://wealth.arif-fazil.com/mcp \
 
 ---
 
-*Forged: 2026-07-01. Runtime SOT is canonical — README defers to `wealth://schema`.*
-*Prior README content archived to `GENESIS/README-archive-2026-06-27.md`.*
-*DITEMPA BUKAN DIBEI*
+## License
+
+AGPL-3.0. See `LICENSE`.
+
+---
+
+*Forged: 2026-07-01. Upgraded: 2026-07-06 (APEX Pillar IV). Runtime SOT is canonical — README defers to `wealth://schema`.*
+*DITEMPA BUKAN DIBERI*
