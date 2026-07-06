@@ -874,11 +874,42 @@ def _register_risk_tools(mcp: FastMCP) -> None:
         well_cost_musd: float,
         p50_value_musd: float,
         discount_rate: float = 0.1,
+        robust: bool = False,
     ) -> dict:
-        """Compute Expected Value of Information (EVOI)."""
+        """Compute Expected Value of Information (EVOI).
+        When robust=True: max-min over uncertainty set, returns worst-case EVOI + CVaR."""
         result = compute_evoi(
             prior_pos, posterior_pos, well_cost_musd, p50_value_musd, discount_rate
         )
+        # ── APEX Pillar IV: Robust EVOI ──────────────────────────────────
+        if robust:
+            import numpy as _np
+
+            n_samples = 20
+            prior_lo, prior_hi = max(0.01, prior_pos - 0.10), min(0.99, prior_pos + 0.10)
+            post_lo, post_hi = max(0.01, posterior_pos - 0.15), min(0.99, posterior_pos + 0.15)
+            evoi_samples = []
+            for p in _np.linspace(prior_lo, prior_hi, n_samples):
+                for q in _np.linspace(post_lo, post_hi, n_samples):
+                    if q > p:
+                        try:
+                            r = compute_evoi(float(p), float(q), well_cost_musd, p50_value_musd, discount_rate)
+                            evoi_samples.append(r.get("evoi_musd", 0.0))
+                        except Exception:
+                            continue
+            if evoi_samples:
+                expected_evoi = float(_np.mean(evoi_samples))
+                worst_case = float(_np.min(evoi_samples))
+                cvar5 = float(_np.percentile(evoi_samples, 5))
+                result["robust_analysis"] = {
+                    "expected_evoi_musd": round(expected_evoi, 4),
+                    "worst_case_evoi_musd": round(worst_case, 4),
+                    "cvar_5pct_musd": round(cvar5, 4),
+                    "robust_regret_musd": round(max(0, expected_evoi - worst_case), 4),
+                    "method": "APEX_ROBUST_MAX_MIN",
+                }
+                result["robust_verdict"] = "ROBUST_SEAL" if worst_case > 0 else ("ROBUST_SABAR" if expected_evoi > 0 else "ROBUST_VOID")
+        # ── End APEX robust ───────────────────────────────────────────────
         return wrap_result(
             tool_name="wealth_compute_evoi",
             domain="risk",
@@ -989,9 +1020,10 @@ def _register_legacy_surface_tools(mcp: FastMCP) -> None:
         position_size: int = 0,
         status: str = "unrealized",
         direction: str = "long",
+        factors: dict | None = None,
     ) -> dict:
-        """D4 Stock Analysis — 16-mode capital-risk governance.
-        Delegates to internal/stock/ engines."""
+        """D4 Stock Analysis — 17-mode capital-risk governance.
+        mode='nash_multi_factor' uses Nash product (APEX Pillar IV)."""
         try:
             from internal.monolith import wealth_stock_analysis as _stock_impl
 
@@ -1004,6 +1036,7 @@ def _register_legacy_surface_tools(mcp: FastMCP) -> None:
                 position_size=position_size,
                 status=status,
                 direction=direction,
+                factors=factors,
             )
         except Exception as e:
             return wrap_result(
@@ -1503,6 +1536,7 @@ def _register_meta_tools(mcp: FastMCP) -> None:
         horizon_months: int = 12,
         conservative_factor: float = 0.8,
         legacy_compat: bool = False,
+        scar_history: list[dict] | None = None,
     ) -> dict:
         """Ω-SURVIVAL-ENGINE: Unified survival intelligence — cashflow, runway, burn, liquidity.
 
@@ -1515,6 +1549,9 @@ def _register_meta_tools(mcp: FastMCP) -> None:
           burn            — monthly burn rate (expenses - income)
           liquidity       — liquidity health including cashflow + assets
           personal_finance — comprehensive survival dashboard
+
+        scar_history: APEX Pillar IV — constraint accumulation from past loss events.
+        Each entry: {"period": int, "loss_pct": float, "weights": list, "asset_class": str}
 
         Authority: WEALTH computes. arifOS judges. Arif decides.
         WEALTH does NOT move capital. WEALTH does NOT self-seal.
@@ -1531,6 +1568,7 @@ def _register_meta_tools(mcp: FastMCP) -> None:
                 horizon_months=horizon_months,
                 conservative_factor=conservative_factor,
                 legacy_compat=legacy_compat,
+                scar_history=scar_history,
             )
             return wrap_result(
                 tool_name="wealth_survival_engine",
