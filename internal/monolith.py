@@ -2442,6 +2442,109 @@ def _handle_governance_singularity(entities_json: str = "") -> dict:
         return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
 
 
+
+def _handle_kelly(
+    account_balance: float,
+    win_rate: float = 0.0,
+    avg_win: float = 0.0,
+    avg_loss: float = 0.0,
+    kelly_fraction: float = 0.5,
+    trade_history: Optional[List[Dict[str, Any]]] = None,
+) -> dict:
+    """Kelly criterion optimal position sizing.
+
+    Closed-form solution -- no solver needed.
+    Half-Kelly default (0.5) for safety.
+    If trade_history provided, estimates win_rate/avg_win/avg_loss from it.
+    """
+    import math
+
+    # -- Estimate from trade history if provided --
+    if trade_history and len(trade_history) >= 10:
+        wins = [t for t in trade_history if t.get("pnl", 0) > 0]
+        losses = [t for t in trade_history if t.get("pnl", 0) < 0]
+        total = len(trade_history)
+        if total > 0:
+            win_rate = len(wins) / total
+            avg_win = abs(sum(t["pnl"] for t in wins) / len(wins)) if wins else 0
+            avg_loss = abs(sum(t["pnl"] for t in losses) / len(losses)) if losses else 0
+
+    # -- Validate inputs --
+    if win_rate <= 0 or win_rate >= 1:
+        return {
+            "status": "ERROR", "verdict": "MATH_ERROR",
+            "result": {"error": "win_rate must be (0,1)", "win_rate": win_rate},
+        }
+    if avg_win <= 0 or avg_loss <= 0:
+        return {
+            "status": "ERROR", "verdict": "MATH_ERROR",
+            "result": {"error": "avg_win and avg_loss must be > 0"},
+        }
+    if account_balance <= 0:
+        return {
+            "status": "ERROR", "verdict": "MATH_ERROR",
+            "result": {"error": "account_balance must be > 0"},
+        }
+
+    # -- Kelly formula: f* = (p*b - q) / b --
+    p = win_rate
+    q = 1.0 - p
+    b = avg_win / avg_loss  # odds ratio
+    kelly_full = (p * b - q) / b
+    kelly_full = max(0.0, kelly_full)  # never negative
+
+    # -- Apply fraction (half-Kelly default) --
+    kelly_adj = kelly_full * kelly_fraction
+
+    # -- Position sizing --
+    position_value = account_balance * kelly_adj
+    edge = p * avg_win - q * avg_loss  # expected value per trade
+    growth_rate = (
+        p * math.log(1 + kelly_adj * b) + q * math.log(1 - kelly_adj)
+        if 0 < kelly_adj < 1 else 0
+    )
+
+    # -- APEX organ: W (Execution) -- work done by optimal sizing --
+    # C_dark detection: Kelly with bad inputs = shadow optimization
+    c_dark = 0.0
+    if win_rate < 0.35:
+        c_dark += 0.3  # low win rate = suspicious
+    if avg_loss > avg_win * 2:
+        c_dark += 0.3  # terrible risk/reward
+    if len(trade_history or []) < 20:
+        c_dark += 0.2  # insufficient data
+
+    verdict = "SEAL" if c_dark < 0.15 else "SABAR" if c_dark < 0.3 else "HOLD"
+
+    return {
+        "status": "OK",
+        "verdict": verdict,
+        "result": {
+            "kelly_full": round(kelly_full, 4),
+            "kelly_adjusted": round(kelly_adj, 4),
+            "kelly_fraction": kelly_fraction,
+            "position_value": round(position_value, 2),
+            "position_pct": round(kelly_adj * 100, 2),
+            "edge_per_trade": round(edge, 4),
+            "expected_growth_rate": round(growth_rate, 6),
+            "win_rate": round(p, 4),
+            "odds_ratio": round(b, 4),
+            "avg_win": round(avg_win, 4),
+            "avg_loss": round(avg_loss, 4),
+            "account_balance": account_balance,
+        },
+        "apex": {
+            "organ": "W",
+            "conservation_law": "work",
+            "G_score": round(max(0, 1.0 - c_dark), 2),
+            "C_dark": round(c_dark, 2),
+            "verdict": verdict,
+        },
+        "recommendation_only": True,
+        "final_authority": "Arif",
+    }
+
+
 @mcp.tool(name="wealth_stock_analysis", task=True)
 async def wealth_stock_analysis(
     mode: str = "verify_math",
@@ -2575,10 +2678,17 @@ async def wealth_stock_analysis(
     sentiment: str = "neutral",
     # ── confluence params ──
     indicators: Optional[Dict[str, str]] = None,
+    # ── nash_multi_factor params ──
+    factors: Optional[Dict[str, float]] = None,
+    # ── kelly params ──
+    win_rate: float = 0.0,
+    avg_win: float = 0.0,
+    avg_loss: float = 0.0,
+    kelly_fraction: float = 0.5,
 ) -> dict:
     """D4 Stock Analysis — unified capital-risk and stock governance layer.
 
-    Modes (15 total):
+    Modes (16 total):
       verify_math     — Recalculate P/L, detect AI number hallucination
       separate_pl     — Separate realized vs unrealized P/L
       position_size   — Risk-based position sizing (max 1% risk)
@@ -2594,6 +2704,8 @@ async def wealth_stock_analysis(
       bursa_snapshot  — Live-delayed Bursa quote from free data source
       bursa_screen    — Screen Bursa stocks by PE, dividend, ROE, market cap
       bursa_evidence  — Evidence card with provenance, valuation, quality, governance
+      kelly           — Kelly criterion optimal position sizing (half-Kelly default, APEX W organ)
+      nash_multi_factor — Nash product multi-factor scoring (APEX Pillar IV)
 
     NOT: buy/sell oracle. NOT: trading coach. NOT: stock promoter.
     Verdicts: SAFE_TO_STUDY | NEEDS_DATA | UNSAFE | 888_HOLD | MATH_ERROR
@@ -2813,12 +2925,84 @@ async def wealth_stock_analysis(
         r = _handle_screener_9()
     elif mode == "governance_singularity":
         r = _handle_governance_singularity(ticker)
+    elif mode == "nash_multi_factor":
+        import math
+
+        _default_factors = {
+            "value": 0.5,
+            "momentum": 0.3,
+            "quality": 0.4,
+            "risk": 0.6,
+        }
+        active_factors = factors if factors else _default_factors
+
+        # Validate: all scores must be in (0, 1] for log stability
+        clamped = {}
+        for k, v in active_factors.items():
+            clamped[k] = max(1e-8, min(1.0, float(v)))
+
+        # Normalize weights to sum to 1
+        w_sum = sum(clamped.values())
+        if w_sum <= 0:
+            return {
+                "status": "ERROR",
+                "verdict": "MATH_ERROR",
+                "result": {"error": "Factor weights sum to zero"},
+                "tool": "wealth_stock_analysis",
+                "mode": mode,
+            }
+        weights = {k: v / w_sum for k, v in clamped.items()}
+
+        # Nash product via log-transform: ln(G) = sum(w_i * ln(f_i + eps))
+        # Using clamped values directly as factor scores (each is in [1e-8, 1.0])
+        ln_g = sum(
+            w * math.log(max(f, 1e-8))
+            for f, w in zip(clamped.values(), weights.values())
+        )
+        nash_score = math.exp(ln_g)
+
+        # Additive score: sum(w_i * f_i)
+        additive_score = sum(f * w for f, w in zip(clamped.values(), weights.values()))
+
+        # Trade-off detection: Nash and additive rank differently
+        # when the geometric mean diverges from the arithmetic mean
+        # A divergence beyond 5% of additive signals a trade-off
+        divergence = abs(nash_score - additive_score)
+        trade_off_detected = divergence > 0.05 * max(additive_score, 1e-8)
+
+        r = {
+            "status": "OK",
+            "verdict": "SAFE_TO_STUDY",
+            "result": {
+                "ticker": ticker,
+                "factors": {
+                    k: {"score": v, "weight": weights[k]} for k, v in clamped.items()
+                },
+                "nash_score": round(nash_score, 6),
+                "additive_score": round(additive_score, 6),
+                "trade_off_detected": trade_off_detected,
+                "divergence": round(divergence, 6),
+                "method": "Nash bargaining product (Nash 1950) — APEX Pillar IV",
+                "epistemic": "DER",
+            },
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    elif mode == "kelly":
+        r = _handle_kelly(
+            account_balance=account_balance,
+            win_rate=win_rate,
+            avg_win=avg_win,
+            avg_loss=avg_loss,
+            kelly_fraction=kelly_fraction,
+            trade_history=recent_trades,
+        )
     else:
         return {
             "status": "ERROR",
             "verdict": "NEEDS_DATA",
             "result": {
-                "error": f"Unknown mode: {mode}. Use: verify_math | separate_pl | position_size | r_multiple | exposure | bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence | bursa_snapshot | bursa_screen | bursa_evidence | global_snapshot | global_dashboard | global_list | technical_pack | risk_metrics | calhoun_survival | 888 | 999 | market_intelligence | screener_9 | governance_singularity"
+                "error": f"Unknown mode: {mode}. Use: verify_math | separate_pl | position_size | r_multiple | exposure | bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence | bursa_snapshot | bursa_screen | bursa_evidence | global_snapshot | global_dashboard | global_list | technical_pack | risk_metrics | calhoun_survival | 888 | 999 | market_intelligence | screener_9 | governance_singularity | nash_multi_factor | kelly"
             },
             "recommendation_only": True,
             "final_authority": "Arif",
@@ -4979,6 +5163,7 @@ async def wealth_survival_engine(
     horizon_months: int = 12,
     conservative_factor: float = 0.8,
     legacy_compat: bool = False,
+    scar_history: list[dict] | None = None,
 ) -> dict:
     """
     Ω-SURVIVAL-ENGINE: Unified survival intelligence — cashflow, runway, burn, liquidity.
@@ -5236,6 +5421,34 @@ async def wealth_survival_engine(
             else "GREEN",
         }
 
+    # ── Scar accumulation (F1 AMANAH: backward-compatible, no mutation when None) ──
+    scar_pressure = 0.0
+    constraint_count = 0
+    forbidden_zones: list[dict] = []
+
+    if scar_history:
+        total_periods = max(len(scar_history), 1)
+        loss_events = [s for s in scar_history if s.get("loss_pct", 0) > 0]
+        scar_pressure = round(len(loss_events) / total_periods, 4)
+
+        for scar in scar_history:
+            loss_pct = scar.get("loss_pct", 0)
+            if loss_pct > 5.0:
+                constraint_count += 1
+                forbidden_zones.append(
+                    {
+                        "period": scar.get("period"),
+                        "loss_pct": loss_pct,
+                        "asset_class": scar.get("asset_class", "unknown"),
+                        "weights": scar.get("weights", []),
+                        "constraint": f"allocation_with_{loss_pct:.1f}pct_loss_flagged",
+                    }
+                )
+
+        # Escalate boundary when scar pressure is high (>0.3)
+        if scar_pressure > 0.3 and dimensional_verdicts.get("boundary") == "GREEN":
+            dimensional_verdicts["boundary"] = "YELLOW"
+
     # ── Attach dimensional verdicts ─────────────────────────────────────────
     envelope["dimensional_verdicts"] = dimensional_verdicts
     envelope["claim_state"] = "CLAIM"
@@ -5252,6 +5465,11 @@ async def wealth_survival_engine(
         "RUNWAY_CRITICAL" if (dimensional_verdicts["boundary"] == "RED") else "",
     ]
     envelope["warnings"] = [w for w in envelope["warnings"] if w]
+
+    # ── Attach scar fields (always present; zeroed when no history) ────────
+    envelope["scar_pressure"] = scar_pressure
+    envelope["constraint_count"] = constraint_count
+    envelope["forbidden_zones"] = forbidden_zones
 
     return envelope
 
@@ -6873,11 +7091,17 @@ async def wealth_evoi_compute(
     discount_rate: float = 0.10,
     scale_mode: str = "enterprise",
     well_type: str = "",
+    robust: bool = False,
 ) -> Any:
     """
-    Expected Value of Information (EVOI) point-estimate computation. [Epistemic Dimension]
+    Expected Value of Information (EVOI) computation. [Epistemic Dimension]
     Ingests GEOX prospect_metrics or raw prior/posterior probabilities.
     EVOI = E[V | with_info] - E[V | without_info]
+
+    When robust=True: computes EVOI under uncertainty ranges (prior ± 0.1,
+    posterior ± 0.15) across 50 samples. Returns worst-case EVOI alongside
+    expected, plus robust_regret (gap between expected and worst-case).
+    APEX Pillar IV: robust optimization — max-min over uncertainty set.
     """
     # Metric Handoff (GEOX -> WEALTH)
     if prospect_metrics:
@@ -6938,6 +7162,63 @@ async def wealth_evoi_compute(
             info_cost_musd=info_cost_musd,
             discount_rate=discount_rate,
         )
+
+        # ── APEX Pillar IV: Robust optimization ──────────────────────────
+        # When robust=True, compute EVOI across uncertainty ranges and return
+        # worst-case alongside expected. This is max-min over the uncertainty
+        # set: maximize the worst-case EVOI (robust decision).
+        if robust:
+            import numpy as _np
+
+            n_samples = 50
+            prior_lo = max(0.01, final_prior - 0.10)
+            prior_hi = min(0.99, final_prior + 0.10)
+            post_lo = max(0.01, final_posterior - 0.15)
+            post_hi = min(0.99, final_posterior + 0.15)
+
+            prior_samples = _np.linspace(prior_lo, prior_hi, n_samples)
+            post_samples = _np.linspace(post_lo, post_hi, n_samples)
+
+            evoi_samples = []
+            for p in prior_samples:
+                for q in post_samples:
+                    if q > p:  # posterior must exceed prior (information has value)
+                        try:
+                            r = compute_evoi(
+                                prior_pos=float(p),
+                                posterior_pos=float(q),
+                                well_cost_musd=well_cost_musd,
+                                p50_value_musd=p50_value_musd,
+                                info_cost_musd=info_cost_musd,
+                                discount_rate=discount_rate,
+                            )
+                            evoi_samples.append(r.get("evoi_musd", 0.0))
+                        except Exception:
+                            continue
+
+            if evoi_samples:
+                expected_evoi = float(_np.mean(evoi_samples))
+                worst_case_evoi = float(_np.min(evoi_samples))
+                cvar_5 = float(_np.percentile(evoi_samples, 5))
+                regret = max(0.0, expected_evoi - worst_case_evoi)
+                res["robust_analysis"] = {
+                    "expected_evoi_musd": round(expected_evoi, 4),
+                    "worst_case_evoi_musd": round(worst_case_evoi, 4),
+                    "cvar_5pct_musd": round(cvar_5, 4),
+                    "robust_regret_musd": round(regret, 4),
+                    "n_samples": len(evoi_samples),
+                    "uncertainty_prior": [round(prior_lo, 3), round(prior_hi, 3)],
+                    "uncertainty_posterior": [round(post_lo, 3), round(post_hi, 3)],
+                    "method": "APEX_ROBUST_MAX_MIN",
+                }
+                # Robust verdict: if worst-case is still positive, strong SEAL
+                if worst_case_evoi > 0:
+                    res["robust_verdict"] = "ROBUST_SEAL"
+                elif expected_evoi > 0:
+                    res["robust_verdict"] = "ROBUST_SABAR"
+                else:
+                    res["robust_verdict"] = "ROBUST_VOID"
+            # ── End APEX robust ───────────────────────────────────────────
 
         drill = res.get("drill_recommendation", "")
         if drill.startswith("PROCEED"):
