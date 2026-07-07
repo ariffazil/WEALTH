@@ -22,9 +22,17 @@ from typing import Any
 def compute_emv(
     outcomes: list[float],
     probabilities: list[float],
+    bid_surface: dict | None = None,
 ) -> dict:
     """
     Compute Expected Monetary Value with variance.
+
+    SCORING_SURFACE_BEFORE_EMV (Eureka 4): EMV without bid scoring surface
+    = answering the wrong question. If bid_surface is None, a warning is
+    emitted but computation still proceeds (the surface is advisory, not blocking).
+
+    The bid surface should contain: {"bids": [...], "competitive_intensity": float,
+    "winner": str, "winning_price": float} from wealth_bid_surface.
     """
     if len(outcomes) != len(probabilities):
         raise ValueError("outcomes and probabilities must have same length")
@@ -33,12 +41,31 @@ def compute_emv(
     variance = sum(p * (o - expected) ** 2 for o, p in zip(outcomes, probabilities))
     std_dev = math.sqrt(variance)
 
-    return {
+    result = {
         "emv": round(expected, 2),
         "variance": round(variance, 4),
         "std_dev": round(std_dev, 4),
         "outcome_count": len(outcomes),
     }
+
+    # SCORING_SURFACE_BEFORE_EMV invariant check
+    if bid_surface is None:
+        result["scoring_surface_missing"] = True
+        result["scoring_surface_warning"] = (
+            "SCORING_SURFACE_BEFORE_EMV: EMV computed without bid scoring surface. "
+            "Use wealth_bid_surface first to ensure the right question is being answered. "
+            "See Eureka 4: 'EMV without bid scoring surface = answering the wrong question.'"
+        )
+    else:
+        result["scoring_surface_missing"] = False
+        if isinstance(bid_surface, dict):
+            result["bid_competitive_intensity"] = bid_surface.get(
+                "competitive_intensity"
+            )
+            result["bid_winner"] = bid_surface.get("winner")
+            result["bid_winning_price"] = bid_surface.get("winning_price")
+
+    return result
 
 
 def monte_carlo_simulation(
@@ -88,9 +115,7 @@ def monte_carlo_simulation(
         value = initial_value
         for _ in range(periods):
             shock = random.gauss(0, 1)
-            value *= math.exp(
-                (growth_rate - 0.5 * volatility**2) + volatility * shock
-            )
+            value *= math.exp((growth_rate - 0.5 * volatility**2) + volatility * shock)
         terminal_values.append(value)
 
     terminal_values.sort()
@@ -179,7 +204,9 @@ def detect_false_confluence(
         "concentration": round(concentration, 3),
         "unique_classes": len(classes),
         "total_indicators": total,
-        "dominant_class": max(classes, key=lambda k: len(classes[k])) if classes else None,
+        "dominant_class": max(classes, key=lambda k: len(classes[k]))
+        if classes
+        else None,
         "warning": (
             "FALSE CONFLUENCE: indicators are measuring the same signal"
             if is_false
@@ -196,7 +223,9 @@ def compute_asymmetry(
     Compute risk asymmetry — is the distribution skewed?
     """
     up_mean = sum(upside_scenarios) / len(upside_scenarios) if upside_scenarios else 0
-    down_mean = sum(downside_scenarios) / len(downside_scenarios) if downside_scenarios else 0
+    down_mean = (
+        sum(downside_scenarios) / len(downside_scenarios) if downside_scenarios else 0
+    )
 
     skew = up_mean + down_mean  # Net expectation
     ratio = abs(up_mean / down_mean) if down_mean != 0 else float("inf")
@@ -246,7 +275,9 @@ def fiscal_breakeven_oil_price(
     annual_production_boe = petronas_production_boe_per_day * 365
 
     # Current fiscal deficit
-    current_deficit = total_government_expenditure - non_oil_revenue - petronas_dividend_base_rm
+    current_deficit = (
+        total_government_expenditure - non_oil_revenue - petronas_dividend_base_rm
+    )
     deficit_pct = current_deficit / gdp_nominal_rm_billion
 
     # Target maximum deficit (budget ceiling)
@@ -258,7 +289,9 @@ def fiscal_breakeven_oil_price(
 
     # Government take per barrel = production × price × effective rate
     # Revenue per usd_per_bbl = annual_production × usd_per_bbl × rate
-    government_take_per_usd = annual_production_boe * royalty_tax_effective_rate / 1e9  # RM B per USD
+    government_take_per_usd = (
+        annual_production_boe * royalty_tax_effective_rate / 1e9
+    )  # RM B per USD
 
     # Breakeven: additional oil revenue needed / government take per USD
     breakeven_price_usd = (
@@ -271,17 +304,26 @@ def fiscal_breakeven_oil_price(
     fiscal_sensitivity_rm_per_usd = government_take_per_usd  # RM B per USD/bbl
 
     # At current price: how much is Petronas contributing vs what's needed?
-    current_oil_revenue = annual_production_boe * oil_price_assumption_usd * royalty_tax_effective_rate / 1e9
+    current_oil_revenue = (
+        annual_production_boe
+        * oil_price_assumption_usd
+        * royalty_tax_effective_rate
+        / 1e9
+    )
 
     # Pressure flag: if breakeven price > current price, fiscal path needs correction
     fiscal_pressure = (
-        "UNSUSTAINABLE" if breakeven_price_usd and breakeven_price_usd > oil_price_assumption_usd
-        else "MANAGEABLE" if breakeven_price_usd and breakeven_price_usd < oil_price_assumption_usd * 0.8
+        "UNSUSTAINABLE"
+        if breakeven_price_usd and breakeven_price_usd > oil_price_assumption_usd
+        else "MANAGEABLE"
+        if breakeven_price_usd and breakeven_price_usd < oil_price_assumption_usd * 0.8
         else "AT_RISK"
     )
 
     return {
-        "breakeven_price_usd": round(breakeven_price_usd, 1) if breakeven_price_usd else None,
+        "breakeven_price_usd": round(breakeven_price_usd, 1)
+        if breakeven_price_usd
+        else None,
         "current_oil_price_usd": oil_price_assumption_usd,
         "fiscal_pressure": fiscal_pressure,
         "current_deficit_rm_b": round(current_deficit, 1),

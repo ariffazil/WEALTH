@@ -2442,7 +2442,6 @@ def _handle_governance_singularity(entities_json: str = "") -> dict:
         return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
 
 
-
 def _handle_kelly(
     account_balance: float,
     win_rate: float = 0.0,
@@ -2472,17 +2471,20 @@ def _handle_kelly(
     # -- Validate inputs --
     if win_rate <= 0 or win_rate >= 1:
         return {
-            "status": "ERROR", "verdict": "MATH_ERROR",
+            "status": "ERROR",
+            "verdict": "MATH_ERROR",
             "result": {"error": "win_rate must be (0,1)", "win_rate": win_rate},
         }
     if avg_win <= 0 or avg_loss <= 0:
         return {
-            "status": "ERROR", "verdict": "MATH_ERROR",
+            "status": "ERROR",
+            "verdict": "MATH_ERROR",
             "result": {"error": "avg_win and avg_loss must be > 0"},
         }
     if account_balance <= 0:
         return {
-            "status": "ERROR", "verdict": "MATH_ERROR",
+            "status": "ERROR",
+            "verdict": "MATH_ERROR",
             "result": {"error": "account_balance must be > 0"},
         }
 
@@ -2501,7 +2503,8 @@ def _handle_kelly(
     edge = p * avg_win - q * avg_loss  # expected value per trade
     growth_rate = (
         p * math.log(1 + kelly_adj * b) + q * math.log(1 - kelly_adj)
-        if 0 < kelly_adj < 1 else 0
+        if 0 < kelly_adj < 1
+        else 0
     )
 
     # -- APEX organ: W (Execution) -- work done by optimal sizing --
@@ -16091,6 +16094,492 @@ def wealth_inequality_kernel(
     )
 
 
+# ============================================================
+# SIMULATIVE EXPLOITATION DETECTION TOOLS (2026-07-08)
+# Detect institutional weakness exploitation patterns.
+# ============================================================
+
+
+@mcp.tool(name="wealth_stress_convergence")
+def wealth_stress_convergence(
+    signals: List[Dict[str, Any]],
+    threshold: float = 0.6,
+    window_months: int = 6,
+) -> Dict[str, Any]:
+    """Detect when multiple institutional stress signals fire simultaneously,
+    creating vulnerability windows for external exploitation.
+
+    Physics analogy: stress convergence — when multiple load vectors align,
+    the structure fails at a lower total load than any single vector alone.
+
+    Input:
+        signals: list of {name, value (0-1), weight (0-1)} — must sum weights ~1.0
+        threshold: convergence threshold (default 0.6)
+        window_months: time window for convergence check
+
+    Returns convergence_score, vulnerability_class, dominant_signals, regime.
+    """
+    if not signals:
+        return {
+            "mcp": "WEALTH",
+            "tool": "wealth_stress_convergence",
+            "convergence_score": 0.0,
+            "is_convergent": False,
+            "stress_vector": [],
+            "vulnerability_class": "LOW",
+            "dominant_signals": [],
+            "recommendation": "NO_SIGNALS_PROVIDED",
+            "regime": "inclusive",
+            "epistemic_tag": "ESTIMATE",
+            "confidence": 0.0,
+        }
+
+    # Clamp inputs
+    for s in signals:
+        s["value"] = max(0.0, min(1.0, float(s.get("value", 0.0))))
+        s["weight"] = max(0.0, min(1.0, float(s.get("weight", 0.0))))
+
+    # Step 1: Weighted sum
+    convergence_score = sum(s["value"] * s["weight"] for s in signals)
+    convergence_score = round(min(1.0, max(0.0, convergence_score)), 4)
+
+    # Step 2: Classify vulnerability
+    if convergence_score > 0.7:
+        vulnerability_class = "CRITICAL"
+    elif convergence_score > 0.5:
+        vulnerability_class = "HIGH"
+    elif convergence_score > 0.3:
+        vulnerability_class = "MEDIUM"
+    else:
+        vulnerability_class = "LOW"
+
+    # Step 3: Convergent if score >= threshold AND >= 3 signals > 0.5
+    high_count = sum(1 for s in signals if s["value"] > 0.5)
+    is_convergent = convergence_score >= threshold and high_count >= 3
+
+    # Step 4: Map to regime
+    if convergence_score > 0.7:
+        regime = "simulative"
+    elif convergence_score >= 0.4:
+        regime = "extractive"
+    else:
+        regime = "inclusive"
+
+    # Step 5: Dominant signals (top 3 by weighted contribution)
+    scored = [(s["name"], s["value"] * s["weight"]) for s in signals]
+    scored.sort(key=lambda x: x[1], reverse=True)
+    dominant_signals = [name for name, _ in scored[:3]]
+
+    # Recommendation
+    if vulnerability_class == "CRITICAL":
+        recommendation = "IMMEDIATE_GOVERNANCE_INTERVENTION"
+    elif vulnerability_class == "HIGH":
+        recommendation = "ELEVATED_GOVERNANCE_CHECK"
+    elif vulnerability_class == "MEDIUM":
+        recommendation = "MONITOR_CLOSELY"
+    else:
+        recommendation = "ROUTINE_OVERSIGHT"
+
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_stress_convergence",
+        "convergence_score": convergence_score,
+        "is_convergent": is_convergent,
+        "stress_vector": [s["value"] for s in signals],
+        "vulnerability_class": vulnerability_class,
+        "dominant_signals": dominant_signals,
+        "recommendation": recommendation,
+        "regime": regime,
+        "epistemic_tag": "DERIVED",
+        "confidence": round(min(0.90, 0.5 + convergence_score * 0.4), 2),
+    }
+
+
+@mcp.tool(name="wealth_simulative_scan")
+def wealth_simulative_scan(
+    actor: Dict[str, Any],
+    institution: Dict[str, Any],
+    context: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Detect when an external actor exploits institutional weakness under a
+    "neutral party" guise — simulative exploitation pattern.
+
+    Born from the PETRONAS-Petros-Shell MDS dispute case study (2024-2026):
+    Shell exploited institutional weakness (BOD thinning, profit decline,
+    restructuring) via interpleader, freezing RM1B for 14 months.
+
+    Input:
+        actor: {name, claims, actions, value_extracted, duration_months}
+        institution: {name, stress_convergence_score, governance_state, active_external_disputes}
+        context: {prior_relationship_years, prior_litigation_count, legal_mechanism_used}
+
+    Returns simulative_score, exploitation_vector, verdict, evidence.
+    """
+    claims = actor.get("claims", [])
+    actions = actor.get("actions", [])
+    value_extracted = float(actor.get("value_extracted", 0))
+    duration_months = max(1, int(actor.get("duration_months", 1)))
+    stress_score = float(institution.get("stress_convergence_score", 0.5))
+    governance_state = institution.get("governance_state", "NORMAL")
+    prior_litigation = int(context.get("prior_litigation_count", 0))
+
+    # Step 1: Neutral claim gap — more claims than actions is suspicious
+    neutral_claim_gap = len(claims) / (len(actions) + 1)
+    neutral_claim_gap = min(1.0, neutral_claim_gap)
+
+    # Step 2: Timing alignment — correlation with institutional weakness
+    governance_factor = {"THIN": 1.0, "NORMAL": 0.5, "STRONG": 0.2}.get(
+        governance_state, 0.5
+    )
+    timing_alignment = round(min(1.0, stress_score * governance_factor * 1.2), 4)
+
+    # Step 3: Precedent break — 1.0 if first-ever litigation
+    precedent_break = (
+        1.0 if prior_litigation == 0 else max(0.1, 1.0 / (prior_litigation + 1))
+    )
+
+    # Step 4: Value extraction rate (normalized to RM1B baseline)
+    value_factor = min(1.0, value_extracted / 1e9)
+
+    # Step 5: Simulative score (weighted combination)
+    simulative_score = round(
+        0.3 * neutral_claim_gap
+        + 0.3 * timing_alignment
+        + 0.2 * precedent_break
+        + 0.2 * value_factor,
+        4,
+    )
+
+    is_simulative = simulative_score >= 0.6
+
+    # Exploitation vector breakdown
+    exploitation_vector = {
+        "neutral_claim_vs_actual": round(neutral_claim_gap, 4),
+        "value_extraction_rate": round(value_factor, 4),
+        "timing_alignment": round(timing_alignment, 4),
+        "precedent_break": round(precedent_break, 4),
+    }
+
+    # Verdict
+    if is_simulative:
+        verdict = "SIMULATIVE_EXPLOITATION"
+    elif simulative_score >= 0.4:
+        verdict = "EXTRACTIVE_POTENTIAL"
+    else:
+        verdict = "NORMAL_DISPUTE"
+
+    # Build evidence list
+    evidence = []
+    if prior_litigation == 0:
+        evidence.append(
+            f"First litigation in {context.get('prior_relationship_years', '?')}-year relationship"
+        )
+    if "payment_suspended" in actions and "interpleader_filed" in actions:
+        evidence.append("Payment suspended while services continued flowing")
+    if governance_state == "THIN":
+        evidence.append("Filed during governance thinning period")
+    if value_extracted > 0:
+        evidence.append(
+            f"RM{value_extracted / 1e6:.0f}M value held during {duration_months}-month dispute"
+        )
+    if len(claims) > len(actions):
+        evidence.append(
+            f"Claims ({len(claims)}) exceed actions ({len(actions)}) — performative neutrality"
+        )
+
+    # Regime mapping
+    if is_simulative:
+        regime = "simulative"
+    elif simulative_score >= 0.4:
+        regime = "extractive"
+    else:
+        regime = "inclusive"
+
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_simulative_scan",
+        "simulative_score": simulative_score,
+        "is_simulative": is_simulative,
+        "exploitation_vector": exploitation_vector,
+        "verdict": verdict,
+        "evidence": evidence,
+        "regime": regime,
+        "epistemic_tag": "INTERPRETED",
+        "confidence": round(min(0.90, 0.4 + simulative_score * 0.5), 2),
+    }
+
+
+@mcp.tool(name="wealth_vulnerability_window")
+def wealth_vulnerability_window(
+    board_changes: List[Dict[str, Any]],
+    current_board_size: int,
+    normal_board_size: int,
+    executive_changes: Optional[List[Dict[str, Any]]] = None,
+    restructuring_active: bool = False,
+    external_threats_active: int = 0,
+) -> Dict[str, Any]:
+    """Detect governance transitions that create vulnerability windows for
+    external exploitation.
+
+    Physics analogy: structural fatigue — when key members depart and are not
+    replaced, the remaining structure bears disproportionate load.
+
+    Input:
+        board_changes: list of {name, role, resigned (date), replacement_date (optional)}
+        current_board_size: current number of board members
+        normal_board_size: normal/expected board size
+        executive_changes: optional list of executive departures
+        restructuring_active: whether workforce restructuring is ongoing
+        external_threats_active: count of active external threats/disputes
+
+    Returns vulnerability_score, window_status, unfilled_seats, risk_factors.
+    """
+    board_changes = board_changes or []
+    executive_changes = executive_changes or []
+    normal_board_size = max(1, normal_board_size)
+
+    # Step 1: Board ratio
+    board_ratio = round(current_board_size / normal_board_size, 4)
+
+    # Step 2: Departure rate (per month) — use number of changes as proxy
+    # Estimate window from earliest resignation to now
+    if board_changes:
+        dates = []
+        for bc in board_changes:
+            r = bc.get("resigned", "")
+            if r:
+                try:
+                    dates.append(datetime.fromisoformat(r))
+                except (ValueError, TypeError):
+                    pass
+        if dates:
+            earliest = min(dates)
+            window_months = max(1, (datetime.now() - earliest).days // 30)
+        else:
+            window_months = 6
+    else:
+        window_months = 6
+    departure_rate = min(1.0, len(board_changes) / max(1, window_months))
+
+    # Step 3: Unfilled seats
+    unfilled = sum(1 for bc in board_changes if not bc.get("replacement_date"))
+
+    # Step 4: Vulnerability score
+    vulnerability_score = round(
+        0.3 * (1.0 - board_ratio)
+        + 0.25 * departure_rate
+        + 0.25 * (unfilled / max(1, len(board_changes)))
+        + 0.2 * (1.0 if restructuring_active else 0.0),
+        4,
+    )
+    vulnerability_score = min(1.0, max(0.0, vulnerability_score))
+
+    is_vulnerable = vulnerability_score >= 0.5
+
+    # Step 5: Window status
+    if unfilled > 0:
+        window_status = "OPEN"
+    elif vulnerability_score >= 0.3:
+        window_status = "CLOSING"
+    else:
+        window_status = "CLOSED"
+
+    # Window dates
+    window_opened = None
+    if board_changes:
+        dates_str = [bc.get("resigned") for bc in board_changes if bc.get("resigned")]
+        if dates_str:
+            window_opened = min(dates_str)
+
+    # Risk factors
+    risk_factors = []
+    if unfilled > 0:
+        risk_factors.append(f"{unfilled} board seats without replacements")
+    if board_ratio < 1.0:
+        risk_factors.append(
+            f"Board at {board_ratio:.0%} of normal operating size ({current_board_size}/{normal_board_size})"
+        )
+    if restructuring_active:
+        risk_factors.append("Active restructuring during governance transition")
+    if external_threats_active > 0:
+        risk_factors.append(
+            f"{external_threats_active} external threat(s) active during governance transition"
+        )
+    if departure_rate > 0.5:
+        risk_factors.append("High board departure rate")
+
+    # Recommendation
+    if vulnerability_score >= 0.7:
+        recommendation = "FREEZE_MAJOR_DECISIONS_UNTIL_WINDOW_CLOSES"
+    elif is_vulnerable:
+        recommendation = "ELEVATED_GOVERNANCE_CHECK"
+    else:
+        recommendation = "ROUTINE_OVERSIGHT"
+
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_vulnerability_window",
+        "vulnerability_score": vulnerability_score,
+        "is_vulnerable": is_vulnerable,
+        "window_status": window_status,
+        "window_opened": window_opened,
+        "window_duration_months": window_months,
+        "unfilled_seats": unfilled,
+        "board_ratio": board_ratio,
+        "risk_factors": risk_factors,
+        "recommendation": recommendation,
+        "epistemic_tag": "DERIVED",
+        "confidence": round(min(0.90, 0.5 + vulnerability_score * 0.4), 2),
+    }
+
+
+@mcp.tool(name="wealth_cascade_map")
+def wealth_cascade_map(
+    triggers: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Map trigger chains and compute cumulative blast radius — how each
+    trigger amplifies the next in a cascade failure.
+
+    Physics analogy: cascade failure — when one component's failure loads
+    the next component beyond its capacity, creating a chain reaction.
+
+    Born from the PETRONAS-Petros-Shell MDS cascade:
+    BG Call → Petros Sues → Shell Interpleader → Injunction → MBR Freeze.
+
+    Input:
+        triggers: list of {id, name, date, blast_radius (0-1), type, depends_on (optional)}
+
+    Returns cascade_graph, cumulative_blast_radius, amplification_factor,
+    cascade_depth, critical_path, cascade_type.
+    """
+    if not triggers:
+        return {
+            "mcp": "WEALTH",
+            "tool": "wealth_cascade_map",
+            "cascade_graph": {},
+            "cumulative_blast_radius": 0.0,
+            "amplification_factor": 0.0,
+            "cascade_depth": 0,
+            "critical_path": [],
+            "weakest_link": None,
+            "total_value_at_risk": 0,
+            "cascade_type": "LINEAR",
+            "recommendation": "NO_TRIGGERS_PROVIDED",
+            "epistemic_tag": "ESTIMATE",
+            "confidence": 0.0,
+        }
+
+    # Step 1: Build DAG
+    trigger_map: Dict[str, Dict[str, Any]] = {}
+    for t in triggers:
+        trigger_map[t["id"]] = t
+
+    cascade_graph: Dict[str, List[str]] = {}
+    for t in triggers:
+        tid = t["id"]
+        deps = t.get("depends_on", [])
+        for dep in deps:
+            if dep not in cascade_graph:
+                cascade_graph[dep] = []
+            cascade_graph[dep].append(tid)
+
+    # Find root nodes (no depends_on)
+    all_ids = {t["id"] for t in triggers}
+    has_parent = set()
+    for t in triggers:
+        for dep in t.get("depends_on", []):
+            has_parent.add(t["id"])
+    roots = all_ids - has_parent
+
+    # Step 2: DFS to find all paths from roots to leaves
+    all_paths: List[List[str]] = []
+
+    def dfs(node: str, path: List[str]) -> None:
+        current_path = path + [node]
+        children = cascade_graph.get(node, [])
+        if not children:
+            all_paths.append(current_path)
+        else:
+            for child in children:
+                dfs(child, current_path)
+
+    for root in roots:
+        dfs(root, [])
+
+    # If no paths found (isolated nodes), treat each as a single-node path
+    if not all_paths:
+        for t in triggers:
+            all_paths.append([t["id"]])
+
+    # Step 3: Compute path blast radius: 1 - Π(1 - r_i)
+    def path_blast(path: List[str]) -> float:
+        product = 1.0
+        for tid in path:
+            r = trigger_map[tid].get("blast_radius", 0.0)
+            product *= 1.0 - r
+        return round(1.0 - product, 4)
+
+    path_blasts = [(p, path_blast(p)) for p in all_paths]
+    critical_path, cumulative_blast_radius = max(path_blasts, key=lambda x: x[1])
+
+    # Step 4: Amplification factor
+    initial_blast = (
+        trigger_map[critical_path[0]].get("blast_radius", 0.0) if critical_path else 0.0
+    )
+    final_blast = (
+        trigger_map[critical_path[-1]].get("blast_radius", 0.0)
+        if critical_path
+        else 0.0
+    )
+    amplification_factor = round(final_blast / max(initial_blast, 0.001), 2)
+
+    # Step 5: Cascade depth (longest path)
+    cascade_depth = max(len(p) for p in all_paths) if all_paths else 0
+
+    # Step 6: Classify cascade type
+    if amplification_factor > 5.0:
+        cascade_type = "DIVERGENT"
+    elif amplification_factor >= 2.0:
+        cascade_type = "EXPONENTIAL"
+    else:
+        cascade_type = "LINEAR"
+
+    # Weakest link — the root trigger that started the cascade
+    weakest_link = None
+    if critical_path:
+        root_trigger = trigger_map.get(critical_path[0])
+        if root_trigger:
+            weakest_link = {
+                "id": root_trigger["id"],
+                "name": root_trigger["name"],
+                "contribution": root_trigger.get("blast_radius", 0.0),
+            }
+
+    # Recommendation
+    if cascade_type == "DIVERGENT":
+        recommendation = f"INTERVENE_AT_{critical_path[0]}_TO_PREVENT_CASCADE"
+    elif cascade_type == "EXPONENTIAL":
+        recommendation = f"INTERVENE_AT_{critical_path[0]}_TO_PREVENT_CASCADE"
+    else:
+        recommendation = "MONITOR_CASCADE_PROGRESSION"
+
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_cascade_map",
+        "cascade_graph": cascade_graph,
+        "cumulative_blast_radius": cumulative_blast_radius,
+        "amplification_factor": amplification_factor,
+        "cascade_depth": cascade_depth,
+        "critical_path": list(critical_path),
+        "weakest_link": weakest_link,
+        "total_value_at_risk": 0,
+        "cascade_type": cascade_type,
+        "recommendation": recommendation,
+        "epistemic_tag": "DERIVED",
+        "confidence": round(min(0.90, 0.5 + cumulative_blast_radius * 0.4), 2),
+    }
+
+
 WEALTH_PUBLIC_TOOL_ORDER = (
     # L0 — Kernel Surface
     "wealth_system_registry_status",
@@ -16114,6 +16603,11 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_governance_verdict",
     # Domain Specialist (Civilization)
     "wealth_inequality_kernel",
+    # L3 — Simulative Exploitation Detection (2026-07-08)
+    "wealth_stress_convergence",
+    "wealth_simulative_scan",
+    "wealth_vulnerability_window",
+    "wealth_cascade_map",
     # NOTE: Atomic thin wrappers removed 2026-06-04.
     # Use mode-based tools: wealth_time_discount, wealth_energy_productivity,
     # wealth_entropy_risk, wealth_signal_information, wealth_flow_liquidity,
@@ -16272,6 +16766,34 @@ _TOOL_ANNOTATIONS: dict[str, dict[str, Any]] = {
     },
     "wealth_stock_analysis": {
         "title": "Stock Analysis",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    },
+    "wealth_stress_convergence": {
+        "title": "Stress Convergence",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    },
+    "wealth_simulative_scan": {
+        "title": "Simulative Scan",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    },
+    "wealth_vulnerability_window": {
+        "title": "Vulnerability Window",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    },
+    "wealth_cascade_map": {
+        "title": "Cascade Map",
         "readOnlyHint": True,
         "destructiveHint": False,
         "idempotentHint": True,

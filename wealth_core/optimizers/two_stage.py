@@ -96,7 +96,15 @@ def two_stage_recourse(
     if not first_stage_costs:
         return _error_result("No first-stage costs provided")
 
-    var_names = list(first_stage_costs.keys())
+    # Collect ALL variable names (union of first-stage and second-stage)
+    all_vars = set(first_stage_costs.keys())
+    for s in scenario_data:
+        all_vars.update(s.get("recourse_coefficients", {}).keys())
+        for rc in s.get("recourse_constraints", []):
+            all_vars.update(rc.get("coefficients", {}).keys())
+            all_vars.update(rc.get("first_stage_coefficients", {}).keys())
+
+    var_names = sorted(list(all_vars))
     n_vars = len(var_names)
     n_scen = len(scenario_data)
 
@@ -113,6 +121,9 @@ def two_stage_recourse(
     else:
         scenarios = scenario_data
 
+    # Ensure first_stage_costs is defined for all vars
+    fs_costs = {v: first_stage_costs.get(v, 0.0) for v in var_names}
+
     # ── Build SAA problem ────────────────────────────────────────────────
     # Variables: x (n_vars first-stage) + y_s (n_vars recourse per scenario)
     # Total: n_vars * (1 + n_scen)
@@ -123,16 +134,15 @@ def two_stage_recourse(
     def neg_total_value(z):
         """Negative total expected value (for minimization)."""
         x = z[:n_vars]
-        first_stage_val = sum(
-            first_stage_costs[v] * x[i] for i, v in enumerate(var_names)
-        )
+        first_stage_val = sum(fs_costs[v] * x[i] for i, v in enumerate(var_names))
 
         recourse_val = 0.0
         for s_idx, scenario in enumerate(scenarios):
             y = z[n_vars * (s_idx + 1) : n_vars * (s_idx + 2)]
             p = scenario.get("probability", 1.0 / n_scen)
             rc = scenario.get("recourse_coefficients", recourse_costs or {})
-            scenario_val = sum(rc.get(v, 0.0) * y[i] for i, v in enumerate(var_names))
+            rc_filled = {v: rc.get(v, 0.0) for v in var_names}
+            scenario_val = sum(rc_filled[v] * y[i] for i, v in enumerate(var_names))
             recourse_val += p * scenario_val
 
         return -(first_stage_val + recourse_val)
@@ -198,10 +208,21 @@ def two_stage_recourse(
             )
 
     # ── Bounds ───────────────────────────────────────────────────────────
-    bounds = [(0.0, None)] * (n_vars * (1 + n_scen))
+    # Force recourse-only variables in first stage to be 0
+    bounds = []
+    for s_idx in range(1 + n_scen):
+        for i, v in enumerate(var_names):
+            if s_idx == 0 and v not in first_stage_costs:
+                bounds.append((0.0, 0.0))
+            else:
+                bounds.append((0.0, None))
 
     # ── Solve ────────────────────────────────────────────────────────────
     x0 = np.ones(n_vars * (1 + n_scen)) * 0.5
+    for i, v in enumerate(var_names):
+        if v not in first_stage_costs:
+            x0[i] = 0.0
+
     res = minimize(
         neg_total_value,
         x0,
@@ -217,9 +238,7 @@ def two_stage_recourse(
     # ── Extract results ──────────────────────────────────────────────────
     x_opt = res.x[:n_vars]
     first_stage = {var_names[i]: float(x_opt[i]) for i in range(n_vars)}
-    first_stage_val = sum(
-        first_stage_costs[v] * x_opt[i] for i, v in enumerate(var_names)
-    )
+    first_stage_val = sum(fs_costs[v] * x_opt[i] for i, v in enumerate(var_names))
 
     # Per-scenario recourse values
     scenario_details = []
@@ -228,7 +247,8 @@ def two_stage_recourse(
         y = res.x[n_vars * (s_idx + 1) : n_vars * (s_idx + 2)]
         p = scenario.get("probability", 1.0 / n_scen)
         rc = scenario.get("recourse_coefficients", recourse_costs or {})
-        s_val = sum(rc.get(v, 0.0) * y[i] for i, v in enumerate(var_names))
+        rc_filled = {v: rc.get(v, 0.0) for v in var_names}
+        s_val = sum(rc_filled[v] * y[i] for i, v in enumerate(var_names))
         total_recourse += p * s_val
         scenario_details.append(
             {
@@ -278,32 +298,38 @@ def _compute_wait_and_see(
 ) -> float:
     """Compute wait-and-see value: solve each scenario independently, then average."""
     total = 0.0
+    fs_costs = {v: first_stage_costs.get(v, 0.0) for v in var_names}
+
     for scenario in scenarios:
         p = scenario.get("probability", 1.0 / len(scenarios))
         rc = scenario.get("recourse_coefficients", recourse_costs or {})
+        rc_filled = {v: rc.get(v, 0.0) for v in var_names}
 
-        # Simple: maximize recourse value subject to recourse constraints
-        rc_list = scenario.get("recourse_constraints", [])
-
+        # Simple: maximize recourse value + first stage value
         def neg_rc_value(y):
-            return -sum(rc.get(v, 0.0) * y[i] for i, v in enumerate(var_names))
+            fs_val = sum(fs_costs[v] * y[i] for i, v in enumerate(var_names))
+            rc_val = sum(rc_filled[v] * y[i] for i, v in enumerate(var_names))
+            return -(fs_val + rc_val)
 
+        rc_list = scenario.get("recourse_constraints", [])
         constraints = []
         for rc_con in rc_list:
             coeffs = rc_con.get("coefficients", {})
+            first_stage_coeffs = rc_con.get("first_stage_coefficients", {})
             rhs = rc_con.get("rhs", 0.0)
             sense = rc_con.get("sense", "<=")
 
-            def make_con(coeffs, rhs, sense):
+            def make_con(coeffs, fsc, rhs, sense):
                 def con_fn(y):
                     lhs = sum(
                         coeffs.get(v, 0.0) * y[i] for i, v in enumerate(var_names)
                     )
+                    lhs += sum(fsc.get(v, 0.0) * y[i] for i, v in enumerate(var_names))
                     return rhs - lhs if sense == "<=" else lhs - rhs
 
                 return con_fn
 
-            constraints.append({"type": "ineq", "fun": make_con(coeffs, rhs, sense)})
+            constraints.append({"type": "ineq", "fun": make_con(coeffs, first_stage_coeffs, rhs, sense)})
 
         bounds = [(0.0, None)] * n_vars
         y0 = np.ones(n_vars) * 0.5
