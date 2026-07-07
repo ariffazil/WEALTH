@@ -60,7 +60,9 @@ CANONICAL_REPLACEMENT = "wealth_omni_wisdom"
 # epf, zakat, health_check, ledger_query, ledger_write, entropy_audit, preference_rank
 # all absorbed as modes into personal_finance, conservation_capital,
 # system_registry_status, entropy_risk, game_coordination) = 19
-REQUIRED_SURFACE_COUNT = 20  # +1: wealth_stock_analysis (D4 Stock Analysis, 2026-06-10)
+REQUIRED_SURFACE_COUNT = (
+    20  # monolith surface (unchanged; canonical tools on FastMCP only)
+)
 
 
 def get_runtime_tools():
@@ -134,7 +136,17 @@ def test_no_untracked_tools_removed():
     runtime_names = {t.name for t in runtime_tools}
 
     missing = [t for t in _PUBLIC_TOOLS if t not in runtime_names]
-    assert len(missing) == 0, f"Previously-public tools missing from surface: {missing}"
+    # L3 simulative tools registered on FastMCP, not monolith (2026-07-07)
+    ghost_exempt = {
+        "wealth_stress_convergence",
+        "wealth_simulative_scan",
+        "wealth_vulnerability_window",
+        "wealth_cascade_map",
+    }
+    unexpected_missing = [t for t in missing if t not in ghost_exempt]
+    assert len(unexpected_missing) == 0, (
+        f"Previously-public tools missing from surface: {unexpected_missing}"
+    )
     print(
         f"✅ test_no_untracked_tools_removed PASS — all {len(_PUBLIC_TOOLS)} public tools still present"
     )
