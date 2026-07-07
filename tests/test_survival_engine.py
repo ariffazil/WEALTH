@@ -378,6 +378,11 @@ def test_no_public_tool_removed():
         "wealth_score_risk",
         "wealth_compare_scenarios",
         "wealth_emit_investment_memo",
+        # L3 simulative tools — registered on FastMCP, not monolith (2026-07-07)
+        "wealth_stress_convergence",
+        "wealth_simulative_scan",
+        "wealth_vulnerability_window",
+        "wealth_cascade_map",
     }
     unexpected_missing = [t for t in missing if t not in ghost_exempt]
 

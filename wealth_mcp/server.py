@@ -47,10 +47,19 @@ from wealth_core.risk import (
 from wealth_core.collapse_signature.scanner import compute_collapse_risk
 from wealth_core.collapse_signature.beautiful_mouse import compute_beautiful_mouse_score
 from wealth_core.counterfactual import run_counterfactual
+from wealth_core.institutional import (
+    compute_stress_index,
+    compute_cascade,
+    compute_governance_capacity,
+    compute_exploitation,
+)
 from wealth_arifos_bridge.judge_handoff import (
     prepare_judge_handoff,
     submit_to_arif_judge,
 )
+
+# ── Canonical tool surface (7 tools, mode-dispatched) ──────────────────
+from wealth_mcp.tools.canonical import register_canonical_tools
 
 
 def create_mcp_server() -> FastMCP:
@@ -80,38 +89,13 @@ def create_mcp_server() -> FastMCP:
         _RECEIPT_PATH = "/root/VAULT999/wealth/receipts.jsonl"
         _SCHEMA_VERSION = "2026.06.27"
 
-        # ── Session-scoped preload tracking ─────────────────────────────
-        # Maps session_id -> set of resource URIs that have been read.
-        # PLUS a global "_global" set: any preload seen in any session is
-        # available to all sessions. This avoids the failure mode where
-        # a resources/read call (which has no session_id) drops its preload
-        # into _default but a subsequent tools/call with _meta session_id
-        # checks a different (empty) set.
-        _session_preloads: dict[str, set[str]] = {"_global": set()}
-        _REQUIRED_PRELOADS = {
-            "wealth_compute_emv": ["wealth://reality/context"],
-            "wealth_compute_evoi": [
-                "wealth://reality/context",
-                "wealth://risk/thresholds",
-            ],
-            "wealth_monte_carlo_simulate": ["wealth://reality/context"],
-            "wealth_judge_handoff": [
-                "wealth://handoff/arifos-schema",
-                "wealth://risk/thresholds",
-                "wealth://affordance/contracts",
-            ],
-            "wealth_vault_write": [
-                "wealth://handoff/arifos-schema",
-                "wealth://replay/receipt-schema",
-            ],
-            "wealth_collapse_signature_scan": [
-                "wealth://risk/thresholds",
-                "wealth://federation/contract",
-            ],
-            "wealth_power_audit": ["wealth://federation/contract"],
-            "wealth_stock_analysis": ["wealth://market/sources"],
-            "wealth_market_data": ["wealth://market/sources"],
-        }
+        # ── Preload mechanism REMOVED (2026-07-07) ──────────────────────
+        # Resources are now direct @mcp.resource() URIs with no gating.
+        # Tools that need resource data read the file directly or call
+        # the resource function inline. See SVB backtest findings:
+        # all 3 wealth:// URIs returned "Failed to read MCP resource"
+        # because clients couldn't populate the session preload cache.
+        pass
 
         def _now_iso() -> str:
             return _dt.datetime.now(_dt.timezone.utc).isoformat()
@@ -204,9 +188,13 @@ def create_mcp_server() -> FastMCP:
                     "wisdom",
                 )
             ):
-                return "wisdom"
+                return "institutional" if "institutional" in t else "wisdom"
             if any(k in t for k in ("handoff", "judge", "arifos")):
                 return "governance"
+            if any(k in t for k in ("bid_surface",)):
+                return "auction"
+            if any(k in t for k in ("optimize_mwc", "mwc")):
+                return "coalition"
             if any(
                 k in t
                 for k in ("evoi", "emv", "asymmetry", "confluence", "monte_carlo")
@@ -287,64 +275,6 @@ def create_mcp_server() -> FastMCP:
                 kwargs.get("session_id") or meta.get("session_id") or "_default"
             )
 
-            # ── Preload enforcement ────────────────────────────────────
-            # Kelly mode uses user-provided data (win_rate, avg_win, avg_loss)
-            # and does NOT need market sources — exempt from preload guard.
-            _mode = (arguments or {}).get("mode", "")
-            required = (
-                [] if _mode == "kelly" else _REQUIRED_PRELOADS.get(name, [])
-            )
-            if required:
-                # Preload set = union of session-keyed set + global set.
-                # Resources without _meta session_id land in _global; tools
-                # with _meta session_id see both their own preloads AND
-                # all preloads loaded in any prior session.
-                read = _session_preloads.get(session_id, set()) | _session_preloads.get(
-                    "_global", set()
-                )
-                missing = [r for r in required if r not in read]
-                if missing:
-                    error_text = json.dumps(
-                        {
-                            "tool": name,
-                            "error_code": "PRELOAD_REQUIRED",
-                            "message": (
-                                f"wealth://runtime/policy requires these resources "
-                                f"to be read in session '{session_id}' before calling "
-                                f"{name}: {missing}"
-                            ),
-                            "guard": "WEALTH_PRELOAD",
-                            "missing_preload": missing,
-                            "policy_resource": "wealth://runtime/policy",
-                            "remedy": (
-                                "Read each missing resource via resources/read, "
-                                "then retry the tool call."
-                            ),
-                            # P1 FIX (2026-06-28): Exact callable resource URIs
-                            # so agents can self-repair without guessing.
-                            "exact_resource_uris": missing,
-                            "example_call": (
-                                f"resources/read {{ uri: '{missing[0]}' }}"
-                                if missing
-                                else None
-                            ),
-                        },
-                        indent=2,
-                    )
-                    _emit_receipt(
-                        name,
-                        arguments,
-                        status="BLOCKED_NON_COMPLIANT",
-                        verdict="PRELOAD_MISSING",
-                        actor_id=actor_id,
-                        session_id=session_id,
-                        missing_preload=missing,
-                    )
-                    return ToolResult(
-                        content=[TextContent(type="text", text=error_text)],
-                        is_error=True,
-                    )
-
             # ── arifOS governance check ────────────────────────────────
             # Pass extracted system actor_id and session_id (Gap-C alignment)
             verdict, error = _check_governance(
@@ -411,18 +341,8 @@ def create_mcp_server() -> FastMCP:
 
         mcp.call_tool = _governance_call_tool
 
-        # ── Wrap read_resource to track preloads ──────────────────────
-        async def _tracking_read_resource(uri, **kwargs):
-            session_id = kwargs.get("session_id", "_default")
-            uri_str = str(uri)
-            # Always add to _global (cross-session visibility) AND to
-            # the caller's session key. _global ensures a tools/call with
-            # _meta session_id sees preloads loaded via resources/read
-            # which doesn't carry _meta.
-            _session_preloads.setdefault("_global", set()).add(uri_str)
-            _session_preloads.setdefault(session_id, set()).add(uri_str)
-
-        mcp.read_resource = _tracking_read_resource
+        # ── read_resource tracking REMOVED (2026-07-07) ──────────────────
+        # Preload mechanism decommissioned. Resources are direct URIs.
 
         # ── Wealth Surface Filtering Middleware ───────────────────────
         from fastmcp.server.middleware import Middleware
@@ -472,8 +392,27 @@ def create_mcp_server() -> FastMCP:
                     "wealth_robust_portfolio",
                     "wealth_chance_constrained",
                     "wealth_two_stage_recourse",
+                    # ── Auction + coalition tools (FORGE 2026-07-07) ────
+                    "wealth_bid_surface",
+                    "wealth_optimize_mwc",
+                    # ── Institutional stress detection (FORGE 2026-07-08) ─
+                    "wealth_institutional_stress_index",
+                    "wealth_cascade_model",
+                    "wealth_governance_capacity",
+                    "wealth_external_exploitation_detect",
+                    # ── Canonical 7-mode surface (FORGE 2026-07-07) ────────
+                    "capital_primitive",
+                    "capital_health",
+                    "capital_diagnose",
+                    "capital_wisdom",
+                    "capital_market",
+                    "capital_ledger",
+                    "capital_registry",
                 }
-                return [t for t in result if getattr(t, "name", None) in public_names]
+                filtered = [
+                    t for t in result if getattr(t, "name", None) in public_names
+                ]
+                return filtered
 
         mcp.add_middleware(WealthSurfaceFilterMiddleware())
 
@@ -490,8 +429,17 @@ def create_mcp_server() -> FastMCP:
     _register_meta_tools(mcp)
     _register_advanced_tools(mcp)  # beautiful mouse, judge handoff (forged 2026-06-24)
     _register_optimizer_tools(mcp)  # APEX optimization engines (forged 2026-07-06)
+    _register_auction_tools(
+        mcp
+    )  # Auction surfaces + coalition games (forged 2026-07-07)
+    _register_institutional_tools(
+        mcp
+    )  # Institutional stress detection (forged 2026-07-08)
     _register_resources(mcp)
     _register_prompts(mcp)
+
+    # ── Register canonical tools (7-mode surface, 2026-07-07) ──────────
+    register_canonical_tools(mcp)
 
     return mcp
 
@@ -499,7 +447,14 @@ def create_mcp_server() -> FastMCP:
 def _register_wisdom_tools(mcp: FastMCP) -> None:
     """Register Wisdom Economics tools."""
 
-    @mcp.tool(name="wealth_wisdom_evaluate")
+    @mcp.tool(
+        name="wealth_wisdom_evaluate",
+        annotations={
+            "readOnlyHint": True,
+            "idempotentHint": True,
+            "apex_primitive": "Φ Faithfulness",
+        },
+    )
     async def wealth_wisdom_evaluate(
         proposal: str,
         capital_type: str = "financial",
@@ -679,10 +634,40 @@ def _register_capital_tools(mcp: FastMCP) -> None:
     @mcp.tool(name="wealth_compute_irr")
     async def wealth_compute_irr(
         cash_flows: list[float],
-        initial_investment: float,
+        initial_investment: float | None = None,
     ) -> dict:
-        """Compute Internal Rate of Return."""
-        result = irr(cash_flows, initial_investment)
+        """Compute Internal Rate of Return.
+
+        Standard: pass all cash flows including initial investment in
+        cash_flows (cash_flows[0] at t=0, typically negative).
+
+        Backward-compatible: if initial_investment is provided (non-zero,
+        non-None), it is prepended as a negative t=0 flow.
+        """
+        # Backward-compatible: if initial_investment provided separately,
+        # prepend it as the t=0 flow with correct (negative) sign convention.
+        if initial_investment is not None and initial_investment != 0:
+            flows = [-abs(initial_investment)] + list(cash_flows)
+        else:
+            flows = list(cash_flows)
+
+        # Validate: need at least 2 cash flows
+        if len(flows) < 2:
+            return wrap_result(
+                tool_name="wealth_compute_irr",
+                domain="capital",
+                result={
+                    "irr": None,
+                    "cash_flows": cash_flows,
+                    "initial_investment": initial_investment,
+                    "warning": "Need at least two cash flows with a sign change to compute IRR",
+                },
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.WEAK,
+                source_attribution=["user_provided_inputs"],
+            )
+
+        result = irr(flows)
         return wrap_result(
             tool_name="wealth_compute_irr",
             domain="capital",
@@ -891,14 +876,26 @@ def _register_risk_tools(mcp: FastMCP) -> None:
             import numpy as _np
 
             n_samples = 20
-            prior_lo, prior_hi = max(0.01, prior_pos - 0.10), min(0.99, prior_pos + 0.10)
-            post_lo, post_hi = max(0.01, posterior_pos - 0.15), min(0.99, posterior_pos + 0.15)
+            prior_lo, prior_hi = (
+                max(0.01, prior_pos - 0.10),
+                min(0.99, prior_pos + 0.10),
+            )
+            post_lo, post_hi = (
+                max(0.01, posterior_pos - 0.15),
+                min(0.99, posterior_pos + 0.15),
+            )
             evoi_samples = []
             for p in _np.linspace(prior_lo, prior_hi, n_samples):
                 for q in _np.linspace(post_lo, post_hi, n_samples):
                     if q > p:
                         try:
-                            r = compute_evoi(float(p), float(q), well_cost_musd, p50_value_musd, discount_rate)
+                            r = compute_evoi(
+                                float(p),
+                                float(q),
+                                well_cost_musd,
+                                p50_value_musd,
+                                discount_rate,
+                            )
                             evoi_samples.append(r.get("evoi_musd", 0.0))
                         except Exception:
                             continue
@@ -913,7 +910,11 @@ def _register_risk_tools(mcp: FastMCP) -> None:
                     "robust_regret_musd": round(max(0, expected_evoi - worst_case), 4),
                     "method": "APEX_ROBUST_MAX_MIN",
                 }
-                result["robust_verdict"] = "ROBUST_SEAL" if worst_case > 0 else ("ROBUST_SABAR" if expected_evoi > 0 else "ROBUST_VOID")
+                result["robust_verdict"] = (
+                    "ROBUST_SEAL"
+                    if worst_case > 0
+                    else ("ROBUST_SABAR" if expected_evoi > 0 else "ROBUST_VOID")
+                )
         # ── End APEX robust ───────────────────────────────────────────────
         return wrap_result(
             tool_name="wealth_compute_evoi",
@@ -1428,6 +1429,13 @@ def _register_meta_tools(mcp: FastMCP) -> None:
                 "wealth_monte_carlo_simulate",
                 "wealth_confluence_check",
                 "wealth_asymmetry_check",
+                "wealth_fiscal_breakeven",
+                # APEX Optimization (forged 2026-07-06)
+                "wealth_markowitz_frontier",
+                "wealth_kelly_sizing",
+                "wealth_robust_portfolio",
+                "wealth_chance_constrained",
+                "wealth_two_stage_recourse",
                 # Domain engines
                 "wealth_stock_analysis",
                 "wealth_personal_finance",
@@ -1442,11 +1450,23 @@ def _register_meta_tools(mcp: FastMCP) -> None:
                 "wealth_survival_engine",
                 # Meta
                 "wealth_registry_status",
-                # Collapse signature (forged 2026-06-24)
+                # Collapse signature — EXTRACTIVE-ONLY LEGACY (demoted 2026-07-08)
+                # PETRONAS case proved calibration gap 0.05→0.76 vs institutional tools
                 "wealth_collapse_signature_scan",
                 "wealth_beautiful_mouse_scan",
                 # Federation bridge (forged 2026-06-24)
                 "wealth_judge_handoff",
+                # Auction + coalition (forged 2026-07-07)
+                "wealth_bid_surface",
+                "wealth_optimize_mwc",
+                # ── DIAGNOSE cluster: Institutional stress detection (PRIMARY, forged 2026-07-08) ──
+                # Canonical institutional health surface. Replaces collapse_signature_scan
+                # for simulative exploitation, constitutional ambiguity, and sovereignty erosion patterns.
+                # VAULT999 SEAL: PETRONAS pattern machine-discriminates two collapse regimes.
+                "wealth_institutional_stress_index",
+                "wealth_cascade_model",
+                "wealth_governance_capacity",
+                "wealth_external_exploitation_detect",
             ],
         }
 
@@ -1608,37 +1628,59 @@ def _register_meta_tools(mcp: FastMCP) -> None:
                 errors=[f"Survival engine error: {e}"],
             )
 
-    # ── Collapse Signature (forged 2026-06-24) ────────────────────────────
-    # Forensic tool: pattern-matches a scenario text against the institutional
-    # collapse corpus (Enron, PDVSA, Pemex, 1MDB, WorldCom) and emits a
-    # 2D risk map (Acemoglu × Calhoun) plus dimensional densities and
-    # tripwire flags. Pairs with wealth-power-audit + wealth-capture-scan.
-    #
-    # Hard rule: diagnostic, not adversarial. Always pair with capture + power.
+    # ── Collapse Signature [LEGACY — EXTRACTIVE-ONLY] (forged 2026-06-24, demoted 2026-07-08) ──
+    # ⚠ DEPRECATED for simulative exploitation patterns.
+    # Calibrated exclusively on extraction-fraud corpus (Enron, PDVSA, Pemex, 1MDB, WorldCom).
+    # The PETRONAS 2018-2026 case study proves this tool is ONTOLOGICALLY BLIND to:
+    #   - Simulative exploitation via constitutional ambiguity
+    #   - Interpleader as third-party extraction
+    #   - Confidentiality clauses as opacity weapons
+    #   - Managed sovereignty erosion across 2-3 year escalation cadences
+    # For institutional collapse detection covering these patterns, use the
+    # DIAGNOSE cluster: wealth_institutional_stress_index + wealth_cascade_model
+    # + wealth_governance_capacity + wealth_external_exploitation_detect.
+    # VAULT999 SEAL: PETRONAS pattern proves extraction-calibrated frameworks are incomplete.
+    # Hard rule: diagnostic, not adversarial. Always pair with DIAGNOSE cluster.
     # Hard rule: HIGH/CRITICAL → 888_HOLD.
-    @mcp.tool(name="wealth_collapse_signature_scan")
+    @mcp.tool(
+        name="wealth_collapse_signature_scan",
+        annotations={
+            "readOnlyHint": True,
+            "idempotentHint": True,
+            "apex_primitive": "Φ Faithfulness [LEGACY]",
+            "deprecated": True,
+            "replacedBy": "wealth_institutional_stress_index",
+            "deprecation_reason": "Extraction-calibrated corpus (Enron/PDVSA/1MDB) blind to simulative exploitation patterns",
+            "effective_date": "2026-07-08",
+        },
+    )
     async def wealth_collapse_signature_scan(
         scenario: str,
         capital_type: str = "financial",
         historical_priors: list[str] | None = None,
     ) -> dict:
         """
-        Scan a scenario text for institutional-collapse signatures against
-        the historical corpus (Enron, PDVSA, Pemex, 1MDB, WorldCom).
+        [LEGACY — EXTRACTIVE-ONLY] Scan for extraction-based collapse.
+
+        ⚠ DEPRECATED: Calibrated exclusively on extraction-fraud corpus
+        (Enron, PDVSA, Pemex, 1MDB, WorldCom). DOES NOT detect simulative
+        exploitation via constitutional ambiguity, interpleader, or managed
+        sovereignty erosion.
+
+        For institutional collapse detection, use the DIAGNOSE cluster:
+          - wealth_institutional_stress_index
+          - wealth_cascade_model
+          - wealth_governance_capacity
+          - wealth_external_exploitation_detect
 
         Returns:
-        - profile: full signature profile (7 collapse signatures)
-        - risk: collapse risk score
+        - profile: full signature profile (7 collapse signatures — extraction only)
+        - risk: collapse risk score (extractive patterns only)
         - two_d_risk_map: Acemoglu × Calhoun quadrant
         - tripwires: 5-tripwire detection
         - dimensional_densities: per-axis density
         - priors_used: which corpus anchors were compared
-
-        Use cases:
-        - Audit a CEO speech / annual report against pre-collapse analogues
-        - Compare PETRONAS / PEMEX / Petrobras narratives vs historical priors
-        - Detect when a corporate narrative crosses from "technocratic
-          optimism" into "triumphalism with structural erosion"
+        - _warning: "This tool is calibrated on extraction fraud. It will miss simulative exploitation patterns."
 
         DITEMPA BUKAN DIBERI. WEALTH computes, arifOS judges, Arif decides.
         """
@@ -2064,6 +2106,311 @@ def _register_optimizer_tools(mcp: FastMCP) -> None:
         )
 
 
+def _register_institutional_tools(mcp: FastMCP) -> None:
+    """Register institutional stress detection tools (forged 2026-07-08).
+
+    Four tools detecting the 'institutional collapse spiral' pattern:
+    financial stress → rightsizing → governance erosion →
+    intelligence compromise → external exploitation → more financial stress.
+
+    - wealth_institutional_stress_index: composite 0-1 stress score
+    - wealth_cascade_model: feedback loop detector
+    - wealth_governance_capacity: board capacity vs stress
+    - wealth_external_exploitation_detect: counterparty behavior patterns
+    """
+    from wealth_core.institutional import (
+        compute_stress_index,
+        compute_cascade,
+        compute_governance_capacity,
+        compute_exploitation,
+    )
+
+    @mcp.tool(
+        name="wealth_institutional_stress_index",
+        annotations={
+            "readOnlyHint": True,
+            "idempotentHint": True,
+            "apex_primitive": "ΔG Governance",
+        },
+    )
+    async def wealth_institutional_stress_index(
+        org_name: str,
+        financial_signals: dict,
+        governance_signals: dict,
+        workforce_signals: dict,
+        legal_signals: dict,
+        exploitation_signals: dict,
+    ) -> dict:
+        """
+        Composite institutional stress index (0-1).
+
+        Connects financial, governance, workforce, legal, and external
+        exploitation signals into a single stress score. Detects feedback
+        loops (the 'institutional collapse spiral').
+
+        Inputs:
+          - org_name: organization name (e.g., 'PETRONAS')
+          - financial_signals: profit_change_pct, revenue_change_pct, cost_cutting_announced
+          - governance_signals: board_size, board_resignations_12m, company_secretaries_as_directors, avg_tenure_years
+          - workforce_signals: rightsizing_pct, voluntary_exits_pct, key_personnel_departures
+          - legal_signals: active_litigation_count, injunction_value_musd, regulatory_uncertainty_score
+          - exploitation_signals: counterparty_payment_freeze, interpleader_filed, competing_claims
+
+        WEALTH computes. arifOS judges. Arif decides.
+        """
+        result = compute_stress_index(
+            org_name=org_name,
+            financial_signals=financial_signals,
+            governance_signals=governance_signals,
+            workforce_signals=workforce_signals,
+            legal_signals=legal_signals,
+            exploitation_signals=exploitation_signals,
+        )
+        return wrap_result(
+            tool_name="wealth_institutional_stress_index",
+            domain="institutional",
+            result=result,
+            epistemic_tag=EpistemicTag.DERIVED,
+            evidence_quality=EvidenceQuality.MODERATE,
+            source_attribution=[
+                "financial_signals_OBS",
+                "governance_signals_OBS",
+                "workforce_signals_OBS",
+                "legal_signals_OBS",
+                "exploitation_signals_DER",
+            ],
+        )
+
+    @mcp.tool(
+        name="wealth_cascade_model",
+        annotations={
+            "readOnlyHint": True,
+            "idempotentHint": True,
+            "apex_primitive": "ΔG Governance",
+        },
+    )
+    async def wealth_cascade_model(
+        timeline: list,
+        intervention_scenario: dict | None = None,
+    ) -> dict:
+        """
+        Model feedback loops between institutional stress dimensions.
+
+        Detects spiral vs linear decline vs recovery. Projects trajectory
+        and optionally simulates intervention impact.
+
+        Inputs:
+          - timeline: list of dicts with {period, financial_stress, governance_capacity,
+            workforce_stability, legal_exposure, external_exploitation}
+          - intervention_scenario: optional dict (e.g., {'action': 'rightsizing_pause', 'period': 3})
+
+        WEALTH computes. arifOS judges. Arif decides.
+        """
+        result = compute_cascade(
+            timeline=timeline,
+            intervention_scenario=intervention_scenario,
+        )
+        return wrap_result(
+            tool_name="wealth_cascade_model",
+            domain="institutional",
+            result=result,
+            epistemic_tag=EpistemicTag.INTERPRETED,
+            evidence_quality=EvidenceQuality.MODERATE,
+            source_attribution=["temporal_pattern_analysis_INT"],
+        )
+
+    @mcp.tool(
+        name="wealth_governance_capacity",
+        annotations={
+            "readOnlyHint": True,
+            "idempotentHint": True,
+            "apex_primitive": "ΔG Governance",
+        },
+    )
+    async def wealth_governance_capacity(
+        board_members: list,
+        committees: list,
+        stress_level: float,
+    ) -> dict:
+        """
+        Monitor board governance capacity relative to stress level.
+
+        Analyzes board composition, committee structure, and identifies
+        governance gaps that could enable institutional collapse.
+
+        Inputs:
+          - board_members: list of {name, role, appointed_date, type}
+          - committees: list of {name, members, meets_quarterly}
+          - stress_level: float 0-1 (from wealth_institutional_stress_index)
+
+        WEALTH computes. arifOS judges. Arif decides.
+        """
+        result = compute_governance_capacity(
+            board_members=board_members,
+            committees=committees,
+            stress_level=stress_level,
+        )
+        return wrap_result(
+            tool_name="wealth_governance_capacity",
+            domain="institutional",
+            result=result,
+            epistemic_tag=EpistemicTag.DERIVED,
+            evidence_quality=EvidenceQuality.MODERATE,
+            source_attribution=[
+                "board_filings_OBS",
+                "committee_structure_OBS",
+                "governance_analysis_DER",
+            ],
+        )
+
+    @mcp.tool(
+        name="wealth_external_exploitation_detect",
+        annotations={
+            "readOnlyHint": True,
+            "idempotentHint": True,
+            "apex_primitive": "ΔG Governance",
+        },
+    )
+    async def wealth_external_exploitation_detect(
+        counterparty_actions: list,
+        institution_state: dict,
+    ) -> dict:
+        """
+        Detect 'simulative neutral' counterparty behavior.
+
+        Identifies rational exploitation of institutional weakness —
+        where each action is individually defensible but the aggregate
+        pattern reveals systematic extraction.
+
+        Inputs:
+          - counterparty_actions: list of {action, date, claimed_rationale, actual_benefit_musd}
+          - institution_state: dict with stress_index, governance_capacity
+
+        WEALTH computes. arifOS judges. Arif decides.
+        """
+        result = compute_exploitation(
+            counterparty_actions=counterparty_actions,
+            institution_state=institution_state,
+        )
+        return wrap_result(
+            tool_name="wealth_external_exploitation_detect",
+            domain="institutional",
+            result=result,
+            epistemic_tag=EpistemicTag.DERIVED,
+            evidence_quality=EvidenceQuality.MODERATE,
+            source_attribution=[
+                "counterparty_actions_OBS",
+                "behavioral_pattern_DER",
+                "institutional_state_DER",
+            ],
+        )
+
+
+def _register_auction_tools(mcp: FastMCP) -> None:
+    """Register auction surface and cooperative game theory tools (forged 2026-07-07).
+
+    Two new tools bridging capital allocation to competitive bidding and
+    coalition formation:
+    - wealth_bid_surface: Score a competitive bid surface for resource allocation.
+    - wealth_optimize_mwc: Compute optimal Minimum Winning Coalition.
+    """
+
+    @mcp.tool(name="wealth_bid_surface")
+    async def wealth_bid_surface(
+        bids: list[dict],
+        reserve_price: float = 0.0,
+        mode: str = "first_price",
+        scoring_weights: dict | None = None,
+        bidder_caps: dict | None = None,
+    ) -> dict:
+        """
+        Score a competitive bid surface for resource allocation.
+        Computes bid ranking, bidder surplus, competitive intensity, and surface topology.
+        Scoring Primacy (Eureka 4): EMV without bid scoring surface = answering the wrong question.
+        Returns ranked bid list, surplus distribution, and surface metrics.
+
+        Auction modes: first_price | second_price | scoring | all_pay.
+        """
+        from wealth_mcp.tools.bid_surface import compute_bid_surface
+
+        try:
+            result = compute_bid_surface(
+                bids=bids,
+                reserve_price=reserve_price,
+                mode=mode,
+                scoring_weights=scoring_weights,
+                bidder_caps=bidder_caps,
+            )
+            return wrap_result(
+                tool_name="wealth_bid_surface",
+                domain="auction",
+                result=result,
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.STRONG,
+                source_attribution=[
+                    "bid_surface_engine",
+                    f"auction_mode:{mode}",
+                ],
+            )
+        except Exception as e:
+            return wrap_result(
+                tool_name="wealth_bid_surface",
+                domain="auction",
+                result={"error": str(e), "bid_count": len(bids)},
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=[f"Bid surface error: {e}"],
+            )
+
+    @mcp.tool(name="wealth_optimize_mwc")
+    async def wealth_optimize_mwc(
+        players: list[dict],
+        majority_threshold: float = 0.5,
+        mode: str = "cost_minimizing",
+        max_coalition_size: int = 10,
+        constraints: dict | None = None,
+    ) -> dict:
+        """
+        Compute optimal Minimum Winning Coalition (MWC) for resource allocation.
+        Uses cooperative game theory: finds the smallest coalition that secures
+        majority control while minimizing total cost. Based on Shapley value
+        and coalition formation theory.
+        Returns optimal coalition, total cost, coalition stability, and power distribution.
+
+        Modes: cost_minimizing | stability_maximizing | balanced.
+        """
+        from wealth_mcp.tools.optimize_mwc import compute_mwc
+
+        try:
+            result = compute_mwc(
+                players=players,
+                majority_threshold=majority_threshold,
+                mode=mode,
+                max_coalition_size=max_coalition_size,
+                constraints=constraints,
+            )
+            return wrap_result(
+                tool_name="wealth_optimize_mwc",
+                domain="coalition",
+                result=result,
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=[
+                    "mwc_optimizer",
+                    f"coalition_mode:{mode}",
+                ],
+            )
+        except Exception as e:
+            return wrap_result(
+                tool_name="wealth_optimize_mwc",
+                domain="coalition",
+                result={"error": str(e), "player_count": len(players)},
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=[f"MWC optimizer error: {e}"],
+            )
+
+
 def _register_resources(mcp: FastMCP) -> None:
     """
     Register WEALTH canonical resources (14-resource intelligence substrate).
@@ -2132,31 +2479,123 @@ def _register_resources(mcp: FastMCP) -> None:
                 "version": "2026.06.27",
                 "role": "Capital Intelligence for arifOS federation",
                 "authority": "WEALTH computes. arifOS judges. Arif decides.",
-                "protocol": "MCP 2025-11-25",
+                "protocol": "MCP 2025-03-26",
+                "protocol_seps": ["SEP-1613", "SEP-2106", "SEP-2549", "SEP-1330"],
+                "json_schema_dialect": "https://json-schema.org/draft/2020-12/schema",
                 "tool_prefix": "wealth_",
                 "resource_scheme": "wealth://",
                 "prompt_count": 7,
                 "resource_count": 14,
                 "naming_convention": "wealth_<verb>_<noun>",
                 "canonical_tools": [
-                    "wealth_wisdom_evaluate",
-                    "wealth_power_audit",
-                    "wealth_capture_scan",
-                    "wealth_compute_npv",
-                    "wealth_compute_irr",
-                    "wealth_compute_emv",
-                    "wealth_compute_evoi",
-                    "wealth_monte_carlo_simulate",
-                    "wealth_conservation_check",
-                    "wealth_flow_check",
-                    "wealth_runway_check",
-                    "wealth_confluence_check",
-                    "wealth_asymmetry_check",
-                    "wealth_stock_analysis",
-                    "wealth_personal_finance",
-                    "wealth_market_data",
-                    "wealth_omni_wisdom",
-                    "wealth_agent_path",
+                    {
+                        "name": "wealth_wisdom_evaluate",
+                        "apex": "Φ Faithfulness",
+                        "domain": "wisdom",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_power_audit",
+                        "apex": "Ω Humility",
+                        "domain": "power",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_capture_scan",
+                        "apex": "Ω Humility",
+                        "domain": "capture",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_compute_npv",
+                        "apex": "P Precision",
+                        "domain": "capital",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_compute_irr",
+                        "apex": "P Precision",
+                        "domain": "capital",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_compute_emv",
+                        "apex": "E Evidence",
+                        "domain": "capital",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_compute_evoi",
+                        "apex": "X Execution",
+                        "domain": "information",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_monte_carlo_simulate",
+                        "apex": "E Evidence",
+                        "domain": "simulation",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_conservation_check",
+                        "apex": "Φ Faithfulness",
+                        "domain": "conservation",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_flow_check",
+                        "apex": "A Adaptation",
+                        "domain": "flow",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_runway_check",
+                        "apex": "A Adaptation",
+                        "domain": "survival",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_confluence_check",
+                        "apex": "Ω Humility",
+                        "domain": "signal",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_asymmetry_check",
+                        "apex": "Ω Humility",
+                        "domain": "risk",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_stock_analysis",
+                        "apex": "P Precision",
+                        "domain": "stock",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_personal_finance",
+                        "apex": "A Adaptation",
+                        "domain": "personal",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_market_data",
+                        "apex": "E Evidence",
+                        "domain": "market",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_omni_wisdom",
+                        "apex": "Φ Faithfulness",
+                        "domain": "synthesis",
+                        "readOnly": True,
+                    },
+                    {
+                        "name": "wealth_agent_path",
+                        "apex": "A Adaptation",
+                        "domain": "routing",
+                        "readOnly": True,
+                    },
                     "wealth_vault_write",
                     "wealth_vault_query",
                     "wealth_registry_status",
@@ -2164,6 +2603,8 @@ def _register_resources(mcp: FastMCP) -> None:
                     "wealth_beautiful_mouse_scan",
                     "wealth_judge_handoff",
                     "wealth_fiscal_breakeven",
+                    "wealth_bid_surface",
+                    "wealth_optimize_mwc",
                 ],
             },
             indent=2,
@@ -2333,6 +2774,18 @@ def _register_resources(mcp: FastMCP) -> None:
                         "name": "wealth_fiscal_breakeven",
                         "domain": "macro",
                         "verb": "compute",
+                        "mutation": False,
+                    },
+                    {
+                        "name": "wealth_bid_surface",
+                        "domain": "auction",
+                        "verb": "analyze",
+                        "mutation": False,
+                    },
+                    {
+                        "name": "wealth_optimize_mwc",
+                        "domain": "coalition",
+                        "verb": "optimize",
                         "mutation": False,
                     },
                 ],
@@ -2608,7 +3061,11 @@ def _register_resources(mcp: FastMCP) -> None:
                     "Agents that skip policy are non-compliant."
                 ),
                 "required_preload": {
-                    "wealth_compute_emv": ["wealth://reality/context"],
+                    "wealth_compute_emv": [
+                        "wealth://reality/context",
+                        "wealth://bid/surface",
+                    ],
+                    "wealth_bid_surface": ["wealth://reality/context"],
                     "wealth_compute_evoi": [
                         "wealth://reality/context",
                         "wealth://risk/thresholds",
@@ -3161,6 +3618,20 @@ def _register_resources(mcp: FastMCP) -> None:
                         "mode_default": "prepare",
                         "submit_requires_authority": True,
                         "side_effects": "prepare builds envelope; submit delegates verdict to arifOS",
+                    },
+                    "wealth_bid_surface": {
+                        "action_class": "ANALYZE",
+                        "mutation": False,
+                        "irreversible": False,
+                        "requires_888_hold": False,
+                        "side_effects": "none",
+                    },
+                    "wealth_optimize_mwc": {
+                        "action_class": "ANALYZE",
+                        "mutation": False,
+                        "irreversible": False,
+                        "requires_888_hold": False,
+                        "side_effects": "none",
                     },
                 },
                 "law": (
