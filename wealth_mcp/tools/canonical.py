@@ -828,29 +828,18 @@ def register_canonical_tools(mcp):
     # ── Helper: call an existing legacy tool by name (internal dispatch) ──
     async def _call_legacy_tool(tool_name: str, arguments: dict) -> dict:
         """Dispatch to an existing MCP tool registered on the same server."""
-        # The legacy tool is registered on mcp; we can call it via the FastMCP
-        # internal call mechanism. Since canonical tools run in the same process,
-        # we route through the tool registry.
-        import json as _json
-
         try:
-            # Find the tool on the mcp server's tool registry
-            tool_fn = mcp._tool_manager._tools.get(tool_name)
-            if tool_fn is None:
-                # Fallback: try the legacy alias names
-                tool_fn = (
-                    mcp._tool_manager._tools.get(f"wealth_{tool_name}")
-                    if not tool_name.startswith("wealth_")
-                    else None
-                )
-            if tool_fn is None:
-                return {
-                    "error": f"legacy_tool_not_found: {tool_name}",
-                    "canonical_mode": True,
-                }
-            result = await tool_fn.run(arguments)
+            # FastMCP 3.x: use public call_tool API (not internal _tool_manager)
+            result = await mcp.call_tool(tool_name, arguments)
             return result
         except Exception as e:
+            # Fallback: try with wealth_ prefix
+            if not tool_name.startswith("wealth_"):
+                try:
+                    result = await mcp.call_tool(f"wealth_{tool_name}", arguments)
+                    return result
+                except Exception:
+                    pass
             return {"error": f"legacy_dispatch_failed: {tool_name}", "detail": str(e)}
 
     return {
