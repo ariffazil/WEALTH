@@ -99,8 +99,10 @@ def _workforce_stress(sig: Dict[str, Any]) -> float:
     # Key personnel departures — each one adds stress
     departures = sig.get("key_personnel_departures", [])
     if departures:
+        # Accept both int (count) and list (names) — F12 INJECTION: type-safe
+        dep_count = departures if isinstance(departures, int) else len(departures)
         # 5+ key departures → max
-        score += _clamp(len(departures) / 5.0) * 0.35
+        score += _clamp(dep_count / 5.0) * 0.35
 
     return _clamp(score)
 
