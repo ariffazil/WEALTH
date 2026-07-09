@@ -62,6 +62,51 @@ from wealth_arifos_bridge.judge_handoff import (
 from wealth_mcp.tools.canonical import register_canonical_tools
 
 
+def _validate_direct_session_binding(
+    tool_name: str,
+    actor_id: str | None,
+    session_id: str | None,
+) -> dict[str, object]:
+    """Fail closed on direct MCP tool calls without a governed session."""
+    try:
+        from arifosmcp.runtime.session_auth import validate_session
+    except Exception as exc:
+        return {
+            "ok": False,
+            "code": "SESSION_VALIDATOR_UNAVAILABLE",
+            "reason": f"L11 AUTH: session validator unavailable for direct WEALTH call: {exc}",
+            "actor_id": actor_id,
+            "session_id": session_id,
+            "tool_name": tool_name,
+        }
+
+    auth = validate_session(session_id, actor_id)
+    if not auth.get("valid"):
+        return {
+            "ok": False,
+            "code": "SESSION_REQUIRED" if not session_id else "SESSION_INVALID",
+            "reason": auth.get("reason") or "L11 AUTH failed",
+            "actor_id": actor_id or auth.get("actor_id"),
+            "session_id": session_id,
+            "tool_name": tool_name,
+            "auth": auth,
+        }
+
+    session = auth.get("session") or {}
+    resolved_actor = auth.get("actor_id") or session.get("actor_id") or actor_id
+    return {
+        "ok": True,
+        "code": "OK",
+        "reason": auth.get("reason") or "L11 AUTH: session valid",
+        "actor_id": resolved_actor,
+        "session_id": session_id,
+        "tool_name": tool_name,
+        "actor_verified": bool(
+            session.get("actor_verified") or session.get("signature_verified")
+        ),
+    }
+
+
 def create_mcp_server() -> FastMCP:
     """Create and configure the WEALTH MCP server."""
 
@@ -278,6 +323,32 @@ def create_mcp_server() -> FastMCP:
             session_id = (
                 kwargs.get("session_id") or meta.get("session_id") or "_default"
             )
+
+            # ── P0-4: Session validation (was defined but never called) ──
+            binding = _validate_direct_session_binding(name, actor_id, session_id)
+            if not binding.get("ok"):
+                return ToolResult(
+                    content=[
+                        TextContent(
+                            type="text",
+                            text=json.dumps(
+                                {
+                                    "tool": name,
+                                    "error_code": binding.get(
+                                        "code", "SESSION_REQUIRED"
+                                    ),
+                                    "reason": binding.get("reason", "L11 AUTH failed"),
+                                    "actor_id": binding.get("actor_id"),
+                                    "session_id": binding.get("session_id"),
+                                }
+                            ),
+                        )
+                    ],
+                    is_error=True,
+                )
+
+            # Use resolved actor from binding
+            actor_id = str(binding.get("actor_id") or actor_id or "wealth-mcp")
 
             # ── arifOS governance check ────────────────────────────────
             # Pass extracted system actor_id and session_id (Gap-C alignment)
