@@ -79,12 +79,21 @@ def irr(
     if len(set(signs)) < 2:
         return None  # No sign change, no IRR
 
+    # P0 FIX (2026-07-09): Use relative tolerance, not absolute.
+    # Absolute tolerance (1e-6) fails for large cash flows (e.g. 1e12)
+    # because NPV at true IRR is ~10^13 >> 1e-6, causing non-convergence.
+    # Relative tolerance normalizes by max cash flow magnitude.
+    scale = max(abs(cf) for cf in cash_flows)
+    if scale == 0:
+        return None
+    rel_tolerance = tolerance * scale
+
     low, high = -0.99, 10.0
 
     for _ in range(max_iterations):
         mid = (low + high) / 2
         npv_mid = sum(cf / ((1 + mid) ** t) for t, cf in enumerate(cash_flows))
-        if abs(npv_mid) < tolerance:
+        if abs(npv_mid) < rel_tolerance:
             return round(mid, 6)
         if npv_mid > 0:
             low = mid
