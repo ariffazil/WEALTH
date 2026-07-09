@@ -1,6 +1,6 @@
 <!-- SOT-MANIFEST
 federation_release: v2026.07.06-KELLY-APEX
-last_verified: 2026-07-06
+last_verified: 2026-07-09
 changelog: Kelly criterion + optimizer suite + APEX Pillar IV
 audit_finding: actor_id self-report pattern at wealth_mcp/server.py:272 — deferred
 a2a_agent_json: /root/WEALTH/.well-known/agent.json
