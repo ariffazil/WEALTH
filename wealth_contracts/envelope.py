@@ -101,12 +101,7 @@ class WealthEnvelope:
         who_carries_downside: Optional[str] = None,
         execution_authorized: bool = False,
         execution_authority: ExecutionAuthority = ExecutionAuthority.OBSERVATION,
-        # F13 SOVEREIGN role — constitutional veto holder, NOT "caller is Arif"
         human_final_authority: str = "Arif",
-        # Caller attribution (who requested this compute) — never default to Arif
-        caller_actor_id: Optional[str] = None,
-        caller_session_id: Optional[str] = None,
-        caller_verified: bool = False,
         requires_888_hold: bool = False,
         source_attribution: Optional[List[str]] = None,
         session_id: Optional[str] = None,
@@ -155,9 +150,6 @@ class WealthEnvelope:
         self.execution_authorized = execution_authorized
         self.execution_authority = execution_authority
         self.human_final_authority = human_final_authority
-        self.caller_actor_id = caller_actor_id or actor_id
-        self.caller_session_id = caller_session_id or session_id
-        self.caller_verified = bool(caller_verified)
         self.requires_888_hold = requires_888_hold
 
         # Provenance
@@ -196,13 +188,7 @@ class WealthEnvelope:
             "evidence_quality": self.evidence_quality.value,
             "execution_authorized": self.execution_authorized,
             "execution_authority": self.execution_authority.value,
-            # F13 veto role (sovereign), not caller identity
             "human_final_authority": self.human_final_authority,
-            "human_final_authority_meaning": "F13_SOVEREIGN_VETO_ROLE_NOT_CALLER",
-            # Who requested this compute (chain of custody)
-            "caller_actor_id": self.caller_actor_id,
-            "caller_session_id": self.caller_session_id,
-            "caller_verified": self.caller_verified,
             "requires_888_hold": self.requires_888_hold,
             "source_attribution": self.source_attribution,
             "computation_timestamp": self.computation_timestamp,
@@ -340,9 +326,6 @@ class WealthEnvelope:
             execution_authorized=d.get("execution_authorized", False),
             execution_authority=execution_authority,
             human_final_authority=d.get("human_final_authority", "Arif"),
-            caller_actor_id=d.get("caller_actor_id") or d.get("actor_id"),
-            caller_session_id=d.get("caller_session_id") or d.get("session_id"),
-            caller_verified=bool(d.get("caller_verified", False)),
             requires_888_hold=d.get("requires_888_hold", False),
             source_attribution=d.get("source_attribution", []),
             session_id=d.get("session_id"),

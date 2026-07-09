@@ -293,9 +293,7 @@ def build_metabolic_output(
         "audit_receipt": "",
         "recommendation_only": True,
         "execution_authorized": False,
-        # F13 sovereign veto ROLE — not "this request was made by Arif"
         "human_final_authority": "Arif",
-        "human_final_authority_meaning": "F13_SOVEREIGN_VETO_ROLE_NOT_CALLER",
         "requires_888_judge": requires_888,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "domain_law": "CAPITAL_LAW",

@@ -11,7 +11,7 @@
     "capital-allocation",
     "arifos"
   ],
-  "description": "WEALTH is the constitutional capital allocation layer in the arifOS organism. The canonical runtime is wealth_mcp/server.py: 25 canonical + 5 ZEN alias MCP tools (30 registered total). License: AGPL-3.0.",
+  "description": "WEALTH is the constitutional capital allocation layer in the arifOS organism. Canonical runtime: wealth_mcp/server.py. Tool surface discoverable via tools/list. License: AGPL-3.0.",
   "display_name": "WEALTH \u2014 Capital Intelligence",
   "homepage": "https://github.com/ariffazil/wealth",
   "language": [
