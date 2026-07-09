@@ -37,10 +37,29 @@ def test_compute_mwc_cost_minimizing():
     ]
     res = compute_mwc(players, majority_threshold=0.5, mode="cost_minimizing")
     assert res["feasible"] is True
-    # Coalition must exceed 0.5 voting power
-    # ratios: smj_energy = 33.3, propa = 50.0, dialog = 50.0, bridge_petroleum = 53.3
-    # So greedy picks smj_energy, propa, dialog
-    assert "smj_energy" in res["coalition"]
-    assert "propa" in res["coalition"]
-    assert "dialog" in res["coalition"]
-    assert res["coalition_voting_power"] == 0.85
+    # Exact optimum is dialog + smj_energy (0.55 voting power, cost 25).
+    assert res["coalition"] == ["dialog", "smj_energy"]
+    assert res["total_cost"] == 25.0
+    assert res["coalition_voting_power"] == 0.55
+
+
+def test_compute_bid_surface_second_price_single_bid_uses_reserve():
+    bids = [
+        {"bidder": "solo", "amount": 100.0, "share_pct": 100.0, "quality_score": 0.9},
+    ]
+    res = compute_bid_surface(bids, reserve_price=10.0, mode="second_price")
+    assert res["winner"] == "solo"
+    assert res["winning_price"] == 10.0
+
+
+def test_compute_mwc_power_distribution_uses_true_majority_threshold():
+    players = [
+        {"id": "A", "voting_share": 0.30, "cost": 3.0, "alignment_score": 0.8},
+        {"id": "B", "voting_share": 0.25, "cost": 2.0, "alignment_score": 0.7},
+        {"id": "C", "voting_share": 0.45, "cost": 9.0, "alignment_score": 0.5},
+    ]
+    res = compute_mwc(players, majority_threshold=0.5, mode="cost_minimizing")
+    assert res["coalition"] == ["A", "B"]
+    assert res["power_distribution"]["A"] == 0.5
+    assert res["power_distribution"]["B"] == 0.5
+    assert res["power_distribution"]["C"] == 0.0
