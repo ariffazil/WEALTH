@@ -194,7 +194,7 @@ def _resolve_price(
     if mode == "first_price" or mode == "scoring":
         return ranked[0]["amount"]
     elif mode == "second_price":
-        return ranked[1]["amount"] if len(ranked) > 1 else ranked[0]["amount"]
+        return ranked[1]["amount"] if len(ranked) > 1 else reserve_price
     elif mode == "all_pay":
         return ranked[0]["amount"]
     return ranked[0]["amount"]
