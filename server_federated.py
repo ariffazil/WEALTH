@@ -207,51 +207,49 @@ if __name__ == "__main__":
         lifespan=mcp_app.lifespan,
     )
 
-    # ── DNS Rebinding Protection (2026-07-08) ──────────────────────
-    # MCPJam conformance: localhost servers must reject requests with
-    # non-localhost Host/Origin headers to prevent DNS rebinding attacks.
+    # ── DNS Rebinding Protection (restored 2026-07-09 P0-8) ────────
+    # Header-only check (no body consume). Allow production + localhost.
+    # Empty Origin is allowed (server-to-server MCP clients).
     from starlette.middleware.base import BaseHTTPMiddleware
     from starlette.requests import Request as StarletteRequest
     from starlette.responses import Response as StarletteResponse
 
-    _LOCALHOST_PATTERNS = ("localhost", "127.0.0.1", "[::1]", "::1")
+    _ALLOWED_HOST_MARKERS = (
+        "localhost",
+        "127.0.0.1",
+        "[::1]",
+        "::1",
+        "wealth.arif-fazil.com",
+        "arif-fazil.com",
+    )
+    _ALLOWED_ORIGIN_PREFIXES = (
+        "https://wealth.arif-fazil.com",
+        "https://arif-fazil.com",
+        "http://localhost",
+        "https://localhost",
+        "http://127.0.0.1",
+        "https://127.0.0.1",
+    )
 
     class DNSRebindingProtection(BaseHTTPMiddleware):
         async def dispatch(self, request: StarletteRequest, call_next):
-            # Only check POST /mcp with initialize method
-            if request.url.path == "/mcp" and request.method == "POST":
-                try:
-                    body = await request.body()
-                    import json as _json
-
-                    parsed = _json.loads(body)
-                    if parsed.get("method") == "initialize":
-                        host = (request.headers.get("host") or "").lower()
-                        origin = (request.headers.get("origin") or "").lower()
-                        if host and not any(p in host for p in _LOCALHOST_PATTERNS):
-                            return StarletteResponse(
-                                content=_json.dumps(
-                                    {
-                                        "error": "Invalid Origin",
-                                        "detail": "DNS rebinding protection",
-                                    }
-                                ),
-                                status_code=403,
-                                media_type="application/json",
-                            )
-                        if origin and not any(p in origin for p in _LOCALHOST_PATTERNS):
-                            return StarletteResponse(
-                                content=_json.dumps(
-                                    {
-                                        "error": "Invalid Origin",
-                                        "detail": "DNS rebinding protection",
-                                    }
-                                ),
-                                status_code=403,
-                                media_type="application/json",
-                            )
-                except Exception:
-                    pass
+            if request.url.path.startswith("/mcp"):
+                host = (request.headers.get("host") or "").lower()
+                origin = (request.headers.get("origin") or "").strip()
+                if host and not any(m in host for m in _ALLOWED_HOST_MARKERS):
+                    return StarletteResponse(
+                        content='{"error":"Invalid Host","detail":"DNS rebinding protection"}',
+                        status_code=403,
+                        media_type="application/json",
+                    )
+                if origin and not any(
+                    origin.startswith(p) for p in _ALLOWED_ORIGIN_PREFIXES
+                ):
+                    return StarletteResponse(
+                        content='{"error":"Invalid Origin","detail":"DNS rebinding protection"}',
+                        status_code=403,
+                        media_type="application/json",
+                    )
             return await call_next(request)
 
     app.add_middleware(DNSRebindingProtection)

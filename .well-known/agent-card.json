@@ -2,7 +2,7 @@
     "$schema": "arifOS/agent-card/v2.0.0",
     "id": "wealth-mcp",
     "name": "WEALTH Capital Intelligence",
-    "description": "Capital intelligence engine for the arifOS federation. Provides 25 canonical + 5 ZEN alias MCP tools for NPV, EMV, valuation, risk scoring, portfolio optimization, collapse signatures, and wisdom evaluation under constitutional floors F1-F13.",
+    "description": "Capital intelligence engine for the arifOS federation. Provides NPV, EMV, valuation, risk scoring, portfolio optimization, collapse signatures, and wisdom evaluation under constitutional floors F1-F13.",
     "version": "2026.07.01",
     "protocolVersion": "1.0.0",
     "url": "https://wealth.arif-fazil.com",

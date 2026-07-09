@@ -24,7 +24,7 @@ Arif. This is the **WEALTH** organ of the arifOS federation — Resource Intelli
 
 The canonical capital engine. It models conservation, flow, gradient, entropy, energy, time, inertia, field, signal, game, boundary, and hysteresis as thermodynamic invariants over financial and resource systems.
 
-**37 public MCP tools** across kernel, physics organs, specialists, survival, personal finance, market data, and stock analysis. Dual runtime: Python (canonical) + Node.js (legacy). 6 hidden alias tools (32 total decorated tools).
+**Canonical MCP tools** across kernel, physics organs, specialists, survival, personal finance, market data, and stock analysis. Dual runtime: Python (canonical) + Node.js (legacy). Tool count is a runtime fact — verify with `tools/list`.
 
 ## Authority & Autonomy
 

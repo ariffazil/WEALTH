@@ -2,7 +2,7 @@
   "$schema": "https://google.com/genai/a2a/agent-card/v1",
   "arifos_internal_card": "/.well-known/agent-card.json",
   "name": "WEALTH",
-  "description": "Capital intelligence — 25 canonical + 5 ZEN alias MCP tools for NPV, EMV, valuation, risk scoring, portfolio optimization, collapse signatures, sovereign fiscal reasoning, and wisdom evaluation under F1-F13 constitutional floors. Evidence-only on computational primitives; arifOS 888_JUDGE owns the verdict.",
+  "description": "Capital intelligence — NPV, EMV, valuation, risk scoring, portfolio optimization, collapse signatures, sovereign fiscal reasoning, and wisdom evaluation under F1-F13 constitutional floors. Evidence-only on computational primitives; arifOS 888_JUDGE owns the verdict.",
   "version": "2026.07.01",
   "protocolVersion": "1.0.0",
   "url": "https://wealth.arif-fazil.com",

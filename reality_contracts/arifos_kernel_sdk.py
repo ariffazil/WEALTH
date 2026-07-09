@@ -74,16 +74,6 @@ from pathlib import Path
 from typing import Any, Optional
 import urllib.request
 
-# ZEN: Shared canonical response model (ArifOSResponse) — schema consistency across organs
-import sys
-try:
-    sys.path.insert(0, "/root/arifOS")
-    from arifosmcp.schemas.arifos_response import ArifOSResponse, ActionClass, ensure_arifos_response
-except Exception:
-    ArifOSResponse = None  # type: ignore
-    ActionClass = None  # type: ignore
-    def ensure_arifos_response(x): return x  # type: ignore
-
 
 # ════════════════════════════════════════════════════════════════════
 # TYPES (per per_call_envelope.schema.json)
@@ -349,7 +339,7 @@ class ArifOSKernel:
                 "session_id": self._session_id,
                 "organ_id": self.organ,
                 "tool_name": tool_name,
-                "action_class": ensure_arifos_response({"result": {}, "action_class": envelope.action_class if envelope else "OBSERVE"}).action_class,
+                "action_class": envelope.action_class if envelope else "UNKNOWN",
                 "started_at": started_at,
                 "completed_at": completed_at,
                 "args_hash": self._hash_args(args),
