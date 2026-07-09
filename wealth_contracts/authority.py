@@ -66,7 +66,8 @@ WEALTH_AUTHORITY_RULES = {
         "List missing inputs that would strengthen output",
         "Mark execution_authorized=False always",
         "Escalate to arifOS for judgment",
-        "Preserve human_final_authority='Arif'",
+        "Preserve human_final_authority='Arif' as F13 veto ROLE (not caller id)",
+        "Attribute caller via caller_actor_id when known (never default caller to Arif)",
     ],
 }
 
@@ -81,10 +82,19 @@ def validate_authority(output: dict) -> list[str]:
             "execution_authorized must be False."
         )
 
+    # F13 sovereign veto role — constitutional, not "caller is Arif"
     if output.get("human_final_authority") != "Arif":
         violations.append(
-            "VIOLATION: human_final_authority must be 'Arif' (F13 SOVEREIGN)."
+            "VIOLATION: human_final_authority must be 'Arif' (F13 SOVEREIGN veto role)."
         )
+
+    # Caller attribution must not silently claim to be Arif unless verified
+    caller = output.get("caller_actor_id")
+    if caller and str(caller).lower() in ("arif", "888", "ariffazil"):
+        if not output.get("caller_verified"):
+            violations.append(
+                "VIOLATION: caller_actor_id claims sovereign without caller_verified=True."
+            )
 
     if not output.get("epistemic_tag"):
         violations.append(
