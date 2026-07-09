@@ -75,6 +75,78 @@ def create_mcp_server() -> FastMCP:
         ),
     )
 
+    # ── 2026-07-08 envelope-regression: stamp canonical on all WEALTH tools ──
+    # Per SEP-2567 + envelope spec: every tool manifest must carry canonical/deprecated
+    # flag. New tools must register with explicit flag. Legacy tools stamped here.
+    # Strategy: stamp self.meta["canonical"]=True (the upstream meta dict that
+    # get_meta() extends with the fastmcp namespace). This survives FastMCP
+    # serialization into the _meta JSON response.
+    try:
+        import sys as _sys
+
+        _orig_wealth_list_tools = mcp.list_tools
+
+        async def _patched_wealth_list_tools(*args, **kwargs):
+            tools = await _orig_wealth_list_tools(*args, **kwargs)
+            stamped = 0
+            for t in tools:
+                try:
+                    # self.meta is the upstream meta dict (Component.meta field).
+                    # get_meta() returns meta + fastmcp:{tags,version}. Adding
+                    # canonical to meta persists into the response.
+                    existing = None
+                    if hasattr(t, "meta"):
+                        meta_attr = t.meta
+                        if isinstance(meta_attr, dict):
+                            existing = meta_attr
+                        else:
+                            try:
+                                existing = (
+                                    meta_attr.model_dump()
+                                    if hasattr(meta_attr, "model_dump")
+                                    else dict(meta_attr)
+                                )
+                            except Exception:
+                                existing = {}
+                    if existing is None:
+                        existing = {}
+                    existing["canonical"] = True
+                    try:
+                        t.meta = existing
+                    except Exception:
+                        # Pydantic; try model_copy
+                        try:
+                            t.meta = (
+                                t.meta.model_copy(update={"canonical": True})
+                                if hasattr(t.meta, "model_copy")
+                                else existing
+                            )
+                        except Exception:
+                            pass
+                    stamped += 1
+                except Exception as _te:
+                    print(
+                        f"[envelope-regression] tool {getattr(t, 'name', '?')}: {_te}",
+                        file=_sys.stderr,
+                    )
+            print(
+                f"[envelope-regression] WEALTH: stamped self.meta.canonical on {stamped}/{len(tools)} tools",
+                file=_sys.stderr,
+            )
+            return tools
+
+        mcp.list_tools = _patched_wealth_list_tools
+        print(
+            "[envelope-regression] WEALTH list_tools hook installed", file=_sys.stderr
+        )
+    except Exception as _e:
+        import sys as _sys
+
+        print(
+            f"[envelope-regression] WEALTH canonical stamp skipped: {_e}",
+            file=_sys.stderr,
+        )
+
     # ── Wire arifOS organ governance wrapper around tool calls ─────────────
     try:
         from internal.organ_governance import check_governance as _check_governance
@@ -269,8 +341,16 @@ def create_mcp_server() -> FastMCP:
 
             # ── Pull _meta for actor_id / session_id binding ──────────
             meta = arguments.get("_meta", {}) if isinstance(arguments, dict) else {}
-            # Prioritize verified system kwargs over self-reported _meta to prevent spoofing (P0)
-            actor_id = kwargs.get("actor_id") or meta.get("actor_id") or "wealth-mcp"
+            # P0 actor binding (arifOS JWT-lineage pattern): kwargs/system authoritative;
+            # _meta.actor_id is self-report only — never trust for SOVEREIGN identity.
+            kw_actor = kwargs.get("actor_id")
+            meta_actor = meta.get("actor_id") if isinstance(meta, dict) else None
+            if kw_actor:
+                actor_id = kw_actor
+            elif meta_actor:
+                actor_id = f"wealth-selfreport:{meta_actor}"
+            else:
+                actor_id = "wealth-mcp"
             session_id = (
                 kwargs.get("session_id") or meta.get("session_id") or "_default"
             )
@@ -316,6 +396,40 @@ def create_mcp_server() -> FastMCP:
                 if isinstance(arguments, dict)
                 else arguments
             )
+
+            # ── FIX #37: Transport-layer JSON serialization ───────────
+            # MCP transport sometimes delivers array/object params as
+            # JSON-serialized strings. Pydantic rejects these. Parse them
+            # back to native types before validation.
+            #
+            # FIX #38 (2026-07-09): Skip auto-parse for tools whose Pydantic
+            # signature explicitly declares fields as `str` (JSON-encoded
+            # by convention). Previously, `wealth_judge_handoff` declared
+            # `result: str` and `evidence: str`, but the wrapper parsed
+            # valid JSON strings → dicts → Pydantic rejected with
+            # string_type validation error. Tool crashed, then entered
+            # restart-loop on port 18082 (dropping ~325 restarts).
+            #
+            # ROOT_CAUSE: auto-parse assumed all JSON-looking strings
+            # should be decoded. Reality: some WEALTH tools use JSON-encoded
+            # strings by design. Skip those tools.
+            _JSON_STRING_FIELD_TOOLS = frozenset({
+                "wealth_judge_handoff",  # result, evidence are JSON strings by design
+            })
+            if isinstance(clean_arguments, dict):
+                parse_json = name not in _JSON_STRING_FIELD_TOOLS
+                for k, v in clean_arguments.items():
+                    if not isinstance(v, str) or not parse_json:
+                        continue
+                    stripped = v.strip()
+                    if (stripped.startswith("[") and stripped.endswith("]")) or (
+                        stripped.startswith("{") and stripped.endswith("}")
+                    ):
+                        try:
+                            clean_arguments[k] = json.loads(v)
+                        except (json.JSONDecodeError, ValueError):
+                            pass  # Not valid JSON, leave as string
+
             try:
                 result = await _original_call_tool(name, clean_arguments, **kwargs)
             except Exception as e:
@@ -625,6 +739,13 @@ def _register_capital_tools(mcp: FastMCP) -> None:
                 "npv": result,
                 "cash_flows": cash_flows,
                 "discount_rate": discount_rate,
+                # 2026-07-08 envelope-regression: canonical equations_used
+                # (per envelope spec — pick one name, enforce non-empty on non-HOLD compute)
+                "equations_used": [
+                    "NPV = Σ_{t=0}^{n} CF_t / (1 + r)^t",
+                    "Discount factor (1 + r)^(-t) applied uniformly across all periods",
+                    "Standard convention: CF[0] at t=0 (initial investment, typically negative)",
+                ],
             },
             epistemic_tag=EpistemicTag.DERIVED,
             evidence_quality=EvidenceQuality.STRONG,

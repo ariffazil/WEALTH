@@ -207,6 +207,55 @@ if __name__ == "__main__":
         lifespan=mcp_app.lifespan,
     )
 
+    # ── DNS Rebinding Protection (2026-07-08) ──────────────────────
+    # MCPJam conformance: localhost servers must reject requests with
+    # non-localhost Host/Origin headers to prevent DNS rebinding attacks.
+    from starlette.middleware.base import BaseHTTPMiddleware
+    from starlette.requests import Request as StarletteRequest
+    from starlette.responses import Response as StarletteResponse
+
+    _LOCALHOST_PATTERNS = ("localhost", "127.0.0.1", "[::1]", "::1")
+
+    class DNSRebindingProtection(BaseHTTPMiddleware):
+        async def dispatch(self, request: StarletteRequest, call_next):
+            # Only check POST /mcp with initialize method
+            if request.url.path == "/mcp" and request.method == "POST":
+                try:
+                    body = await request.body()
+                    import json as _json
+
+                    parsed = _json.loads(body)
+                    if parsed.get("method") == "initialize":
+                        host = (request.headers.get("host") or "").lower()
+                        origin = (request.headers.get("origin") or "").lower()
+                        if host and not any(p in host for p in _LOCALHOST_PATTERNS):
+                            return StarletteResponse(
+                                content=_json.dumps(
+                                    {
+                                        "error": "Invalid Origin",
+                                        "detail": "DNS rebinding protection",
+                                    }
+                                ),
+                                status_code=403,
+                                media_type="application/json",
+                            )
+                        if origin and not any(p in origin for p in _LOCALHOST_PATTERNS):
+                            return StarletteResponse(
+                                content=_json.dumps(
+                                    {
+                                        "error": "Invalid Origin",
+                                        "detail": "DNS rebinding protection",
+                                    }
+                                ),
+                                status_code=403,
+                                media_type="application/json",
+                            )
+                except Exception:
+                    pass
+            return await call_next(request)
+
+    app.add_middleware(DNSRebindingProtection)
+
     print("WEALTH Federated Domain starting on port 18082...")
     print("  Architecture: 5-layer federated")
     print("  MCP endpoint: /mcp")
