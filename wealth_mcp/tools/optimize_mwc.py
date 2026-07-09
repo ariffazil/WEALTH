@@ -37,7 +37,7 @@ def compute_mwc(
         - cost (float): cost of including this player
         - alignment_score (float): strategic alignment (0-1)
     majority_threshold : float
-        Fraction of total voting power needed (default 0.5).
+        Absolute voting power needed to win (default 0.5).
     mode : str
         Optimization mode: cost_minimizing | stability_maximizing | balanced.
     max_coalition_size : int
@@ -69,7 +69,7 @@ def compute_mwc(
     if total_power == 0:
         return _empty_mwc_result(players, "total voting power is zero")
 
-    needed = majority_threshold * total_power
+    needed = majority_threshold
     if req_power >= needed:
         required_case = _finalize_coalition(
             req_players, needed, total_power, mode, opt_players, max_coalition_size
@@ -78,29 +78,22 @@ def compute_mwc(
 
     remaining_needed = max(0.0, needed - req_power)
 
-    # ── Greedy search ─────────────────────────────────────────────────
-    candidates = _rank_candidates(opt_players, remaining_needed, mode)
+    search = _find_best_coalition(
+        pool=pool,
+        req_players=req_players,
+        opt_players=opt_players,
+        needed=needed,
+        total_power=total_power,
+        mode=mode,
+        max_coalition_size=max_coalition_size,
+    )
 
-    coalition = list(req_players)
-    coalition_ids = {p["id"] for p in coalition}
-    current_power = req_power
-    current_cost = req_cost
-
-    for p in candidates:
-        if current_power >= needed:
-            break
-        if p["id"] not in coalition_ids:
-            coalition.append(p)
-            coalition_ids.add(p["id"])
-            current_power += p["voting_share"]
-            current_cost += p["cost"]
-
-    if current_power < needed:
+    if not search["feasible"]:
         return _build_mwc_response(
             {
-                "coalition": coalition,
-                "power": current_power,
-                "cost": current_cost,
+                "coalition": list(req_players),
+                "power": req_power,
+                "cost": req_cost,
                 "feasible": False,
                 "needed": needed,
                 "total_power": total_power,
@@ -109,21 +102,7 @@ def compute_mwc(
             total_power,
         )
 
-    # ── Alternative coalitions ─────────────────────────────────────────
-    alternatives = _find_alternatives(
-        opt_players, req_players, needed, current_cost, mode, max_coalition_size
-    )
-
-    result = {
-        "coalition": coalition,
-        "power": current_power,
-        "cost": current_cost,
-        "feasible": True,
-        "alternatives": alternatives,
-        "needed": needed,
-        "total_power": total_power,
-    }
-    return _build_mwc_response(result, pool, total_power)
+    return _build_mwc_response(search, pool, total_power)
 
 
 def _validate_players(players: list[dict]) -> None:
@@ -151,22 +130,83 @@ def _empty_mwc_result(players: list[dict], reason: str) -> dict[str, Any]:
     }
 
 
-def _rank_candidates(players: list[dict], needed: float, mode: str) -> list[dict]:
-    scored = []
-    for p in players:
-        if p["voting_share"] <= 0:
-            continue
-        if mode == "cost_minimizing":
-            score = p["cost"] / p["voting_share"]
-        elif mode == "stability_maximizing":
-            score = -p["alignment_score"]
-        else:
-            cost_efficiency = p["cost"] / p["voting_share"]
-            score = cost_efficiency - p["alignment_score"] * 0.5
-        scored.append((score, p))
+def _find_best_coalition(
+    pool: list[dict],
+    req_players: list[dict],
+    opt_players: list[dict],
+    needed: float,
+    total_power: float,
+    mode: str,
+    max_coalition_size: int,
+) -> dict[str, Any]:
+    """Exact search over feasible coalitions within size bound."""
+    req_ids = {p["id"] for p in req_players}
+    max_optional = max(0, min(len(opt_players), max_coalition_size - len(req_players)))
+    feasible_candidates: list[dict[str, Any]] = []
 
-    scored.sort(key=lambda x: x[0])
-    return [p for _, p in scored]
+    for size in range(max_optional + 1):
+        for combo in itertools.combinations(opt_players, size):
+            coalition = list(req_players) + list(combo)
+            power = coalition_power(coalition)
+            if power < needed:
+                continue
+            cost = sum(p["cost"] for p in coalition)
+            stability = _compute_stability(coalition, pool)
+            feasible_candidates.append(
+                {
+                    "coalition": coalition,
+                    "power": power,
+                    "cost": cost,
+                    "stability": stability,
+                    "needed": needed,
+                    "total_power": total_power,
+                }
+            )
+
+    if not feasible_candidates:
+        return {
+            "coalition": list(req_players),
+            "power": coalition_power(req_players),
+            "cost": sum(p["cost"] for p in req_players),
+            "feasible": False,
+            "alternatives": [],
+            "needed": needed,
+            "total_power": total_power,
+        }
+
+    best = min(feasible_candidates, key=lambda c: _coalition_rank(c, mode))
+    best_ids = [p["id"] for p in best["coalition"]]
+
+    alternatives = []
+    for candidate in sorted(feasible_candidates, key=lambda c: _coalition_rank(c, mode)):
+        candidate_ids = [p["id"] for p in candidate["coalition"]]
+        if candidate_ids == best_ids:
+            continue
+        alternatives.append(
+            {
+                "coalition": candidate_ids,
+                "voting_power": round(candidate["power"], 4),
+                "total_cost": round(candidate["cost"], 4),
+                "savings": round(max(0.0, best["cost"] - candidate["cost"]), 4),
+            }
+        )
+        if len(alternatives) >= 5:
+            break
+
+    best["feasible"] = True
+    best["alternatives"] = alternatives
+    return best
+
+
+def _coalition_rank(candidate: dict[str, Any], mode: str) -> tuple[Any, ...]:
+    """Lower tuple is better."""
+    excess_power = candidate["power"] - candidate["needed"]
+    coalition_size = len(candidate["coalition"])
+    if mode == "stability_maximizing":
+        return (-candidate["stability"], candidate["cost"], coalition_size, excess_power)
+    if mode == "balanced":
+        return (candidate["cost"] - candidate["stability"], coalition_size, excess_power)
+    return (candidate["cost"], coalition_size, excess_power, -candidate["stability"])
 
 
 def _finalize_coalition(
@@ -264,7 +304,7 @@ def _build_mwc_response(
     stability = _compute_stability(coalition, pool)
 
     # ── Shapley-like power distribution ────────────────────────────────
-    power_dist = _shapley_power(pool, coalition)
+    power_dist = _shapley_power(pool, coalition, result["needed"])
 
     # ── Alternative coalitions ─────────────────────────────────────────
     alternatives = []
@@ -326,7 +366,9 @@ def coalition_power(coalition: list[dict]) -> float:
     return sum(p["voting_share"] for p in coalition)
 
 
-def _shapley_power(pool: list[dict], coalition: list[dict]) -> dict[str, float]:
+def _shapley_power(
+    pool: list[dict], coalition: list[dict], majority_needed: float
+) -> dict[str, float]:
     """
     Compute approximate Shapley-like marginal contribution values.
     For N <= 8, exact enumeration. For larger, Monte Carlo approximation.
@@ -343,12 +385,10 @@ def _shapley_power(pool: list[dict], coalition: list[dict]) -> dict[str, float]:
         # Exact Shapley via permutation enumeration
         for perm in itertools.permutations(range(n)):
             running = 0.0
-            total_power_pool = sum(p["voting_share"] for p in relevant)
-            half = 0.5 * total_power_pool
             for idx in perm:
                 prev = running
                 running += relevant[idx]["voting_share"]
-                if prev < half <= running:
+                if prev < majority_needed <= running:
                     values[relevant[idx]["id"]] += 1.0
         total_permutations = math.factorial(n)
         for k in values:
@@ -363,12 +403,10 @@ def _shapley_power(pool: list[dict], coalition: list[dict]) -> dict[str, float]:
             perm_indices = list(range(n))
             rng.shuffle(perm_indices)
             running = 0.0
-            total_power_pool = sum(p["voting_share"] for p in relevant)
-            half = 0.5 * total_power_pool
             for idx in perm_indices:
                 prev = running
                 running += relevant[idx]["voting_share"]
-                if prev < half <= running:
+                if prev < majority_needed <= running:
                     values[relevant[idx]["id"]] += 1.0
         for k in values:
             values[k] /= n_samples
