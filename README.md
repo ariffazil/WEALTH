@@ -71,6 +71,8 @@ VAULT999  ← immutable record
 
 Full doctrine: [GENESIS/040_APEX_STACK.md](https://github.com/ariffazil/arifos/blob/main/GENESIS/040_APEX_STACK.md)
 
+**Orthogonal CANON:** [ariffazil/CANON.md](https://github.com/ariffazil/ariffazil/blob/main/CANON.md) — this repo is **capital domain intelligence** (compute, never allocate). Touches money surfaces only through APA leases, never free agent hands.
+
 ---
 
 ## What WEALTH Is
