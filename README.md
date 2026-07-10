@@ -1,6 +1,6 @@
 <!-- SOT-MANIFEST
 federation_release: v2026.07.06-KELLY-APEX
-last_verified: 2026-07-09T04:50Z
+last_verified: 2026-07-10T04:50Z
 live_commit: 6adefdb
 runtime_path: /root/WEALTH (synced from /root/wealth)
 port: 18082
