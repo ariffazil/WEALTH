@@ -33,7 +33,7 @@ WEALTH is the capital intelligence organ of arifOS.
 
 **Runtime:**
 - Version: **2026.07.06**
-- Public MCP tools: **39** (server.py) + **19** (monolith) = **~45 unique**
+- Public MCP tools: **50** (live tools/list count; canonical ~45 unique)
 - Stock analysis modes: **27** (including Kelly, Nash multi-factor, TAC-9)
 - Optimizer suite: **5 engines** (Markowitz, Kelly, Robust, Chance-constrained, Two-stage)
 - Prompts: **7 canonical loops**
@@ -382,7 +382,7 @@ Connect to WEALTH via the Model Context Protocol:
 |----------|-------|
 | **Endpoint** | `https://wealth.arif-fazil.com/mcp` |
 | **Transport** | Streamable HTTP (JSON-RPC 2.0) |
-| **Tools** | ~45 tools |
+| **Tools** | 50 tools (live) |
 | **Health** | `https://wealth.arif-fazil.com/health` |
 
 ### Claude Code / Cursor
