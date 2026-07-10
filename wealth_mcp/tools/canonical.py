@@ -49,7 +49,10 @@ def register_canonical_tools(mcp):
             "cases. Standard cash flow convention: CF[0] at t=0 (initial investment, "
             "typically negative), CF[1:] at t=1, t=2, ...\n\n"
             "Modes: npv | irr | emv | evoi | mc | kelly | markowitz | "
-            "robust | chance_constrained | two_stage"
+            "robust | chance_constrained | two_stage\n\n"
+            "Use when: the user asks about NPV, IRR, expected monetary value, "
+            "Kelly criterion sizing, Markowitz portfolio optimization, Monte Carlo "
+            "simulation, or any deductive capital math computation."
         ),
         tags={"domain": "capital", "kind": "deductive", "canonical": "v1"},
     )
@@ -245,7 +248,10 @@ def register_canonical_tools(mcp):
             "Financial health metrics. Deductive computation from structured inputs. "
             "No inference, no governance verdict.\n\n"
             "Modes: conservation | flow | runway | survival | fiscal_breakeven | "
-            "confluence | asymmetry"
+            "confluence | asymmetry\n\n"
+            "Use when: the user asks about net worth, cash flow, financial runway, "
+            "burn rate, fiscal breakeven oil price, or false-confluence detection "
+            "in financial indicators."
         ),
         tags={"domain": "capital", "kind": "deductive", "canonical": "v1"},
     )
@@ -390,7 +396,10 @@ def register_canonical_tools(mcp):
             "ruled out, not just a scalar score.\n\n"
             "Modes: stress_index | governance_capacity | cascade_model | "
             "exploitation_detect | collapse_signature | beautiful_mouse | "
-            "capture_scan | power_audit | bid_surface | optimize_mwc"
+            "capture_scan | power_audit | bid_surface | optimize_mwc\n\n"
+            "Use when: the user asks about institutional stress, governance capacity, "
+            "collapse signatures, exploitation detection, power dynamics, beautiful "
+            "mouse syndrome, or minimum winning coalition optimization."
         ),
         tags={"domain": "institutional", "kind": "abductive", "canonical": "v1"},
     )
@@ -573,7 +582,10 @@ def register_canonical_tools(mcp):
             "Capital wisdom synthesis — evaluates proposals across dignity, sovereignty, "
             "resilience, inequality, ecological cost, and optionality. Advisory only. "
             "Does NOT emit GO/HOLD/SEAL verdicts — those are arifOS's domain.\n\n"
-            "Modes: wisdom | omni | epistemic"
+            "Modes: wisdom | omni | epistemic\n\n"
+            "Use when: the user wants a wisdom-weighted evaluation of a capital "
+            "proposal, deal framing, hysteresis-aware path analysis, or counterfactual "
+            "reasoning across 13 capital primitives."
         ),
         tags={"domain": "wisdom", "kind": "abductive", "canonical": "v1"},
     )
@@ -634,7 +646,9 @@ def register_canonical_tools(mcp):
         description=(
             "Market data and stock analysis. Live/cached financial data with source "
             "attribution. Observational only — no governance verdict.\n\n"
-            "Modes: fx | commodity | indicator | stock"
+            "Modes: fx | commodity | indicator | stock\n\n"
+            "Use when: the user asks about exchange rates, commodity prices, "
+            "macro indicators, stock analysis, or market data for Malaysia or global markets."
         ),
         tags={"domain": "market", "kind": "observational", "canonical": "v1"},
     )
@@ -700,7 +714,9 @@ def register_canonical_tools(mcp):
             "VAULT999 immutable ledger access. Query is read-only (no ack required). "
             "Write requires explicit human acknowledgment (ack_irreversible=true). "
             "WEALTH computes. arifOS judges. Arif decides. WEALTH does not self-seal.\n\n"
-            "Modes: query | write"
+            "Modes: query | write\n\n"
+            "Use when: the user wants to query past capital transactions from "
+            "VAULT999, or write a new transaction (requires human ack for writes)."
         ),
         tags={"domain": "vault", "kind": "mutating", "canonical": "v1"},
     )
@@ -760,7 +776,9 @@ def register_canonical_tools(mcp):
         description=(
             "WEALTH meta/introspection. Registry status, tool schema, domain index, "
             "health check. Observational only.\n\n"
-            "Modes: status | schema | domains | health"
+            "Modes: status | schema | domains | health\n\n"
+            "Use when: the user wants to inspect the WEALTH tool registry, "
+            "check available domains, view tool schemas, or run a health check."
         ),
         tags={"domain": "meta", "kind": "observational", "canonical": "v1"},
     )
