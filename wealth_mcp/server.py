@@ -21,6 +21,11 @@ if base_dir not in sys.path:
 
 from fastmcp import FastMCP
 
+# MCP primitive imports — resource embedding for prompts (Binding #23-26, 2026-07-10)
+from mcp.types import EmbeddedResource, TextResourceContents
+from fastmcp.prompts.base import Message
+from pydantic import AnyUrl
+
 # Import contracts
 from wealth_contracts.envelope import wrap_result
 from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality, ClaimState
@@ -3916,8 +3921,30 @@ def _register_prompts(mcp: FastMCP) -> None:
     wealth_allocation_judgment_loop. Stock is a use case, not a top-level
     WEALTH loop.
 
+    v2026.07.10: All prompts upgraded to return messages[] with embedded
+    resource context (MCP Bindings #23–26). FastMCP infers PromptArgument[]
+    from function signature; docstring Args: drives completion API.
+
     DITEMPA BUKAN DIBERI — Forged, not given.
     """
+
+    # ── Prompt helper: text message (Binding #23) ──
+    def _msg_text(text: str, role: str = "user") -> Message:
+        return Message(text, role=role)
+
+    # ── Prompt helper: embedded resource message (Binding #23) ──
+    def _msg_resource(uri: str, text: str, mime: str = "text/plain") -> Message:
+        return Message(
+            EmbeddedResource(
+                type="resource",
+                resource=TextResourceContents(
+                    uri=AnyUrl(uri),
+                    mimeType=mime,
+                    text=text,
+                ),
+            ),
+            role="user",
+        )
 
     # ────────────────────────────────────────────────────────────────────
     # 1. wealth_reality_intake_loop
@@ -3934,7 +3961,7 @@ def _register_prompts(mcp: FastMCP) -> None:
         ),
         tags={"wealth", "intake", "reality", "routing"},
         meta={
-            "version": "2026.06.27",
+            "version": "2026.07.10",
             "loop": "observe-classify-compute-challenge-boundary-handoff",
         },
     )
@@ -3943,13 +3970,19 @@ def _register_prompts(mcp: FastMCP) -> None:
         actor_context: str = "ARIF",
         known_facts: str = "",
         constraints: str = "",
-    ) -> str:
+    ) -> list[Message]:
         """
         Convert messy human intent into structured WEALTH context.
         Separate facts, assumptions, missing data, and forbidden conclusions.
         Route to the right WEALTH tools.
+
+        Args:
+            query: The user's capital/market/risk query text
+            actor_context: Who is asking (default "ARIF")
+            known_facts: Facts already known about the situation
+            constraints: Constraints on the analysis
         """
-        return (
+        body = (
             "# WEALTH Reality Intake Loop\n\n"
             "## User query\n"
             f"{query}\n\n"
@@ -3994,6 +4027,14 @@ def _register_prompts(mcp: FastMCP) -> None:
             "   - missing data\n"
             "   - whether arifOS handoff is required\n"
         )
+        return [
+            _msg_text(body),
+            _msg_resource(
+                "wealth://capabilities",
+                "Load WEALTH tool registry for available tools.",
+                "application/json",
+            ),
+        ]
 
     # ────────────────────────────────────────────────────────────────────
     # 2. wealth_capital_diagnosis_loop
@@ -4006,19 +4047,25 @@ def _register_prompts(mcp: FastMCP) -> None:
             "NPV, IRR, EPF, zakat, and project economics."
         ),
         tags={"wealth", "capital", "personal-finance", "valuation"},
-        meta={"version": "2026.06.27"},
+        meta={"version": "2026.07.10"},
     )
     def wealth_capital_diagnosis_loop(
         case: str,
         scale: str = "personal",
         numbers_available: str = "",
         horizon: str = "",
-    ) -> str:
+    ) -> list[Message]:
         """
         Diagnose capital health across conservation, flow, survival, value,
         and Malaysian-specific duties (EPF, zakat).
+
+        Args:
+            case: Description of the capital situation
+            scale: "personal" or "enterprise" or "sovereign"
+            numbers_available: What financial numbers are known
+            horizon: Time horizon for the diagnosis
         """
-        return (
+        body = (
             "# WEALTH Capital Diagnosis Loop\n\n"
             "## Case\n"
             f"{case}\n\n"
@@ -4057,6 +4104,13 @@ def _register_prompts(mcp: FastMCP) -> None:
             "Do not recommend moving money.\n"
             'Do not say "financially safe" without downside and uncertainty.\n'
         )
+        return [
+            _msg_text(body),
+            _msg_resource(
+                "wealth://diagnosis/case",
+                f"Case: {case}\nScale: {scale}\nNumbers: {numbers_available}\nHorizon: {horizon}",
+            ),
+        ]
 
     # ────────────────────────────────────────────────────────────────────
     # 3. wealth_risk_downside_loop
@@ -4070,19 +4124,25 @@ def _register_prompts(mcp: FastMCP) -> None:
             "false confluence, and uncertainty."
         ),
         tags={"wealth", "risk", "downside", "uncertainty"},
-        meta={"version": "2026.06.27"},
+        meta={"version": "2026.07.10"},
     )
     def wealth_risk_downside_loop(
         decision: str,
         scenarios: str = "",
         evidence_quality: str = "unknown",
         irreversible: str = "false",
-    ) -> str:
+    ) -> list[Message]:
         """
         Force downside-first analysis before any expected-value claim.
         Stock pre-trade logic folded here.
+
+        Args:
+            decision: The decision being evaluated
+            scenarios: Known scenarios (base, upside, downside, ruin)
+            evidence_quality: Quality of evidence available
+            irreversible: Whether the decision is irreversible
         """
-        return (
+        body = (
             "# WEALTH Risk + Downside Loop\n\n"
             "## Decision\n"
             f"{decision}\n\n"
@@ -4123,6 +4183,13 @@ def _register_prompts(mcp: FastMCP) -> None:
             "Do not hide downside behind expected value.\n"
             "Do not use precise decimals when evidence quality is weak.\n"
         )
+        return [
+            _msg_text(body),
+            _msg_resource(
+                "wealth://risk/decision",
+                f"Decision: {decision}\nIrreversible: {irreversible}\nEvidence quality: {evidence_quality}",
+            ),
+        ]
 
     # ────────────────────────────────────────────────────────────────────
     # 4. wealth_market_reality_loop
@@ -4136,18 +4203,24 @@ def _register_prompts(mcp: FastMCP) -> None:
             "macro indicators, Bursa evidence, and time-sensitive claims."
         ),
         tags={"wealth", "market", "macro", "reality"},
-        meta={"version": "2026.06.27"},
+        meta={"version": "2026.07.10"},
     )
     def wealth_market_reality_loop(
         market_question: str,
         geography: str = "Malaysia",
         asset_or_indicator: str = "",
         as_of_date: str = "",
-    ) -> str:
+    ) -> list[Message]:
         """
         Bind every market claim to a source + timestamp. No naked numbers.
+
+        Args:
+            market_question: What market data is being queried
+            geography: Geographic context (default Malaysia)
+            asset_or_indicator: Specific asset or indicator
+            as_of_date: Date for time-sensitive claims
         """
-        return (
+        body = (
             "# WEALTH Market Reality Loop\n\n"
             "## Market question\n"
             f"{market_question}\n\n"
@@ -4187,6 +4260,13 @@ def _register_prompts(mcp: FastMCP) -> None:
             'Do not call an old number "live."\n'
             "Do not infer investment action from market data alone.\n"
         )
+        return [
+            _msg_text(body),
+            _msg_resource(
+                "wealth://market/query",
+                f"Market question: {market_question}\nGeography: {geography}\nAsset: {asset_or_indicator}\nAs-of: {as_of_date}",
+            ),
+        ]
 
     # ────────────────────────────────────────────────────────────────────
     # 5. wealth_allocation_judgment_loop
@@ -4200,19 +4280,25 @@ def _register_prompts(mcp: FastMCP) -> None:
             "authorizing capital movement."
         ),
         tags={"wealth", "allocation", "judgment", "governance"},
-        meta={"version": "2026.06.27"},
+        meta={"version": "2026.07.10"},
     )
     def wealth_allocation_judgment_loop(
         options: str,
         capital_available: str = "",
         objective: str = "",
         constraints: str = "",
-    ) -> str:
+    ) -> list[Message]:
         """
         Compare options. Output is advisory only — never authorizes capital
         movement. Stock-vs-stock and project-vs-project sit here.
+
+        Args:
+            options: The options being compared
+            capital_available: How much capital is available
+            objective: What the allocation aims to achieve
+            constraints: Constraints on the allocation
         """
-        return (
+        body = (
             "# WEALTH Allocation Judgment Loop\n\n"
             "## Options\n"
             f"{options}\n\n"
@@ -4264,6 +4350,13 @@ def _register_prompts(mcp: FastMCP) -> None:
             'Do not say "allocate now."\n'
             'Say "best candidate for further study" unless arifOS has judged.\n'
         )
+        return [
+            _msg_text(body),
+            _msg_resource(
+                "wealth://allocation/options",
+                f"Options: {options}\nCapital: {capital_available}\nObjective: {objective}\nConstraints: {constraints}",
+            ),
+        ]
 
     # ────────────────────────────────────────────────────────────────────
     # 6. wealth_institutional_power_loop
@@ -4277,18 +4370,24 @@ def _register_prompts(mcp: FastMCP) -> None:
             "collapse-signature intelligence loop."
         ),
         tags={"wealth", "power", "capture", "collapse", "institution"},
-        meta={"version": "2026.06.27"},
+        meta={"version": "2026.07.10"},
     )
     def wealth_institutional_power_loop(
         institution: str,
         text_or_event: str,
         concern: str = "",
         historical_priors: str = "",
-    ) -> str:
+    ) -> list[Message]:
         """
         Force roles-not-people framing. Beautiful Mouse before collapse.
+
+        Args:
+            institution: Name of the institution
+            text_or_event: The text/event to analyze
+            concern: The specific concern
+            historical_priors: Known historical patterns for comparison
         """
-        return (
+        body = (
             "# WEALTH Institutional Power Loop\n\n"
             "## Institution\n"
             f"{institution}\n\n"
@@ -4329,6 +4428,13 @@ def _register_prompts(mcp: FastMCP) -> None:
             "Do not attack named people.\n"
             "Do not convert pattern match into verdict.\n"
         )
+        return [
+            _msg_text(body),
+            _msg_resource(
+                "wealth://institution/power",
+                f"Institution: {institution}\nConcern: {concern}\nPriors: {historical_priors}",
+            ),
+        ]
 
     # ────────────────────────────────────────────────────────────────────
     # 7. wealth_arifos_handoff_loop
@@ -4342,7 +4448,7 @@ def _register_prompts(mcp: FastMCP) -> None:
             "high-risk, or governance-sensitive WEALTH outputs."
         ),
         tags={"wealth", "arifos", "handoff", "governance"},
-        meta={"version": "2026.06.27"},
+        meta={"version": "2026.07.10"},
     )
     def wealth_arifos_handoff_loop(
         source_tool: str,
@@ -4351,12 +4457,20 @@ def _register_prompts(mcp: FastMCP) -> None:
         blast_radius: str = "MEDIUM",
         reversibility: str = "PARTIAL",
         domain: str = "capital",
-    ) -> str:
+    ) -> list[Message]:
         """
         Build a clean judge envelope. Default mode is prepare; submit only
         with explicit authority.
+
+        Args:
+            source_tool: The WEALTH tool that produced the result
+            result_summary: Summary of the WEALTH computation result
+            intent: The capital decision being proposed
+            blast_radius: LOW / MEDIUM / HIGH / CRITICAL
+            reversibility: FULL / PARTIAL / NONE
+            domain: capital / risk / power / wisdom / collapse / meta
         """
-        return (
+        body = (
             "# WEALTH → arifOS Handoff Loop\n\n"
             "## Source tool\n"
             f"{source_tool}\n\n"
@@ -4400,6 +4514,14 @@ def _register_prompts(mcp: FastMCP) -> None:
             "Do not claim arifOS verdict before arifOS responds.\n"
             "Do not write to VAULT999 from this prompt.\n"
         )
+        return [
+            _msg_text(body),
+            _msg_resource(
+                "wealth://handoff/envelope",
+                f"Source: {source_tool}\nIntent: {intent}\nBlast: {blast_radius}\nReversibility: {reversibility}\nDomain: {domain}",
+                "application/json",
+            ),
+        ]
 
 
 def _extract_dimension(wisdom_result: dict, dimension: str) -> str | None:
