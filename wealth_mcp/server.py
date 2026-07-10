@@ -545,21 +545,24 @@ def create_mcp_server() -> FastMCP:
         print(f"[GOVERNANCE] WEALTH federated governance wrapper failed to load: {e}")
 
     # ── Register tools ────────────────────────────────────────────────────
-    _register_wisdom_tools(mcp)
-    _register_power_tools(mcp)
-    _register_epistemic_tools(mcp)
-    _register_capital_tools(mcp)
-    _register_risk_tools(mcp)
-    _register_legacy_surface_tools(mcp)  # stock, personal, market, omni, agent_path
-    _register_meta_tools(mcp)
-    _register_advanced_tools(mcp)  # beautiful mouse, judge handoff (forged 2026-06-24)
-    _register_optimizer_tools(mcp)  # APEX optimization engines (forged 2026-07-06)
-    _register_auction_tools(
-        mcp
-    )  # Auction surfaces + coalition games (forged 2026-07-07)
-    _register_institutional_tools(
-        mcp
-    )  # Institutional stress detection (forged 2026-07-08)
+    # DEREGISTERED 2026-07-10: Legacy surface disabled (43 tools → 7 canonical).
+    # Code preserved below for backward compat. Re-enable by uncommenting.
+    # See: forge_work/2026-07-10/WEALTH-DEREGISTRATION.md
+    # _register_wisdom_tools(mcp)
+    # _register_power_tools(mcp)
+    # _register_epistemic_tools(mcp)
+    # _register_capital_tools(mcp)
+    # _register_risk_tools(mcp)
+    # _register_legacy_surface_tools(mcp)  # stock, personal, market, omni, agent_path
+    # _register_meta_tools(mcp)
+    # _register_advanced_tools(mcp)  # beautiful mouse, judge handoff (forged 2026-06-24)
+    # _register_optimizer_tools(mcp)  # APEX optimization engines (forged 2026-07-06)
+    # _register_auction_tools(
+    #     mcp
+    # )  # Auction surfaces + coalition games (forged 2026-07-07)
+    # _register_institutional_tools(
+    #     mcp
+    # )  # Institutional stress detection (forged 2026-07-08)
     _register_resources(mcp)
     _register_prompts(mcp)
 
