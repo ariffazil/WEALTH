@@ -1,3 +1,4 @@
+# ⚠️ DEPRECATED as process entry (ZEN 2026-07-11 W6). Production = server_federated.py on :18082. This file is engine library only.
 """
 ⛔ DEPRECATED — This monolith is being replaced by the federated domain.
 
