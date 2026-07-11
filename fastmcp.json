@@ -13,17 +13,17 @@
     "port": 18082,
     "transport": "http"
   },
-  "description": "Sovereign Wealth & Capital Allocation Engine — 7 canonical tools (ZEN surface). Capital primitives only.",
+  "description": "Sovereign Wealth & Capital Allocation Engine \u2014 7 canonical tools (ZEN surface). Capital primitives only.",
   "environment": {
     "project": ".",
     "python": ">=3.12",
     "type": "uv"
   },
-  "name": "WEALTH-MONOLITH",
+  "name": "WEALTH",
   "source": {
-    "entrypoint": "mcp",
-    "path": "internal/monolith.py",
+    "entrypoint": "server_federated",
+    "path": "server_federated.py",
     "type": "filesystem"
   },
-  "version": "2026.06.14"
+  "version": "2026.07.11"
 }
