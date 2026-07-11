@@ -1,10 +1,12 @@
 """
-⚠️ DEPRECATED — This is a development demo surface (6 tools).
-Production WEALTH runs at `wealth_mcp/server.py` (federated, 24 tools).
-This file is kept for legacy demo purposes only.
+⚠️ DEPRECATED — Development demo surface (SSE :8082). ZEN 2026-07-11 W6.
 
-Canonical production entry point: `server_federated.py`
-Canonical tool surface: `wealth_mcp/server.py` (1220 lines, 24 public tools, 6 resources, 2 prompts)
+Production WEALTH (7 canonical capital_* tools) is streamable-http on :18082:
+  server_federated.py → wealth_mcp/server.py:create_mcp_server()
+  systemd: wealth-organ.service
+
+Do NOT use this file as a process-manager entry. Excluded from production.
+Kept only for local demo / historical reference.
 
 DITEMPA BUKAN DIBERI — Forged, not given.
 """
