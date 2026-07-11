@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""WEALTH canonical runtime entrypoint.
+"""⚠️ DEPRECATED entrypoint (ZEN 2026-07-11 W6).
 
-Importing this module exposes the internal monolith tool functions for tests and
-local scripts. Executing it starts the FastMCP/Starlette runtime.
+Production WEALTH is streamable-http on :18082 via:
+  server_federated.py → wealth_mcp/server.py:create_mcp_server()
+  systemd: wealth-organ.service
+
+This module still imports internal.monolith for tests/scripts. Do NOT bind
+it on :18082 (port conflict with production). Prefer server_federated.py.
 """
 
 from __future__ import annotations

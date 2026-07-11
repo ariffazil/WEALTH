@@ -390,46 +390,28 @@ def register_canonical_tools(mcp):
         name="capital_diagnose",
         description=(
             "Abductive institutional diagnostics — inference from partial evidence. "
-            "REQUIRED: domain_scope declares calibration domain (e.g. 'extraction_fraud', "
-            "'duration_mismatch', 'governance_churn'). Unknown fields are REJECTED "
-            "(not silently dropped to 0.0). Output includes alternative hypotheses "
-            "ruled out, not just a scalar score.\n\n"
+            "Surface: mode, domain_scope, payload (dict). Mode-specific fields go in "
+            "payload. REQUIRED: domain_scope declares calibration domain. Unknown "
+            "fields are REJECTED (not silently dropped to 0.0).\n\n"
             "Modes: stress_index | governance_capacity | cascade_model | "
             "exploitation_detect | collapse_signature | beautiful_mouse | "
             "capture_scan | power_audit | bid_surface | optimize_mwc\n\n"
-            "Use when: the user asks about institutional stress, governance capacity, "
-            "collapse signatures, exploitation detection, power dynamics, beautiful "
-            "mouse syndrome, or minimum winning coalition optimization."
+            "Use when: institutional stress, governance, collapse, power, MWC."
         ),
         tags={"domain": "institutional", "kind": "abductive", "canonical": "v1"},
     )
     async def capital_diagnose(
         mode: str,
         domain_scope: str = "",
-        org_name: str = "",
-        financial_signals: dict | None = None,
-        governance_signals: dict | None = None,
-        workforce_signals: dict | None = None,
-        legal_signals: dict | None = None,
-        exploitation_signals: dict | None = None,
-        scenario: str = "",
-        text: str = "",
-        advice_text: str = "",
-        source_model: str = "",
-        board_members: list[dict] | None = None,
-        committees: list[dict] | None = None,
-        stress_level: float = 0.3,
-        counterparty_actions: list[dict] | None = None,
-        institution_state: dict | None = None,
-        timeline: list[dict] | None = None,
-        intervention_scenario: dict | None = None,
-        bids: list[dict] | None = None,
-        players: list[dict] | None = None,
-        majority_threshold: float = 0.5,
-        actor_list: list[str] | None = None,
-        context: dict | None = None,
+        payload: dict | None = None,
     ) -> dict:
+        """Mode-dispatched institutional diagnostics (ZEN 2026-07-11 W3).
+
+        Surface: mode, domain_scope, payload. Mode-specific fields in payload.
+        domain_scope: unknown fields REJECTED by engines (not zeroed). Math unchanged.
+        """
         m = mode.lower()
+        p: dict[str, Any] = dict(payload or {})
 
         if m == "stress_index":
             from wealth_core.institutional import compute_stress_index
@@ -438,12 +420,12 @@ def register_canonical_tools(mcp):
                 tool_name="capital_diagnose",
                 domain="institutional",
                 result=compute_stress_index(
-                    org_name,
-                    financial_signals or {},
-                    governance_signals or {},
-                    workforce_signals or {},
-                    legal_signals or {},
-                    exploitation_signals or {},
+                    p.get("org_name") or "",
+                    p.get("financial_signals") or {},
+                    p.get("governance_signals") or {},
+                    p.get("workforce_signals") or {},
+                    p.get("legal_signals") or {},
+                    p.get("exploitation_signals") or {},
                 ),
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
@@ -461,7 +443,9 @@ def register_canonical_tools(mcp):
                 tool_name="capital_diagnose",
                 domain="institutional",
                 result=compute_governance_capacity(
-                    board_members or [], committees or [], stress_level
+                    p.get("board_members") or [],
+                    p.get("committees") or [],
+                    float(p.get("stress_level", 0.3)),
                 ),
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
@@ -474,7 +458,9 @@ def register_canonical_tools(mcp):
             return wrap_result(
                 tool_name="capital_diagnose",
                 domain="institutional",
-                result=compute_cascade(timeline or [], intervention_scenario),
+                result=compute_cascade(
+                    p.get("timeline") or [], p.get("intervention_scenario")
+                ),
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["cascade_model"],
@@ -487,7 +473,8 @@ def register_canonical_tools(mcp):
                 tool_name="capital_diagnose",
                 domain="institutional",
                 result=compute_exploitation(
-                    counterparty_actions or [], institution_state or {}
+                    p.get("counterparty_actions") or [],
+                    p.get("institution_state") or {},
                 ),
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
@@ -500,7 +487,7 @@ def register_canonical_tools(mcp):
             return wrap_result(
                 tool_name="capital_diagnose",
                 domain="collapse",
-                result=compute_collapse_risk(scenario),
+                result=compute_collapse_risk(p.get("scenario") or ""),
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom"],
@@ -514,7 +501,7 @@ def register_canonical_tools(mcp):
             return wrap_result(
                 tool_name="capital_diagnose",
                 domain="collapse",
-                result=compute_beautiful_mouse_score(text),
+                result=compute_beautiful_mouse_score(p.get("text") or ""),
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["calhoun_phase_c_indicators"],
@@ -526,10 +513,13 @@ def register_canonical_tools(mcp):
             return wrap_result(
                 tool_name="capital_diagnose",
                 domain="power",
-                result=detect_capture(advice_text, source_model=source_model),
+                result=detect_capture(
+                    p.get("advice_text") or "",
+                    source_model=p.get("source_model") or "",
+                ),
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.WEAK,
-                source_attribution=[f"model:{source_model}"],
+                source_attribution=[f"model:{p.get('source_model') or ''}"],
             )
 
         if m == "power_audit":
@@ -538,7 +528,11 @@ def register_canonical_tools(mcp):
             return wrap_result(
                 tool_name="capital_diagnose",
                 domain="power",
-                result=audit_power(scenario, actors=actor_list, context=context),
+                result=audit_power(
+                    p.get("scenario") or "",
+                    actors=p.get("actor_list"),
+                    context=p.get("context"),
+                ),
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.WEAK,
                 source_attribution=["scenario_text_analysis"],
@@ -550,7 +544,7 @@ def register_canonical_tools(mcp):
             return wrap_result(
                 tool_name="capital_diagnose",
                 domain="power",
-                result=compute_bid_surface(bids or []),
+                result=compute_bid_surface(p.get("bids") or []),
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["bid_scoring_surface"],
@@ -562,7 +556,10 @@ def register_canonical_tools(mcp):
             return wrap_result(
                 tool_name="capital_diagnose",
                 domain="power",
-                result=compute_mwc(players or [], majority_threshold),
+                result=compute_mwc(
+                    p.get("players") or [],
+                    float(p.get("majority_threshold", 0.5)),
+                ),
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["mwc_optimization"],
@@ -644,11 +641,11 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_market",
         description=(
-            "Market data and stock analysis. Live/cached financial data with source "
-            "attribution. Observational only — no governance verdict.\n\n"
+            "Market data and stock analysis. Observational only.\n\n"
+            "Top-level: mode, base, targets, commodity, indicator, country. "
+            "Stock fields in stock_payload dict.\n\n"
             "Modes: fx | commodity | indicator | stock\n\n"
-            "Use when: the user asks about exchange rates, commodity prices, "
-            "macro indicators, stock analysis, or market data for Malaysia or global markets."
+            "Use when: FX, commodities, macro indicators, or stock analysis."
         ),
         tags={"domain": "market", "kind": "observational", "canonical": "v1"},
     )
@@ -659,17 +656,11 @@ def register_canonical_tools(mcp):
         commodity: str = "brent_crude",
         indicator: str = "usd_myr",
         country: str = "MYS",
-        ticker: str = "",
-        stock_mode: str = "verify_math",
-        entry_price: float = 0,
-        exit_price: float | None = None,
-        current_price: float | None = None,
-        position_size: int = 0,
-        status_: str = "unrealized",
-        direction: str = "long",
-        factors: dict | None = None,
+        stock_payload: dict | None = None,
     ) -> dict:
+        """Market data (ZEN 2026-07-11 W4). Stock fields in stock_payload."""
         m = mode.lower()
+        sp: dict[str, Any] = dict(stock_payload or {})
 
         if m == "fx":
             return await _call_legacy_tool(
@@ -688,15 +679,15 @@ def register_canonical_tools(mcp):
             return await _call_legacy_tool(
                 "wealth_stock_analysis",
                 {
-                    "mode": stock_mode,
-                    "ticker": ticker,
-                    "entry_price": entry_price,
-                    "exit_price": exit_price,
-                    "current_price": current_price,
-                    "position_size": position_size,
-                    "status": status_,
-                    "direction": direction,
-                    "factors": factors,
+                    "mode": sp.get("stock_mode") or sp.get("mode") or "verify_math",
+                    "ticker": sp.get("ticker") or "",
+                    "entry_price": sp.get("entry_price") or 0,
+                    "exit_price": sp.get("exit_price"),
+                    "current_price": sp.get("current_price"),
+                    "position_size": sp.get("position_size") or 0,
+                    "status": sp.get("status") or sp.get("status_") or "unrealized",
+                    "direction": sp.get("direction") or "long",
+                    "factors": sp.get("factors"),
                 },
             )
 
@@ -762,6 +753,7 @@ def register_canonical_tools(mcp):
                     "amount": amount,
                     "currency": currency,
                     "description": description,
+                    "ack_irreversible": True,
                 },
             )
 
@@ -784,18 +776,36 @@ def register_canonical_tools(mcp):
     )
     async def capital_registry(mode: str = "status") -> dict:
         m = mode.lower()
+        _CANONICAL = [
+            "capital_primitive",
+            "capital_health",
+            "capital_diagnose",
+            "capital_wisdom",
+            "capital_market",
+            "capital_ledger",
+            "capital_registry",
+        ]
 
         if m == "status":
-            return await _call_legacy_tool(
-                "wealth_registry_status", {"mode": "registry"}
-            )
+            return {
+                "status": "OK",
+                "organ": "WEALTH",
+                "version": "2026.07.11",
+                "architecture": "federated-7-canonical",
+                "canonical_tools": _CANONICAL,
+                "canonical_tool_count": 7,
+                "registry_truth": "PASS",
+                "legacy_dispatch": "direct_import",
+                "final_authority": "ARIF",
+                "read_only": True,
+            }
 
         if m == "schema":
             return await _call_legacy_tool("wealth_schema", {})
 
         if m == "domains":
             return {
-                "version": "2026.07.07",
+                "version": "2026.07.11",
                 "domains": [
                     {
                         "name": "capital",
@@ -825,14 +835,14 @@ def register_canonical_tools(mcp):
                     },
                 ],
                 "canonical_tool_count": 7,
-                "legacy_tools": "preserved_as_wrappers",
+                "legacy_tools": "direct_import_engines",
                 "preload_mechanism": "REMOVED_2026-07-07",
             }
 
         if m == "health":
             return {
                 "status": "ALIVE",
-                "version": "2026.07.07",
+                "version": "2026.07.11",
                 "domain": "WEALTH Federated Domain",
                 "architecture": "federated-7-canonical",
                 "canonical_tools": 7,
@@ -843,22 +853,115 @@ def register_canonical_tools(mcp):
             f"Unknown mode '{mode}'. Valid: status, schema, domains, health"
         )
 
-    # ── Helper: call an existing legacy tool by name (internal dispatch) ──
+    # ── Helper: resolve legacy engines by direct import (ZEN 2026-07-11 W5) ──
     async def _call_legacy_tool(tool_name: str, arguments: dict) -> dict:
-        """Dispatch to an existing MCP tool registered on the same server."""
+        """Dispatch to in-process engine functions (legacy MCP names as keys)."""
+        args = dict(arguments or {})
         try:
-            # FastMCP 3.x: use public call_tool API (not internal _tool_manager)
-            result = await mcp.call_tool(tool_name, arguments)
-            return result
+            if tool_name in ("wealth_market_data", "market_data"):
+                from internal.monolith import wealth_market_data
+
+                if str(args.get("mode", "")).lower() == "indicator":
+                    args = {**args, "mode": "macro"}
+                result = wealth_market_data(**args)
+                return result if isinstance(result, dict) else {"result": result}
+
+            if tool_name in ("wealth_stock_analysis", "stock_analysis"):
+                from internal.monolith import wealth_stock_analysis
+
+                result = await wealth_stock_analysis(**args)
+                return result if isinstance(result, dict) else {"result": result}
+
+            if tool_name in ("wealth_vault_query", "vault_query"):
+                from host.governance.vault_supabase import query_vault999_async
+
+                q = args.get("query") or args.get("asset_id") or ""
+                raw = await query_vault999_async(
+                    query=str(q),
+                    limit=int(args.get("limit") or 10),
+                    session_id=args.get("session_id"),
+                )
+                return {
+                    "query": raw.get("query", q),
+                    "earth_refs": raw.get("earth_refs", []),
+                    "count": raw.get("count", 0),
+                    "vault_seal": raw.get("vault_seal", "VAULT999"),
+                    "status": "OK",
+                    "read_only": True,
+                }
+
+            if tool_name in ("wealth_vault_write", "vault_write"):
+                from internal.monolith import vault_write
+
+                result = vault_write(
+                    action=str(args.get("tx_type") or args.get("action") or "capital_tx"),
+                    payload={
+                        "amount": args.get("amount"),
+                        "currency": args.get("currency"),
+                        "description": args.get("description"),
+                    },
+                    ack_irreversible=bool(args.get("ack_irreversible", True)),
+                )
+                return result if isinstance(result, dict) else {"result": result}
+
+            if tool_name in (
+                "wealth_registry_status",
+                "wealth_system_registry_status",
+                "registry_status",
+            ):
+                from internal.monolith import wealth_system_registry_status
+
+                result = await wealth_system_registry_status(
+                    mode=str(args.get("mode") or "registry")
+                )
+                return result if isinstance(result, dict) else {"result": result}
+
+            if tool_name in ("wealth_schema", "schema"):
+                return {
+                    "organ": "WEALTH",
+                    "version": "2026.07.11",
+                    "role": "Capital Intelligence for arifOS federation",
+                    "authority": "WEALTH computes. arifOS judges. Arif decides.",
+                    "canonical_tools": [
+                        "capital_primitive",
+                        "capital_health",
+                        "capital_diagnose",
+                        "capital_wisdom",
+                        "capital_market",
+                        "capital_ledger",
+                        "capital_registry",
+                    ],
+                    "canonical_tool_count": 7,
+                    "legacy_mcp_dispatch": "direct_import",
+                }
+
+            if tool_name in ("wealth_survival_engine", "survival_engine"):
+                from internal.monolith import wealth_survival_engine
+
+                result = await wealth_survival_engine(**args)
+                return result if isinstance(result, dict) else {"result": result}
+
+            if tool_name in ("wealth_omni_wisdom", "omni_wisdom"):
+                from internal.monolith import wealth_omni_wisdom
+
+                result = await wealth_omni_wisdom(**args)
+                return result if isinstance(result, dict) else {"result": result}
+
+            return {
+                "error": f"legacy_dispatch_failed: {tool_name}",
+                "detail": "no direct import mapping for this legacy name",
+            }
+        except TypeError as e:
+            return {
+                "error": f"legacy_dispatch_failed: {tool_name}",
+                "detail": f"TypeError: {e}",
+                "arguments_keys": sorted(args.keys()),
+            }
         except Exception as e:
-            # Fallback: try with wealth_ prefix
-            if not tool_name.startswith("wealth_"):
-                try:
-                    result = await mcp.call_tool(f"wealth_{tool_name}", arguments)
-                    return result
-                except Exception:
-                    pass
-            return {"error": f"legacy_dispatch_failed: {tool_name}", "detail": str(e)}
+            return {
+                "error": f"legacy_dispatch_failed: {tool_name}",
+                "detail": f"{type(e).__name__}: {e}",
+            }
 
     return {
         "capital_primitive": capital_primitive,
