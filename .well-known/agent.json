@@ -3,7 +3,7 @@
   "arifos_internal_card": "/.well-known/agent-card.json",
   "name": "WEALTH",
   "description": "Capital intelligence — NPV, EMV, valuation, risk scoring, portfolio optimization, collapse signatures, sovereign fiscal reasoning, and wisdom evaluation under F1-F13 constitutional floors. Evidence-only on computational primitives; arifOS 888_JUDGE owns the verdict.",
-  "version": "2026.07.01",
+  "version": "2026.07.11",
   "protocolVersion": "1.0.0",
   "url": "https://wealth.arif-fazil.com",
   "provider": {
@@ -34,17 +34,15 @@
   "defaultInputModes": ["application/json"],
   "defaultOutputModes": ["application/json"],
   "skills": [
-    {"id": "npv-reward", "name": "NPV Reward", "description": "Net Present Value — discount capital flows to present."},
-    {"id": "emv-risk", "name": "EMV Risk", "description": "Expected Monetary Value, risk-adjusted return, EVOI for decision support."},
-    {"id": "portfolio-optimize", "name": "Portfolio Optimization", "description": "Allocate capital across competing opportunities under F1 reversibility-first."},
-    {"id": "stock-analysis", "name": "D4 Stock Analysis", "description": "16-mode governed stock safety gate, asymmetric capture scan."},
-    {"id": "personal-finance", "name": "Personal Finance (Malaysia)", "description": "EPF, zakat, runway, net worth, fiscal breakeven."},
-    {"id": "macro-field", "name": "Macro Field", "description": "Live FX, commodities, fiscal thresholds."},
-    {"id": "collapse-signature", "name": "Collapse Signature", "description": "Pre-collapse analogue detection (Enron, 1MDB, PDVSA). HIGH → 888_HOLD."},
-    {"id": "beautiful-mouse", "name": "Beautiful Mouse", "description": "Phase C institutional health scan (Calhoun + Acemoglu 2-D)."},
-    {"id": "sovereign-fiscal", "name": "Sovereign Fiscal Reasoning", "description": "Malaysian fiscal breakeven, Petronas dividend sensitivity, oil-price threshold."}
+    {"id": "capital_primitive", "name": "Capital Primitive", "description": "Deductive math: NPV, IRR, EMV, EVOI, MC, Kelly, Markowitz, robust, chance-constrained, two-stage."},
+    {"id": "capital_health", "name": "Capital Health", "description": "Conservation, flow, runway, survival, fiscal breakeven, confluence, asymmetry."},
+    {"id": "capital_diagnose", "name": "Capital Diagnose", "description": "Institutional stress, governance, cascade, collapse signature, power, MWC — mode + payload."},
+    {"id": "capital_wisdom", "name": "Capital Wisdom", "description": "Wisdom synthesis, omni path, epistemic audit — advisory only."},
+    {"id": "capital_market", "name": "Capital Market", "description": "FX, commodity, indicator, stock (stock_payload)."},
+    {"id": "capital_ledger", "name": "Capital Ledger", "description": "VAULT999 query/write (write requires ack_irreversible)."},
+    {"id": "capital_registry", "name": "Capital Registry", "description": "Status, schema, domains, health for the 7-tool surface."}
   ],
-  "owned_mcp_count": 25,
+  "owned_mcp_count": 7,
   "can_do": [
     "Compute NPV/EMV/EVOI/IRR/Monte Carlo capital primitives",
     "Run stock analysis, personal finance, market data lookups",
