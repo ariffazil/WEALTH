@@ -19,11 +19,11 @@
     "python": ">=3.12",
     "type": "uv"
   },
-  "name": "WEALTH",
+  "name": "WEALTH-MONOLITH",
   "source": {
-    "entrypoint": "server_federated",
-    "path": "server_federated.py",
+    "entrypoint": "mcp",
+    "path": "internal/monolith.py",
     "type": "filesystem"
   },
-  "version": "2026.07.11"
+  "version": "2026.06.14"
 }
