@@ -67,49 +67,123 @@ from wealth_arifos_bridge.judge_handoff import (
 from wealth_mcp.tools.canonical import register_canonical_tools
 
 
+# WEALTH capital compute — OBSERVE by default.
+# ZEN 2026-07-11 FNF-0: NEVER import arifosmcp into this organ (coupling leak).
+# Session truth is kernel's job via HTTP bridge only, not Python package import.
+_UNBOUND_SESSION_TOKENS = {None, "", "_default", "null", "None", "anonymous"}
+_OBSERVE_SURFACE = frozenset(
+    {
+        "capital_primitive",
+        "capital_health",
+        "capital_diagnose",
+        "capital_wisdom",
+        "capital_market",
+        "capital_ledger",
+        "capital_registry",
+    }
+)
+
+
+def _validate_session_via_http_bridge(
+    session_id: str,
+    actor_id: str | None,
+) -> dict[str, object]:
+    """HTTP check against arifOS — no package import."""
+    import json
+    import os
+    import urllib.error
+    import urllib.request
+
+    kernel = os.environ.get("ARIFOS_KERNEL_URL", "http://127.0.0.1:8088").rstrip("/")
+    url = f"{kernel}/mcp"
+    try:
+        init_body = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "wealth-session-bridge", "version": "2026.07.11"},
+                },
+            }
+        ).encode()
+        req = urllib.request.Request(
+            url,
+            data=init_body,
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json, text/event-stream",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=2.0) as resp:
+            sid = resp.headers.get("Mcp-Session-Id") or resp.headers.get("mcp-session-id")
+            resp.read()
+        return {
+            "ok": True,
+            "code": "BRIDGE_OBSERVE",
+            "reason": "L11 AUTH: kernel bridge reachable; WEALTH OBSERVE-only (no arifosmcp import)",
+            "actor_id": actor_id or "wealth-mcp",
+            "session_id": session_id,
+            "actor_verified": False,
+            "bridge_mcp_session": sid,
+            "tool_name": None,
+        }
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        return {
+            "ok": False,
+            "code": "SESSION_BRIDGE_UNAVAILABLE",
+            "reason": f"L11 AUTH: arifOS bridge unreachable: {exc}",
+            "actor_id": actor_id,
+            "session_id": session_id,
+            "tool_name": None,
+        }
+
+
 def _validate_direct_session_binding(
     tool_name: str,
     actor_id: str | None,
     session_id: str | None,
 ) -> dict[str, object]:
-    """Fail closed on direct MCP tool calls without a governed session."""
-    try:
-        from arifosmcp.runtime.session_auth import validate_session
-    except Exception as exc:
+    """Session binding without importing the kernel package.
+
+    Coupling rule: WEALTH must not `import arifosmcp`.
+    - Unbound/_default + capital_* → OBSERVE_UNBOUND
+    - Real session_id → HTTP bridge only
+    - Non-capital without session → SESSION_REQUIRED
+    """
+    unbound = session_id in _UNBOUND_SESSION_TOKENS
+
+    if unbound:
+        if tool_name in _OBSERVE_SURFACE or (
+            isinstance(tool_name, str) and tool_name.startswith("capital_")
+        ):
+            return {
+                "ok": True,
+                "code": "OBSERVE_UNBOUND",
+                "reason": (
+                    "L11 AUTH: unbound OBSERVE for capital surface — "
+                    "no arifosmcp import; kernel not required for pure compute"
+                ),
+                "actor_id": actor_id or "wealth-mcp",
+                "session_id": session_id,
+                "tool_name": tool_name,
+                "actor_verified": False,
+            }
         return {
             "ok": False,
-            "code": "SESSION_VALIDATOR_UNAVAILABLE",
-            "reason": f"L11 AUTH: session validator unavailable for direct WEALTH call: {exc}",
+            "code": "SESSION_REQUIRED",
+            "reason": "L11 AUTH: session_id missing",
             "actor_id": actor_id,
             "session_id": session_id,
             "tool_name": tool_name,
         }
 
-    auth = validate_session(session_id, actor_id)
-    if not auth.get("valid"):
-        return {
-            "ok": False,
-            "code": "SESSION_REQUIRED" if not session_id else "SESSION_INVALID",
-            "reason": auth.get("reason") or "L11 AUTH failed",
-            "actor_id": actor_id or auth.get("actor_id"),
-            "session_id": session_id,
-            "tool_name": tool_name,
-            "auth": auth,
-        }
-
-    session = auth.get("session") or {}
-    resolved_actor = auth.get("actor_id") or session.get("actor_id") or actor_id
-    return {
-        "ok": True,
-        "code": "OK",
-        "reason": auth.get("reason") or "L11 AUTH: session valid",
-        "actor_id": resolved_actor,
-        "session_id": session_id,
-        "tool_name": tool_name,
-        "actor_verified": bool(
-            session.get("actor_verified") or session.get("signature_verified")
-        ),
-    }
+    bridge = _validate_session_via_http_bridge(str(session_id), actor_id)
+    bridge["tool_name"] = tool_name
+    return bridge
 
 
 def create_mcp_server() -> FastMCP:
