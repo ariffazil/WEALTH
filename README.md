@@ -1,7 +1,9 @@
 <!-- SOT-MANIFEST
 federation_release: v2026.07.12-CONSOLIDATION-EPOCH
-last_verified: 2026-07-12T04:50Z
-live_commit: 6adefdb
+last_verified: 2026-07-12T23:38Z
+live_commit: 55e1d08
+mcp_tools_live: 12
+truth_rule: tools/list + /health beat any static count in prose
 runtime_path: /root/WEALTH (synced from /root/wealth)
 port: 18082
 health_status: ALIVE
