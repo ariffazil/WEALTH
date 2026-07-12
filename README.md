@@ -1,11 +1,11 @@
 <!-- SOT-MANIFEST
-federation_release: v2026.07.06-KELLY-APEX
+federation_release: v2026.07.12-CONSOLIDATION-EPOCH
 last_verified: 2026-07-12T04:50Z
 live_commit: 6adefdb
 runtime_path: /root/WEALTH (synced from /root/wealth)
 port: 18082
 health_status: ALIVE
-health_version_banner: 2026.06.15 (banner lag; code @6adefdb)
+health_version_banner: 2026.07.12 (banner lag; code @6adefdb)
 changelog: Kelly criterion + optimizer suite + APEX Pillar IV
 audit_finding: actor_id self-report pattern at wealth_mcp/server.py:272 — deferred
 a2a_agent_json: /root/WEALTH/.well-known/agent.json
