@@ -84,23 +84,51 @@ def _governance_stress(sig: Dict[str, Any]) -> float:
     return _clamp(score)
 
 
+def _normalize_departures(raw: Any) -> tuple[int, list[str]]:
+    """Type-safe key_personnel_departures → (count, names).
+
+    Accepts: int, list[str], comma-separated str. Never raises.
+    P0 fix 2026-07-12 (#35 crash / #34 silent drop).
+    """
+    if raw is None:
+        return 0, []
+    if isinstance(raw, int):
+        return max(0, raw), []
+    if isinstance(raw, float):
+        return max(0, int(raw)), []
+    if isinstance(raw, str):
+        names = [p.strip() for p in raw.replace(";", ",").split(",") if p.strip()]
+        return len(names), names
+    if isinstance(raw, (list, tuple, set)):
+        names = [str(x) for x in raw]
+        return len(names), names
+    # Unknown type — treat as absent, caller records warning
+    return 0, []
+
+
 def _workforce_stress(sig: Dict[str, Any]) -> float:
     """Score workforce destabilization 0-1."""
     score = 0.0
 
     # Rightsizing percentage: 15%+ → 1.0
     rightsizing = sig.get("rightsizing_pct", 0.0)
+    try:
+        rightsizing = float(rightsizing or 0.0)
+    except (TypeError, ValueError):
+        rightsizing = 0.0
     score += _clamp(rightsizing / 15.0) * 0.35
 
     # Voluntary exits: 10%+ → 1.0
     exits = sig.get("voluntary_exits_pct", 0.0)
+    try:
+        exits = float(exits or 0.0)
+    except (TypeError, ValueError):
+        exits = 0.0
     score += _clamp(exits / 10.0) * 0.30
 
     # Key personnel departures — each one adds stress
-    departures = sig.get("key_personnel_departures", [])
-    if departures:
-        # Accept both int (count) and list (names) — F12 INJECTION: type-safe
-        dep_count = departures if isinstance(departures, int) else len(departures)
+    dep_count, _names = _normalize_departures(sig.get("key_personnel_departures"))
+    if dep_count:
         # 5+ key departures → max
         score += _clamp(dep_count / 5.0) * 0.35
 
@@ -233,13 +261,66 @@ def _generate_recommendations(
     return recs
 
 
+_EXPECTED_FIELDS: Dict[str, tuple[str, ...]] = {
+    "financial": (
+        "profit_change_pct",
+        "revenue_change_pct",
+        "cost_cutting_announced",
+    ),
+    "governance": (
+        "board_size",
+        "board_resignations_12m",
+        "company_secretaries_as_directors",
+        "avg_tenure_years",
+    ),
+    "workforce": (
+        "rightsizing_pct",
+        "voluntary_exits_pct",
+        "key_personnel_departures",
+    ),
+    "legal": (
+        "active_litigation_count",
+        "injunction_value_musd",
+        "regulatory_uncertainty_score",
+    ),
+    "exploitation": (
+        "counterparty_payment_freeze",
+        "interpleader_filed",
+        "competing_claims",
+    ),
+}
+
+
+def _audit_signal_fields(
+    name: str, sig: Dict[str, Any] | None
+) -> tuple[list[str], list[str], list[str]]:
+    """Return (present, missing, type_warnings) for expected fields.
+
+    P0 #34: silent field-drop must be visible — empty/missing keys are reported.
+    """
+    sig = sig or {}
+    if not isinstance(sig, dict):
+        return [], list(_EXPECTED_FIELDS.get(name, ())), [f"{name}: expected dict, got {type(sig).__name__}"]
+    expected = _EXPECTED_FIELDS.get(name, ())
+    present = [k for k in expected if k in sig and sig[k] is not None and sig[k] != ""]
+    missing = [k for k in expected if k not in present]
+    type_warnings: list[str] = []
+    if "key_personnel_departures" in sig:
+        raw = sig.get("key_personnel_departures")
+        if raw is not None and not isinstance(raw, (int, float, list, tuple, set, str)):
+            type_warnings.append(
+                f"workforce.key_personnel_departures: unsupported type {type(raw).__name__}"
+            )
+    return present, missing, type_warnings
+
+
 def compute_stress_index(
     org_name: str,
-    financial_signals: Dict[str, Any],
-    governance_signals: Dict[str, Any],
-    workforce_signals: Dict[str, Any],
-    legal_signals: Dict[str, Any],
-    exploitation_signals: Dict[str, Any],
+    financial_signals: Dict[str, Any] | None = None,
+    governance_signals: Dict[str, Any] | None = None,
+    workforce_signals: Dict[str, Any] | None = None,
+    legal_signals: Dict[str, Any] | None = None,
+    exploitation_signals: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     """
     Compute composite institutional stress index.
@@ -251,7 +332,37 @@ def compute_stress_index(
       - feedback_loop_detected: bool
       - recommendations: list of actionable strings
       - confidence: capped at 0.90 (F7 HUMILITY)
+      - fields_present / fields_missing / warnings: anti-silent-drop (P0 #34/#35)
     """
+    financial_signals = financial_signals if isinstance(financial_signals, dict) else {}
+    governance_signals = governance_signals if isinstance(governance_signals, dict) else {}
+    workforce_signals = workforce_signals if isinstance(workforce_signals, dict) else {}
+    legal_signals = legal_signals if isinstance(legal_signals, dict) else {}
+    exploitation_signals = (
+        exploitation_signals if isinstance(exploitation_signals, dict) else {}
+    )
+
+    audits = {
+        "financial": _audit_signal_fields("financial", financial_signals),
+        "governance": _audit_signal_fields("governance", governance_signals),
+        "workforce": _audit_signal_fields("workforce", workforce_signals),
+        "legal": _audit_signal_fields("legal", legal_signals),
+        "exploitation": _audit_signal_fields("exploitation", exploitation_signals),
+    }
+    fields_present: list[str] = []
+    fields_missing: list[str] = []
+    warnings: list[str] = []
+    for dim, (pres, miss, tw) in audits.items():
+        fields_present.extend(f"{dim}.{k}" for k in pres)
+        fields_missing.extend(f"{dim}.{k}" for k in miss)
+        warnings.extend(tw)
+
+    if fields_missing:
+        warnings.append(
+            f"SILENT_DEFAULT_RISK: {len(fields_missing)} expected fields absent — "
+            "treated as zero/false; do not treat GREEN as 'no stress observed'"
+        )
+
     financial = _financial_stress(financial_signals)
     governance = _governance_stress(governance_signals)
     workforce = _workforce_stress(workforce_signals)
@@ -285,20 +396,10 @@ def compute_stress_index(
         component_scores, feedback_loop, risk_level
     )
 
-    # F7 HUMILITY: confidence cap
-    # Confidence is lower when we have fewer signals
-    signal_count = sum(
-        1
-        for sig in [
-            financial_signals,
-            governance_signals,
-            workforce_signals,
-            legal_signals,
-            exploitation_signals,
-        ]
-        if sig
-    )
-    confidence = min(_CONFIDENCE_CAP, signal_count / 5.0)
+    # F7 HUMILITY: confidence from field coverage, not merely non-empty dicts
+    expected_total = sum(len(v) for v in _EXPECTED_FIELDS.values())
+    coverage = len(fields_present) / max(1, expected_total)
+    confidence = min(_CONFIDENCE_CAP, coverage)
 
     return {
         "org_name": org_name,
@@ -308,5 +409,8 @@ def compute_stress_index(
         "feedback_loop_detected": feedback_loop,
         "recommendations": recommendations,
         "confidence": round(confidence, 4),
-        "confidence_note": "Capped at 0.90 per F7 HUMILITY",
+        "confidence_note": "Capped at 0.90 per F7 HUMILITY; scales with field coverage",
+        "fields_present": fields_present,
+        "fields_missing": fields_missing,
+        "warnings": warnings,
     }
