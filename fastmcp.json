@@ -2,8 +2,8 @@
   "$schema": "https://gofastmcp.com/public/schemas/fastmcp.json/v1.json",
   "capabilities": {
     "tools": {
-      "count": 20,
-      "source": "internal/monolith.py PUBLIC_SURFACE_WHITELIST (verified 65 @mcp.tool decorators total)"
+      "count": 7,
+      "source": "7 canonical capital_* surface (ZEN migration 2026-07-11)"
     }
   },
   "deployment": {
@@ -13,17 +13,17 @@
     "port": 18082,
     "transport": "http"
   },
-  "description": "Sovereign Wealth & Capital Allocation Engine — 20 canonical public tools + 34 hidden aliases (65 @mcp.tool decorators). Run internal/monolith.py to start.",
+  "description": "Sovereign Wealth & Capital Allocation Engine \u2014 7 canonical tools (ZEN surface). Capital primitives only.",
   "environment": {
     "project": ".",
     "python": ">=3.12",
     "type": "uv"
   },
-  "name": "WEALTH-MONOLITH",
+  "name": "WEALTH",
   "source": {
-    "entrypoint": "mcp",
-    "path": "internal/monolith.py",
+    "entrypoint": "server_federated",
+    "path": "server_federated.py",
     "type": "filesystem"
   },
-  "version": "2026.06.14"
+  "version": "2026.07.11"
 }
