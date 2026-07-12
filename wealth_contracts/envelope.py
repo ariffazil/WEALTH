@@ -110,7 +110,7 @@ class WealthEnvelope:
         metadata: Optional[Dict[str, Any]] = None,
         warnings: Optional[List[str]] = None,
         errors: Optional[List[str]] = None,
-        tool_version: str = "2026.06.15",
+        tool_version: str = "2026.07.12",
         # Constitutional fields (Gap Ledger Phase 1-3)
         witness: Optional[Dict[str, Any]] = None,
         shadow: bool = False,
@@ -308,7 +308,7 @@ class WealthEnvelope:
 
         return cls(
             tool_name=d["tool_name"],
-            tool_version=d.get("tool_version", "2026.06.15"),
+            tool_version=d.get("tool_version", "2026.07.12"),
             domain=d["domain"],
             result=d["result"],
             result_type=d.get("result_type", "scalar"),
