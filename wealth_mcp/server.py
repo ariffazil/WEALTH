@@ -65,6 +65,7 @@ from wealth_arifos_bridge.judge_handoff import (
 
 # ── Canonical tool surface (7 tools, mode-dispatched) ──────────────────
 from wealth_mcp.tools.canonical import register_canonical_tools
+from wealth_mcp.tools.institutional import register_institutional_tools
 
 
 # WEALTH capital compute — OBSERVE by default.
@@ -80,6 +81,10 @@ _OBSERVE_SURFACE = frozenset(
         "capital_ledger",
         "capital_registry",
         "capital_entropy",
+        "wealth_institutional_stress_index",
+        "wealth_cascade_model",
+        "wealth_governance_capacity",
+        "wealth_external_exploitation_detect",
     }
 )
 
@@ -105,7 +110,10 @@ def _validate_session_via_http_bridge(
                 "params": {
                     "protocolVersion": "2024-11-05",
                     "capabilities": {},
-                    "clientInfo": {"name": "wealth-session-bridge", "version": "2026.07.11"},
+                    "clientInfo": {
+                        "name": "wealth-session-bridge",
+                        "version": "2026.07.11",
+                    },
                 },
             }
         ).encode()
@@ -119,7 +127,9 @@ def _validate_session_via_http_bridge(
             method="POST",
         )
         with urllib.request.urlopen(req, timeout=2.0) as resp:
-            sid = resp.headers.get("Mcp-Session-Id") or resp.headers.get("mcp-session-id")
+            sid = resp.headers.get("Mcp-Session-Id") or resp.headers.get(
+                "mcp-session-id"
+            )
             resp.read()
         return {
             "ok": True,
@@ -552,6 +562,7 @@ def create_mcp_server() -> FastMCP:
                 if result is None:
                     return result
                 public_names = {
+                    # Canonical capital surface
                     "capital_primitive",
                     "capital_health",
                     "capital_diagnose",
@@ -560,6 +571,11 @@ def create_mcp_server() -> FastMCP:
                     "capital_ledger",
                     "capital_registry",
                     "capital_entropy",
+                    # Institutional stress detection (wired 2026-07-12)
+                    "wealth_institutional_stress_index",
+                    "wealth_cascade_model",
+                    "wealth_governance_capacity",
+                    "wealth_external_exploitation_detect",
                 }
                 filtered = [
                     t for t in result if getattr(t, "name", None) in public_names
@@ -587,9 +603,9 @@ def create_mcp_server() -> FastMCP:
     # _register_auction_tools(
     #     mcp
     # )  # Auction surfaces + coalition games (forged 2026-07-07)
-    # _register_institutional_tools(
-    #     mcp
-    # )  # Institutional stress detection (forged 2026-07-08)
+    register_institutional_tools(
+        mcp
+    )  # Institutional stress detection (forged 2026-07-08, wired 2026-07-12)
     _register_resources(mcp)
     _register_prompts(mcp)
 
