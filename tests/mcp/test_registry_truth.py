@@ -21,6 +21,7 @@ EXPECTED_TOOLS = [
     "capital_market",
     "capital_ledger",
     "capital_registry",
+    "capital_entropy",
 ]
 
 
@@ -46,7 +47,7 @@ class TestRegistryTruth:
         tool_names = _tool_names(mcp)
         for expected in EXPECTED_TOOLS:
             assert expected in tool_names, f"Missing tool: {expected}"
-        assert len([t for t in tool_names if t in EXPECTED_TOOLS]) == 7
+        assert len([t for t in tool_names if t in EXPECTED_TOOLS]) == 8
 
     def test_no_phantom_tools(self):
         """Registered public tools must be subset of the 7-canonical set."""

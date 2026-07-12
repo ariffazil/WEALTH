@@ -963,6 +963,80 @@ def register_canonical_tools(mcp):
                 "detail": f"{type(e).__name__}: {e}",
             }
 
+
+    # ── Entropy Integrity Mesh — WEALTH Extensions (Phase 2) ─────────────
+    @mcp.tool(
+        name="capital_entropy",
+        description=(
+            "Capital and institutional entropy analysis. Modes: "
+            "power_consequence_map, metric_purpose_audit, responsibility_ledger, "
+            "trust_capital_decay, coercive_order_cost, entropy_externality. "
+            "Measures information loss, consequence displacement, metric drift. "
+            "Computes, never allocates."
+        ),
+        tags={"domain": "institutional", "kind": "abductive", "canonical": "v1", "entropy": "mesh"},
+    )
+    async def capital_entropy(
+        mode: str,
+        decision_makers: list[dict] | None = None,
+        beneficiaries: list[dict] | None = None,
+        cost_bearers: list[dict] | None = None,
+        veto_holders: list[dict] | None = None,
+        declared_purpose: str | None = None,
+        current_kpis: list[dict] | None = None,
+        actual_behaviors: list[str] | None = None,
+        excluded_outcomes: list[str] | None = None,
+        decision_ref: str | None = None,
+        actors: list[dict] | None = None,
+        trust_events: list[dict] | None = None,
+        current_trust_balance: float = 0.5,
+        order_indicators: dict | None = None,
+        suppression_indicators: dict | None = None,
+        actor_ref: str | None = None,
+        local_efficiency_claims: dict | None = None,
+        exported_costs: list[dict] | None = None,
+    ) -> dict:
+        """Entropy Integrity Mesh — WEALTH domain witness."""
+        m = mode.lower().strip()
+        try:
+            import importlib.util, os
+            _base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "entropy-integrity", "mcp", "wealth")
+
+            if m == "power_consequence_map":
+                _spec = importlib.util.spec_from_file_location("pcm", os.path.join(_base, "power_consequence_map.py"))
+                _mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod)
+                return wrap_result("capital_entropy", "institutional", _mod.wealth_power_consequence_map(decision_makers=decision_makers or [], beneficiaries=beneficiaries or [], cost_bearers=cost_bearers or [], veto_holders=veto_holders))
+
+            elif m == "metric_purpose_audit":
+                _spec = importlib.util.spec_from_file_location("mpa", os.path.join(_base, "metric_purpose_audit.py"))
+                _mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod)
+                return wrap_result("capital_entropy", "institutional", _mod.wealth_metric_purpose_audit(declared_purpose=declared_purpose or "", current_kpis=current_kpis or [], actual_behaviors=actual_behaviors or [], excluded_outcomes=excluded_outcomes))
+
+            elif m == "responsibility_ledger":
+                _spec = importlib.util.spec_from_file_location("rl", os.path.join(_base, "responsibility_ledger.py"))
+                _mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod)
+                return wrap_result("capital_entropy", "institutional", _mod.wealth_responsibility_ledger(decision_ref=decision_ref or "", actors=actors or []))
+
+            elif m == "trust_capital_decay":
+                _spec = importlib.util.spec_from_file_location("tcd", os.path.join(_base, "trust_capital_decay.py"))
+                _mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod)
+                return wrap_result("capital_entropy", "institutional", _mod.wealth_trust_capital_decay(trust_events=trust_events or [], current_trust_balance=current_trust_balance))
+
+            elif m == "coercive_order_cost":
+                _spec = importlib.util.spec_from_file_location("coc", os.path.join(_base, "coercive_order_cost.py"))
+                _mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod)
+                return wrap_result("capital_entropy", "institutional", _mod.wealth_coercive_order_cost(order_indicators=order_indicators or {}, suppression_indicators=suppression_indicators or {}))
+
+            elif m == "entropy_externality":
+                _spec = importlib.util.spec_from_file_location("ee", os.path.join(_base, "entropy_externality.py"))
+                _mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod)
+                return wrap_result("capital_entropy", "institutional", _mod.wealth_entropy_externality(actor_ref=actor_ref or "", local_efficiency_claims=local_efficiency_claims or {}, exported_costs=exported_costs or []))
+
+            else:
+                return {"error": "UNKNOWN_MODE", "valid": ["power_consequence_map", "metric_purpose_audit", "responsibility_ledger", "trust_capital_decay", "coercive_order_cost", "entropy_externality"]}
+        except Exception as e:
+            return {"error": str(e), "tool": "capital_entropy", "mode": m}
+
     return {
         "capital_primitive": capital_primitive,
         "capital_health": capital_health,
@@ -971,4 +1045,5 @@ def register_canonical_tools(mcp):
         "capital_market": capital_market,
         "capital_ledger": capital_ledger,
         "capital_registry": capital_registry,
+        "capital_entropy": capital_entropy,
     }

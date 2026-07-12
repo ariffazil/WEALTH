@@ -36,7 +36,7 @@ if __name__ == "__main__":
         return JSONResponse(
             {
                 "status": "ALIVE",
-                "version": "2026.06.15",
+                "version": "2026.07.12",
                 "domain": "WEALTH Federated Domain",
                 "transport": "streamable-http",
                 "architecture": "federated",
@@ -67,7 +67,7 @@ if __name__ == "__main__":
             "risk, wisdom, and power metrics. Does NOT authorize execution. "
             "WEALTH computes. arifOS judges. Arif decides."
         ),
-        "version": "2026.06.15",
+        "version": "2026.07.12",
         "url": "https://wealth.arif-fazil.com",
         "a2a_endpoint": "http://127.0.0.1:18082/a2a",
         "agent_card_url": "http://127.0.0.1:18082/.well-known/agent-card.json",

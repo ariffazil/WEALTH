@@ -2,7 +2,7 @@
 
 > **Canonical agent instruction file:** `/root/AAA/CLAUDE.md`
 > **WEALTH organ** of the arifOS federation.
-> **Port:** 18082 | **Version:** 2026.06.15 | **Transport:** streamable-http
+> **Port:** 18082 | **Version:** 2026.07.12 | **Transport:** streamable-http
 
 ## What WEALTH Is
 

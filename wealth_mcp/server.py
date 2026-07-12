@@ -79,6 +79,7 @@ _OBSERVE_SURFACE = frozenset(
         "capital_market",
         "capital_ledger",
         "capital_registry",
+        "capital_entropy",
     }
 )
 
@@ -190,7 +191,7 @@ def create_mcp_server() -> FastMCP:
 
     mcp = FastMCP(
         "WEALTH Federated Domain",
-        version="2026.06.15",
+        version="2026.07.12",
         # MCP logging: SEP-2577 deprecated — maintenance only; default min warning.
         client_log_level="warning",
         instructions=(
@@ -558,6 +559,7 @@ def create_mcp_server() -> FastMCP:
                     "capital_market",
                     "capital_ledger",
                     "capital_registry",
+                    "capital_entropy",
                 }
                 filtered = [
                     t for t in result if getattr(t, "name", None) in public_names
