@@ -1,8 +1,8 @@
 <!-- SOT-MANIFEST
 owner: Arif
-last_verified: 2026-07-10
+last_verified: 2026-07-12
 valid_from: 2026-06-14
-valid_until: 2026-08-09
+valid_until: 2026-08-11
 confidence: high
 scope: /root/WEALTH
 -->
@@ -60,7 +60,7 @@ docker build -t wealth .
 
 | Path | Purpose |
 |------|---------|
-| `internal/monolith.py` | Canonical kernel — 37 public MCP tools (~16,000 lines) |
+| `internal/monolith.py` | Historical monolith (~16k lines). **Live MCP exposes 7 tools** (`capital_*` surface via `tools/list` on :18082). Do not claim 37 without live verify. |
 | `internal/stock/` | D4 Stock Analysis — 27-mode capital-risk governance (verify_math, pre_trade, fundamentals, TAC-9, contrast, confluence, kelly, nash_multi_factor) |
 | `internal/market_data.py` | D3 Market Data — FX rates, commodities, macro indicators |
 | `internal/personal_finance.py` | D1 Personal Finance — cashflow, net worth, EPF, zakat |
