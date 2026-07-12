@@ -93,6 +93,11 @@ if __name__ == "__main__":
             "capital_market",
             "capital_ledger",
             "capital_registry",
+            "capital_entropy",
+            "wealth_institutional_stress_index",
+            "wealth_cascade_model",
+            "wealth_governance_capacity",
+            "wealth_external_exploitation_detect",
         ],
         "judge_skills": [],
         "skills": [

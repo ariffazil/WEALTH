@@ -28,7 +28,7 @@ base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if base_dir not in sys.path:
     sys.path.insert(0, base_dir)
 
-from wealth_contracts.envelope import wrap_result
+from wealth_contracts.envelope import wrap_result, WEALTH_OUTPUT_SCHEMA
 from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality
 from wealth_core.institutional.stress_index import compute_stress_index
 from wealth_core.institutional.cascade import compute_cascade
@@ -42,6 +42,7 @@ def register_institutional_tools(mcp: FastMCP) -> None:
     # ── 1. wealth_institutional_stress_index ────────────────────────────
     @mcp.tool(
         name="wealth_institutional_stress_index",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
         annotations={
             "readOnlyHint": True,
             "idempotentHint": True,
@@ -100,6 +101,7 @@ def register_institutional_tools(mcp: FastMCP) -> None:
     # ── 2. wealth_cascade_model ─────────────────────────────────────────
     @mcp.tool(
         name="wealth_cascade_model",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
         annotations={
             "readOnlyHint": True,
             "idempotentHint": True,
@@ -140,6 +142,7 @@ def register_institutional_tools(mcp: FastMCP) -> None:
     # ── 3. wealth_governance_capacity ───────────────────────────────────
     @mcp.tool(
         name="wealth_governance_capacity",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
         annotations={
             "readOnlyHint": True,
             "idempotentHint": True,
@@ -186,6 +189,7 @@ def register_institutional_tools(mcp: FastMCP) -> None:
     # ── 4. wealth_external_exploitation_detect ──────────────────────────
     @mcp.tool(
         name="wealth_external_exploitation_detect",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
         annotations={
             "readOnlyHint": True,
             "idempotentHint": True,

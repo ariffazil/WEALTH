@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from wealth_contracts.envelope import wrap_result
+from wealth_contracts.envelope import wrap_result, WEALTH_OUTPUT_SCHEMA
 from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality
 
 
@@ -43,6 +43,7 @@ def register_canonical_tools(mcp):
 
     @mcp.tool(
         name="capital_primitive",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
         description=(
             "Deductive capital math primitives. Pure computation — no inference, "
             "no governance verdict. Every mode is golden-tested against hand-checked "
@@ -244,6 +245,7 @@ def register_canonical_tools(mcp):
 
     @mcp.tool(
         name="capital_health",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
         description=(
             "Financial health metrics. Deductive computation from structured inputs. "
             "No inference, no governance verdict.\n\n"
@@ -388,6 +390,7 @@ def register_canonical_tools(mcp):
 
     @mcp.tool(
         name="capital_diagnose",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
         description=(
             "Abductive institutional diagnostics — inference from partial evidence. "
             "Surface: mode, domain_scope, payload (dict). Mode-specific fields go in "
@@ -395,8 +398,10 @@ def register_canonical_tools(mcp):
             "fields are REJECTED (not silently dropped to 0.0).\n\n"
             "Modes: stress_index | governance_capacity | cascade_model | "
             "exploitation_detect | collapse_signature | beautiful_mouse | "
-            "capture_scan | power_audit | bid_surface | optimize_mwc\n\n"
-            "Use when: institutional stress, governance, collapse, power, MWC."
+            "capture_scan | power_audit | bid_surface | optimize_mwc | "
+            "cadence_monitor | crisis_reflex\n\n"
+            "Use when: institutional stress, governance, collapse, power, MWC, "
+            "cadence monitoring, or crisis reflex analysis."
         ),
         tags={"domain": "institutional", "kind": "abductive", "canonical": "v1"},
     )
@@ -510,16 +515,20 @@ def register_canonical_tools(mcp):
         if m == "capture_scan":
             from wealth_core.power.capture_detector import detect_capture
 
+            advice = p.get("advice_text") or ""
+            src_model = p.get("source_model") or ""
+
             return wrap_result(
                 tool_name="capital_diagnose",
                 domain="power",
                 result=detect_capture(
-                    p.get("advice_text") or "",
-                    source_model=p.get("source_model") or "",
+                    scenario=advice,
+                    actors=p.get("actors") or [],
+                    context=p.get("context") or {"source_model": src_model},
                 ),
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.WEAK,
-                source_attribution=[f"model:{p.get('source_model') or ''}"],
+                source_attribution=[f"model:{src_model}"] if src_model else [],
             )
 
         if m == "power_audit":
@@ -565,8 +574,64 @@ def register_canonical_tools(mcp):
                 source_attribution=["mwc_optimization"],
             )
 
+        if m == "cadence_monitor":
+            from wealth_core.institutional.cadence import compute_cadence
+
+            return wrap_result(
+                tool_name="capital_diagnose",
+                domain="institutional",
+                result=compute_cadence(
+                    approval_cycles=p.get("approval_cycles"),
+                    payment_cycles=p.get("payment_cycles"),
+                    meeting_logs=p.get("meeting_logs"),
+                    contract_signatures=p.get("contract_signatures"),
+                    budget_releases=p.get("budget_releases"),
+                    org_name=p.get("org_name", domain_scope),
+                ),
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=[
+                    "approval_cycle_trend",
+                    "payment_cycle_trend",
+                    "meeting_decision_ratio",
+                    "contract_velocity",
+                    "budget_release_timing",
+                ],
+            )
+
+        if m == "crisis_reflex":
+            from wealth_core.institutional.crisis_reflex import compute_crisis_reflex
+
+            return wrap_result(
+                tool_name="capital_diagnose",
+                domain="institutional",
+                result=compute_crisis_reflex(
+                    capital_allocation=p.get("capital_allocation"),
+                    capability_moves=p.get("capability_moves"),
+                    truth_events=p.get("truth_events"),
+                    burden_data=p.get("burden_data"),
+                    decision_shifts=p.get("decision_shifts"),
+                    recovery_data=p.get("recovery_data"),
+                    external_events=p.get("external_events"),
+                    dignity_data=p.get("dignity_data"),
+                    org_name=p.get("org_name", domain_scope),
+                ),
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=[
+                    "capital_allocation",
+                    "capability_moves",
+                    "truth_events",
+                    "burden_distribution",
+                    "decision_shifts",
+                    "recovery_investment",
+                    "external_posture",
+                    "human_dignity",
+                ],
+            )
+
         raise ValueError(
-            f"Unknown mode '{mode}'. Valid: stress_index, governance_capacity, cascade_model, exploitation_detect, collapse_signature, beautiful_mouse, capture_scan, power_audit, bid_surface, optimize_mwc"
+            f"Unknown mode '{mode}'. Valid: stress_index, governance_capacity, cascade_model, exploitation_detect, collapse_signature, beautiful_mouse, capture_scan, power_audit, bid_surface, optimize_mwc, cadence_monitor, crisis_reflex"
         )
 
     # ═══════════════════════════════════════════════════════════════════
@@ -575,6 +640,7 @@ def register_canonical_tools(mcp):
 
     @mcp.tool(
         name="capital_wisdom",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
         description=(
             "Capital wisdom synthesis — evaluates proposals across dignity, sovereignty, "
             "resilience, inequality, ecological cost, and optionality. Advisory only. "
@@ -640,6 +706,7 @@ def register_canonical_tools(mcp):
 
     @mcp.tool(
         name="capital_market",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
         description=(
             "Market data and stock analysis. Observational only.\n\n"
             "Top-level: mode, base, targets, commodity, indicator, country. "
@@ -701,6 +768,7 @@ def register_canonical_tools(mcp):
 
     @mcp.tool(
         name="capital_ledger",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
         description=(
             "VAULT999 immutable ledger access. Query is read-only (no ack required). "
             "Write requires explicit human acknowledgment (ack_irreversible=true). "
@@ -765,6 +833,7 @@ def register_canonical_tools(mcp):
 
     @mcp.tool(
         name="capital_registry",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
         description=(
             "WEALTH meta/introspection. Registry status, tool schema, domain index, "
             "health check. Observational only.\n\n"
@@ -894,7 +963,9 @@ def register_canonical_tools(mcp):
                 from internal.monolith import vault_write
 
                 result = vault_write(
-                    action=str(args.get("tx_type") or args.get("action") or "capital_tx"),
+                    action=str(
+                        args.get("tx_type") or args.get("action") or "capital_tx"
+                    ),
                     payload={
                         "amount": args.get("amount"),
                         "currency": args.get("currency"),
@@ -963,10 +1034,10 @@ def register_canonical_tools(mcp):
                 "detail": f"{type(e).__name__}: {e}",
             }
 
-
     # ── Entropy Integrity Mesh — WEALTH Extensions (Phase 2) ─────────────
     @mcp.tool(
         name="capital_entropy",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
         description=(
             "Capital and institutional entropy analysis. Modes: "
             "power_consequence_map, metric_purpose_audit, responsibility_ledger, "
@@ -974,14 +1045,19 @@ def register_canonical_tools(mcp):
             "Measures information loss, consequence displacement, metric drift. "
             "Computes, never allocates."
         ),
-        tags={"domain": "institutional", "kind": "abductive", "canonical": "v1", "entropy": "mesh"},
+        tags={
+            "domain": "institutional",
+            "kind": "abductive",
+            "canonical": "v1",
+            "entropy": "mesh",
+        },
     )
     async def capital_entropy(
         mode: str,
         decision_makers: list[dict] | None = None,
         beneficiaries: list[dict] | None = None,
         cost_bearers: list[dict] | None = None,
-        veto_holders: list[dict] | None = None,
+        veto_holders: list[str | dict] | None = None,
         declared_purpose: str | None = None,
         current_kpis: list[dict] | None = None,
         actual_behaviors: list[str] | None = None,
@@ -997,43 +1073,132 @@ def register_canonical_tools(mcp):
         exported_costs: list[dict] | None = None,
     ) -> dict:
         """Entropy Integrity Mesh — WEALTH domain witness."""
+        # Normalize veto_holders: accept strings, convert to dicts (fixed 2026-07-12)
+        if veto_holders is not None:
+            veto_holders = [
+                {"name": v} if isinstance(v, str) else v for v in veto_holders
+            ]
+
         m = mode.lower().strip()
         try:
             import importlib.util, os
-            _base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "entropy-integrity", "mcp", "wealth")
+
+            _base = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "..",
+                "..",
+                "..",
+                "entropy-integrity",
+                "mcp",
+                "wealth",
+            )
 
             if m == "power_consequence_map":
-                _spec = importlib.util.spec_from_file_location("pcm", os.path.join(_base, "power_consequence_map.py"))
-                _mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod)
-                return wrap_result("capital_entropy", "institutional", _mod.wealth_power_consequence_map(decision_makers=decision_makers or [], beneficiaries=beneficiaries or [], cost_bearers=cost_bearers or [], veto_holders=veto_holders))
+                _spec = importlib.util.spec_from_file_location(
+                    "pcm", os.path.join(_base, "power_consequence_map.py")
+                )
+                _mod = importlib.util.module_from_spec(_spec)
+                _spec.loader.exec_module(_mod)
+                return wrap_result(
+                    "capital_entropy",
+                    "institutional",
+                    _mod.wealth_power_consequence_map(
+                        decision_makers=decision_makers or [],
+                        beneficiaries=beneficiaries or [],
+                        cost_bearers=cost_bearers or [],
+                        veto_holders=veto_holders,
+                    ),
+                )
 
             elif m == "metric_purpose_audit":
-                _spec = importlib.util.spec_from_file_location("mpa", os.path.join(_base, "metric_purpose_audit.py"))
-                _mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod)
-                return wrap_result("capital_entropy", "institutional", _mod.wealth_metric_purpose_audit(declared_purpose=declared_purpose or "", current_kpis=current_kpis or [], actual_behaviors=actual_behaviors or [], excluded_outcomes=excluded_outcomes))
+                _spec = importlib.util.spec_from_file_location(
+                    "mpa", os.path.join(_base, "metric_purpose_audit.py")
+                )
+                _mod = importlib.util.module_from_spec(_spec)
+                _spec.loader.exec_module(_mod)
+                return wrap_result(
+                    "capital_entropy",
+                    "institutional",
+                    _mod.wealth_metric_purpose_audit(
+                        declared_purpose=declared_purpose or "",
+                        current_kpis=current_kpis or [],
+                        actual_behaviors=actual_behaviors or [],
+                        excluded_outcomes=excluded_outcomes,
+                    ),
+                )
 
             elif m == "responsibility_ledger":
-                _spec = importlib.util.spec_from_file_location("rl", os.path.join(_base, "responsibility_ledger.py"))
-                _mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod)
-                return wrap_result("capital_entropy", "institutional", _mod.wealth_responsibility_ledger(decision_ref=decision_ref or "", actors=actors or []))
+                _spec = importlib.util.spec_from_file_location(
+                    "rl", os.path.join(_base, "responsibility_ledger.py")
+                )
+                _mod = importlib.util.module_from_spec(_spec)
+                _spec.loader.exec_module(_mod)
+                return wrap_result(
+                    "capital_entropy",
+                    "institutional",
+                    _mod.wealth_responsibility_ledger(
+                        decision_ref=decision_ref or "", actors=actors or []
+                    ),
+                )
 
             elif m == "trust_capital_decay":
-                _spec = importlib.util.spec_from_file_location("tcd", os.path.join(_base, "trust_capital_decay.py"))
-                _mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod)
-                return wrap_result("capital_entropy", "institutional", _mod.wealth_trust_capital_decay(trust_events=trust_events or [], current_trust_balance=current_trust_balance))
+                _spec = importlib.util.spec_from_file_location(
+                    "tcd", os.path.join(_base, "trust_capital_decay.py")
+                )
+                _mod = importlib.util.module_from_spec(_spec)
+                _spec.loader.exec_module(_mod)
+                return wrap_result(
+                    "capital_entropy",
+                    "institutional",
+                    _mod.wealth_trust_capital_decay(
+                        trust_events=trust_events or [],
+                        current_trust_balance=current_trust_balance,
+                    ),
+                )
 
             elif m == "coercive_order_cost":
-                _spec = importlib.util.spec_from_file_location("coc", os.path.join(_base, "coercive_order_cost.py"))
-                _mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod)
-                return wrap_result("capital_entropy", "institutional", _mod.wealth_coercive_order_cost(order_indicators=order_indicators or {}, suppression_indicators=suppression_indicators or {}))
+                _spec = importlib.util.spec_from_file_location(
+                    "coc", os.path.join(_base, "coercive_order_cost.py")
+                )
+                _mod = importlib.util.module_from_spec(_spec)
+                _spec.loader.exec_module(_mod)
+                return wrap_result(
+                    "capital_entropy",
+                    "institutional",
+                    _mod.wealth_coercive_order_cost(
+                        order_indicators=order_indicators or {},
+                        suppression_indicators=suppression_indicators or {},
+                    ),
+                )
 
             elif m == "entropy_externality":
-                _spec = importlib.util.spec_from_file_location("ee", os.path.join(_base, "entropy_externality.py"))
-                _mod = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_mod)
-                return wrap_result("capital_entropy", "institutional", _mod.wealth_entropy_externality(actor_ref=actor_ref or "", local_efficiency_claims=local_efficiency_claims or {}, exported_costs=exported_costs or []))
+                _spec = importlib.util.spec_from_file_location(
+                    "ee", os.path.join(_base, "entropy_externality.py")
+                )
+                _mod = importlib.util.module_from_spec(_spec)
+                _spec.loader.exec_module(_mod)
+                return wrap_result(
+                    "capital_entropy",
+                    "institutional",
+                    _mod.wealth_entropy_externality(
+                        actor_ref=actor_ref or "",
+                        local_efficiency_claims=local_efficiency_claims or {},
+                        exported_costs=exported_costs or [],
+                    ),
+                )
 
             else:
-                return {"error": "UNKNOWN_MODE", "valid": ["power_consequence_map", "metric_purpose_audit", "responsibility_ledger", "trust_capital_decay", "coercive_order_cost", "entropy_externality"]}
+                return {
+                    "error": "UNKNOWN_MODE",
+                    "valid": [
+                        "power_consequence_map",
+                        "metric_purpose_audit",
+                        "responsibility_ledger",
+                        "trust_capital_decay",
+                        "coercive_order_cost",
+                        "entropy_externality",
+                    ],
+                }
         except Exception as e:
             return {"error": str(e), "tool": "capital_entropy", "mode": m}
 

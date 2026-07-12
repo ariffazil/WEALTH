@@ -82,9 +82,7 @@ def _score_board_composition(
     tenures = []
     for m in board_members:
         try:
-            appointed = datetime.fromisoformat(
-                m.get("appointed_date", "2020-01-01")
-            )
+            appointed = datetime.fromisoformat(m.get("appointed_date", "2020-01-01"))
             if appointed.tzinfo is None:
                 appointed = appointed.replace(tzinfo=timezone.utc)
             years = (now - appointed).days / 365.25
@@ -160,13 +158,23 @@ def _score_committees(
     avg_meeting = sum(meeting_scores) / len(meeting_scores) if meeting_scores else 0.0
 
     # Committee coverage: each committee should have members
-    covered = sum(1 for c in committees if len(c.get("members", [])) > 0)
+    # Accept int as member_count or list as member list (fixed 2026-07-12)
+    def _committee_member_count(c: dict) -> int:
+        members = c.get("members")
+        if isinstance(members, int):
+            return members
+        elif isinstance(members, list):
+            return len(members)
+        elif isinstance(members, str):
+            return 1 if members.strip() else 0
+        else:
+            return 0
+
+    covered = sum(1 for c in committees if _committee_member_count(c) > 0)
     coverage = covered / len(committees) if committees else 0.0
 
     committee_score = (
-        (len(present_names) / len(essential)) * 0.4
-        + avg_meeting * 0.3
-        + coverage * 0.3
+        (len(present_names) / len(essential)) * 0.4 + avg_meeting * 0.3 + coverage * 0.3
     )
 
     return {
