@@ -1,8 +1,8 @@
 <!-- SOT-MANIFEST
 owner: Arif
-last_verified: 2026-07-12
+last_verified: 2026-07-13
 valid_from: 2026-06-14
-valid_until: 2026-08-11
+valid_until: 2026-08-12
 confidence: high
 scope: /root/WEALTH
 -->
