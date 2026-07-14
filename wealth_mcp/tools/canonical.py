@@ -10,26 +10,33 @@ DITEMPA BUKAN DIBERI — Forged from the SVB backtest, not given.
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Annotated, Any
 
+from pydantic import BeforeValidator
 from wealth_contracts.envelope import wrap_result, WEALTH_OUTPUT_SCHEMA
 from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality
 
 
-def _coerce(value: Any, expected_type: str = "auto") -> Any:
+def _coerce_json_string(v: Any) -> Any:
     """Coerce MCP transport string serialization back to native types.
 
-    MCP JSON-RPC transport sometimes delivers list/dict parameters as JSON
-    strings instead of parsed objects. This helper fixes that transparently.
+    FastMCP/Pydantic validates parameters BEFORE function body runs.
+    This validator runs at schema level via Annotated[..., BeforeValidator].
     """
-    if value is None:
-        return None
-    if isinstance(value, str):
+    if isinstance(v, str):
         try:
-            return json.loads(value)
+            return json.loads(v)
         except (json.JSONDecodeError, ValueError):
-            return value
-    return value
+            return v
+    return v
+
+
+# Schema-level coerced types — Pydantic validates AFTER coercion
+CoercedList = Annotated[list[float] | None, BeforeValidator(_coerce_json_string)]
+CoercedIntList = Annotated[list[int] | None, BeforeValidator(_coerce_json_string)]
+CoercedDict = Annotated[dict | None, BeforeValidator(_coerce_json_string)]
+CoercedDictList = Annotated[list[dict] | None, BeforeValidator(_coerce_json_string)]
+CoercedStrList = Annotated[list[str] | None, BeforeValidator(_coerce_json_string)]
 
 
 def register_canonical_tools(mcp):
@@ -76,10 +83,10 @@ def register_canonical_tools(mcp):
     )
     async def capital_primitive(
         mode: str,
-        cash_flows: list[float] | None = None,
+        cash_flows: CoercedList = None,
         discount_rate: float | None = None,
-        outcomes: list[float] | None = None,
-        probabilities: list[float] | None = None,
+        outcomes: CoercedList = None,
+        probabilities: CoercedList = None,
         prior_pos: float | None = None,
         posterior_pos: float | None = None,
         well_cost_musd: float | None = None,
@@ -91,27 +98,22 @@ def register_canonical_tools(mcp):
         simulations: int = 1000,
         win_prob: float | None = None,
         odds: float | None = None,
-        returns: list[float] | None = None,
-        covariances: list[list[float]] | None = None,
+        returns: CoercedList = None,
+        covariances: Annotated[
+            list[list[float]] | None, BeforeValidator(_coerce_json_string)
+        ] = None,
         risk_aversion: float = 1,
         risk_free_rate: float = 0,
         uncertainty_radius: float = 0.1,
         robust_type: str = "budget",
         confidence: float = 0.95,
         threshold: float = 0,
-        first_stage_costs: dict | None = None,
-        scenario_data: list[dict] | None = None,
+        first_stage_costs: CoercedDict = None,
+        scenario_data: CoercedDictList = None,
         risk_constraint: float | None = None,
         seed: int | None = None,
     ) -> dict:
-        # Coerce MCP transport string serialization back to native types
-        cash_flows = _coerce(cash_flows)
-        outcomes = _coerce(outcomes)
-        probabilities = _coerce(probabilities)
-        returns = _coerce(returns)
-        covariances = _coerce(covariances)
-        first_stage_costs = _coerce(first_stage_costs)
-        scenario_data = _coerce(scenario_data)
+        # Coerce MCP transport string serialization (fallback for non-Annotated params)
 
         m = mode.lower()
 
@@ -127,7 +129,7 @@ def register_canonical_tools(mcp):
                     "discount_rate": discount_rate,
                 },
                 epistemic_tag=EpistemicTag.DERIVED,
-                evidence_quality=EvidenceQuality.STRONG,
+                evidence_quality=EvidenceQuality.OBSERVED,
                 source_attribution=["user_provided_inputs"],
             )
 
@@ -139,7 +141,7 @@ def register_canonical_tools(mcp):
                 domain="capital",
                 result={"irr": _irr(cash_flows), "cash_flows": cash_flows},
                 epistemic_tag=EpistemicTag.DERIVED,
-                evidence_quality=EvidenceQuality.STRONG,
+                evidence_quality=EvidenceQuality.OBSERVED,
                 source_attribution=["user_provided_inputs"],
             )
 
@@ -285,17 +287,17 @@ def register_canonical_tools(mcp):
     )
     async def capital_health(
         mode: str,
-        assets: list[dict] | None = None,
-        liabilities: list[dict] | None = None,
-        income: list[dict] | None = None,
-        expenses: list[dict] | None = None,
+        assets: CoercedDictList = None,
+        liabilities: CoercedDictList = None,
+        income: CoercedDictList = None,
+        expenses: CoercedDictList = None,
         liquid_assets: float | None = None,
         monthly_burn: float | None = None,
         conservative_factor: float = 0.8,
         survival_submode: str = "personal_finance",
-        upside_scenarios: list[float] | None = None,
-        downside_scenarios: list[float] | None = None,
-        indicators: list[dict] | None = None,
+        upside_scenarios: CoercedList = None,
+        downside_scenarios: CoercedList = None,
+        indicators: CoercedDictList = None,
         # fiscal_breakeven params
         total_govt_expenditure: float | None = None,
         non_oil_revenue: float | None = None,
@@ -307,13 +309,6 @@ def register_canonical_tools(mcp):
         horizon_months: int = 12,
     ) -> dict:
         # Coerce MCP transport string serialization
-        assets = _coerce(assets)
-        liabilities = _coerce(liabilities)
-        income = _coerce(income)
-        expenses = _coerce(expenses)
-        indicators = _coerce(indicators)
-        upside_scenarios = _coerce(upside_scenarios)
-        downside_scenarios = _coerce(downside_scenarios)
 
         m = mode.lower()
 
@@ -443,7 +438,7 @@ def register_canonical_tools(mcp):
     async def capital_diagnose(
         mode: str,
         domain_scope: str = "",
-        payload: dict | None = None,
+        payload: CoercedDict = None,
     ) -> dict:
         """Mode-dispatched institutional diagnostics (ZEN 2026-07-11 W3).
 
@@ -451,7 +446,6 @@ def register_canonical_tools(mcp):
         domain_scope: unknown fields REJECTED by engines (not zeroed). Math unchanged.
         """
         # Coerce MCP transport string serialization
-        payload = _coerce(payload)
 
         m = mode.lower()
         p: dict[str, Any] = dict(payload or {})
@@ -694,12 +688,11 @@ def register_canonical_tools(mcp):
         mode: str,
         proposal: str = "",
         capital_type: str = "financial",
-        context: dict | None = None,
+        context: CoercedDict = None,
         memory_query: str = "",
         target: str = "",
     ) -> dict:
         # Coerce MCP transport string serialization
-        context = _coerce(context)
 
         m = mode.lower()
 
@@ -764,11 +757,10 @@ def register_canonical_tools(mcp):
         commodity: str = "brent_crude",
         indicator: str = "usd_myr",
         country: str = "MYS",
-        stock_payload: dict | None = None,
+        stock_payload: CoercedDict = None,
     ) -> dict:
         """Market data (ZEN 2026-07-11 W4). Stock fields in stock_payload."""
         # Coerce MCP transport string serialization
-        stock_payload = _coerce(stock_payload)
 
         m = mode.lower()
         sp: dict[str, Any] = dict(stock_payload or {})
@@ -1115,39 +1107,27 @@ def register_canonical_tools(mcp):
     )
     async def capital_entropy(
         mode: str,
-        decision_makers: list[dict] | None = None,
-        beneficiaries: list[dict] | None = None,
-        cost_bearers: list[dict] | None = None,
+        decision_makers: CoercedDictList = None,
+        beneficiaries: CoercedDictList = None,
+        cost_bearers: CoercedDictList = None,
         veto_holders: list[str | dict] | None = None,
         declared_purpose: str | None = None,
-        current_kpis: list[dict] | None = None,
-        actual_behaviors: list[str] | None = None,
-        excluded_outcomes: list[str] | None = None,
+        current_kpis: CoercedDictList = None,
+        actual_behaviors: CoercedStrList = None,
+        excluded_outcomes: CoercedStrList = None,
         decision_ref: str | None = None,
-        actors: list[dict] | None = None,
-        trust_events: list[dict] | None = None,
+        actors: CoercedDictList = None,
+        trust_events: CoercedDictList = None,
         current_trust_balance: float = 0.5,
-        order_indicators: dict | None = None,
-        suppression_indicators: dict | None = None,
+        order_indicators: CoercedDict = None,
+        suppression_indicators: CoercedDict = None,
         actor_ref: str | None = None,
-        local_efficiency_claims: dict | None = None,
-        exported_costs: list[dict] | None = None,
+        local_efficiency_claims: CoercedDict = None,
+        exported_costs: CoercedDictList = None,
     ) -> dict:
         """Entropy Integrity Mesh — WEALTH domain witness."""
         # Coerce MCP transport string serialization
-        decision_makers = _coerce(decision_makers)
-        beneficiaries = _coerce(beneficiaries)
-        cost_bearers = _coerce(cost_bearers)
         veto_holders = _coerce(veto_holders)
-        current_kpis = _coerce(current_kpis)
-        actual_behaviors = _coerce(actual_behaviors)
-        excluded_outcomes = _coerce(excluded_outcomes)
-        actors = _coerce(actors)
-        trust_events = _coerce(trust_events)
-        order_indicators = _coerce(order_indicators)
-        suppression_indicators = _coerce(suppression_indicators)
-        local_efficiency_claims = _coerce(local_efficiency_claims)
-        exported_costs = _coerce(exported_costs)
 
         # Normalize veto_holders: accept strings, convert to dicts (fixed 2026-07-12)
         if veto_holders is not None:
