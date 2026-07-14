@@ -1110,7 +1110,7 @@ def register_canonical_tools(mcp):
         decision_makers: CoercedDictList = None,
         beneficiaries: CoercedDictList = None,
         cost_bearers: CoercedDictList = None,
-        veto_holders: list[str | dict] | None = None,
+        veto_holders: CoercedStrList = None,
         declared_purpose: str | None = None,
         current_kpis: CoercedDictList = None,
         actual_behaviors: CoercedStrList = None,
