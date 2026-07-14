@@ -33,10 +33,13 @@ if __name__ == "__main__":
     from starlette.responses import JSONResponse
 
     async def health(request):
+        # FEDERATION HANDSHAKE (canonical: arifOS/arifosmcp/schemas/federation_enums.py)
+        # See: /root/AAA/governance/FEDERATION_HANDSHAKE.md
         return JSONResponse(
             {
                 "status": "ALIVE",
                 "version": "2026.07.12",
+                "federation_schema_version": "2.0.0",
                 "domain": "WEALTH Federated Domain",
                 "transport": "streamable-http",
                 "architecture": "federated",

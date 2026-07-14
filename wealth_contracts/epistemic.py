@@ -1,6 +1,10 @@
 """
 WEALTH Contracts — Epistemic tagging and evidence quality.
 
+CANONICAL ENUM SOURCE: /root/arifOS/arifosmcp/schemas/federation_enums.py
+All new code SHOULD import from arifOS federation_enums.
+This file exists for backward compatibility with existing WEALTH code.
+
 F2 TRUTH: Never claim certainty without evidence.
 Every output carries an epistemic tag and evidence quality label.
 
@@ -13,22 +17,44 @@ from enum import Enum
 from typing import Optional
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# CANONICAL ENUMS — Import from arifOS federation source
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Canonical enums for new code:
+#   from arifosmcp.schemas.federation_enums import (
+#       EvidenceQuality as CanonicalEvidenceQuality,
+#       ConfidenceLevel,
+#       EpistemicLabel,
+#   )
+# These match the values below exactly. The local definitions are
+# kept for independent operation when arifOS is not importable.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LOCAL ENUMS — Match canonical values in federation_enums.py
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
 class EpistemicTag(str, Enum):
     """Label every claim with its epistemic strength.
     Unified system: supports both OBSERVED/DERIVED (GEOX-style)
-    and CLAIM/PLAUSIBLE (Bursa-style) via canonical mapping."""
-    OBSERVED = "OBSERVED"          # Direct measurement (price, rate, balance)
-    DERIVED = "DERIVED"            # Computed from observed data (NPV, IRR)
-    INTERPRETED = "INTERPRETED"    # Inferred from patterns (trend, regime)
-    SPECULATED = "SPECULATED"      # Hypothesis without sufficient evidence
-    ASSUMED = "ASSUMED"            # Input parameter, not verified
+    and CLAIM/PLAUSIBLE (Bursa-style) via canonical mapping.
+
+    VALUES MUST MATCH arifOS federation_enums.EpistemicLabel
+    """
+
+    OBSERVED = "OBSERVED"  # Direct measurement (price, rate, balance)
+    DERIVED = "DERIVED"  # Computed from observed data (NPV, IRR)
+    INTERPRETED = "INTERPRETED"  # Inferred from patterns (trend, regime)
+    SPECULATED = "SPECULATED"  # Hypothesis without sufficient evidence
+    ASSUMED = "ASSUMED"  # Input parameter, not verified
 
     # Aliases for Bursa/monolith compatibility
-    CLAIM = "OBSERVED"             # CLAIM = OBSERVED (strongest)
-    PLAUSIBLE = "DERIVED"          # PLAUSIBLE = DERIVED
-    ESTIMATE = "INTERPRETED"       # ESTIMATE = INTERPRETED
-    HYPOTHESIS = "SPECULATED"      # HYPOTHESIS = SPECULATED
-    UNKNOWN = "ASSUMED"            # UNKNOWN = ASSUMED (weakest)
+    CLAIM = "OBSERVED"  # CLAIM = OBSERVED (strongest)
+    PLAUSIBLE = "DERIVED"  # PLAUSIBLE = DERIVED
+    ESTIMATE = "INTERPRETED"  # ESTIMATE = INTERPRETED
+    HYPOTHESIS = "SPECULATED"  # HYPOTHESIS = SPECULATED
+    UNKNOWN = "ASSUMED"  # UNKNOWN = ASSUMED (weakest)
 
 
 # Canonical ordering for comparison
@@ -61,21 +87,47 @@ def normalize_epistemic_tag(tag: str) -> EpistemicTag:
 
 class ClaimState(str, Enum):
     """Where is this claim in the governance pipeline?"""
-    DRAFT = "DRAFT"                # Initial computation
-    QC_VERIFIED = "QC_VERIFIED"    # Passed data quality checks
-    VALIDATED = "VALIDATED"        # Passed constitutional review
-    SEALED = "SEALED"              # Irreversibly written to VAULT999
-    CHALLENGED = "CHALLENGED"      # Competing claim exists
-    VOID = "VOID"                  # Rejected by governance
+
+    DRAFT = "DRAFT"  # Initial computation
+    QC_VERIFIED = "QC_VERIFIED"  # Passed data quality checks
+    VALIDATED = "VALIDATED"  # Passed constitutional review
+    SEALED = "SEALED"  # Irreversibly written to VAULT999
+    CHALLENGED = "CHALLENGED"  # Competing claim exists
+    VOID = "VOID"  # Rejected by governance
 
 
 class EvidenceQuality(str, Enum):
-    """How strong is the evidence behind this output?"""
-    STRONG = "STRONG"              # Multiple corroborating sources
-    MODERATE = "MODERATE"          # Single reliable source
-    WEAK = "WEAK"                  # Inferred or analogical
-    MISSING = "MISSING"            # No evidence provided
-    CONFLICTED = "CONFLICTED"      # Evidence contradicts itself
+    """How strong is the evidence behind this output?
+
+    LEGACY VALUES (WEALTH v1): STRONG, MODERATE, WEAK, MISSING, CONFLICTED
+    CANONICAL VALUES (federation_enums.py): OBSERVED, DERIVED, INTERPRETED, SPECULATED, ASSUMED
+
+    LEGACY VALUES ARE DEPRECATED. New code should use canonical values.
+    See: /root/arifOS/arifosmcp/schemas/federation_enums.py
+    """
+
+    STRONG = "STRONG"  # Multiple corroborating sources
+    MODERATE = "MODERATE"  # Single reliable source
+    WEAK = "WEAK"  # Inferred or analogical
+    MISSING = "MISSING"  # No evidence provided
+    CONFLICTED = "CONFLICTED"  # Evidence contradicts itself
+
+    # Canonical aliases (same values as federation_enums.EvidenceQuality)
+    OBSERVED = "OBSERVED"
+    DERIVED = "DERIVED"
+    INTERPRETED = "INTERPRETED"
+    SPECULATED = "SPECULATED"
+    ASSUMED = "ASSUMED"
+
+
+# Canonical EvidenceQuality mapping (legacy → canonical)
+EVIDENCE_QUALITY_CANONICAL_MAP = {
+    EvidenceQuality.STRONG: EvidenceQuality.OBSERVED,
+    EvidenceQuality.MODERATE: EvidenceQuality.DERIVED,
+    EvidenceQuality.WEAK: EvidenceQuality.INTERPRETED,
+    EvidenceQuality.MISSING: EvidenceQuality.SPECULATED,
+    EvidenceQuality.CONFLICTED: EvidenceQuality.SPECULATED,
+}
 
 
 class UncertaintyBand:
