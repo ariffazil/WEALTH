@@ -1695,13 +1695,19 @@ def wealth_market_data(
     country: str = "MYS",
     macro_as_of_date: str = None,
 ) -> dict:
-    """Ω-D3: Market Data — unified surface for FX, commodities, and macro indicators.
+    """Ω-D3: Market Data — unified surface for FX, commodities, macro, and gold.
 
     Modes:
       fx        — Live FX rates via Frankfurter API
       commodity — Approximate commodity market prices
       macro     — GDP, inflation, rates via World Bank API
+      gold      — Gold intelligence surface (XAU/USD, XAU/MYR, decomposition)
+                  Reads from daily ingestion pipeline (market_observation table).
+                  analysis: snapshot | decompose | regime (deferred) | structural (deferred)
     """
+    import json as _json
+    import subprocess as _subprocess
+
     mode = mode.lower().strip()
     if mode == "fx":
         return wealth_fx_rate(
@@ -1721,12 +1727,110 @@ def wealth_market_data(
             country=country,
             as_of_date=macro_as_of_date,
         )
+    elif mode == "gold":
+        # Gold intelligence surface — reads from market_observation DB
+        analysis = commodity if commodity in ("snapshot", "decompose", "regime", "structural") else "snapshot"
+        db_container, db_user, db_name = "postgres", "arifos_admin", "vault999"
+
+        def _query_db(sql: str) -> list:
+            try:
+                result = _subprocess.run(
+                    ["docker", "exec", db_container, "psql", "-U", db_user, "-d", db_name,
+                     "-t", "-A", "-F", "|", "-c", sql],
+                    capture_output=True, text=True, timeout=10,
+                )
+                if result.returncode != 0:
+                    return []
+                return [line.split("|") for line in result.stdout.strip().split("\n") if line]
+            except Exception:
+                return []
+
+        if analysis in ("regime", "structural"):
+            return {
+                "mcp": "WEALTH",
+                "tool": "wealth_market_data",
+                "mode": "gold",
+                "analysis": analysis,
+                "status": "deferred",
+                "message": f"{analysis} requires accumulated history. "
+                           "Check back after 30+ daily observations.",
+                "recommendation_only": True,
+                "final_authority": "Arif",
+            }
+
+        # Query latest observations
+        rows = _query_db("""
+            SELECT DISTINCT ON (instrument)
+                instrument, value, unit, source, confidence, observed_at
+            FROM market_observation
+            WHERE instrument IN ('XAU_USD', 'USD_MYR', 'XAU_MYR_GRAM')
+            ORDER BY instrument, observed_at DESC
+        """)
+
+        if not rows:
+            return {
+                "mcp": "WEALTH",
+                "tool": "wealth_market_data",
+                "mode": "gold",
+                "analysis": analysis,
+                "status": "no_data",
+                "message": "No gold data yet. Daily ingestion runs at 08:00 MYT. "
+                           "Run manually: python3 internal/ingest/market_daily.py",
+                "recommendation_only": True,
+                "final_authority": "Arif",
+            }
+
+        snapshot = {}
+        for parts in rows:
+            if len(parts) >= 6:
+                snapshot[parts[0]] = {
+                    "value": float(parts[1]), "unit": parts[2],
+                    "source": parts[3], "confidence": float(parts[4]),
+                    "observed_at": parts[5],
+                }
+
+        result = {
+            "mcp": "WEALTH", "tool": "wealth_market_data",
+            "mode": "gold", "analysis": analysis,
+            "currency": "MYR", "snapshot": snapshot,
+            "recommendation_only": True, "final_authority": "Arif",
+        }
+
+        if analysis == "decompose" and "XAU_USD" in snapshot and "USD_MYR" in snapshot:
+            xau_usd = snapshot["XAU_USD"]["value"]
+            usd_myr = snapshot["USD_MYR"]["value"]
+            result["decomposition"] = {
+                "xau_usd": xau_usd, "usd_myr": usd_myr,
+                "xau_myr_oz": round(xau_usd * usd_myr, 2),
+                "xau_myr_gram": round(xau_usd * usd_myr / 31.1035, 2),
+                "formula": "XAU/MYR = XAU/USD × USD/MYR",
+                "note": "Local dealer premiums not yet tracked — "
+                        "actual purchase price may differ by 3-8%.",
+            }
+
+        # Recent signals
+        sig_rows = _query_db("""
+            SELECT DISTINCT ON (instrument, signal_type)
+                instrument, signal_type, value, severity, regime_label, calculated_at
+            FROM market_signal
+            WHERE instrument IN ('XAU_USD', 'XAU_MYR_GRAM')
+            ORDER BY instrument, signal_type, calculated_at DESC
+        """)
+        if sig_rows:
+            result["signals"] = [
+                {"instrument": p[0], "signal_type": p[1],
+                 "value": float(p[2]) if p[2] else None,
+                 "severity": p[3], "regime_label": p[4], "calculated_at": p[5]}
+                for p in sig_rows if len(p) >= 6
+            ]
+
+        return result
     else:
         return {
             "mcp": "WEALTH",
             "tool": "wealth_market_data",
             "status": "error",
-            "message": f"Unknown mode: {mode}. Use fx|commodity|macro",
+            "message": f"Unknown mode: {mode}. Use fx|commodity|macro|gold",
         }
 
 
