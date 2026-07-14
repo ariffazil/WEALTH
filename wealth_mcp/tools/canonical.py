@@ -306,6 +306,15 @@ def register_canonical_tools(mcp):
         monthly_expenses_v: float | None = None,
         horizon_months: int = 12,
     ) -> dict:
+        # Coerce MCP transport string serialization
+        assets = _coerce(assets)
+        liabilities = _coerce(liabilities)
+        income = _coerce(income)
+        expenses = _coerce(expenses)
+        indicators = _coerce(indicators)
+        upside_scenarios = _coerce(upside_scenarios)
+        downside_scenarios = _coerce(downside_scenarios)
+
         m = mode.lower()
 
         if m == "conservation":
@@ -441,6 +450,9 @@ def register_canonical_tools(mcp):
         Surface: mode, domain_scope, payload. Mode-specific fields in payload.
         domain_scope: unknown fields REJECTED by engines (not zeroed). Math unchanged.
         """
+        # Coerce MCP transport string serialization
+        payload = _coerce(payload)
+
         m = mode.lower()
         p: dict[str, Any] = dict(payload or {})
 
@@ -686,6 +698,9 @@ def register_canonical_tools(mcp):
         memory_query: str = "",
         target: str = "",
     ) -> dict:
+        # Coerce MCP transport string serialization
+        context = _coerce(context)
+
         m = mode.lower()
 
         if m == "wisdom":
@@ -752,6 +767,9 @@ def register_canonical_tools(mcp):
         stock_payload: dict | None = None,
     ) -> dict:
         """Market data (ZEN 2026-07-11 W4). Stock fields in stock_payload."""
+        # Coerce MCP transport string serialization
+        stock_payload = _coerce(stock_payload)
+
         m = mode.lower()
         sp: dict[str, Any] = dict(stock_payload or {})
 
@@ -834,7 +852,7 @@ def register_canonical_tools(mcp):
         m = mode.lower()
 
         if m == "query":
-            return await _call_legacy_tool(
+            raw = await _call_legacy_tool(
                 "wealth_vault_query",
                 {
                     "query": query,
@@ -842,6 +860,7 @@ def register_canonical_tools(mcp):
                     "asset_id": asset_id,
                 },
             )
+            return wrap_result(tool_name="capital_ledger", domain="vault", result=raw)
         if m == "write":
             if not ack_irreversible:
                 return wrap_result(
@@ -911,7 +930,8 @@ def register_canonical_tools(mcp):
             }
 
         if m == "schema":
-            return await _call_legacy_tool("wealth_schema", {})
+            raw = await _call_legacy_tool("wealth_schema", {})
+            return wrap_result(tool_name="capital_registry", domain="meta", result=raw)
 
         if m == "domains":
             return {
@@ -1114,6 +1134,21 @@ def register_canonical_tools(mcp):
         exported_costs: list[dict] | None = None,
     ) -> dict:
         """Entropy Integrity Mesh — WEALTH domain witness."""
+        # Coerce MCP transport string serialization
+        decision_makers = _coerce(decision_makers)
+        beneficiaries = _coerce(beneficiaries)
+        cost_bearers = _coerce(cost_bearers)
+        veto_holders = _coerce(veto_holders)
+        current_kpis = _coerce(current_kpis)
+        actual_behaviors = _coerce(actual_behaviors)
+        excluded_outcomes = _coerce(excluded_outcomes)
+        actors = _coerce(actors)
+        trust_events = _coerce(trust_events)
+        order_indicators = _coerce(order_indicators)
+        suppression_indicators = _coerce(suppression_indicators)
+        local_efficiency_claims = _coerce(local_efficiency_claims)
+        exported_costs = _coerce(exported_costs)
+
         # Normalize veto_holders: accept strings, convert to dicts (fixed 2026-07-12)
         if veto_holders is not None:
             veto_holders = [
