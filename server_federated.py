@@ -126,10 +126,13 @@ if __name__ == "__main__":
         return JSONResponse(_WEALTH_AGENT_CARD)
 
     # Get the MCP ASGI app
+    # Pass host_origin_protection=False because our outer DNSRebindingProtection
+    # middleware already handles Host and Origin verification without throwing 421.
     mcp_app = mcp.http_app(
         transport="streamable-http",
         stateless_http=True,
         json_response=True,
+        host_origin_protection=False,
     )
 
     # Wrap in a Starlette app with health endpoint
@@ -212,10 +215,12 @@ if __name__ == "__main__":
         "[::1]",
         "::1",
         "wealth.arif-fazil.com",
+        "mcp.arif-fazil.com",
         "arif-fazil.com",
     )
     _ALLOWED_ORIGIN_PREFIXES = (
         "https://wealth.arif-fazil.com",
+        "https://mcp.arif-fazil.com",
         "https://arif-fazil.com",
         "http://localhost",
         "https://localhost",
