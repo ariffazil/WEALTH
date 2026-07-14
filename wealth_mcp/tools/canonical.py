@@ -9,10 +9,27 @@ DITEMPA BUKAN DIBERI — Forged from the SVB backtest, not given.
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from wealth_contracts.envelope import wrap_result, WEALTH_OUTPUT_SCHEMA
 from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality
+
+
+def _coerce(value: Any, expected_type: str = "auto") -> Any:
+    """Coerce MCP transport string serialization back to native types.
+
+    MCP JSON-RPC transport sometimes delivers list/dict parameters as JSON
+    strings instead of parsed objects. This helper fixes that transparently.
+    """
+    if value is None:
+        return None
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except (json.JSONDecodeError, ValueError):
+            return value
+    return value
 
 
 def register_canonical_tools(mcp):
@@ -87,6 +104,15 @@ def register_canonical_tools(mcp):
         risk_constraint: float | None = None,
         seed: int | None = None,
     ) -> dict:
+        # Coerce MCP transport string serialization back to native types
+        cash_flows = _coerce(cash_flows)
+        outcomes = _coerce(outcomes)
+        probabilities = _coerce(probabilities)
+        returns = _coerce(returns)
+        covariances = _coerce(covariances)
+        first_stage_costs = _coerce(first_stage_costs)
+        scenario_data = _coerce(scenario_data)
+
         m = mode.lower()
 
         if m == "npv":
@@ -730,20 +756,23 @@ def register_canonical_tools(mcp):
         sp: dict[str, Any] = dict(stock_payload or {})
 
         if m == "fx":
-            return await _call_legacy_tool(
+            raw = await _call_legacy_tool(
                 "wealth_market_data", {"mode": "fx", "base": base, "targets": targets}
             )
+            return wrap_result(tool_name="capital_market", domain="capital", result=raw)
         if m == "commodity":
-            return await _call_legacy_tool(
+            raw = await _call_legacy_tool(
                 "wealth_market_data", {"mode": "commodity", "commodity": commodity}
             )
+            return wrap_result(tool_name="capital_market", domain="capital", result=raw)
         if m == "indicator":
-            return await _call_legacy_tool(
+            raw = await _call_legacy_tool(
                 "wealth_market_data",
                 {"mode": "indicator", "indicator": indicator, "country": country},
             )
+            return wrap_result(tool_name="capital_market", domain="capital", result=raw)
         if m == "stock":
-            return await _call_legacy_tool(
+            raw = await _call_legacy_tool(
                 "wealth_stock_analysis",
                 {
                     "mode": sp.get("stock_mode") or sp.get("mode") or "verify_math",
@@ -757,9 +786,21 @@ def register_canonical_tools(mcp):
                     "factors": sp.get("factors"),
                 },
             )
+            return wrap_result(tool_name="capital_market", domain="capital", result=raw)
+        if m == "gold":
+            analysis = (
+                commodity
+                if commodity in ("snapshot", "decompose", "regime", "structural")
+                else "snapshot"
+            )
+            raw = await _call_legacy_tool(
+                "wealth_market_data",
+                {"mode": "gold", "commodity": analysis},
+            )
+            return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         raise ValueError(
-            f"Unknown mode '{mode}'. Valid: fx, commodity, indicator, stock"
+            f"Unknown mode '{mode}'. Valid: fx, commodity, indicator, stock, gold"
         )
 
     # ═══════════════════════════════════════════════════════════════════
