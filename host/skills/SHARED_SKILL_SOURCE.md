@@ -1,13 +1,8 @@
-# aaa-agentic-governance — single source (zen 2026-07-15)
+# Shared skill source (triplication eliminated)
 
-**Do not triply maintain this skill.**
+**Keeper:** WELL repo `skills/` + AAA `/root/AAA/skills/` + `/root/.agents/skills/`
 
-| Keeper | Path |
-|--------|------|
-| **Preferred (federation)** | `/root/AAA/skills/` and `/root/.agents/skills/` |
-| **WELL local** | `WELL/skills/well-substrate-readiness/` + `WELL/skills/aaa-agentic-governance/` (most complete organ copy) |
-| GEOX / WEALTH local copies | **Reference only** — treat as mirrors; prefer AAA/WELL |
+Do not maintain parallel full copies of `aaa-agentic-governance` in GEOX/WEALTH.
+Load from AAA/WELL. Update this pointer only.
 
-Update: set `SKILL_URL` or submodule when `ariffazil/arifos-skills` lands. Until then: **WELL + AAA are authoritative.**
-
-DITEMPA BUKAN DIBERI
+DITEMPA BUKAN DIBERI — 2026-07-15
