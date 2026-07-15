@@ -75,7 +75,7 @@ CHAOS_TERMS=""
 if grep -rq "gospel\|Gospel\|GOSPEL" README.md FEDERATION_CONTRACT.md AGENTS.md 2>/dev/null; then
     CHAOS_TERMS="$CHAOS_TERMS gospel"
 fi
-if grep -rq "PHOENIX-73E" README.md TOOL_SURFACE.md CHANGELOG.md 2>/dev/null; then
+if grep -rq "PHOENIX-73E" README.md CHANGELOG.md 2>/dev/null; then
     CHAOS_TERMS="$CHAOS_TERMS PHOENIX-stale"
 fi
 REPO=$(basename "$(pwd)")
