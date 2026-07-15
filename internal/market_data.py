@@ -373,3 +373,6 @@ else:
 
     def wealth_macro_indicator(**kwargs):
         return {"error": "FastMCP not initialised", "mcp": "WEALTH"}
+
+# NOTE: wealth_market_data tool lives in monolith.py (canonical home).
+# Gold mode added there to avoid name conflicts.

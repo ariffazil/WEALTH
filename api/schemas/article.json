@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://makcikgpt.arif-fazil.com/api/schemas/article.json",
-  "title": "MakCikGPT Article Schema",
-  "description": "Schema for MakCikGPT columns and op-eds",
+  "$id": "https://wealth.arif-fazil.com/api/schemas/article.json",
+  "title": "WEALTH Article Schema",
+  "description": "Schema for WEALTH columns and op-eds",
   "type": "object",
   "required": ["id", "title", "url", "date_published", "language"],
   "properties": {

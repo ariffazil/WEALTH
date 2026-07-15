@@ -1,0 +1,67 @@
+{
+  "version": "2026.06.27",
+  "origin": "GEOX",
+  "destination": "WEALTH",
+  "capsule_id": "caps-geox-wealth-prospect-demo",
+  "trace_id": "trace-geox-wealth-demo-001",
+  "artifact_kind": "context_capsule",
+  "created_at": "2026-06-27T12:00:00Z",
+  "payload": {
+    "capsule_id": "caps-geox-prospect-north-sabah-001",
+    "origin": "GEOX",
+    "objective": "EVOI computation for North Sabah Basin appraisal well",
+    "domains": ["geology", "capital", "energy"],
+    "facts": [
+      {
+        "claim": "Mapped structural trap at Z horizon, 4-way closure",
+        "support": ["geox://seismic/horizon_Z_shapefile"],
+        "confidence": 0.75
+      },
+      {
+        "claim": "Gross rock volume 1.2 km³",
+        "support": ["geox://geomechanics/grv_computation"],
+        "confidence": 0.60
+      },
+      {
+        "claim": "POS (geological) = 35% — 3 dry holes in fairway",
+        "support": ["geox://prospect/POS_summary"],
+        "confidence": 0.65
+      },
+      {
+        "claim": "Estimated in-place 2C resource 180 MMbbl",
+        "support": ["geox://petrophysics/2c_resource"],
+        "confidence": 0.55
+      }
+    ],
+    "assumptions": [
+      "Porosity 18%, Sw 35% applied from regional analog",
+      "STOIIP from material balance using analog recovery factor",
+      "No fault seal breach in base case"
+    ],
+    "unknowns": [
+      "Reservoir quality at drilling depth",
+      "Charge continuity from kitchen",
+      "Seal integrity at Z horizon"
+    ],
+    "constraints": [
+      "Water depth 80m — jack-up or shallow draft rig required",
+      "Sabah PSC terms — 38% royalty floor, 38% PTP",
+      "Environmental approval from DOE required — 18-month timeline"
+    ]
+  },
+  "domain_translation_card_ref": "wealth://translation/geox-to-wealth/prospect",
+  "geox_epistemic_grade": "INT",
+  "wealther_assumptions_made": [
+    "POS 35% used as geological POS — not yet fiscal",
+    "capex estimate from regional shallow-water analog",
+    "oil price assumption USD 80/bbl real 2026"
+  ],
+  "wealther_missing_inputs": [
+    "Detailed capex from selected contractor",
+    "Fiscal regime from PETRONAS PSC terms for this block",
+    "DOE EIA timeline confirmation"
+  ],
+  "ref": ["geox://prospect/north_sabah/POS_summary", "geox://geomechanics/grv_computation"],
+  "manifest_hash": "sha256:placeholder-compute-at-emit-time",
+  "signatures": []
+}

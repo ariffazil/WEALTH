@@ -12,7 +12,7 @@ Apa sakitnya? Siapa yang terkesan?
 ## Cadangan
 Apa yang patut dibuat?
 
-## Kenapa ini selamat untuk MakCikGPT?
+## Kenapa ini selamat untuk WEALTH?
 - Bagaimana ia menjaga maruah?
 - Adakah ia menguatkan batas/penolakan lembut?
 - Risiko penyalahgunaan?

@@ -1,0 +1,46 @@
+WEALTH — Capital Intelligence Organ of arifOS
+Copyright 2025-2026 Muhammad Arif bin Fazil
+
+This product includes software developed by the WEALTH project and its contributors.
+
+WEALTH depends on several open-source libraries. Below is an attribution of major dependencies:
+
+1. NumPy (https://github.com/numpy/numpy)
+   License: BSD 3-Clause
+   Used for numerical computation and financial modeling.
+
+2. SciPy (https://github.com/scipy/scipy)
+   License: BSD 3-Clause
+   Used for scientific computation, optimization, and statistical functions.
+
+3. FastMCP (https://github.com/modelcontextprotocol)
+   License: MIT License
+   Used for Model Context Protocol server interface execution.
+
+4. Pydantic (https://github.com/pydantic/pydantic)
+   License: MIT License
+   Used for data validation and schema enforcement.
+
+5. yfinance (https://github.com/ranaroussi/yfinance)
+   License: Apache License 2.0
+   Used for Yahoo Finance market data retrieval.
+
+6. QuantLib (https://github.com/lballabio/QuantLib)
+   License: BSD-like (QuantLib License)
+   Used for quantitative finance and derivatives pricing.
+
+7. Riskfolio-Lib (https://github.com/dcajasn/Riskfolio-Lib)
+   License: BSD 3-Clause
+   Used for portfolio optimization and risk modeling.
+
+8. LangGraph (https://github.com/langchain-ai/langgraph)
+   License: MIT License
+   Used for agentic workflow orchestration.
+
+9. Polars (https://github.com/pola-rs/polars)
+   License: MIT License
+   Used for high-performance dataframe operations.
+
+10. DuckDB (https://github.com/duckdb/duckdb)
+    License: MIT License
+    Used for embedded analytical SQL processing.

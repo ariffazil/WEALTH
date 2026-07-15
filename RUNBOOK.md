@@ -1,8 +1,8 @@
 # RUNBOOK.md — WEALTH (Capital Intelligence)
 
 > **Organ:** WEALTH | **Port:** 18082
-> **Last Updated:** 2026-06-21
-> **Canonical FA:** 20 public + 34 hidden alias tools | **Monolith:** 657KB / ~16K lines
+> **Last Updated:** 2026-07-01
+> **Canonical FA:** 26 public + 6 alias tools (32 total decorated) | **Monolith:** 657KB / ~16K lines
 
 ## Start / Stop
 ```bash

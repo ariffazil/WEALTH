@@ -2,7 +2,7 @@ schema_version: 2
 kind: arifos.mcp_surface
 owner_repo: WEALTH
 status: contract
-last_verified: "2026-06-05"
+last_verified: "2026-06-30"
 implementation_status:
   phase: "Next Horizon — 7 absorptions, 26→19 tools"
 runtime_surface:
@@ -21,6 +21,22 @@ authority:
     - decision_memos
     - ledger_operations
     - personal_finance
+  resources_owned:
+    - wealth://schema
+    - wealth://tools/registry
+    - wealth://prompts/index
+    - wealth://domains/index
+    - wealth://canon/*
+    - wealth://glossary
+    - wealth://federation/contract
+    - wealth://health
+    - wealth://reality/context
+    - wealth://market/sources
+    - wealth://risk/thresholds
+    - wealth://affordance/contracts
+    - wealth://handoff/arifos-schema
+    - wealth://replay/receipt-schema
+    - wealth://collapse/signatures
   excludes:
     - constitutional_judgment
     - geological_truth

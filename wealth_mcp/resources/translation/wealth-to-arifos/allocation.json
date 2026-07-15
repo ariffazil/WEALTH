@@ -1,0 +1,49 @@
+{
+  "card_id": "dtc-wealth-arifos-allocation-v1",
+  "from_domain": "capital",
+  "to_domain": "governance",
+  "version": "1.0.0",
+  "translations": [
+    {
+      "source_field": "wealth.allocation.emv_musd",
+      "target_field": "arifos.judge.evidence_strength",
+      "rule": "EMV magnitude maps to evidence_strength input for arifOS judge. EMV > USD 50M → HIGH evidence strength. EMV USD 10-50M → MEDIUM. EMV < USD 10M → LOW.",
+      "default_assumption": "EMV computed from scenarios with typed inputs and explicit assumptions",
+      "confidence_ceiling": 0.85,
+      "if_wrong_cost": "arifOS judge weights the wrong evidence strength → incorrect verdict bias."
+    },
+    {
+      "source_field": "wealth.allocation.irreversible",
+      "target_field": "arifos.judge.reversibility_level",
+      "rule": "If allocation involves irreversible commitment (drilling, land purchase, capital lock), WEALTH must set reversibility_level = NONE. arifOS judge then routes to TIER_3 gate.",
+      "default_assumption": "Reversible = capital can be reallocated within 90 days without significant loss",
+      "confidence_ceiling": 0.95,
+      "if_wrong_cost": "WEALTH claims REVERSIBLE when actual is IRREVERSIBLE → arifOS judge applies wrong gate → Arif commits without proper hold."
+    },
+    {
+      "source_field": "wealth.allocation.blast_radius",
+      "target_field": "arifos.judge.blast_radius",
+      "rule": "LOCAL = one project. ORGAN = WEALTH organ only. FEDERATION = affects ≥2 organs. IRREVERSIBLE_GLOBAL = cannot undo at all. Map WEALTH blast_radius to arifOS scale.",
+      "default_assumption": "Single-well appraisal = LOCAL. Field development = ORGAN. PSC commitment = FEDERATION.",
+      "confidence_ceiling": 0.80,
+      "if_wrong_cost": "Wrong blast_radius → wrong arifOS judge routing → verdict from wrong gate."
+    },
+    {
+      "source_field": "wealth.risk.verdict",
+      "target_field": "arifos.judge.epistemic_state",
+      "rule": "WEALTH risk verdict LOW → epistemic_state = OBS/DER. MEDIUM → DER. HIGH → INT flagged. CRITICAL → SPEC flagged. arifOS judge applies epistemic floor.",
+      "default_assumption": "HIGH risk verdict requires explicit INT/Spec acknowledgment in envelope",
+      "confidence_ceiling": 0.80,
+      "if_wrong_cost": "WEALTH claims DER when evidence is actually SPEC → arifOS judge applies wrong epistemic floor → Arif acts on false confidence."
+    },
+    {
+      "source_field": "wealth.governance.888_hold_required",
+      "target_field": "arifos.judge.hold_triggered",
+      "rule": "If WEALTH flags 888_HOLD required, arifOS judge MUST halt the verdict loop and return hold trigger. WEALTH does not bypass this.",
+      "default_assumption": "888_HOLD never bypassed — WEALTH prepares envelope, Arif holds veto",
+      "confidence_ceiling": 0.99,
+      "if_wrong_cost": "888_HOLD bypassed → irreversible action taken without Arif's veto → F13 SOVEREIGN breach."
+    }
+  ],
+  "note": "WEALTH prepares the arifOS judge envelope. WEALTH never submits without explicit authority. arifOS renders the verdict. Arif holds the veto."
+}

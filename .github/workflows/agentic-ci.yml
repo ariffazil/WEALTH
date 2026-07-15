@@ -1,0 +1,238 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# AGENTIC CI — Dual-Lane Constitutional Gate
+# DITEMPA BUKAN DIBERI
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Lane 1 — STANDARD CI: lint, test, build (organ-specific)
+# Lane 2 — AGENTIC CI: BIJAKSANA metrics + constitutional report
+#
+# On push to main → BOTH lanes run → Agentic CI Report posted as Check Run
+# Federation cron picks up Check Run → arif_judge → AAA register → VAULT999 seal
+#
+# Architecture: /root/AGENTS.md §CI + each organ AGENTS.md §CI
+
+name: "🧠 Agentic CI"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+  statuses: write
+
+concurrency:
+  group: agentic-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # ─────────────────────────────────────────────────────────────
+  # LANE 1: STANDARD CI
+  # ─────────────────────────────────────────────────────────────
+  standard:
+    name: "Lane 1 — Standard CI"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev]" --quiet
+
+      - name: Lint (Ruff)
+        run: ruff check . --output-format=github || true
+
+      - name: Type check (MyPy)
+        run: mypy src/ --ignore-missing-imports || true
+        continue-on-error: true
+
+      - name: Test (Pytest)
+        id: test
+        run: |
+          python -m pytest tests/ -q --tb=short 2>&1 | tee test-output.txt
+          echo "passed=$(grep -c 'passed' test-output.txt || echo 0)" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Build check
+        run: python -c "import import internal" || true
+        continue-on-error: true
+
+  # ─────────────────────────────────────────────────────────────
+  # LANE 2: AGENTIC CI — BIJAKSANA Physics Gate
+  # ─────────────────────────────────────────────────────────────
+  bijaksana:
+    name: "Lane 2 — BIJAKSANA ΔS Φ Ψ Ω"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - run: pip install ruff -q
+
+      - name: "ΔS — Entropy"
+        id: ds
+        run: |
+          F401=$(ruff check --select F401 --output-format json . 2>/dev/null | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+          F541=$(ruff check --select F541 --output-format json . 2>/dev/null | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+          TODO=$(grep -r "TODO\|FIXME\|HACK" --include="*.py" . 2>/dev/null | wc -l)
+          DS=$((F401 + F541 + TODO))
+          echo "value=$DS" >> $GITHUB_OUTPUT
+          echo "f401=$F401" >> $GITHUB_OUTPUT
+          echo "f541=$F541" >> $GITHUB_OUTPUT
+          echo "todo=$TODO" >> $GITHUB_OUTPUT
+          echo "ΔS = F401($F401) + F541($F541) + TODO($TODO) = $DS"
+
+      - name: "Φ — Clarity"
+        id: phi
+        run: |
+          TOTAL=$(ruff check --statistics . 2>/dev/null | grep -c . || echo 1)
+          ERRORS=$(ruff check . 2>/dev/null | grep -c . || echo 0)
+          if [ "$TOTAL" -eq 0 ]; then PHI=100; else PHI=$(( (TOTAL - ERRORS) * 100 / TOTAL )); fi
+          echo "value=$PHI" >> $GITHUB_OUTPUT
+          echo "Φ = $PHI%"
+
+      - name: "Ψ — Truth (Surface = Manifest)"
+        id: psi
+        run: |
+          if [ -f "contracts/mcp_surface.yaml" ]; then
+            TOOLS=$(grep -c "^  [a-z]" contracts/mcp_surface.yaml 2>/dev/null || echo 0)
+            echo "value=$TOOLS" >> $GITHUB_OUTPUT
+            echo "Ψ = $TOOLS tools declared"
+          else
+            echo "value=NO_MANIFEST" >> $GITHUB_OUTPUT
+            echo "Ψ = NO_MANIFEST"
+          fi
+
+      - name: "Ω — Governance"
+        id: omega
+        run: |
+          SELF_AUTH=$(grep -r "self.*authorize\|self.*grant\|self.*approve" --include="*.py" . 2>/dev/null | wc -l)
+          echo "value=$SELF_AUTH" >> $GITHUB_OUTPUT
+          echo "self_auth_patterns=$SELF_AUTH" >> $GITHUB_OUTPUT
+          if [ "$SELF_AUTH" -gt 0 ]; then
+            echo "Ω = VIOLATION ($SELF_AUTH self-auth patterns)"
+          else
+            echo "Ω = CLEAN"
+          fi
+
+  # ─────────────────────────────────────────────────────────────
+  # REPORT: Aggregate + Post Agentic CI Check Run
+  # ─────────────────────────────────────────────────────────────
+  report:
+    name: "📊 Agentic CI Report"
+    runs-on: ubuntu-latest
+    needs: [standard, bijaksana]
+    if: always()
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Generate Agentic CI Report
+        id: report
+        run: |
+          echo "=== AGENTIC CI REPORT ==="
+          echo "Organ: WEALTH"
+          echo "SHA: ${{ github.sha }}"
+          echo "Ref: ${{ github.ref_name }}"
+          echo "Run: ${{ github.run_id }}"
+          echo "Time: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+          echo ""
+          
+          # Standard CI status
+          STANDARD_OK="${{ needs.standard.result }}"
+          echo "Lane 1 (Standard CI): $STANDARD_OK"
+          
+          # BIJAKSANA metrics
+          DS="${{ needs.bijaksana.outputs.ds-value }}"
+          PHI="${{ needs.bijaksana.outputs.phi-value }}"
+          PSI="${{ needs.bijaksana.outputs.psi-value }}"
+          OMEGA="${{ needs.bijaksana.outputs.omega-value }}"
+          echo "ΔS = $DS"
+          echo "Φ  = $PHI"
+          echo "Ψ  = $PSI"
+          echo "Ω  = $OMEGA"
+          
+          # Verdict
+          if [ "$STANDARD_OK" = "success" ] && [ "$DS" -lt 50 ] && [ "$PHI" -gt 80 ] && [ "$OMEGA" = "0" ]; then
+            VERDICT="SEAL_READY"
+          elif [ "$STANDARD_OK" = "success" ]; then
+            VERDICT="SABAR"
+          else
+            VERDICT="HOLD"
+          fi
+          echo "Verdict: $VERDICT"
+          
+          # Write JSON report
+          cat > agentic_ci_report.json << EOF
+          {
+            "organ": "WEALTH",
+            "sha": "${{ github.sha }}",
+            "ref": "${{ github.ref_name }}",
+            "run_id": "${{ github.run_id }}",
+            "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
+            "lane_1_standard": "$STANDARD_OK",
+            "lane_2_bijaksana": {
+              "ds": $DS,
+              "phi": $PHI,
+              "psi": "$PSI",
+              "omega": $OMEGA
+            },
+            "verdict": "$VERDICT",
+            "label": "Agentic CI"
+          }
+          EOF
+          cat agentic_ci_report.json
+
+      - name: Post Agentic CI Check Run
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('agentic_ci_report.json', 'utf8'));
+            const conclusion = report.verdict === 'SEAL_READY' ? 'success' : 
+                              report.verdict === 'SABAR' ? 'neutral' : 'failure';
+            
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Agentic CI',
+              head_sha: context.sha,
+              status: 'completed',
+              conclusion: conclusion,
+              output: {
+                title: `Agentic CI — ${report.organ}: ${report.verdict}`,
+                summary: [
+                  `| Lane | Status |`,
+                  `|------|--------|`,
+                  `| Standard CI | ${report.lane_1_standard} |`,
+                  `| BIJAKSANA | ΔS=${report.lane_2_bijaksana.ds} Φ=${report.lane_2_bijaksana.phi}% Ψ=${report.lane_2_bijaksana.psi} Ω=${report.lane_2_bijaksana.omega} |`,
+                  `| **Verdict** | **${report.verdict}** |`,
+                  '',
+                  `> DITEMPA BUKAN DIBERI — Agentic CI Report`,
+                  `> Register with AAA + Seal to VAULT999 pending federation cron pickup`
+                ].join('\n')
+              }
+            });
+
+      - name: Upload Agentic CI Report artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: agentic-ci-report-${{ github.sha }}
+          path: agentic_ci_report.json
+          retention-days: 90

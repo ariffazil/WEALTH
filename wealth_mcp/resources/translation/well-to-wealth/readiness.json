@@ -1,0 +1,49 @@
+{
+  "card_id": "dtc-well-wealth-readiness-v1",
+  "from_domain": "vitality",
+  "to_domain": "capital",
+  "version": "1.0.0",
+  "translations": [
+    {
+      "source_field": "well.human.readiness_score",
+      "target_field": "wealth.decision.decision_quality_ceiling",
+      "rule": "Arif's readiness score from WELL (0-1) caps the decision quality WEALTH can claim. WEALTH analysis quality = min(intrinsic_quality, readiness_ceiling). This is epistemic substrate quality per Reality Engineering.",
+      "default_assumption": "WELL assesses as OPTIMAL (readiness ≥ 0.85) → no ceiling applied",
+      "confidence_ceiling": 0.70,
+      "if_wrong_cost": "WEALTH provides high-quality analysis to a fatigued Arif → decision made under cognitive load. F6 MARUAH breach — dignity of Arif's decision-making capacity."
+    },
+    {
+      "source_field": "well.human.cognitive_clarity",
+      "target_field": "wealth.allocation.complexity_limit",
+      "rule": "If WELL reports cognitive_clarity below threshold (C4/C5 class), WEALTH allocation memo must limit options to ≤3 choices. Force prioritization over comprehensive comparison.",
+      "default_assumption": "cognitive_clarity HIGH → no limit on option count",
+      "confidence_ceiling": 0.80,
+      "if_wrong_cost": "Arif presented with 7 allocation options while fatigued → decision quality degrades, regret probability increases."
+    },
+    {
+      "source_field": "well.human.decision_fatigue",
+      "target_field": "wealth.allocation.avoid_iteration_flag",
+      "rule": "If decision_fatigue is HIGH, WEALTH must flag that the allocation memo should avoid open loops or follow-up questions. One clear recommendation, not a discussion.",
+      "default_assumption": "decision_fatigue NORMAL → normal memo format",
+      "confidence_ceiling": 0.75,
+      "if_wrong_cost": "WEALTH memo opens a new question → Arif must make another decision → fatigue compounds."
+    },
+    {
+      "source_field": "well.human.stress_load",
+      "target_field": "wealth.evidence.confidence_floor",
+      "rule": "High stress_load requires WEALTH to raise the minimum evidence threshold. Only act on OBS/DER with confidence ≥ 0.70. Reject INT unless confirmed by 2+ independent DER.",
+      "default_assumption": "stress_load NORMAL → standard evidence thresholds apply",
+      "confidence_ceiling": 0.80,
+      "if_wrong_cost": "WEALTH presents SPEC/INT analysis to stressed Arif → Arif cannot evaluate the epistemic quality → decisions made on false confidence."
+    },
+    {
+      "source_field": "well.human.chronic_fatigue",
+      "target_field": "wealth.governance.888_hold_preference",
+      "rule": "If chronic_fatigue is TRUE, WEALTH should recommend 888_HOLD on any irreversible decision even if EMV is positive. Preserve Arif's optionality.",
+      "default_assumption": "chronic_fatigue FALSE → evaluate EMV normally",
+      "confidence_ceiling": 0.70,
+      "if_wrong_cost": "Irreversible decision made while Arif is chronically fatigued → regret cannot be reversed. F1 AMANAH breach."
+    }
+  ],
+  "note": "WELL signals do NOT veto WEALTH computation. WELL reflects substrate readiness. WEALTH computes. arifOS adjudicates. Arif decides."
+}

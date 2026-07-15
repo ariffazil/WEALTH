@@ -74,3 +74,6 @@ coverage.xml
 .mypy_cache/
 .venv/
 
+
+# GitHub Copilot workspace — not VPS-aware, do not commit
+Copilot/

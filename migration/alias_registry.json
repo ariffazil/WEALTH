@@ -1,5 +1,7 @@
 {
   "schema_version": "2026.05.07",
+  "zen_enforced": true,
+  "zen_enforced_at": "2026-06-30",
   "migration_phase": "phase2-deprecation",
   "description": "WEALTH MCP alias registry — maps deprecated names to canonical names. Used during migration window to maintain backward compatibility.",
 

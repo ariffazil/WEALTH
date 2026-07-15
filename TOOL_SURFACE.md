@@ -2,7 +2,7 @@
 > **Canonical Source:** `ariffazil/wealth`
 > **Authority:** WEALTH organ, governed by `ariffazil/arifOS`
 > **Purpose:** Classify every `@mcp.tool` decorator in `internal/monolith.py`
-> **Status:** OPERATIONAL — 20 public tools + 34 hidden aliases (verified 2026-06-12)
+> **Status:** OPERATIONAL — 26 public tools + 6 hidden aliases = 32 total exposed (verified 2026-07-01)
 
 ---
 
@@ -38,7 +38,7 @@
 
 ## All Decorated Functions in `internal/monolith.py`
 
-**Total `@mcp.tool` decorators:** 65 (per `grep -c "@mcp.tool" internal/monolith.py`)
+**Total `@mcp.tool` decorators:** 59 (per `grep -c "@mcp.tool" internal/monolith.py`); 32 exposed via live `tools/list` on port 18082.
 
 ### Infrastructure (internal helpers — likely INTERNAL_ALIAS or TEST_ONLY)
 
@@ -130,13 +130,13 @@
 
 | Claim | Value |
 |-------|-------|
-| Public MCP surface | 17 tools |
-| Internal aliases / deprecated | 52 |
-| Total `@mcp.tool` decorators | 65 |
+| Public MCP surface | 26 tools |
+| Hidden aliases / deprecated | 6 |
+| Total `@mcp.tool` decorators | 59 (32 exposed via live `tools/list`) |
 
 Classification found so far:
-- `CANONICAL_PUBLIC`: ~12 tools confirmed
-- `INTERNAL_ALIAS`: ~10 tools
-- `DEPRECATED_ALIAS`: ~1 tool
+- `CANONICAL_PUBLIC`: ~26 tools confirmed
+- `INTERNAL_ALIAS`: ~5 tools
+- `DEPRECATED_ALIAS`: ~3 tools
 - `TEST_ONLY`: ~2 tools
-- `UNKNOWN`: ~40 tools (majority — need SME review)
+- `UNKNOWN`: ~23 tools (needs SME review)

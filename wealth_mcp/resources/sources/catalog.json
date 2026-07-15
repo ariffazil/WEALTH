@@ -1,0 +1,184 @@
+{
+  "version": "2026.06.27",
+  "p1_malaysia_asean": {
+    "macro_monetary": [
+      {
+        "source": "Bank Negara Malaysia (BNM) OpenAPI",
+        "coverage": "FX rates, interest rates, money supply, BOP, banking sector, macro series",
+        "access_url": "https://apikijangportal.bnm.gov.my",
+        "api_type": "REST/JSON",
+        "refresh_interval_seconds": 300,
+        "key_metrics": ["USD/MYR", "KLCI", "BNM_rate", "M3", "CPI", "GDP"]
+      },
+      {
+        "source": "Department of Statistics Malaysia (DOSM)",
+        "coverage": "GDP, CPI, PPI, trade balance, employment, sectoral output",
+        "access_url": "https://www.dosm.gov.my",
+        "api_type": "Web download / portal",
+        "refresh_interval_seconds": 86400,
+        "key_metrics": ["GDP_growth", "CPI", "unemployment", "exports", "imports"]
+      },
+      {
+        "source": "ASEAN+3 Macroeconomic Research Office (AMRO)",
+        "coverage": "ASEAN+3 macro surveillance, financial stability, regional economic assessment",
+        "access_url": "https://www.amro-asia.org",
+        "api_type": "Publications / data library",
+        "refresh_interval_seconds": 86400,
+        "key_metrics": ["regional_GDP", "capital_flows", "FX_reserves", "debt_sustainability"]
+      },
+      {
+        "source": "ASEANStats",
+        "coverage": "ASEAN aggregate statistics, trade, FDI, demographics",
+        "access_url": "https://www.aseanstats.org",
+        "api_type": "Data portal",
+        "refresh_interval_seconds": 86400,
+        "key_metrics": ["ASEAN_GDP", "intra_ASEAN_trade", "FDI_inflow"]
+      }
+    ],
+    "energy": [
+      {
+        "source": "Suruhanjaya Tenaga / MEIH",
+        "coverage": "Electricity generation, capacity, fuel mix, tariffs, gas supply",
+        "access_url": "https://www.st.gov.my / https://meih.st.gov.my",
+        "api_type": "Publications / reports",
+        "refresh_interval_seconds": 86400,
+        "key_metrics": ["installed_capacity_MW", "generation_by_fuel", "gas_supply", "electricity_tariff"]
+      },
+      {
+        "source": "PETRONAS Public Reports",
+        "coverage": "Production volumes, reserves, capital expenditure, financial results, PSC terms",
+        "access_url": "https://www.petronas.com/investors",
+        "api_type": "Annual / quarterly reports PDF",
+        "refresh_interval_seconds": 259200,
+        "key_metrics": ["oil_production_MMbbl_d", "gas_production_MMscfd", "reserves_2P", "capex_RM_B", "psc_revenue_share"]
+      },
+      {
+        "source": "Energy Commission Malaysia (Suruhanjaya Tenaga)",
+        "coverage": "Downstream oil and gas regulatory, licensing, pipeline safety",
+        "access_url": "https://www.st.gov.my",
+        "api_type": "Regulatory publications",
+        "refresh_interval_seconds": 604800,
+        "key_metrics": ["licensees", "pipeline_network", "safety_incidents"]
+      }
+    ],
+    "equity": [
+      {
+        "source": "Bursa Malaysia",
+        "coverage": "Equity listings, annual reports, announcements, financial statements",
+        "access_url": "https://www.bursamalaysia.com",
+        "api_type": "Website / corporate filings",
+        "refresh_interval_seconds": 300,
+        "key_metrics": ["KLCI", "volume", "market_cap", "advances_declines", "earnings", "dividends"]
+      }
+    ],
+    "regime_law": [
+      {
+        "source": "Federal Gazette / Laws of Malaysia",
+        "coverage": "Federal legislation, subsidiary laws, amendments",
+        "access_url": "https://www.federalgazette.gov.my",
+        "api_type": "Legal database",
+        "refresh_interval_seconds": 604800,
+        "key_metrics": ["law_updates", "new_regulations", "act_amendments"]
+      },
+      {
+        "source": "Attorney General's Chambers (AGC) Laws of Malaysia",
+        "coverage": "Consolidated acts, pre-1975 ordinances",
+        "access_url": "https://www.data.gov.my",
+        "api_type": "Open data portal",
+        "refresh_interval_seconds": 604800,
+        "key_metrics": ["act_text", "amendment_history"]
+      },
+      {
+        "source": "Sabah / Sarawak State Enactments",
+        "coverage": "State-specific resource laws, land rights, native rights",
+        "access_url": "Public record / state gazette",
+        "api_type": "State publications",
+        "refresh_interval_seconds": 2592000,
+        "key_metrics": ["state_resource_laws", "land_rights", "native_customary_rights"]
+      }
+    ],
+    "geospatial": [
+      {
+        "source": "GeoPandas + OSMnx (local compute)",
+        "coverage": "Infrastructure proximity, catchment analysis, pipeline routing",
+        "access_url": "Local Python environment",
+        "api_type": "Python library",
+        "refresh_interval_seconds": 604800,
+        "key_metrics": ["distance_to_infrastructure", "land_use", "road_network"]
+      }
+    ]
+  },
+  "p2_global": {
+    "description": "Use when query touches international comparison, US-listed counterparties, or global benchmarks",
+    "macro_monetary": [
+      {
+        "source": "IMF DataMapper",
+        "coverage": "Global macro, BOP, Direction of Trade Statistics (DOTS)",
+        "access_url": "https://data.imf.org",
+        "api_type": "REST/JSON",
+        "refresh_interval_seconds": 86400
+      },
+      {
+        "source": "World Bank Open Data",
+        "coverage": "Global development indicators, GDP, population, FDI",
+        "access_url": "https://data.worldbank.org",
+        "api_type": "API",
+        "refresh_interval_seconds": 86400
+      },
+      {
+        "source": "FRED (Federal Reserve Economic Data)",
+        "coverage": "US macro, rates, yield curve, USD index",
+        "access_url": "https://fred.stlouisfed.org",
+        "api_type": "API",
+        "refresh_interval_seconds": 300
+      }
+    ],
+    "energy": [
+      {
+        "source": "U.S. Energy Information Administration (EIA)",
+        "coverage": "Global oil/gas production, consumption, trade flows",
+        "access_url": "https://www.eia.gov",
+        "api_type": "API",
+        "refresh_interval_seconds": 86400
+      }
+    ],
+    "sanctions_pep": [
+      {
+        "source": "OpenSanctions",
+        "coverage": "Global sanctions lists, PEP databases",
+        "access_url": "https://www.opensanctions.org",
+        "api_type": "API / dataset",
+        "refresh_interval_seconds": 86400
+      },
+      {
+        "source": "FollowTheMoney",
+        "coverage": "Political finance, lobbying, beneficial ownership",
+        "access_url": "https://www.followthemoney.org",
+        "api_type": "Open data",
+        "refresh_interval_seconds": 259200
+      }
+    ]
+  },
+  "p3_us_eu": {
+    "description": "E&P counterparties only — US-listed companies, not primary for Malaysian analysis",
+    "sources": [
+      {
+        "source": "SEC EDGAR",
+        "coverage": "US-listed company filings — use only for US-listed E&P counterparties",
+        "access_url": "https://www.sec.gov/cgi-bin/browse-edgar",
+        "api_type": "Full-text search / XBRL",
+        "refresh_interval_seconds": 86400
+      }
+    ]
+  },
+  "access_rules": {
+    "require_preload": ["wealth://sources/catalog"],
+    "freshness_ttl_seconds": {
+      "market_data": 300,
+      "macro_indicators": 3600,
+      "legal_regulatory": 86400,
+      "annual_reports": 259200,
+      "static_reference": 604800
+    }
+  }
+}

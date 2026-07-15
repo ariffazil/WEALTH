@@ -1,4 +1,4 @@
-// MakCikGPT Website JavaScript
+// WEALTH Website JavaScript
 
 // Mobile menu toggle
 document.addEventListener('DOMContentLoaded', function() {
@@ -71,9 +71,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Console welcome message
-    console.log('%c🧕 MakCikGPT', 'font-size: 24px; font-weight: bold; color: #006D5B;');
+    console.log('%c💰 WEALTH', 'font-size: 24px; font-weight: bold; color: #006D5B;');
     console.log('%c"Ditempa, Bukan Diberi" — Forged, Not Given', 'font-size: 14px; color: #C9A227; font-style: italic;');
-    console.log('%cRuang untuk rasa, batas untuk selamat.', 'font-size: 12px; color: #666;');
+    console.log('%cCapital Intelligence — Computes, Never Allocates.', 'font-size: 12px; color: #666;');
 });
 
 // Utility function to copy code/text

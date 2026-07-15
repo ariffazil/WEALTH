@@ -1,4 +1,6 @@
-# MakCikGPT Visual Identity Design Brief
+# WEALTH Visual Identity Design Brief
+
+> **NOTE:** This design brief was originally created for MakCikGPT (v0.2.0) and is retained as legacy reference. WEALTH has since evolved into the capital intelligence organ of arifOS. Visual identity pending update.
 
 ## 1. Hero Image Concept
 

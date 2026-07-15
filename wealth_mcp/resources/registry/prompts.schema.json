@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wealth://registry/prompts",
+  "title": "WEALTH Prompts Registry",
+  "description": "7 canonical WEALTH prompts. Prompt transport law: prompts move discipline, not data.",
+  "type": "object",
+  "required": ["version", "prompt_count", "prompts"],
+  "properties": {
+    "version": {"type": "string"},
+    "prompt_count": {"type": "integer", "const": 7},
+    "prompts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description", "tags"],
+        "properties": {
+          "id": {"type": "string"},
+          "name": {"type": "string"},
+          "description": {"type": "string"},
+          "tags": {"type": "array", "items": {"type": "string"}},
+          "file_path": {"type": "string", "format": "uri"},
+          "loop_contract": {"type": "string"},
+          "output_schema_uri": {"type": "string", "format": "uri"}
+        }
+      }
+    }
+  }
+}
