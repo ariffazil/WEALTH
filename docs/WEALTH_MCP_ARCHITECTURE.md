@@ -1,23 +1,22 @@
 # WEALTH MCP — Architecture Refactor Blueprint
 
-> ⚰️ **DESIGN HISTORY — SUPERSEDED BY 2026-06-12 FEDERATION ALIGNMENT**
-> This blueprint predates the canonical topology ratification. The **live surface** is:
-> - **20 public MCP tools** + **34 hidden aliases**
-> - **65 `@mcp.tool` decorators** in `internal/monolith.py`
-> - Port **18082**, bound to **127.0.0.1**
-> - arifOS kernel port **8088**
-> The architectural direction below (atomic tools, prompts, resources) remains aspirational and is not yet implemented.
+> ⚰️ **HISTORICAL DESIGN DOC — NOT LIVE SOT (sealed 2026-07-15 F13)**  
+> **Live surface now:** **12** public tools, mode-dispatched (`server_federated.py` → `wealth_mcp/`).  
+> **See:** `../contracts/tools.yaml` · `TOOL_MODE_MAP.md` · `../ENTRYPOINTS.md` · README identity table.  
+> Do **not** cite 20/34/50/65 tool counts from this file as runtime truth.  
+> Monolith path is deprecated. Port **18082**. License **AGPL-3.0**.
 
-**Status:** DESIGN APPROVED — Pending Implementation
-**Author:** Arif Fazil + Hermes ASI
-**Date:** 2026-05-07
-**DITETPA BUKAN DIBERI — Forged, Not Given
+**Status:** ARCHIVE REFERENCE (aspiration history)  
+**Author:** Arif Fazil + Hermes ASI  
+**Date:** 2026-05-07 · **Superseded:** 2026-07-15 ZEN  
+**DITEMPA BUKAN DIBERI**
 
 ---
 
-## 1. Problem Statement
+## 1. Problem Statement (historical)
 
-WEALTH MCP currently exposes **20 public tools + 34 hidden aliases** (65 `@mcp.tool()` decorators) via `internal/monolith.py`. This blueprint originally assumed ~50 tools; the canonical surface is now smaller and governed by `PUBLIC_SURFACE_WHITELIST`.
+~~WEALTH MCP currently exposes 20 public tools + 34 hidden aliases…~~  
+**Superseded.** Live 2026-07-15: **12** MCP tools × modes (see `TOOL_MODE_MAP.md`).
 
 - **Category impurity:** tools, orchestration wrappers, and prompts all dumped as `@mcp.tool()`
 - **Naming noise:** `wealth_reason_npv`, `wealth_survival_cashflow`, `wealth_mind_evoi` — mixed semantic layers
