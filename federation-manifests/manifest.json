@@ -1,0 +1,19 @@
+{
+  "organ": "WEALTH",
+  "epoch": "2026-07-15",
+  "port": 18082,
+  "domain_law": "CAPITAL_LAW",
+  "authority": "compute_only",
+  "mcp_tools_live": 12,
+  "entry": "server_federated.py",
+  "public_mcp": "https://wealth.arif-fazil.com/mcp",
+  "peers": ["arifOS", "GEOX", "WEALTH", "WELL", "A-FORGE"],
+  "bridges": {
+    "GEOX": ["adapters/wealth_bridge.py", "src/geox_core/seismic_pipeline/geox_wealth_bridge.py"],
+    "WEALTH": ["wealth_mcp/resources/translation/", "wealth_arifos_bridge/"],
+    "WELL": ["well_mcp/resources/bridge_geox.py", "well_mcp/resources/bridge_wealth.py", "well_mcp/resources/bridge_arifos_kernel.py"]
+  },
+  "zen_docs_index": "docs/index.md",
+  "truth_rule": "tools/list beats README",
+  "updated": "2026-07-15T04:57:00Z"
+}

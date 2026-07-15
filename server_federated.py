@@ -57,73 +57,11 @@ if __name__ == "__main__":
         tools_list = await mcp.list_tools()
         return JSONResponse({"tools": [{"name": t.name} for t in tools_list]})
 
-    # ── A2A Agent Card (Federation Discovery) ────────────────────────────
-    # FORGE 2026-06-28: /.well-known/agent.json for AAA A2A mesh discovery.
-
-    _WEALTH_AGENT_CARD = {
-        "schema_version": "0.2",
-        "organ_id": "wealth",
-        "name": "WEALTH — Capital Intelligence",
-        "role": "capital",
-        "description": (
-            "Capital intelligence for arifOS federation. Computes capital, "
-            "risk, wisdom, and power metrics. Does NOT authorize execution. "
-            "WEALTH computes. arifOS judges. Arif decides."
-        ),
-        "version": "2026.07.12",
-        "url": "https://wealth.arif-fazil.com",
-        "a2a_endpoint": "http://127.0.0.1:18082/a2a",
-        "agent_card_url": "http://127.0.0.1:18082/.well-known/agent-card.json",
-        "endpoints": {
-            "mcp": "https://wealth.arif-fazil.com/mcp",
-            "health": "https://wealth.arif-fazil.com/health",
-            "tools": "https://wealth.arif-fazil.com/tools",
-        },
-        "authority_class": "evidence",
-        "allowed_action_classes": ["OBSERVE", "PREPARE"],
-        "max_risk_tier": "T1",
-        "auth": {"type": "none"},
-        "federation": {
-            "protocol": "A2A",
-            "peer_coordinator": "https://aaa.arif-fazil.com",
-            "constitutional_kernel": "https://arifos.arif-fazil.com",
-        },
-        "owned_mcp": [
-            "capital_primitive",
-            "capital_health",
-            "capital_diagnose",
-            "capital_wisdom",
-            "capital_market",
-            "capital_ledger",
-            "capital_registry",
-            "capital_entropy",
-            "wealth_institutional_stress_index",
-            "wealth_cascade_model",
-            "wealth_governance_capacity",
-            "wealth_external_exploitation_detect",
-        ],
-        "judge_skills": [],
-        "skills": [
-            {
-                "id": "capital.thermodynamics",
-                "name": "Capital Thermodynamics",
-                "tags": ["npv", "irr", "emv", "risk"],
-            },
-            {
-                "id": "institutional.resilience",
-                "name": "Institutional Resilience",
-                "tags": ["collapse", "signature", "scan"],
-            },
-            {
-                "id": "wisdom.evaluate",
-                "name": "Wisdom Evaluation",
-                "tags": ["dignity", "sovereignty", "optionality"],
-            },
-        ],
-    }
-
-    async def _wealth_agent_card_handler(request):
-        return JSONResponse(_WEALTH_AGENT_CARD)
+    # ── A2A Agent Card: REMOVED 2026-07-15 (WEALTH portion of federation-wide
+    # A2A card consolidation). Local agent-card serving is now disabled;
+    # federation-level A2A discovery flows through the central coordinator
+    # (AAA / a2aproject mesh). MCP manifests, OAuth discovery, /health,
+    # /tools, and the canonical capital surface are preserved below.
 
     # Get the MCP ASGI app
     # Pass host_origin_protection=False because our outer DNSRebindingProtection
@@ -174,14 +112,6 @@ if __name__ == "__main__":
         routes=[
             Route("/health", health),
             Route("/tools", tools_endpoint),
-            Route(
-                "/.well-known/agent.json", _wealth_agent_card_handler, methods=["GET"]
-            ),
-            Route(
-                "/.well-known/agent-card.json",
-                _wealth_agent_card_handler,
-                methods=["GET"],
-            ),
             Route(
                 "/.well-known/oauth-protected-resource",
                 _wealth_oauth_protected_resource,

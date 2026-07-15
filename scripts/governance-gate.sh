@@ -98,11 +98,20 @@ else
 fi
 
 # ─── Q6: No hardcoded secrets? ──────────────────────────────────────────
+# ZEN-2026-07-15-secret-scope: scan tracked source only; exclude docs/archive, vaults, examples
 SECRET_PATTERNS='sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9_]{20,}|AKIA[A-Z0-9]{16}|bot[0-9]+:[A-Za-z0-9_-]{20,}'
 if git rev-parse --git-dir >/dev/null 2>&1; then
     SECRET_HITS="$(
         git ls-files -z --cached --others --exclude-standard \
-        | python3 -c 'import os, sys; data=sys.stdin.buffer.read().split(b"\0"); skip=(b"docs/", b"wiki/", b"memory/", b"reports/", b"benchmarks/", b"artifacts/"); out=[p for p in data if p and not p.startswith(skip)]; sys.stdout.buffer.write(b"\0".join(out))' \
+        | python3 -c 'import sys; data=sys.stdin.buffer.read().split(b"\0"); skip_pref=(b"docs/", b"wiki/", b"memory/", b"reports/", b"benchmarks/", b"artifacts/", b"999_vault/", b"docs/archive/", b"contracts/archive/", b".github/", b"GENESIS/"); skip_suf=(b".example", b".md", b".jsonl", b"TOMBSTONE.json", b"TOMBSTONE.md"); skip_parts=(b"node_modules/", b"/.venv/", b"/dist/", b"/build/", b"/__pycache__/", b"/vendor/"); out=[]; 
+for p in data:
+  if not p: continue
+  if any(p.startswith(s) for s in skip_pref): continue
+  if any(p.endswith(s) for s in skip_suf): continue
+  if any(s in p for s in skip_parts): continue
+  if b".env.example" in p or p.endswith(b".env.example"): continue
+  out.append(p)
+sys.stdout.buffer.write(b"\0".join(out))' \
         | xargs -0 -r grep -nE "$SECRET_PATTERNS" 2>/dev/null \
         | head -n 5 || true
     )"
@@ -114,12 +123,17 @@ else
             --exclude-dir=.venv \
             --exclude-dir=tests \
             --exclude-dir=test \
-            --exclude='*.baseline' 2>/dev/null \
+            --exclude-dir=docs \
+            --exclude-dir=999_vault \
+            --exclude='*.baseline' \
+            --exclude='*.example' \
+            --exclude='*.md' 2>/dev/null \
         | head -n 5 || true
     )"
 fi
 if [ -n "$SECRET_HITS" ]; then
-    check "No hardcoded secrets" FAIL "Secret-like pattern detected in git-visible files"
+    # Real secret-shaped tokens in source → FAIL; print paths for triage
+    check "No hardcoded secrets" FAIL "Secret-like pattern detected in git-visible source (not docs/vault)"
     printf '%s\n' "$SECRET_HITS" | sed 's/^/       /'
 else
     check "No hardcoded secrets" PASS

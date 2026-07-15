@@ -1,0 +1,50 @@
+{
+  "organ": "WEALTH",
+  "epoch": "2026-07-15",
+  "entries": [
+    {
+      "item": "raw/",
+      "archived_at": "2026-07-15T04:55:00Z",
+      "archive_path": "docs/archive/raw/",
+      "reason": "Unintegrated canon drafts at root — entropy",
+      "reversible": true,
+      "rollback": "mv docs/archive/raw/* raw/"
+    },
+    {
+      "item": "scratch/",
+      "archived_at": "2026-07-15T04:55:00Z",
+      "archive_path": "tests/scratch/",
+      "reason": "Adversarial scripts at root",
+      "reversible": true
+    },
+    {
+      "item": "wiki/ (content copy)",
+      "archived_at": "2026-07-15T04:55:00Z",
+      "archive_path": "docs/archive/wiki/",
+      "reason": "Unindexed concept sprawl",
+      "reversible": true
+    },
+    {
+      "item": "memory/2026-*.md",
+      "archived_at": "2026-07-15T04:55:00Z",
+      "archive_path": "docs/archive/memory/",
+      "reason": "Manual date-stamped notes not machine SOT",
+      "reversible": true
+    },
+    {
+      "item": "docs/* excess",
+      "archived_at": "2026-07-15T04:56:00Z",
+      "archive_path": "docs/archive/entropy-2026-07-15/",
+      "reason": "docs/ max ~20 canonical + index.md",
+      "reversible": true
+    },
+    {
+      "item": "server.py as production entry",
+      "archived_at": "2026-07-15T04:45:00Z",
+      "canonical": "server_federated.py → wealth_mcp/",
+      "reason": "Dual entry entropy",
+      "reversible": true,
+      "note": "server.py redirects to federated; monolith import still for tests"
+    }
+  ]
+}

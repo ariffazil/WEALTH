@@ -1,30 +1,68 @@
 <!-- SOT-MANIFEST
-federation_release: v2026.07.12-CONSOLIDATION-EPOCH
-last_verified: 2026-07-14T23:38Z
-live_commit: 55e1d08
+federation_release: v2026.07.15-DOMAIN-CONTRAST
+last_verified: 2026-07-15T04:45Z
 mcp_tools_live: 12
+domain_law: CAPITAL_LAW
 truth_rule: tools/list + /health beat any static count in prose
-runtime_path: /root/WEALTH (synced from /root/wealth)
+runtime_path: /root/WEALTH
 port: 18082
 health_status: ALIVE
-health_version_banner: 2026.07.12 (banner lag; code @6adefdb)
-changelog: Kelly criterion + optimizer suite + APEX Pillar IV
-audit_finding: actor_id self-report pattern at wealth_mcp/server.py:272 — deferred
+health_version_banner: 2026.07.12
+domain_contrast: /root/AAA/docs/DOMAIN_ORGAN_CONTRAST.md
 a2a_agent_json: /root/WEALTH/.well-known/agent.json
-machine_sot: /root/A-FORGE/forge_work/2026-07-09/MACHINE-SOT-2026-07-09.json
 -->
 
 # WEALTH — Capital Intelligence for arifOS
 
-> **DITEMPA BUKAN DIBERI** — *"Forged, Not Given."*
+> **DITEMPA BUKAN DIBERI.** It **computes**. It does **not** move money.
 
-**It computes. It warns. It prepares evidence for judgment.**
+## Identity
 
-It does not move money. It does not authorize capital. It does not self-seal.
+| Field | Value |
+|-------|-------|
+| **Domain** | Capital — cashflow, risk, optimizers, institutional power |
+| **Port** | `:18082` · `https://wealth.arif-fazil.com` |
+| **MCP Tools (public)** | **12** — SOT: live `tools/list` |
+| **Primary Physics** | Capital thermodynamics · Kelly · conservation · VaR/CVaR |
+| **Epistemic Labels** | DERIVED / CLAIM / PLAUSIBLE / HYPOTHESIS / ESTIMATE |
+| **License** | AGPL-3.0 |
+| **Final Authority** | ARIF (F13 SOVEREIGN) |
+| **Production entry** | **`server_federated.py`** → `wealth_mcp/` — [`ENTRYPOINTS.md`](./ENTRYPOINTS.md) |
+| **Soul** | [`SOUL.md`](./SOUL.md) · Docs: [`docs/index.md`](./docs/index.md) |
 
-[![Agentic CI](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml/badge.svg?branch=main)](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml)
-[![Governance Gate](https://github.com/ariffazil/wealth/actions/workflows/governance-gate.yml/badge.svg?branch=main)](https://github.com/ariffazil/wealth/actions/workflows/governance-gate.yml)
-[![Build Validation](https://github.com/ariffazil/wealth/actions/workflows/publish-image.yml/badge.svg?branch=main)](https://github.com/ariffazil/wealth/actions/workflows/publish-image.yml)
+## Federation Position
+
+```
+ARIF (F13) → arifOS KERNEL :8088 → WEALTH :18082 (this organ)
+                                      ↑ GEOX feeds (volumes/POS artifacts)
+                                      ↑ WELL livelihood frames (S13)
+                                      └→ arifOS 888 judge → A-FORGE after SEAL
+```
+
+## What WEALTH Owns
+
+- NPV · IRR · EMV · EVOI · Monte Carlo · Kelly · portfolio optimizers  
+- Runway / conservation / market / institutional diagnostics  
+- Advisory envelopes + judge handoff prep  
+
+## What WEALTH Refuses (Hard)
+
+| Refusal | Who owns it instead |
+|---------|---------------------|
+| Move money / trade exec | Human + external broker · never this organ |
+| Earth truth / geology | GEOX |
+| Medical / readiness law | WELL |
+| Constitutional SEAL | arifOS / VAULT999 |
+| Self-seal | forbidden |
+
+## Connect
+
+```json
+{ "mcpServers": { "wealth": { "url": "https://wealth.arif-fazil.com/mcp" } } }
+```
+
+SOT RULE: `tools/list` wins. **Deprecated:** root `server.py` monolith path.
+
 [![License](https://img.shields.io/github/license/ariffazil/wealth?label=License)](LICENSE)
 
 ---
@@ -33,16 +71,17 @@ It does not move money. It does not authorize capital. It does not self-seal.
 
 WEALTH is the capital intelligence organ of arifOS.
 
-**Runtime:**
-- Version: **2026.07.06**
-- Public MCP tools: **50** (live tools/list count; canonical ~45 unique)
-- Stock analysis modes: **27** (including Kelly, Nash multi-factor, TAC-9)
-- Optimizer suite: **5 engines** (Markowitz, Kelly, Robust, Chance-constrained, Two-stage)
-- Prompts: **7 canonical loops**
-- Resources: **15** (8 SOT + 7 dynamic reality)
-- Transport: FastMCP 3.4.2 (streamable-HTTP, Python 3.12)
-- Port: **18082** (`wealth.service`)
-- License: **AGPL-3.0** — strong copyleft, network services must disclose source
+**Runtime (probe 2026-07-15 — runtime wins over prose):**
+- Version banner: **2026.07.12** · health `status=ALIVE`
+- **`domain_law`:** `CAPITAL_LAW`
+- Public MCP tools: **12** live (`tools/list` / mcporter) — not the historical decorator backlog
+- Stock analysis / optimizer modes: multi-mode tools (Kelly, Markowitz, VaR/CVaR family — see tool schemas)
+- Prompts: **7** canonical capital loops
+- Resources: static SOT + dynamic reality URIs under `wealth://`
+- Transport: FastMCP streamable-HTTP, Python 3.12
+- Port: **18082** (`wealth-organ` · entry **`server_federated.py`** — see [`ENTRYPOINTS.md`](./ENTRYPOINTS.md))
+- License: **AGPL-3.0**
+- **Deprecated:** `server.py` / `internal/monolith.py` as production MCP (removal target 2026-08-15)
 
 **Authority:**
 - WEALTH computes
@@ -50,24 +89,75 @@ WEALTH is the capital intelligence organ of arifOS.
 - WEALTH does not authorize capital
 - WEALTH does not self-seal
 
-**Federation Position:**
-
-```
-Arif (F13 SOVEREIGN)
-    ↓
-AAA / Hermes / OpenClaw (A2A)
-    ↓
-arifOS KERNEL (F1-F13, :8088)
-    ↓
-WEALTH (CAPITAL, :18082)  ← computes, never allocates
-    ↓
-A-FORGE (:7071)  ← executes after SEAL
-    ↓
-VAULT999  ← immutable record
-```
-
-> **If README and runtime disagree → runtime registry is source of truth.**
+> **If README and runtime disagree → runtime registry is source of truth.**  
 > Verify via `resources/read wealth://schema` and `tools/list`.
+
+---
+
+## Domain contrast — GEOX · WEALTH · WELL (federation MCP)
+
+> Full architecture seal: [ARIFOS_MCP_ARCHITECTURE_v2026.07.15](https://github.com/ariffazil/AAA/blob/main/docs/ARIFOS_MCP_ARCHITECTURE_v2026.07.15.md) · Contrast: [DOMAIN_ORGAN_CONTRAST](https://github.com/ariffazil/AAA/blob/main/docs/DOMAIN_ORGAN_CONTRAST.md) · Organ map: [FEDERATION_ORGAN](https://github.com/ariffazil/AAA/blob/main/docs/FEDERATION_ORGAN.md)  
+> **This organ answers to `CAPITAL_LAW`.** Not natural law. Not substrate law. Not constitutional law.
+
+Three domain MCP servers share one governance spine (arifOS) and three **orthogonal laws of truth**. Collapsing them is a constitutional error.
+
+| Axis | GEOX | **WEALTH (this repo)** | WELL |
+|------|------|------------------------|------|
+| Port / MCP | `:8081` · geox.arif-fazil.com/mcp | **`:18082`** · [wealth.arif-fazil.com/mcp](https://wealth.arif-fazil.com/mcp) | `:18083` · well.arif-fazil.com/mcp |
+| GitHub | [ariffazil/GEOX](https://github.com/ariffazil/GEOX) | [ariffazil/WEALTH](https://github.com/ariffazil/WEALTH) | [ariffazil/WELL](https://github.com/ariffazil/WELL) |
+| `domain_law` | `NATURAL_LAW` | **`CAPITAL_LAW`** | `SUBSTRATE_LAW` |
+| Primary axis | Earth / material substrate | **Capital / scarcity / allocation geometry** | Vitality / readiness / dignity |
+| Live tools (2026-07-15) | **15** | **12** | **27** |
+| Authority | Evidence only | **Compute only (advisory)** | `REFLECT_ONLY` |
+| May claim | OBS / DER / INT earth facts | **Numbers, risk envelopes, advisory size** | Readiness signals, dignity flags |
+| Must never | Drill · allocate · seal law | **Move money · claim earth truth · self-seal** | Diagnose · decide fitness · override human |
+
+### Knowledge grammars (Math · Physics · Code)
+
+| Grammar | GEOX | **WEALTH** | WELL |
+|---------|------|------------|------|
+| **Physics** | Primary — Physics9 rock bounds | **Mapped** — capital as conserved flow (runway, burn, risk entropy, conservation check) | Homeostatic flux (not diagnosis) |
+| **Math** | Transforms, P10/P50/P90 | **Primary** — NPV, IRR, EMV, EVOI, Kelly, Markowitz, VaR/CVaR, Monte Carlo | Scores, thresholds, entropy |
+| **Code / MCP** | FastMCP `geox_*` | **FastMCP `wealth_*` + `wealth://` resources + 7 prompts** | FastMCP `well_*` |
+
+### MCP architecture (this server)
+
+WEALTH is a **standalone MCP server**, not a plugin inside arifOS.
+
+| Primitive | Role on WEALTH |
+|-----------|----------------|
+| **Tools** | Capital compute (`wealth_*`) — public contract = live `tools/list` |
+| **Resources** | Context that prevents wrong math (`wealth://schema`, risk, market, handoff) |
+| **Prompts** | 7 capital intelligence loops (intake → risk → market → handoff) |
+| **Transport** | Streamable HTTP (`:18082/mcp`) + stdio |
+| **Public door** | Caddy → `https://wealth.arif-fazil.com/mcp` |
+| **Does not own** | F1–F13 judgment, SEAL, earth evidence, medical diagnosis |
+
+**Execution order (discipline):** load resources → apply prompt loop → call tools → advisory only → `wealth_judge_handoff` if irreversible / HIGH-CRITICAL.
+
+**Agentic flow:** intent → arifOS classify/route → **WEALTH tools** (capital evidence) → optional GEOX (earth) / WELL (readiness) → `arif_judge` → SEAL/HOLD/VOID → A-FORGE execute → VAULT999.
+
+```
+Arif (F13) → AAA/Hermes/OpenClaw → arifOS :8088
+                                      │
+                    ┌─────────────────┼─────────────────┐
+                    ▼                 ▼                 ▼
+                 GEOX :8081      WEALTH :18082     WELL :18083
+                 NATURAL_LAW     CAPITAL_LAW       SUBSTRATE_LAW
+                 earth evidence  capital compute   vitality reflect
+                    │                 │                 │
+                    └─────────────────┼─────────────────┘
+                                      ▼
+                              arifOS 888 JUDGE → A-FORGE → VAULT999
+```
+
+| Peer | WEALTH relationship |
+|------|---------------------|
+| **arifOS** | Governor — WEALTH prepares judge envelopes; never seals |
+| **GEOX** | Earth volumes / POS-class inputs for capital geometry; WEALTH does not invent geology |
+| **WELL** | Livelihood / human-risk coupling (`well_handoff_livelihood_to_wealth`); WEALTH does not assess biology |
+| **A-FORGE** | Hands after SEAL — never allocate from WEALTH alone |
+| **VAULT999** | Immutable capital consequence after SEAL |
 
 ---
 
@@ -325,7 +415,7 @@ curl -X POST https://wealth.arif-fazil.com/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"cli","version":"1.0"}}}'
 
 # 3. List tools
-# tools/list → ~45 tools
+# tools/list → live count (probe; README is not the registry)
 
 # 4. Kelly example
 curl -X POST https://wealth.arif-fazil.com/mcp \
@@ -384,7 +474,7 @@ Connect to WEALTH via the Model Context Protocol:
 |----------|-------|
 | **Endpoint** | `https://wealth.arif-fazil.com/mcp` |
 | **Transport** | Streamable HTTP (JSON-RPC 2.0) |
-| **Tools** | 50 tools (live) |
+| **Tools** | 12 tools (live `tools/list`; runtime wins) |
 | **Health** | `https://wealth.arif-fazil.com/health` |
 
 ### Claude Code / Cursor
