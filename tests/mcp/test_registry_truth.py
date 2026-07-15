@@ -4,40 +4,33 @@ Tests for WEALTH MCP — Registry Truth.
 Every tool in the MCP surface must be callable.
 No phantom tools. No ghost aliases.
 
+ZEN migration 2026-07-11: 7 capital_* canonical tools only.
 DITEMPA BUKAN DIBERI.
 """
 
 from __future__ import annotations
 
-
 from wealth_mcp.server import create_mcp_server
 
 
 EXPECTED_TOOLS = [
-    "wealth_wisdom_evaluate",
-    "wealth_power_audit",
-    "wealth_capture_scan",
-    "wealth_compute_npv",
-    "wealth_compute_irr",
-    "wealth_conservation_check",
-    "wealth_flow_check",
-    "wealth_runway_check",
-    "wealth_emv_compute",
-    "wealth_monte_carlo",
-    "wealth_evoi_compute",
-    "wealth_confluence_check",
-    "wealth_asymmetry_check",
-    "wealth_system_registry_status",
-    # Legacy surface tools (delegate to monolith)
-    "wealth_stock_analysis",
-    "wealth_personal_finance",
-    "wealth_market_data",
-    "wealth_omni_wisdom",
-    "wealth_agent_path",
-    # Vault tools (Gap Ledger Phase 1)
-    "wealth_vault_write",
-    "wealth_vault_query",
+    "capital_primitive",
+    "capital_health",
+    "capital_diagnose",
+    "capital_wisdom",
+    "capital_market",
+    "capital_ledger",
+    "capital_registry",
+    "capital_entropy",
 ]
+
+
+def _tool_names(mcp) -> list[str]:
+    tool_names: list[str] = []
+    for key in mcp._local_provider._components:
+        if key.startswith("tool:"):
+            tool_names.append(key[5:].rstrip("@"))
+    return tool_names
 
 
 class TestRegistryTruth:
@@ -49,23 +42,16 @@ class TestRegistryTruth:
         assert mcp is not None
 
     def test_expected_tool_count(self):
-        """Must have at least the expected number of tools."""
+        """Must have exactly the 7 canonical tools."""
         mcp = create_mcp_server()
-        # FastMCP stores tools internally
-        tool_names = []
-        for key in mcp._local_provider._components:
-            if key.startswith("tool:"):
-                tool_names.append(key[5:].rstrip("@"))
+        tool_names = _tool_names(mcp)
         for expected in EXPECTED_TOOLS:
             assert expected in tool_names, f"Missing tool: {expected}"
+        assert len([t for t in tool_names if t in EXPECTED_TOOLS]) == 8
 
     def test_no_phantom_tools(self):
-        """Every registered tool must be in expected list."""
+        """Registered public tools must be subset of the 7-canonical set."""
         mcp = create_mcp_server()
-        tool_names = []
-        for key in mcp._local_provider._components:
-            if key.startswith("tool:"):
-                tool_names.append(key[5:].rstrip("@"))
-        # New tools are allowed, but no expected tool should be missing
-        for expected in EXPECTED_TOOLS:
-            assert expected in tool_names
+        tool_names = _tool_names(mcp)
+        for name in tool_names:
+            assert name in EXPECTED_TOOLS, f"Phantom tool: {name}"

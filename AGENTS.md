@@ -1,8 +1,8 @@
 <!-- SOT-MANIFEST
 owner: Arif
-last_verified: 2026-06-25
+last_verified: 2026-07-14
 valid_from: 2026-06-14
-valid_until: 2026-07-25
+valid_until: 2026-08-13
 confidence: high
 scope: /root/WEALTH
 -->
@@ -24,7 +24,7 @@ Arif. This is the **WEALTH** organ of the arifOS federation — Resource Intelli
 
 The canonical capital engine. It models conservation, flow, gradient, entropy, energy, time, inertia, field, signal, game, boundary, and hysteresis as thermodynamic invariants over financial and resource systems.
 
-**20 public MCP tools** across kernel, physics organs, specialists, survival, personal finance, market data, and stock analysis. Dual runtime: Python (canonical) + Node.js (legacy). 34 hidden alias tools.
+**Canonical MCP tools** across kernel, physics organs, specialists, survival, personal finance, market data, and stock analysis. Dual runtime: Python (canonical) + Node.js (legacy). Tool count is a runtime fact — verify with `tools/list`.
 
 ## Authority & Autonomy
 
@@ -60,8 +60,8 @@ docker build -t wealth .
 
 | Path | Purpose |
 |------|---------|
-| `internal/monolith.py` | Canonical kernel — 20 public MCP tools (~16,000 lines) |
-| `internal/stock/` | D4 Stock Analysis — 12-mode capital-risk governance (verify_math, pre_trade, fundamentals, TAC-9, contrast, confluence) |
+| `internal/monolith.py` | Historical monolith (~16k lines). **Live MCP exposes 7 tools** (`capital_*` surface via `tools/list` on :18082). Do not claim 37 without live verify. |
+| `internal/stock/` | D4 Stock Analysis — 27-mode capital-risk governance (verify_math, pre_trade, fundamentals, TAC-9, contrast, confluence, kelly, nash_multi_factor) |
 | `internal/market_data.py` | D3 Market Data — FX rates, commodities, macro indicators |
 | `internal/personal_finance.py` | D1 Personal Finance — cashflow, net worth, EPF, zakat |
 | `internal/db_schema.py` | PostgreSQL schema — transactions, assets, trades, positions, watchlist |
@@ -76,6 +76,21 @@ docker build -t wealth .
 ## Known Anomalies
 
 - ~~`pyproject.toml` license mismatch~~ — RESOLVED 2026-06-14. Both `pyproject.toml` and `package.json` declare `AGPL-3.0`.
+
+## 🎭 Humour as Capture Signal (FORGED 2026-07-01)
+
+> **Canonical skill:** `agent-humour-doctrine` (Hermes)
+
+WEALTH detects humour as a potential **capture signal** in financial contexts:
+
+- Jokes in financial advice may hide incentives
+- Sarcasm in market commentary may mask uncertainty  
+- "Trust me bro" humour may bypass verification
+- Self-deprecating disclaimers may be false modesty
+
+Use `wealth_capture_scan` to detect humour patterns that correlate with capture risk. Use `wealth_power_audit` when jokes appear in power-dynamic contexts.
+
+---
 
 ## Federation Position
 
@@ -92,7 +107,33 @@ WEALTH provides **evidence** — never execution. It computes NPV, IRR, EMV, DSC
 
 *DITEMPA BUKAN DIBERI — 999 SEAL ALIVE*
 
+
 ---
+
+## 🧠 CI ARCHITECTURE — Dual-Lane Agentic CI (FORGED 2026-07-01)
+
+> **DITEMPA BUKAN DIBERI** — CI is forged, not given.
+> **Architecture receipt:** `forge_work/AGENTIC-CI-FORGE-2026-07-01.md`
+
+Every push to `main` triggers **two lanes**:
+
+| Lane | Name | What It Does | Verdict |
+|------|------|-------------|---------|
+| **Lane 1** | Standard CI | Lint (Ruff) → Type check (MyPy) → Test (Pytest) → Build check | Pass/Fail |
+| **Lane 2** | BIJAKSANA (Agentic CI) | ΔS (entropy) → Φ (clarity) → Ψ (truth/manifest) → Ω (governance) | SEAL_READY / SABAR / HOLD |
+
+**The Report:** Both lanes feed into an `Agentic CI Report` — a structured JSON artifact posted as a GitHub Check Run with label `Agentic CI`. Federation cron picks up Check Run → `arif_judge` → AAA register → VAULT999 seal.
+
+**Workflow file:** `.github/workflows/agentic-ci.yml`
+
+**The Loop:**
+```
+git push → Lane 1 (Standard) + Lane 2 (BIJAKSANA)
+       → Agentic CI Report (JSON + Check Run)
+       → Federation cron → arif_judge → AAA → VAULT999
+```
+
+**Cross-organ:** This architecture is deployed identically across all 6 federation organs (arifOS, A-FORGE, AAA, GEOX, WEALTH, WELL). Each organ's `AGENTS.md` carries this section.
 
 ## 🛡️ STEEL SECURITY LAYER — Permanent Federation Context
 

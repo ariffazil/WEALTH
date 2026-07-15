@@ -1,4 +1,4 @@
-# 01: Suara MakCikGPT
+# 01: Suara WEALTH
 
 > *"Tak semua yang lembut itu lemah. Air tenang jangan disangka tiada buaya — tapi juga jangan disangka tiada ikan."*
 

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://google.com/genai/a2a/agent-card/v1",
+  "arifos_internal_card": "/.well-known/agent-card.json",
+  "name": "WEALTH",
+  "description": "Capital intelligence — NPV, EMV, valuation, risk scoring, portfolio optimization, collapse signatures, sovereign fiscal reasoning, and wisdom evaluation under F1-F13 constitutional floors. Evidence-only on computational primitives; arifOS 888_JUDGE owns the verdict.",
+  "version": "2026.07.11",
+  "protocolVersion": "1.0.0",
+  "url": "https://wealth.arif-fazil.com",
+  "provider": {
+    "organization": "arifOS Federation",
+    "sovereign": "Muhammad Arif bin Fazil (F13 SOVEREIGN)",
+    "doctrine": "DITEMPA BUKAN DIBERI",
+    "url": "https://arif-fazil.com"
+  },
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "stateTransitionHistory": true,
+    "extensions": [
+      {
+        "uri": "https://arif-fazil.com/extensions/floor-compliance/v1",
+        "description": "F1 AMANAH / F2 TRUTH / F4 CLARITY / F7 HUMILITY / F11 AUDIT / F13 SOVEREIGN footer on every envelope."
+      },
+      {
+        "uri": "https://arif-fazil.com/extensions/evidence-truth-class/v1",
+        "description": "Five truth classes; OBSERVED→DERIVED→INTERPRETED→HYPOTHESIS→SPECULATIVE ladder."
+      },
+      {
+        "uri": "https://arif-fazil.com/extensions/marua-capital/v1",
+        "description": "F6 MARUAH capital lens — collapse signature scan, beautiful-mouse scan, capture scan."
+      }
+    ]
+  },
+  "defaultInputModes": ["application/json"],
+  "defaultOutputModes": ["application/json"],
+  "skills": [
+    {"id": "capital_primitive", "name": "Capital Primitive", "description": "Deductive math: NPV, IRR, EMV, EVOI, MC, Kelly, Markowitz, robust, chance-constrained, two-stage."},
+    {"id": "capital_health", "name": "Capital Health", "description": "Conservation, flow, runway, survival, fiscal breakeven, confluence, asymmetry."},
+    {"id": "capital_diagnose", "name": "Capital Diagnose", "description": "Institutional stress, governance, cascade, collapse signature, power, MWC — mode + payload."},
+    {"id": "capital_wisdom", "name": "Capital Wisdom", "description": "Wisdom synthesis, omni path, epistemic audit — advisory only."},
+    {"id": "capital_market", "name": "Capital Market", "description": "FX, commodity, indicator, stock (stock_payload)."},
+    {"id": "capital_ledger", "name": "Capital Ledger", "description": "VAULT999 query/write (write requires ack_irreversible)."},
+    {"id": "capital_registry", "name": "Capital Registry", "description": "Status, schema, domains, health for the 7-tool surface."}
+  ],
+  "owned_mcp_count": 7,
+  "can_do": [
+    "Compute NPV/EMV/EVOI/IRR/Monte Carlo capital primitives",
+    "Run stock analysis, personal finance, market data lookups",
+    "Scan institutional narratives for collapse signatures + Phase C patterns",
+    "Score capital allocations across 6 wisdom dimensions (dignity, sovereignty, resilience, inequality, ecology, optionality)",
+    "Reason about Malaysian fiscal sustainability and Petronas dividend economics"
+  ],
+  "cannot_do": [
+    "Execute a stock trade or move real money (EVIDENCE_ONLY)",
+    "Self-seal VAULT999 — only arifOS arif_seal does this",
+    "Override F13 SOVEREIGN veto",
+    "Bypass 888_JUDGE constitutional verdict",
+    "Make diagnosis or therapy claims (F9 ANTI-HANTU)",
+    "Read human substrate (WELL owns that surface)"
+  ],
+  "constitutional_floors": ["F1_AMANAH","F2_TRUTH","F4_CLARITY","F7_HUMILITY","F9_ANTI_HANTU","F11_AUDIT","F13_SOVEREIGN"],
+  "lane": "evidence_only",
+  "self_judge": false,
+  "judge_authority": "arifOS arif_judge_deliberate",
+  "verdict_grammar": "SEAL | SABAR | HOLD | VOID",
+  "ledger": "VAULT999",
+  "seal_protocol": "arif_seal (irreversible hash chain, anchored)",
+  "authentication": {
+    "schemes": ["bearer"],
+    "credentials": "Lease-token issued by arifOS arif_lease_issue; bound at transport layer (ConstitutionalJWTAuthMiddleware)."
+  },
+  "a2a_endpoints": {
+    "health": "GET /health",
+    "mcp": "POST /mcp",
+    "agent_card_internal": "GET /.well-known/agent-card.json"
+  },
+  "metadata": {
+    "generated_at": "2026-07-04",
+    "generator": "arifos-federation-alignment",
+    "spec": "github.com/a2aproject/A2A v1.0 + arifOS internal v2.0.0 wrapper",
+    "consolidation_reference": "/root/A-FORGE/forge_work/2026-07-01/federation-alignment.md"
+  }
+}
