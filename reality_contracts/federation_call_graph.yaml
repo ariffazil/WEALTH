@@ -53,12 +53,6 @@ organs:
     transport: MCP
     # WELL is REFLECT_ONLY. Reports, never diagnoses.
 
-  - id: APEX
-    role: deliberation
-    port: 3002
-    transport: legacy
-    note: "APEX deliberation moved to AAA a2a-server. Port 3002 retained for legacy health."
-
 # ════════════════════════════════════════════════════════════════════
 # 2. ALLOWED EDGES (the explicit graph)
 # ════════════════════════════════════════════════════════════════════

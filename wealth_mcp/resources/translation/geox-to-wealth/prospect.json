@@ -1,0 +1,65 @@
+{
+  "card_id": "dtc-geox-wealth-prospect-v1",
+  "from_domain": "geology",
+  "to_domain": "capital",
+  "version": "1.0.0",
+  "translations": [
+    {
+      "source_field": "geox.prospect.POS",
+      "target_field": "wealth.capital.project.p_technical_success",
+      "rule": "GEOX POS (probability of geological success) maps directly to p_technical_success in WEALTH EMV computation. No discount applied — POS is the geological input.",
+      "default_assumption": "POS from GEOX prospect analysis, typically 15-60% for frontier prospects",
+      "confidence_ceiling": 0.65,
+      "if_wrong_cost": "EMV error proportional to (ΔPOS × NPV_upside + ΔPOS × NPV_downside). At POS 35%, ±10% error → EMV error ~±RM 8M for a RM 80M well."
+    },
+    {
+      "source_field": "geox.prospect.GRV_km3",
+      "target_field": "wealth.capital.reserve.stooip_mmbbl",
+      "rule": "GRV × porosity × formation factor = STOOIP. Apply recovery factor (RF) to get reserve estimate. RF from analog fields, typically 25-45% for clastic reservoirs.",
+      "default_assumption": "Porosity 18%, Sw 35%, RF 30% from Sabah analog dataset",
+      "confidence_ceiling": 0.55,
+      "if_wrong_cost": "Reserve estimate error = GRV error × porosity × RF. 20% GRV error → ~15% reserve error → NPV error ~±RM 12M."
+    },
+    {
+      "source_field": "geox.geomechanics.Bulk_Density_g_cm3",
+      "target_field": "wealth.capital.capex.drill_cost_musd",
+      "rule": "Bulk density affects mud window and well design. Higher density → narrower mud window → more casing strings → higher cost. Use Halliburton / Schlumberger regional rate tables for Sabah shallow water.",
+      "default_assumption": "Shallow water jack-up rate USD 85K/day, 45-day campaign = USD 3.8M per well",
+      "confidence_ceiling": 0.70,
+      "if_wrong_cost": "10% capex overrun on USD 15M well = USD 1.5M direct cost, plus 6-month delay at USD 85K/day = additional USD 15.3K/day."
+    },
+    {
+      "source_field": "geox.seismic.confidence",
+      "target_field": "wealth.risk.discount_rate_adjustment",
+      "rule": "HIGH seismic confidence → no discount rate uplift. MEDIUM → +1% discount rate. LOW → +2-3% discount rate. CRITICAL uncertainty → EVOI computation required.",
+      "default_assumption": "Seismic confidence MEDIUM (2D/3D mix) → +1% discount rate adjustment",
+      "confidence_ceiling": 0.60,
+      "if_wrong_cost": "+1% on 10-year NPV reduces PV by ~8%. On a USD 50M project NPV, this is USD 4M."
+    },
+    {
+      "source_field": "geox.regime.environmental.approval_months",
+      "target_field": "wealth.capital.project.timeline_delay_months",
+      "rule": "DOE/JAS EIA approval timeline adds direct delay. Apply to project timeline. Delay costs: additional overhead + opportunity cost + possible PSC timeline extension.",
+      "default_assumption": "18 months from submission for Sabah offshore (DOE EIA mandatory under Environmental Quality Act 1974)",
+      "confidence_ceiling": 0.70,
+      "if_wrong_cost": "6-month delay on USD 50M capex at 10% WACC = USD 2.5M PV loss."
+    },
+    {
+      "source_field": "geox.psc.royalty_rate",
+      "target_field": "wealth.fiscal.royalty_outflow",
+      "rule": "GEOX PSC terms (royalty rate, PTP rate) directly enter WEALTH fiscal model. Apply to gross revenue to get government take, then compute contractor NPV.",
+      "default_assumption": "Sabah PSC: 38% royalty floor, 38% PTP (after cost recovery)",
+      "confidence_ceiling": 0.90,
+      "if_wrong_cost": "PSC terms are contractual — wrong assumption is a factual error, not a risk parameter. Mis-stating PSC terms is a TIER_3 epistemic error."
+    },
+    {
+      "source_field": "geox.prospect.reserves_2C_mmmbbl",
+      "target_field": "wealth.capital.project.reserve_value_musd",
+      "rule": "2C reserve × realized price × realized recovery factor × (1 - royalty - pttp) / (1 + WACC)^t = reserve PV. Use realized price = Brent × Malaysia price premium (~2-5%).",
+      "default_assumption": "2C 180 MMbbl × USD 82/bbl realized × 30% recovery / (1.10)^5 = ~USD 135M contractor NPV before capex",
+      "confidence_ceiling": 0.50,
+      "if_wrong_cost": "Reserve estimate is the largest driver of NPV sensitivity. ±30% reserve → ±40% NPV."
+    }
+  ],
+  "note": "A seismic confidence value does NOT automatically become a WEALTH risk-discount rate. This card governs the typed transformation. Without it, WEALTH reasons on prose."
+}

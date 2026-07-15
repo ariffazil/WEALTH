@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wealth://contracts/replay-receipt.schema.json",
+  "title": "ReplayReceipt",
+  "type": "object",
+  "required": ["trace_id", "final_step_id", "actor", "decision", "inputs", "outputs", "timestamp"],
+  "properties": {
+    "trace_id": {
+      "type": "string",
+      "description": "Trace ID linking all steps."
+    },
+    "final_step_id": {
+      "type": "string",
+      "description": "Step ID of the terminal action in this trace."
+    },
+    "actor": {
+      "type": "string",
+      "description": "Which organ produced the final decision."
+    },
+    "decision": {
+      "type": "string",
+      "description": "Human-readable decision label."
+    },
+    "decision_class": {
+      "type": "string",
+      "enum": ["brief", "memo", "recommendation", "reject", "hold"]
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["uri", "sha256"],
+        "properties": {
+          "uri": {"type": "string", "format": "uri"},
+          "sha256": {"type": "string"}
+        }
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["uri", "sha256"],
+        "properties": {
+          "uri": {"type": "string", "format": "uri"},
+          "sha256": {"type": "string"}
+        }
+      }
+    },
+    "holds": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Holds issued during this trace and their reasons."
+    },
+    "signatures": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

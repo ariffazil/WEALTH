@@ -1,9 +1,9 @@
 {
-  "project": "MakCikGPT",
-  "version": "0.1.0",
+  "project": "WEALTH",
+  "version": "2026.06.29",
   "category": "docs",
-  "description": "Core governance and safety documentation for MakCikGPT",
-  "base_url": "https://makcikgpt.arif-fazil.com/docs",
+  "description": "Core governance and safety documentation for WEALTH — capital intelligence organ of arifOS",
+  "base_url": "https://wealth.arif-fazil.com/docs",
   "language": "ms",
   "last_updated": "2025-02-28",
   "kernels_available": [

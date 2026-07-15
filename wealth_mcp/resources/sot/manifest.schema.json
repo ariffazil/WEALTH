@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wealth://sot/manifest",
+  "title": "WEALTH SOT Manifest",
+  "description": "Signed Statement of Truth manifest. Hashes of all canonical surfaces at build time.",
+  "type": "object",
+  "required": ["version", "organ", "schema_hashes", "tool_registry_hash", "prompt_registry_hash", "resource_registry_hash", "contracts_hash", "signed_at"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "example": "2026.06.27"
+    },
+    "organ": {
+      "type": "string",
+      "const": "WEALTH"
+    },
+    "schema_hashes": {
+      "type": "object",
+      "additionalProperties": {"type": "string"},
+      "description": "SHA-256 of each contract schema file"
+    },
+    "tool_registry_hash": {
+      "type": "string",
+      "description": "SHA-256 of the canonical tool surface at build time"
+    },
+    "prompt_registry_hash": {
+      "type": "string",
+      "description": "SHA-256 of the 7 canonical prompts at build time"
+    },
+    "resource_registry_hash": {
+      "type": "string",
+      "description": "SHA-256 of this manifest at build time"
+    },
+    "contracts_hash": {
+      "type": "string",
+      "description": "SHA-256 of all 5 contract schemas concatenated"
+    },
+    "signing_key_id": {
+      "type": "string",
+      "description": "Key ID used to sign this manifest"
+    },
+    "signature": {
+      "type": "string",
+      "description": "HMAC-SHA256 signature of this manifest"
+    },
+    "signed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "seal_id": {
+      "type": "string",
+      "description": "VAULT999 seal ID if already sealed"
+    }
+  }
+}

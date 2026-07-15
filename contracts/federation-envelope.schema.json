@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wealth://contracts/federation-envelope.schema.json",
+  "title": "FederationEnvelope",
+  "type": "object",
+  "required": ["version", "trace_id", "from", "to", "artifact_kind", "payload", "created_at"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version. Current: 1.0.0"
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Unique trace ID linking all steps in this federation flow."
+    },
+    "step_id": {
+      "type": "string",
+      "description": "Step ID within this trace. Format: step-N."
+    },
+    "from": {
+      "type": "string",
+      "enum": ["GEOX", "WEALTH", "arifOS", "WELL", "A-FORGE", "AAA"],
+      "description": "Source organ."
+    },
+    "to": {
+      "type": "string",
+      "enum": ["GEOX", "WEALTH", "arifOS", "WELL", "A-FORGE", "AAA"],
+      "description": "Destination organ."
+    },
+    "artifact_kind": {
+      "type": "string",
+      "enum": [
+        "context_capsule",
+        "domain_translation_card",
+        "allocation_memo",
+        "replay_receipt",
+        "affordance_contract",
+        "evidence_packet",
+        "power_map",
+        "regime_matrix",
+        "valuation_frame"
+      ]
+    },
+    "payload": {
+      "type": "object",
+      "description": "The artifact content. Schema varies by artifact_kind."
+    },
+    "refs": {
+      "type": "array",
+      "items": {"type": "string", "format": "uri"},
+      "description": "URIs of upstream artifacts this payload depends on."
+    },
+    "manifest_hash": {
+      "type": "string",
+      "description": "SHA-256 of the WEALTH manifest at time of sending. Downstream must verify."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "signatures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["alg", "kid", "sig"],
+        "properties": {
+          "alg": {"type": "string"},
+          "kid": {"type": "string"},
+          "sig": {"type": "string"}
+        }
+      }
+    }
+  }
+}

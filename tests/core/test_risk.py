@@ -31,6 +31,21 @@ class TestEMV:
         assert result["variance"] == 0.0
         assert result["std_dev"] == 0.0
 
+    def test_bid_surface_metadata_passes_through(self):
+        result = compute_emv(
+            [120, 0],
+            [0.25, 0.75],
+            bid_surface={
+                "competitive_intensity": 0.42,
+                "winner": "bidder_C",
+                "winning_price": 98.5,
+            },
+        )
+        assert result["scoring_surface_missing"] is False
+        assert result["bid_competitive_intensity"] == 0.42
+        assert result["bid_winner"] == "bidder_C"
+        assert result["bid_winning_price"] == 98.5
+
 
 class TestMonteCarlo:
     """Monte Carlo simulation must produce valid distributions."""

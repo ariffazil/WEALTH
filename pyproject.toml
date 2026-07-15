@@ -1,6 +1,6 @@
 [project]
 name = "wealth-valuation-kernel"
-version = "2026.06.06"
+version = "2026.07.12"
 description = "WEALTH Sovereign Valuation Kernel — Universal Resource Allocation Intelligence (URAI) with constitutional governance for arifOS"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -12,14 +12,13 @@ keywords = ["finance", "valuation", "mcp", "arifOS", "constitutional-ai", "wealt
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU Affero General Public License v3 (AGPL-3.0)",
     "Programming Language :: Python :: 3.12",
     "Topic :: Office/Business :: Financial",
 ]
 
 dependencies = [
     "supabase>=2.10.0",
-    "fastmcp[tasks]==3.4.2",
+    "fastmcp[tasks]==3.4.3",
     "anyio>=4.13.0",
     "numpy>=2.4.6",
     "scipy>=1.17.1",

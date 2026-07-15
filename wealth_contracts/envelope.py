@@ -110,7 +110,7 @@ class WealthEnvelope:
         metadata: Optional[Dict[str, Any]] = None,
         warnings: Optional[List[str]] = None,
         errors: Optional[List[str]] = None,
-        tool_version: str = "2026.06.15",
+        tool_version: str = "2026.07.12",
         # Constitutional fields (Gap Ledger Phase 1-3)
         witness: Optional[Dict[str, Any]] = None,
         shadow: bool = False,
@@ -193,8 +193,7 @@ class WealthEnvelope:
             "source_attribution": self.source_attribution,
             "computation_timestamp": self.computation_timestamp,
             "missing_inputs": [
-                m.to_dict() if hasattr(m, "to_dict") else m
-                for m in self.missing_inputs
+                m.to_dict() if hasattr(m, "to_dict") else m for m in self.missing_inputs
             ],
             "metadata": self.metadata,
             "warnings": self.warnings,
@@ -308,7 +307,7 @@ class WealthEnvelope:
 
         return cls(
             tool_name=d["tool_name"],
-            tool_version=d.get("tool_version", "2026.06.15"),
+            tool_version=d.get("tool_version", "2026.07.12"),
             domain=d["domain"],
             result=d["result"],
             result_type=d.get("result_type", "scalar"),
@@ -342,6 +341,99 @@ class WealthEnvelope:
             pipeline_stage=d.get("pipeline_stage"),
             forge_laws=d.get("forge_laws", []),
         )
+
+
+# ── WEALTH Output Schema (MCP outputSchema contract, FORGED 2026-07-12) ──
+# Declared here — passed to @mcp.tool(output_schema=WEALTH_OUTPUT_SCHEMA)
+# Fixes 421 Misdirected Request: kernel bridge validates against declared schema.
+WEALTH_OUTPUT_SCHEMA: dict = {
+    "type": "object",
+    "properties": {
+        "tool_name": {"type": "string"},
+        "tool_version": {"type": "string"},
+        "domain": {"type": "string"},
+        "result": {"type": "object"},
+        "result_type": {"type": "string"},
+        "epistemic_tag": {
+            "type": "string",
+            "enum": [
+                "OBSERVED",
+                "DERIVED",
+                "INTERPRETED",
+                "SPECULATED",
+                "ASSUMED",
+                "RETRIEVED",
+                "MEMORY",
+                "INFERRED",
+                "MISSING",
+            ],
+        },
+        "claim_state": {
+            "type": "string",
+            "enum": [
+                "DRAFT",
+                "PLAUSIBLE",
+                "CONFIRMED",
+                "HYPOTHESIS",
+                "UNPROVEN",
+                "UNFALSIFIABLE",
+            ],
+        },
+        "evidence_quality": {
+            "type": "string",
+            "enum": [
+                "VERIFIED",
+                "SEALED",
+                "OBSERVED",
+                "RETRIEVED",
+                "MEMORY",
+                "INFERRED",
+                "MODERATE",
+                "WEAK",
+                "MISSING",
+            ],
+        },
+        "execution_authorized": {"type": "boolean"},
+        "execution_authority": {
+            "type": "string",
+            "enum": ["OBSERVATION", "ADVISORY", "EXECUTIVE", "SOVEREIGN"],
+        },
+        "human_final_authority": {"type": "string"},
+        "requires_888_hold": {"type": "boolean"},
+        "source_attribution": {"type": "array", "items": {"type": "string"}},
+        "computation_timestamp": {"type": "string"},
+        "missing_inputs": {"type": "array", "items": {"type": "object"}},
+        "warnings": {"type": "array", "items": {"type": "string"}},
+        "errors": {"type": "array", "items": {"type": "string"}},
+        "uncertainty_band": {"type": "object", "additionalProperties": True},
+        "wisdom_dimensions": {"type": "array", "items": {"type": "object"}},
+        "power_dimensions": {"type": "array", "items": {"type": "object"}},
+        "capture_risk_level": {"type": "string"},
+        "who_benefits": {"type": "string"},
+        "who_carries_downside": {"type": "string"},
+        "dignity_impact": {"type": "string"},
+        "sovereignty_effect": {"type": "string"},
+        "session_id": {"type": "string"},
+        "actor_id": {"type": "string"},
+        "witness": {"type": "object"},
+        "shadow": {"type": "boolean"},
+        "kappa_r": {"type": "number"},
+        "psi_le": {"type": "number"},
+        "pipeline_stage": {"type": "string"},
+    },
+    "required": [
+        "tool_name",
+        "domain",
+        "result",
+        "epistemic_tag",
+        "evidence_quality",
+        "execution_authorized",
+        "execution_authority",
+        "source_attribution",
+        "computation_timestamp",
+    ],
+    "additionalProperties": True,
+}
 
 
 def wrap_result(
@@ -383,7 +475,13 @@ def wrap_result(
     if qdf is None:
         qdf = get_qdf_version()
     if witness is None:
-        witness = {"human": False, "ai": True, "earth": False, "is_complete": False, "missing": ["human", "earth"]}
+        witness = {
+            "human": False,
+            "ai": True,
+            "earth": False,
+            "is_complete": False,
+            "missing": ["human", "earth"],
+        }
 
     envelope = WealthEnvelope(
         tool_name=tool_name,

@@ -1,8 +1,8 @@
 <!-- SOT-MANIFEST
 owner: Arif
-last_verified: 2026-06-25
+last_verified: 2026-07-14
 valid_from: 2026-06-14
-valid_until: 2026-07-25
+valid_until: 2026-08-13
 confidence: high
 scope: /root/WEALTH/BOUNDARY.md
 -->
@@ -56,17 +56,17 @@ scope: /root/WEALTH/BOUNDARY.md
 
 ## Known Boundary Violations (888 HOLD Queue)
 
-1. **Dual runtime** — Python (`internal/monolith.py`, 20 public tools + 34 hidden aliases) and JS (`src/`, legacy kernel) both exist. Python is canonical; JS is legacy. JS should be deprecated or removed.
+1. **Dual runtime** — Python (`internal/monolith.py`, 26 public tools + 6 hidden aliases = 32 total decorated tools) and JS (`src/`, legacy kernel) both exist. Python is canonical; JS is legacy. JS should be deprecated or removed.
 2. **A-FORGE reimplementation** — `A-FORGE/src/tools/WealthTools.ts` reimplements WEALTH-domain logic (ROI, EMV, portfolio optimize). Should delegate to WEALTH MCP instead.
 3. **License divergence** — RESOLVED. `pyproject.toml` and `package.json` both declare `AGPL-3.0`.
 
 ## Canonical Tool Surface (Live)
 
-20 public tools exposed on port 18082 (plus 34 hidden aliases):
+26 public tools exposed on port 18082 (plus 6 hidden aliases; 32 total decorated tools):
 
-`wealth_omni_wisdom`, `wealth_conservation_capital`, `wealth_flow_liquidity`, `wealth_gradient_price`, `wealth_entropy_risk`, `wealth_energy_productivity`, `wealth_time_discount`, `wealth_inertia_leverage`, `wealth_field_macro`, `wealth_signal_information`, `wealth_game_coordination`, `wealth_boundary_governance`, `wealth_hysteresis_ledger`, `wealth_inequality_kernel`, `wealth_agent_path`, `wealth_stock_analysis`, `wealth_market_data`, `wealth_personal_finance`, `wealth_survival_engine`, `wealth_system_registry_status`
+`wealth_wisdom_evaluate`, `wealth_power_audit`, `wealth_capture_scan`, `wealth_compute_npv`, `wealth_compute_irr`, `wealth_conservation_check`, `wealth_flow_check`, `wealth_runway_check`, `wealth_compute_emv`, `wealth_compute_evoi`, `wealth_monte_carlo_simulate`, `wealth_confluence_check`, `wealth_asymmetry_check`, `wealth_stock_analysis`, `wealth_personal_finance`, `wealth_market_data`, `wealth_omni_wisdom`, `wealth_agent_path`, `wealth_vault_write`, `wealth_vault_query`, `wealth_boundary_governance`, `wealth_survival_engine`, `wealth_registry_status`, `wealth_collapse_signature_scan`, `wealth_beautiful_mouse_scan`, `wealth_judge_handoff`
 
-> **Verified:** 65 `@mcp.tool` decorators in `internal/monolith.py` — 20 public tools + 34 hidden aliases + 11 internal/test-only helpers.
+> **Verified:** 32 `@mcp.tool` decorated names exposed via `tools/list` on port 18082 — 26 public tools + 6 backward-compat aliases.
 
 ## Canonical Surfaces
 

@@ -11,8 +11,8 @@
 ## What You'll Have
 
 A running FastMCP server on `http://localhost:18082` exposing
-**24 public capital-intelligence tools** (verified via
-`wealth_system_registry_status` 2026-06-24).
+**26 public capital-intelligence tools** (verified via
+`wealth_registry_status` 2026-07-01).
 
 ## Prerequisites
 
@@ -46,11 +46,11 @@ curl -s http://localhost:18082/health | python3 -m json.tool
 # Live tool count (single source of truth)
 curl -s -X POST http://127.0.0.1:18082/mcp \
   -H "Content-Type: application/json" -H "Accept: application/json" \
-  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"wealth_system_registry_status","arguments":{"mode":"registry"}},"id":1}' \
+  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"wealth_registry_status","arguments":{"mode":"registry"}},"id":1}' \
   | python3 -m json.tool | grep -E "public_tools"
 ```
 
-## The 24 Public Tools (live, verified 2026-06-24)
+## The 26 Public Tools (live, verified 2026-07-01)
 
 ### Core capital primitives (the 13 thermodynamics primitives)
 
@@ -76,6 +76,7 @@ curl -s -X POST http://127.0.0.1:18082/mcp \
 |------|-------------|
 | `wealth_capture_scan` | Audit AI-generated financial advice for capture signals (incentive asymmetry, hidden incentives, false precision, time pressure, authority without evidence) |
 | `wealth_power_audit` | Audit scenario power dynamics (incentive map, capture risk, rent extraction, opacity, coercion, rule asymmetry) |
+| `wealth_boundary_governance` | Constitutional floors, maruah, stewardship, constraint check |
 
 ### Personal finance (D1) + market data (D3)
 
@@ -83,6 +84,7 @@ curl -s -X POST http://127.0.0.1:18082/mcp \
 |------|-------------|
 | `wealth_personal_finance` | Cashflow, net worth, EPF, zakat, runway summary |
 | `wealth_market_data` | FX rates, commodities, macro indicators (MYS / global) |
+| `wealth_survival_engine` | Unified survival intelligence — cashflow, runway, burn, liquidity |
 
 ### Stock analysis (D4 — 12 modes)
 
@@ -90,13 +92,20 @@ curl -s -X POST http://127.0.0.1:18082/mcp \
 |------|-------|
 | `wealth_stock_analysis` | verify_math, pre_trade, fundamentals, TAC-9, contrast, confluence, +6 more |
 
+### Collapse + institutional forensics
+
+| Tool | What it does |
+|------|-------------|
+| `wealth_collapse_signature_scan` | Institutional-collapse signature scan vs historical priors |
+| `wealth_beautiful_mouse_scan` | Calhoun Phase C (Beautiful Mouse) institutional health scan |
+
 ### Orchestration + memory
 
 | Tool | What it does |
 |------|-------------|
-| `wealth_omni_wisdom` | `synthesize` / `deal_frame` / `path_params` — multi-mode capital intelligence |
 | `wealth_agent_path` | Sovereign Intent Router — classifies task into L1/L2 paths |
-| `wealth_system_registry_status` | Live registry truth (intended vs registered vs callable) |
+| `wealth_registry_status` | Live registry truth (intended vs registered vs callable) |
+| `wealth_judge_handoff` | Prepare WEALTH verdict for arifOS 888 JUDGE |
 | `wealth_vault_write` | Write to VAULT999 ledger (irreversible — requires human confirmation) |
 | `wealth_vault_query` | Query VAULT999 ledger |
 
@@ -170,4 +179,4 @@ export WEALTH_SUPABASE_WRITE_MODE="domain"  # enables VAULT999 ledger writes
 
 **DITEMPA BUKAN DIBERI — Forged, Not Given.**
 
-*Tool surface last reconciled: 2026-06-24 (per `wealth_system_registry_status` live query).*
+*Tool surface last reconciled: 2026-07-01 (per `wealth_registry_status` live query).*

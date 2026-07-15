@@ -1695,13 +1695,19 @@ def wealth_market_data(
     country: str = "MYS",
     macro_as_of_date: str = None,
 ) -> dict:
-    """Ω-D3: Market Data — unified surface for FX, commodities, and macro indicators.
+    """Ω-D3: Market Data — unified surface for FX, commodities, macro, and gold.
 
     Modes:
       fx        — Live FX rates via Frankfurter API
       commodity — Approximate commodity market prices
       macro     — GDP, inflation, rates via World Bank API
+      gold      — Gold intelligence surface (XAU/USD, XAU/MYR, decomposition)
+                  Reads from daily ingestion pipeline (market_observation table).
+                  analysis: snapshot | decompose | regime (deferred) | structural (deferred)
     """
+    import json as _json
+    import subprocess as _subprocess
+
     mode = mode.lower().strip()
     if mode == "fx":
         return wealth_fx_rate(
@@ -1721,12 +1727,110 @@ def wealth_market_data(
             country=country,
             as_of_date=macro_as_of_date,
         )
+    elif mode == "gold":
+        # Gold intelligence surface — reads from market_observation DB
+        analysis = commodity if commodity in ("snapshot", "decompose", "regime", "structural") else "snapshot"
+        db_container, db_user, db_name = "postgres", "arifos_admin", "vault999"
+
+        def _query_db(sql: str) -> list:
+            try:
+                result = _subprocess.run(
+                    ["docker", "exec", db_container, "psql", "-U", db_user, "-d", db_name,
+                     "-t", "-A", "-F", "|", "-c", sql],
+                    capture_output=True, text=True, timeout=10,
+                )
+                if result.returncode != 0:
+                    return []
+                return [line.split("|") for line in result.stdout.strip().split("\n") if line]
+            except Exception:
+                return []
+
+        if analysis in ("regime", "structural"):
+            return {
+                "mcp": "WEALTH",
+                "tool": "wealth_market_data",
+                "mode": "gold",
+                "analysis": analysis,
+                "status": "deferred",
+                "message": f"{analysis} requires accumulated history. "
+                           "Check back after 30+ daily observations.",
+                "recommendation_only": True,
+                "final_authority": "Arif",
+            }
+
+        # Query latest observations
+        rows = _query_db("""
+            SELECT DISTINCT ON (instrument)
+                instrument, value, unit, source, confidence, observed_at
+            FROM market_observation
+            WHERE instrument IN ('XAU_USD', 'USD_MYR', 'XAU_MYR_GRAM')
+            ORDER BY instrument, observed_at DESC
+        """)
+
+        if not rows:
+            return {
+                "mcp": "WEALTH",
+                "tool": "wealth_market_data",
+                "mode": "gold",
+                "analysis": analysis,
+                "status": "no_data",
+                "message": "No gold data yet. Daily ingestion runs at 08:00 MYT. "
+                           "Run manually: python3 internal/ingest/market_daily.py",
+                "recommendation_only": True,
+                "final_authority": "Arif",
+            }
+
+        snapshot = {}
+        for parts in rows:
+            if len(parts) >= 6:
+                snapshot[parts[0]] = {
+                    "value": float(parts[1]), "unit": parts[2],
+                    "source": parts[3], "confidence": float(parts[4]),
+                    "observed_at": parts[5],
+                }
+
+        result = {
+            "mcp": "WEALTH", "tool": "wealth_market_data",
+            "mode": "gold", "analysis": analysis,
+            "currency": "MYR", "snapshot": snapshot,
+            "recommendation_only": True, "final_authority": "Arif",
+        }
+
+        if analysis == "decompose" and "XAU_USD" in snapshot and "USD_MYR" in snapshot:
+            xau_usd = snapshot["XAU_USD"]["value"]
+            usd_myr = snapshot["USD_MYR"]["value"]
+            result["decomposition"] = {
+                "xau_usd": xau_usd, "usd_myr": usd_myr,
+                "xau_myr_oz": round(xau_usd * usd_myr, 2),
+                "xau_myr_gram": round(xau_usd * usd_myr / 31.1035, 2),
+                "formula": "XAU/MYR = XAU/USD × USD/MYR",
+                "note": "Local dealer premiums not yet tracked — "
+                        "actual purchase price may differ by 3-8%.",
+            }
+
+        # Recent signals
+        sig_rows = _query_db("""
+            SELECT DISTINCT ON (instrument, signal_type)
+                instrument, signal_type, value, severity, regime_label, calculated_at
+            FROM market_signal
+            WHERE instrument IN ('XAU_USD', 'XAU_MYR_GRAM')
+            ORDER BY instrument, signal_type, calculated_at DESC
+        """)
+        if sig_rows:
+            result["signals"] = [
+                {"instrument": p[0], "signal_type": p[1],
+                 "value": float(p[2]) if p[2] else None,
+                 "severity": p[3], "regime_label": p[4], "calculated_at": p[5]}
+                for p in sig_rows if len(p) >= 6
+            ]
+
+        return result
     else:
         return {
             "mcp": "WEALTH",
             "tool": "wealth_market_data",
             "status": "error",
-            "message": f"Unknown mode: {mode}. Use fx|commodity|macro",
+            "message": f"Unknown mode: {mode}. Use fx|commodity|macro|gold",
         }
 
 
@@ -2442,6 +2546,112 @@ def _handle_governance_singularity(entities_json: str = "") -> dict:
         return {"status": "ERROR", "verdict": "NEEDS_DATA", "result": {"error": str(e)}}
 
 
+def _handle_kelly(
+    account_balance: float,
+    win_rate: float = 0.0,
+    avg_win: float = 0.0,
+    avg_loss: float = 0.0,
+    kelly_fraction: float = 0.5,
+    trade_history: Optional[List[Dict[str, Any]]] = None,
+) -> dict:
+    """Kelly criterion optimal position sizing.
+
+    Closed-form solution -- no solver needed.
+    Half-Kelly default (0.5) for safety.
+    If trade_history provided, estimates win_rate/avg_win/avg_loss from it.
+    """
+    import math
+
+    # -- Estimate from trade history if provided --
+    if trade_history and len(trade_history) >= 10:
+        wins = [t for t in trade_history if t.get("pnl", 0) > 0]
+        losses = [t for t in trade_history if t.get("pnl", 0) < 0]
+        total = len(trade_history)
+        if total > 0:
+            win_rate = len(wins) / total
+            avg_win = abs(sum(t["pnl"] for t in wins) / len(wins)) if wins else 0
+            avg_loss = abs(sum(t["pnl"] for t in losses) / len(losses)) if losses else 0
+
+    # -- Validate inputs --
+    if win_rate <= 0 or win_rate >= 1:
+        return {
+            "status": "ERROR",
+            "verdict": "MATH_ERROR",
+            "result": {"error": "win_rate must be (0,1)", "win_rate": win_rate},
+        }
+    if avg_win <= 0 or avg_loss <= 0:
+        return {
+            "status": "ERROR",
+            "verdict": "MATH_ERROR",
+            "result": {"error": "avg_win and avg_loss must be > 0"},
+        }
+    if account_balance <= 0:
+        return {
+            "status": "ERROR",
+            "verdict": "MATH_ERROR",
+            "result": {"error": "account_balance must be > 0"},
+        }
+
+    # -- Kelly formula: f* = (p*b - q) / b --
+    p = win_rate
+    q = 1.0 - p
+    b = avg_win / avg_loss  # odds ratio
+    kelly_full = (p * b - q) / b
+    kelly_full = max(0.0, kelly_full)  # never negative
+
+    # -- Apply fraction (half-Kelly default) --
+    kelly_adj = kelly_full * kelly_fraction
+
+    # -- Position sizing --
+    position_value = account_balance * kelly_adj
+    edge = p * avg_win - q * avg_loss  # expected value per trade
+    growth_rate = (
+        p * math.log(1 + kelly_adj * b) + q * math.log(1 - kelly_adj)
+        if 0 < kelly_adj < 1
+        else 0
+    )
+
+    # -- APEX organ: W (Execution) -- work done by optimal sizing --
+    # C_dark detection: Kelly with bad inputs = shadow optimization
+    c_dark = 0.0
+    if win_rate < 0.35:
+        c_dark += 0.3  # low win rate = suspicious
+    if avg_loss > avg_win * 2:
+        c_dark += 0.3  # terrible risk/reward
+    if len(trade_history or []) < 20:
+        c_dark += 0.2  # insufficient data
+
+    verdict = "SEAL" if c_dark < 0.15 else "SABAR" if c_dark < 0.3 else "HOLD"
+
+    return {
+        "status": "OK",
+        "verdict": verdict,
+        "result": {
+            "kelly_full": round(kelly_full, 4),
+            "kelly_adjusted": round(kelly_adj, 4),
+            "kelly_fraction": kelly_fraction,
+            "position_value": round(position_value, 2),
+            "position_pct": round(kelly_adj * 100, 2),
+            "edge_per_trade": round(edge, 4),
+            "expected_growth_rate": round(growth_rate, 6),
+            "win_rate": round(p, 4),
+            "odds_ratio": round(b, 4),
+            "avg_win": round(avg_win, 4),
+            "avg_loss": round(avg_loss, 4),
+            "account_balance": account_balance,
+        },
+        "apex": {
+            "organ": "W",
+            "conservation_law": "work",
+            "G_score": round(max(0, 1.0 - c_dark), 2),
+            "C_dark": round(c_dark, 2),
+            "verdict": verdict,
+        },
+        "recommendation_only": True,
+        "final_authority": "Arif",
+    }
+
+
 @mcp.tool(name="wealth_stock_analysis", task=True)
 async def wealth_stock_analysis(
     mode: str = "verify_math",
@@ -2575,10 +2785,17 @@ async def wealth_stock_analysis(
     sentiment: str = "neutral",
     # ── confluence params ──
     indicators: Optional[Dict[str, str]] = None,
+    # ── nash_multi_factor params ──
+    factors: Optional[Dict[str, float]] = None,
+    # ── kelly params ──
+    win_rate: float = 0.0,
+    avg_win: float = 0.0,
+    avg_loss: float = 0.0,
+    kelly_fraction: float = 0.5,
 ) -> dict:
     """D4 Stock Analysis — unified capital-risk and stock governance layer.
 
-    Modes (15 total):
+    Modes (16 total):
       verify_math     — Recalculate P/L, detect AI number hallucination
       separate_pl     — Separate realized vs unrealized P/L
       position_size   — Risk-based position sizing (max 1% risk)
@@ -2594,6 +2811,8 @@ async def wealth_stock_analysis(
       bursa_snapshot  — Live-delayed Bursa quote from free data source
       bursa_screen    — Screen Bursa stocks by PE, dividend, ROE, market cap
       bursa_evidence  — Evidence card with provenance, valuation, quality, governance
+      kelly           — Kelly criterion optimal position sizing (half-Kelly default, APEX W organ)
+      nash_multi_factor — Nash product multi-factor scoring (APEX Pillar IV)
 
     NOT: buy/sell oracle. NOT: trading coach. NOT: stock promoter.
     Verdicts: SAFE_TO_STUDY | NEEDS_DATA | UNSAFE | 888_HOLD | MATH_ERROR
@@ -2813,12 +3032,84 @@ async def wealth_stock_analysis(
         r = _handle_screener_9()
     elif mode == "governance_singularity":
         r = _handle_governance_singularity(ticker)
+    elif mode == "nash_multi_factor":
+        import math
+
+        _default_factors = {
+            "value": 0.5,
+            "momentum": 0.3,
+            "quality": 0.4,
+            "risk": 0.6,
+        }
+        active_factors = factors if factors else _default_factors
+
+        # Validate: all scores must be in (0, 1] for log stability
+        clamped = {}
+        for k, v in active_factors.items():
+            clamped[k] = max(1e-8, min(1.0, float(v)))
+
+        # Normalize weights to sum to 1
+        w_sum = sum(clamped.values())
+        if w_sum <= 0:
+            return {
+                "status": "ERROR",
+                "verdict": "MATH_ERROR",
+                "result": {"error": "Factor weights sum to zero"},
+                "tool": "wealth_stock_analysis",
+                "mode": mode,
+            }
+        weights = {k: v / w_sum for k, v in clamped.items()}
+
+        # Nash product via log-transform: ln(G) = sum(w_i * ln(f_i + eps))
+        # Using clamped values directly as factor scores (each is in [1e-8, 1.0])
+        ln_g = sum(
+            w * math.log(max(f, 1e-8))
+            for f, w in zip(clamped.values(), weights.values())
+        )
+        nash_score = math.exp(ln_g)
+
+        # Additive score: sum(w_i * f_i)
+        additive_score = sum(f * w for f, w in zip(clamped.values(), weights.values()))
+
+        # Trade-off detection: Nash and additive rank differently
+        # when the geometric mean diverges from the arithmetic mean
+        # A divergence beyond 5% of additive signals a trade-off
+        divergence = abs(nash_score - additive_score)
+        trade_off_detected = divergence > 0.05 * max(additive_score, 1e-8)
+
+        r = {
+            "status": "OK",
+            "verdict": "SAFE_TO_STUDY",
+            "result": {
+                "ticker": ticker,
+                "factors": {
+                    k: {"score": v, "weight": weights[k]} for k, v in clamped.items()
+                },
+                "nash_score": round(nash_score, 6),
+                "additive_score": round(additive_score, 6),
+                "trade_off_detected": trade_off_detected,
+                "divergence": round(divergence, 6),
+                "method": "Nash bargaining product (Nash 1950) — APEX Pillar IV",
+                "epistemic": "DER",
+            },
+            "recommendation_only": True,
+            "final_authority": "Arif",
+        }
+    elif mode == "kelly":
+        r = _handle_kelly(
+            account_balance=account_balance,
+            win_rate=win_rate,
+            avg_win=avg_win,
+            avg_loss=avg_loss,
+            kelly_fraction=kelly_fraction,
+            trade_history=recent_trades,
+        )
     else:
         return {
             "status": "ERROR",
             "verdict": "NEEDS_DATA",
             "result": {
-                "error": f"Unknown mode: {mode}. Use: verify_math | separate_pl | position_size | r_multiple | exposure | bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence | bursa_snapshot | bursa_screen | bursa_evidence | global_snapshot | global_dashboard | global_list | technical_pack | risk_metrics | calhoun_survival | 888 | 999 | market_intelligence | screener_9 | governance_singularity"
+                "error": f"Unknown mode: {mode}. Use: verify_math | separate_pl | position_size | r_multiple | exposure | bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence | bursa_snapshot | bursa_screen | bursa_evidence | global_snapshot | global_dashboard | global_list | technical_pack | risk_metrics | calhoun_survival | 888 | 999 | market_intelligence | screener_9 | governance_singularity | nash_multi_factor | kelly"
             },
             "recommendation_only": True,
             "final_authority": "Arif",
@@ -2852,6 +3143,8 @@ PUBLIC_SURFACE_WHITELIST = {
     # L2 — Mandatory Specialists
     "wealth_governance_verdict",
     "wealth_inequality_kernel",
+    # Epistemic Intelligence (forged 2026-06-29)
+    "wealth_epistemic_audit",
     # Phase 1 Survival Engine
     "wealth_survival_engine",
     # D1 — Personal Finance (absorbs epf, zakat)
@@ -3938,7 +4231,10 @@ def create_envelope(
     # WEALTH = Capital Intelligence organ. Maps financial signals to 10 APEX gates.
     try:
         from apex_envelope import apex_envelope as _build_apex
-        _confidence = 0.88 if status == "PASS" else (0.60 if status == "CAUTION" else 0.30)
+
+        _confidence = (
+            0.88 if status == "PASS" else (0.60 if status == "CAUTION" else 0.30)
+        )
         _boundary = "LIVE" if status == "PASS" else "CACHED"
         _coherent = status not in ("VOID",) and len(failure_flags) == 0
         envelope["apex"] = _build_apex(
@@ -3973,8 +4269,11 @@ def create_envelope(
     # WEALTH = Capital organ. Maps financial signals to 10 APEX gates.
     try:
         from internal.apex_envelope_wealth import wealth_apex_envelope
+
         # Derive confidence from envelope status — same scale as _build_apex above
-        _apex_confidence = 0.88 if status == "PASS" else (0.60 if status == "CAUTION" else 0.30)
+        _apex_confidence = (
+            0.88 if status == "PASS" else (0.60 if status == "CAUTION" else 0.30)
+        )
         envelope["apex"] = wealth_apex_envelope(
             tool_name=tool,
             g_score=g_data.get("g_score", 0.5),
@@ -4971,6 +5270,7 @@ async def wealth_survival_engine(
     horizon_months: int = 12,
     conservative_factor: float = 0.8,
     legacy_compat: bool = False,
+    scar_history: list[dict] | None = None,
 ) -> dict:
     """
     Ω-SURVIVAL-ENGINE: Unified survival intelligence — cashflow, runway, burn, liquidity.
@@ -5228,6 +5528,34 @@ async def wealth_survival_engine(
             else "GREEN",
         }
 
+    # ── Scar accumulation (F1 AMANAH: backward-compatible, no mutation when None) ──
+    scar_pressure = 0.0
+    constraint_count = 0
+    forbidden_zones: list[dict] = []
+
+    if scar_history:
+        total_periods = max(len(scar_history), 1)
+        loss_events = [s for s in scar_history if s.get("loss_pct", 0) > 0]
+        scar_pressure = round(len(loss_events) / total_periods, 4)
+
+        for scar in scar_history:
+            loss_pct = scar.get("loss_pct", 0)
+            if loss_pct > 5.0:
+                constraint_count += 1
+                forbidden_zones.append(
+                    {
+                        "period": scar.get("period"),
+                        "loss_pct": loss_pct,
+                        "asset_class": scar.get("asset_class", "unknown"),
+                        "weights": scar.get("weights", []),
+                        "constraint": f"allocation_with_{loss_pct:.1f}pct_loss_flagged",
+                    }
+                )
+
+        # Escalate boundary when scar pressure is high (>0.3)
+        if scar_pressure > 0.3 and dimensional_verdicts.get("boundary") == "GREEN":
+            dimensional_verdicts["boundary"] = "YELLOW"
+
     # ── Attach dimensional verdicts ─────────────────────────────────────────
     envelope["dimensional_verdicts"] = dimensional_verdicts
     envelope["claim_state"] = "CLAIM"
@@ -5244,6 +5572,11 @@ async def wealth_survival_engine(
         "RUNWAY_CRITICAL" if (dimensional_verdicts["boundary"] == "RED") else "",
     ]
     envelope["warnings"] = [w for w in envelope["warnings"] if w]
+
+    # ── Attach scar fields (always present; zeroed when no history) ────────
+    envelope["scar_pressure"] = scar_pressure
+    envelope["constraint_count"] = constraint_count
+    envelope["forbidden_zones"] = forbidden_zones
 
     return envelope
 
@@ -6865,11 +7198,17 @@ async def wealth_evoi_compute(
     discount_rate: float = 0.10,
     scale_mode: str = "enterprise",
     well_type: str = "",
+    robust: bool = False,
 ) -> Any:
     """
-    Expected Value of Information (EVOI) point-estimate computation. [Epistemic Dimension]
+    Expected Value of Information (EVOI) computation. [Epistemic Dimension]
     Ingests GEOX prospect_metrics or raw prior/posterior probabilities.
     EVOI = E[V | with_info] - E[V | without_info]
+
+    When robust=True: computes EVOI under uncertainty ranges (prior ± 0.1,
+    posterior ± 0.15) across 50 samples. Returns worst-case EVOI alongside
+    expected, plus robust_regret (gap between expected and worst-case).
+    APEX Pillar IV: robust optimization — max-min over uncertainty set.
     """
     # Metric Handoff (GEOX -> WEALTH)
     if prospect_metrics:
@@ -6930,6 +7269,63 @@ async def wealth_evoi_compute(
             info_cost_musd=info_cost_musd,
             discount_rate=discount_rate,
         )
+
+        # ── APEX Pillar IV: Robust optimization ──────────────────────────
+        # When robust=True, compute EVOI across uncertainty ranges and return
+        # worst-case alongside expected. This is max-min over the uncertainty
+        # set: maximize the worst-case EVOI (robust decision).
+        if robust:
+            import numpy as _np
+
+            n_samples = 50
+            prior_lo = max(0.01, final_prior - 0.10)
+            prior_hi = min(0.99, final_prior + 0.10)
+            post_lo = max(0.01, final_posterior - 0.15)
+            post_hi = min(0.99, final_posterior + 0.15)
+
+            prior_samples = _np.linspace(prior_lo, prior_hi, n_samples)
+            post_samples = _np.linspace(post_lo, post_hi, n_samples)
+
+            evoi_samples = []
+            for p in prior_samples:
+                for q in post_samples:
+                    if q > p:  # posterior must exceed prior (information has value)
+                        try:
+                            r = compute_evoi(
+                                prior_pos=float(p),
+                                posterior_pos=float(q),
+                                well_cost_musd=well_cost_musd,
+                                p50_value_musd=p50_value_musd,
+                                info_cost_musd=info_cost_musd,
+                                discount_rate=discount_rate,
+                            )
+                            evoi_samples.append(r.get("evoi_musd", 0.0))
+                        except Exception:
+                            continue
+
+            if evoi_samples:
+                expected_evoi = float(_np.mean(evoi_samples))
+                worst_case_evoi = float(_np.min(evoi_samples))
+                cvar_5 = float(_np.percentile(evoi_samples, 5))
+                regret = max(0.0, expected_evoi - worst_case_evoi)
+                res["robust_analysis"] = {
+                    "expected_evoi_musd": round(expected_evoi, 4),
+                    "worst_case_evoi_musd": round(worst_case_evoi, 4),
+                    "cvar_5pct_musd": round(cvar_5, 4),
+                    "robust_regret_musd": round(regret, 4),
+                    "n_samples": len(evoi_samples),
+                    "uncertainty_prior": [round(prior_lo, 3), round(prior_hi, 3)],
+                    "uncertainty_posterior": [round(post_lo, 3), round(post_hi, 3)],
+                    "method": "APEX_ROBUST_MAX_MIN",
+                }
+                # Robust verdict: if worst-case is still positive, strong SEAL
+                if worst_case_evoi > 0:
+                    res["robust_verdict"] = "ROBUST_SEAL"
+                elif expected_evoi > 0:
+                    res["robust_verdict"] = "ROBUST_SABAR"
+                else:
+                    res["robust_verdict"] = "ROBUST_VOID"
+            # ── End APEX robust ───────────────────────────────────────────
 
         drill = res.get("drill_recommendation", "")
         if drill.startswith("PROCEED"):
@@ -7259,6 +7655,11 @@ CANONICAL_TOOL_METADATA = {
         "family": "MIND",
         "stage": "200-MIND",
         "display": "wealth_truth_validate",
+    },
+    "wealth_epistemic_audit": {
+        "family": "MIND",
+        "stage": "200-MIND",
+        "display": "wealth_epistemic_audit",
     },
     "wealth_survival_liquidity": {
         "family": "SURVIVAL",
@@ -11782,19 +12183,29 @@ def wealth_entropy_risk(
             _commit = initial_commitment or initial_investment
             _terminal = terminal_value or 0
             _disc = discount_rate or 0.1
+
             # Discount each period to present value
             def _pv(series):
-                return sum(
-                    x / ((1 + _disc) ** (i + 1))
-                    for i, x in enumerate(series)
-                )
+                return sum(x / ((1 + _disc) ** (i + 1)) for i, x in enumerate(series))
 
-            _base_outcome = _pv(_means) + (_terminal / ((1 + _disc) ** len(_means))) - _commit
-            _agg_vol = math.sqrt(sum(v * v for v in _vols)) / ((1 + _disc) ** (len(_means) / 2))
+            _base_outcome = (
+                _pv(_means) + (_terminal / ((1 + _disc) ** len(_means))) - _commit
+            )
+            _agg_vol = math.sqrt(sum(v * v for v in _vols)) / (
+                (1 + _disc) ** (len(_means) / 2)
+            )
             scenarios = [
-                {"name": "downside", "probability": 0.25, "outcome": _base_outcome - _agg_vol},
+                {
+                    "name": "downside",
+                    "probability": 0.25,
+                    "outcome": _base_outcome - _agg_vol,
+                },
                 {"name": "base", "probability": 0.50, "outcome": _base_outcome},
-                {"name": "upside", "probability": 0.25, "outcome": _base_outcome + _agg_vol},
+                {
+                    "name": "upside",
+                    "probability": 0.25,
+                    "outcome": _base_outcome + _agg_vol,
+                },
             ]
     _mp = mode_params or {}
     if mode == "asymmetry_map":
@@ -11974,6 +12385,7 @@ def wealth_energy_productivity(
     if mode == "load":
         try:
             from internal.vps_metrics import collect_power_metrics
+
             metrics = collect_power_metrics()
             power_w = metrics["power_draw_watts"]
             verdict = "BELOW_THRESHOLD"
@@ -12016,6 +12428,7 @@ def wealth_energy_productivity(
     if mode == "carbon":
         try:
             from internal.vps_metrics import collect_power_metrics, power_to_carbon
+
             metrics = collect_power_metrics()
             carbon = power_to_carbon(metrics["power_draw_watts"])
             return _inject_emergence(
@@ -12315,10 +12728,22 @@ def wealth_field_macro(
     if mode == "labor":
         entity = payload["entity_code"]
         labor_indicators = {
-            "unemployment_rate": ("SL.UEM.TOTL.ZS", "Unemployment, total (% of labor force)"),
-            "youth_unemployment": ("SL.UEM.1524.ZS", "Youth unemployment (% ages 15-24)"),
-            "labor_force_participation": ("SL.TLF.CACT.ZS", "Labor force participation rate"),
-            "vulnerable_employment": ("SL.EMP.VULN.ZS", "Vulnerable employment (% of total)"),
+            "unemployment_rate": (
+                "SL.UEM.TOTL.ZS",
+                "Unemployment, total (% of labor force)",
+            ),
+            "youth_unemployment": (
+                "SL.UEM.1524.ZS",
+                "Youth unemployment (% ages 15-24)",
+            ),
+            "labor_force_participation": (
+                "SL.TLF.CACT.ZS",
+                "Labor force participation rate",
+            ),
+            "vulnerable_employment": (
+                "SL.EMP.VULN.ZS",
+                "Vulnerable employment (% of total)",
+            ),
         }
         labor_data: Dict[str, Any] = {}
         errors: List[str] = []
@@ -12355,7 +12780,13 @@ def wealth_field_macro(
             vuln = labor_data.get("vulnerable_employment", {}).get("value", 0) or 0
             # AI exposure index: weighted composite of structural vulnerability signals
             # Higher = more displacement risk. 0-1 normalized.
-            ai_exposure_index = round(min(1.0, (unemp / 15.0) * 0.3 + (youth / 30.0) * 0.3 + (vuln / 50.0) * 0.4), 4)
+            ai_exposure_index = round(
+                min(
+                    1.0,
+                    (unemp / 15.0) * 0.3 + (youth / 30.0) * 0.3 + (vuln / 50.0) * 0.4,
+                ),
+                4,
+            )
             if ai_exposure_index < 0.3:
                 displacement_verdict = "STABLE"
             elif ai_exposure_index < 0.55:
@@ -14065,13 +14496,16 @@ async def wealth_omni_wisdom(
                     decision_context["_memory_query"] = memory_query
                     decision_context["_memory_results"] = _memory_results
                     import logging
+
                     _logger = logging.getLogger("wealth.omni_wisdom")
                     _logger.info(
                         f"Federation memory enrichment: {len(_memory_results)} results "
                         f"for query '{memory_query}'"
                     )
         except Exception as _mem_err:
-            _logger.warning(f"Federation memory enrichment failed (non-blocking): {_mem_err}")
+            _logger.warning(
+                f"Federation memory enrichment failed (non-blocking): {_mem_err}"
+            )
 
     # ── mode='synthesize' ────────────────────────────────────────────────
     if mode == "synthesize":
@@ -15456,7 +15890,9 @@ def _fetch_inequality_inputs_from_wb(
         params["ownership_concentration"] = composite_oc
         provenance["ownership_concentration"] = {
             "composite": True,
-            "signals": ["gini", "income_share_top20", "poverty_depth_inv"][:len(oc_signals)],
+            "signals": ["gini", "income_share_top20", "poverty_depth_inv"][
+                : len(oc_signals)
+            ],
             "weights": oc_weights,
             "note": "Composite from multiple WB signals. WID.world top10/top1 wealth share not yet wired (needs WID adapter).",
         }
@@ -15762,6 +16198,492 @@ def wealth_inequality_kernel(
     )
 
 
+# ============================================================
+# SIMULATIVE EXPLOITATION DETECTION TOOLS (2026-07-08)
+# Detect institutional weakness exploitation patterns.
+# ============================================================
+
+
+@mcp.tool(name="wealth_stress_convergence")
+def wealth_stress_convergence(
+    signals: List[Dict[str, Any]],
+    threshold: float = 0.6,
+    window_months: int = 6,
+) -> Dict[str, Any]:
+    """Detect when multiple institutional stress signals fire simultaneously,
+    creating vulnerability windows for external exploitation.
+
+    Physics analogy: stress convergence — when multiple load vectors align,
+    the structure fails at a lower total load than any single vector alone.
+
+    Input:
+        signals: list of {name, value (0-1), weight (0-1)} — must sum weights ~1.0
+        threshold: convergence threshold (default 0.6)
+        window_months: time window for convergence check
+
+    Returns convergence_score, vulnerability_class, dominant_signals, regime.
+    """
+    if not signals:
+        return {
+            "mcp": "WEALTH",
+            "tool": "wealth_stress_convergence",
+            "convergence_score": 0.0,
+            "is_convergent": False,
+            "stress_vector": [],
+            "vulnerability_class": "LOW",
+            "dominant_signals": [],
+            "recommendation": "NO_SIGNALS_PROVIDED",
+            "regime": "inclusive",
+            "epistemic_tag": "ESTIMATE",
+            "confidence": 0.0,
+        }
+
+    # Clamp inputs
+    for s in signals:
+        s["value"] = max(0.0, min(1.0, float(s.get("value", 0.0))))
+        s["weight"] = max(0.0, min(1.0, float(s.get("weight", 0.0))))
+
+    # Step 1: Weighted sum
+    convergence_score = sum(s["value"] * s["weight"] for s in signals)
+    convergence_score = round(min(1.0, max(0.0, convergence_score)), 4)
+
+    # Step 2: Classify vulnerability
+    if convergence_score > 0.7:
+        vulnerability_class = "CRITICAL"
+    elif convergence_score > 0.5:
+        vulnerability_class = "HIGH"
+    elif convergence_score > 0.3:
+        vulnerability_class = "MEDIUM"
+    else:
+        vulnerability_class = "LOW"
+
+    # Step 3: Convergent if score >= threshold AND >= 3 signals > 0.5
+    high_count = sum(1 for s in signals if s["value"] > 0.5)
+    is_convergent = convergence_score >= threshold and high_count >= 3
+
+    # Step 4: Map to regime
+    if convergence_score > 0.7:
+        regime = "simulative"
+    elif convergence_score >= 0.4:
+        regime = "extractive"
+    else:
+        regime = "inclusive"
+
+    # Step 5: Dominant signals (top 3 by weighted contribution)
+    scored = [(s["name"], s["value"] * s["weight"]) for s in signals]
+    scored.sort(key=lambda x: x[1], reverse=True)
+    dominant_signals = [name for name, _ in scored[:3]]
+
+    # Recommendation
+    if vulnerability_class == "CRITICAL":
+        recommendation = "IMMEDIATE_GOVERNANCE_INTERVENTION"
+    elif vulnerability_class == "HIGH":
+        recommendation = "ELEVATED_GOVERNANCE_CHECK"
+    elif vulnerability_class == "MEDIUM":
+        recommendation = "MONITOR_CLOSELY"
+    else:
+        recommendation = "ROUTINE_OVERSIGHT"
+
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_stress_convergence",
+        "convergence_score": convergence_score,
+        "is_convergent": is_convergent,
+        "stress_vector": [s["value"] for s in signals],
+        "vulnerability_class": vulnerability_class,
+        "dominant_signals": dominant_signals,
+        "recommendation": recommendation,
+        "regime": regime,
+        "epistemic_tag": "DERIVED",
+        "confidence": round(min(0.90, 0.5 + convergence_score * 0.4), 2),
+    }
+
+
+@mcp.tool(name="wealth_simulative_scan")
+def wealth_simulative_scan(
+    actor: Dict[str, Any],
+    institution: Dict[str, Any],
+    context: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Detect when an external actor exploits institutional weakness under a
+    "neutral party" guise — simulative exploitation pattern.
+
+    Born from the PETRONAS-Petros-Shell MDS dispute case study (2024-2026):
+    Shell exploited institutional weakness (BOD thinning, profit decline,
+    restructuring) via interpleader, freezing RM1B for 14 months.
+
+    Input:
+        actor: {name, claims, actions, value_extracted, duration_months}
+        institution: {name, stress_convergence_score, governance_state, active_external_disputes}
+        context: {prior_relationship_years, prior_litigation_count, legal_mechanism_used}
+
+    Returns simulative_score, exploitation_vector, verdict, evidence.
+    """
+    claims = actor.get("claims", [])
+    actions = actor.get("actions", [])
+    value_extracted = float(actor.get("value_extracted", 0))
+    duration_months = max(1, int(actor.get("duration_months", 1)))
+    stress_score = float(institution.get("stress_convergence_score", 0.5))
+    governance_state = institution.get("governance_state", "NORMAL")
+    prior_litigation = int(context.get("prior_litigation_count", 0))
+
+    # Step 1: Neutral claim gap — more claims than actions is suspicious
+    neutral_claim_gap = len(claims) / (len(actions) + 1)
+    neutral_claim_gap = min(1.0, neutral_claim_gap)
+
+    # Step 2: Timing alignment — correlation with institutional weakness
+    governance_factor = {"THIN": 1.0, "NORMAL": 0.5, "STRONG": 0.2}.get(
+        governance_state, 0.5
+    )
+    timing_alignment = round(min(1.0, stress_score * governance_factor * 1.2), 4)
+
+    # Step 3: Precedent break — 1.0 if first-ever litigation
+    precedent_break = (
+        1.0 if prior_litigation == 0 else max(0.1, 1.0 / (prior_litigation + 1))
+    )
+
+    # Step 4: Value extraction rate (normalized to RM1B baseline)
+    value_factor = min(1.0, value_extracted / 1e9)
+
+    # Step 5: Simulative score (weighted combination)
+    simulative_score = round(
+        0.3 * neutral_claim_gap
+        + 0.3 * timing_alignment
+        + 0.2 * precedent_break
+        + 0.2 * value_factor,
+        4,
+    )
+
+    is_simulative = simulative_score >= 0.6
+
+    # Exploitation vector breakdown
+    exploitation_vector = {
+        "neutral_claim_vs_actual": round(neutral_claim_gap, 4),
+        "value_extraction_rate": round(value_factor, 4),
+        "timing_alignment": round(timing_alignment, 4),
+        "precedent_break": round(precedent_break, 4),
+    }
+
+    # Verdict
+    if is_simulative:
+        verdict = "SIMULATIVE_EXPLOITATION"
+    elif simulative_score >= 0.4:
+        verdict = "EXTRACTIVE_POTENTIAL"
+    else:
+        verdict = "NORMAL_DISPUTE"
+
+    # Build evidence list
+    evidence = []
+    if prior_litigation == 0:
+        evidence.append(
+            f"First litigation in {context.get('prior_relationship_years', '?')}-year relationship"
+        )
+    if "payment_suspended" in actions and "interpleader_filed" in actions:
+        evidence.append("Payment suspended while services continued flowing")
+    if governance_state == "THIN":
+        evidence.append("Filed during governance thinning period")
+    if value_extracted > 0:
+        evidence.append(
+            f"RM{value_extracted / 1e6:.0f}M value held during {duration_months}-month dispute"
+        )
+    if len(claims) > len(actions):
+        evidence.append(
+            f"Claims ({len(claims)}) exceed actions ({len(actions)}) — performative neutrality"
+        )
+
+    # Regime mapping
+    if is_simulative:
+        regime = "simulative"
+    elif simulative_score >= 0.4:
+        regime = "extractive"
+    else:
+        regime = "inclusive"
+
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_simulative_scan",
+        "simulative_score": simulative_score,
+        "is_simulative": is_simulative,
+        "exploitation_vector": exploitation_vector,
+        "verdict": verdict,
+        "evidence": evidence,
+        "regime": regime,
+        "epistemic_tag": "INTERPRETED",
+        "confidence": round(min(0.90, 0.4 + simulative_score * 0.5), 2),
+    }
+
+
+@mcp.tool(name="wealth_vulnerability_window")
+def wealth_vulnerability_window(
+    board_changes: List[Dict[str, Any]],
+    current_board_size: int,
+    normal_board_size: int,
+    executive_changes: Optional[List[Dict[str, Any]]] = None,
+    restructuring_active: bool = False,
+    external_threats_active: int = 0,
+) -> Dict[str, Any]:
+    """Detect governance transitions that create vulnerability windows for
+    external exploitation.
+
+    Physics analogy: structural fatigue — when key members depart and are not
+    replaced, the remaining structure bears disproportionate load.
+
+    Input:
+        board_changes: list of {name, role, resigned (date), replacement_date (optional)}
+        current_board_size: current number of board members
+        normal_board_size: normal/expected board size
+        executive_changes: optional list of executive departures
+        restructuring_active: whether workforce restructuring is ongoing
+        external_threats_active: count of active external threats/disputes
+
+    Returns vulnerability_score, window_status, unfilled_seats, risk_factors.
+    """
+    board_changes = board_changes or []
+    executive_changes = executive_changes or []
+    normal_board_size = max(1, normal_board_size)
+
+    # Step 1: Board ratio
+    board_ratio = round(current_board_size / normal_board_size, 4)
+
+    # Step 2: Departure rate (per month) — use number of changes as proxy
+    # Estimate window from earliest resignation to now
+    if board_changes:
+        dates = []
+        for bc in board_changes:
+            r = bc.get("resigned", "")
+            if r:
+                try:
+                    dates.append(datetime.fromisoformat(r))
+                except (ValueError, TypeError):
+                    pass
+        if dates:
+            earliest = min(dates)
+            window_months = max(1, (datetime.now() - earliest).days // 30)
+        else:
+            window_months = 6
+    else:
+        window_months = 6
+    departure_rate = min(1.0, len(board_changes) / max(1, window_months))
+
+    # Step 3: Unfilled seats
+    unfilled = sum(1 for bc in board_changes if not bc.get("replacement_date"))
+
+    # Step 4: Vulnerability score
+    vulnerability_score = round(
+        0.3 * (1.0 - board_ratio)
+        + 0.25 * departure_rate
+        + 0.25 * (unfilled / max(1, len(board_changes)))
+        + 0.2 * (1.0 if restructuring_active else 0.0),
+        4,
+    )
+    vulnerability_score = min(1.0, max(0.0, vulnerability_score))
+
+    is_vulnerable = vulnerability_score >= 0.5
+
+    # Step 5: Window status
+    if unfilled > 0:
+        window_status = "OPEN"
+    elif vulnerability_score >= 0.3:
+        window_status = "CLOSING"
+    else:
+        window_status = "CLOSED"
+
+    # Window dates
+    window_opened = None
+    if board_changes:
+        dates_str = [bc.get("resigned") for bc in board_changes if bc.get("resigned")]
+        if dates_str:
+            window_opened = min(dates_str)
+
+    # Risk factors
+    risk_factors = []
+    if unfilled > 0:
+        risk_factors.append(f"{unfilled} board seats without replacements")
+    if board_ratio < 1.0:
+        risk_factors.append(
+            f"Board at {board_ratio:.0%} of normal operating size ({current_board_size}/{normal_board_size})"
+        )
+    if restructuring_active:
+        risk_factors.append("Active restructuring during governance transition")
+    if external_threats_active > 0:
+        risk_factors.append(
+            f"{external_threats_active} external threat(s) active during governance transition"
+        )
+    if departure_rate > 0.5:
+        risk_factors.append("High board departure rate")
+
+    # Recommendation
+    if vulnerability_score >= 0.7:
+        recommendation = "FREEZE_MAJOR_DECISIONS_UNTIL_WINDOW_CLOSES"
+    elif is_vulnerable:
+        recommendation = "ELEVATED_GOVERNANCE_CHECK"
+    else:
+        recommendation = "ROUTINE_OVERSIGHT"
+
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_vulnerability_window",
+        "vulnerability_score": vulnerability_score,
+        "is_vulnerable": is_vulnerable,
+        "window_status": window_status,
+        "window_opened": window_opened,
+        "window_duration_months": window_months,
+        "unfilled_seats": unfilled,
+        "board_ratio": board_ratio,
+        "risk_factors": risk_factors,
+        "recommendation": recommendation,
+        "epistemic_tag": "DERIVED",
+        "confidence": round(min(0.90, 0.5 + vulnerability_score * 0.4), 2),
+    }
+
+
+@mcp.tool(name="wealth_cascade_map")
+def wealth_cascade_map(
+    triggers: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Map trigger chains and compute cumulative blast radius — how each
+    trigger amplifies the next in a cascade failure.
+
+    Physics analogy: cascade failure — when one component's failure loads
+    the next component beyond its capacity, creating a chain reaction.
+
+    Born from the PETRONAS-Petros-Shell MDS cascade:
+    BG Call → Petros Sues → Shell Interpleader → Injunction → MBR Freeze.
+
+    Input:
+        triggers: list of {id, name, date, blast_radius (0-1), type, depends_on (optional)}
+
+    Returns cascade_graph, cumulative_blast_radius, amplification_factor,
+    cascade_depth, critical_path, cascade_type.
+    """
+    if not triggers:
+        return {
+            "mcp": "WEALTH",
+            "tool": "wealth_cascade_map",
+            "cascade_graph": {},
+            "cumulative_blast_radius": 0.0,
+            "amplification_factor": 0.0,
+            "cascade_depth": 0,
+            "critical_path": [],
+            "weakest_link": None,
+            "total_value_at_risk": 0,
+            "cascade_type": "LINEAR",
+            "recommendation": "NO_TRIGGERS_PROVIDED",
+            "epistemic_tag": "ESTIMATE",
+            "confidence": 0.0,
+        }
+
+    # Step 1: Build DAG
+    trigger_map: Dict[str, Dict[str, Any]] = {}
+    for t in triggers:
+        trigger_map[t["id"]] = t
+
+    cascade_graph: Dict[str, List[str]] = {}
+    for t in triggers:
+        tid = t["id"]
+        deps = t.get("depends_on", [])
+        for dep in deps:
+            if dep not in cascade_graph:
+                cascade_graph[dep] = []
+            cascade_graph[dep].append(tid)
+
+    # Find root nodes (no depends_on)
+    all_ids = {t["id"] for t in triggers}
+    has_parent = set()
+    for t in triggers:
+        for dep in t.get("depends_on", []):
+            has_parent.add(t["id"])
+    roots = all_ids - has_parent
+
+    # Step 2: DFS to find all paths from roots to leaves
+    all_paths: List[List[str]] = []
+
+    def dfs(node: str, path: List[str]) -> None:
+        current_path = path + [node]
+        children = cascade_graph.get(node, [])
+        if not children:
+            all_paths.append(current_path)
+        else:
+            for child in children:
+                dfs(child, current_path)
+
+    for root in roots:
+        dfs(root, [])
+
+    # If no paths found (isolated nodes), treat each as a single-node path
+    if not all_paths:
+        for t in triggers:
+            all_paths.append([t["id"]])
+
+    # Step 3: Compute path blast radius: 1 - Π(1 - r_i)
+    def path_blast(path: List[str]) -> float:
+        product = 1.0
+        for tid in path:
+            r = trigger_map[tid].get("blast_radius", 0.0)
+            product *= 1.0 - r
+        return round(1.0 - product, 4)
+
+    path_blasts = [(p, path_blast(p)) for p in all_paths]
+    critical_path, cumulative_blast_radius = max(path_blasts, key=lambda x: x[1])
+
+    # Step 4: Amplification factor
+    initial_blast = (
+        trigger_map[critical_path[0]].get("blast_radius", 0.0) if critical_path else 0.0
+    )
+    final_blast = (
+        trigger_map[critical_path[-1]].get("blast_radius", 0.0)
+        if critical_path
+        else 0.0
+    )
+    amplification_factor = round(final_blast / max(initial_blast, 0.001), 2)
+
+    # Step 5: Cascade depth (longest path)
+    cascade_depth = max(len(p) for p in all_paths) if all_paths else 0
+
+    # Step 6: Classify cascade type
+    if amplification_factor > 5.0:
+        cascade_type = "DIVERGENT"
+    elif amplification_factor >= 2.0:
+        cascade_type = "EXPONENTIAL"
+    else:
+        cascade_type = "LINEAR"
+
+    # Weakest link — the root trigger that started the cascade
+    weakest_link = None
+    if critical_path:
+        root_trigger = trigger_map.get(critical_path[0])
+        if root_trigger:
+            weakest_link = {
+                "id": root_trigger["id"],
+                "name": root_trigger["name"],
+                "contribution": root_trigger.get("blast_radius", 0.0),
+            }
+
+    # Recommendation
+    if cascade_type == "DIVERGENT":
+        recommendation = f"INTERVENE_AT_{critical_path[0]}_TO_PREVENT_CASCADE"
+    elif cascade_type == "EXPONENTIAL":
+        recommendation = f"INTERVENE_AT_{critical_path[0]}_TO_PREVENT_CASCADE"
+    else:
+        recommendation = "MONITOR_CASCADE_PROGRESSION"
+
+    return {
+        "mcp": "WEALTH",
+        "tool": "wealth_cascade_map",
+        "cascade_graph": cascade_graph,
+        "cumulative_blast_radius": cumulative_blast_radius,
+        "amplification_factor": amplification_factor,
+        "cascade_depth": cascade_depth,
+        "critical_path": list(critical_path),
+        "weakest_link": weakest_link,
+        "total_value_at_risk": 0,
+        "cascade_type": cascade_type,
+        "recommendation": recommendation,
+        "epistemic_tag": "DERIVED",
+        "confidence": round(min(0.90, 0.5 + cumulative_blast_radius * 0.4), 2),
+    }
+
+
 WEALTH_PUBLIC_TOOL_ORDER = (
     # L0 — Kernel Surface
     "wealth_system_registry_status",
@@ -15785,6 +16707,11 @@ WEALTH_PUBLIC_TOOL_ORDER = (
     "wealth_governance_verdict",
     # Domain Specialist (Civilization)
     "wealth_inequality_kernel",
+    # L3 — Simulative Exploitation Detection (2026-07-08)
+    "wealth_stress_convergence",
+    "wealth_simulative_scan",
+    "wealth_vulnerability_window",
+    "wealth_cascade_map",
     # NOTE: Atomic thin wrappers removed 2026-06-04.
     # Use mode-based tools: wealth_time_discount, wealth_energy_productivity,
     # wealth_entropy_risk, wealth_signal_information, wealth_flow_liquidity,
@@ -15948,6 +16875,34 @@ _TOOL_ANNOTATIONS: dict[str, dict[str, Any]] = {
         "idempotentHint": True,
         "openWorldHint": False,
     },
+    "wealth_stress_convergence": {
+        "title": "Stress Convergence",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    },
+    "wealth_simulative_scan": {
+        "title": "Simulative Scan",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    },
+    "wealth_vulnerability_window": {
+        "title": "Vulnerability Window",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    },
+    "wealth_cascade_map": {
+        "title": "Cascade Map",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    },
 }
 
 
@@ -16070,10 +17025,10 @@ class OriginValidationMiddleware:
 # HARDENING 2026-06-25: populate _KNOWN_MISSING — 5 ghost tools tracked as
 # intentionally absent (absorbed into wealth_omni_wisdom per Phase 2 decision).
 _KNOWN_MISSING: set[str] = {
-    "wealth_screen_opportunity",     # absorbed: deal_frame ranking/filtering
-    "wealth_compute_viability",      # absorbed: deal_frame NPV/IRR/payback
-    "wealth_score_risk",             # absorbed: deal_frame EMV/Monte Carlo/entropy
-    "wealth_compare_scenarios",      # absorbed: deal_frame(scenarios=[...])
+    "wealth_screen_opportunity",  # absorbed: deal_frame ranking/filtering
+    "wealth_compute_viability",  # absorbed: deal_frame NPV/IRR/payback
+    "wealth_score_risk",  # absorbed: deal_frame EMV/Monte Carlo/entropy
+    "wealth_compare_scenarios",  # absorbed: deal_frame(scenarios=[...])
     "wealth_emit_investment_memo",  # absorbed: deal_frame structured memo output
 }
 
@@ -16955,7 +17910,9 @@ if __name__ == "__main__":
             _manifest_path = "/root/WEALTH/canon/001_CAPITAL_MANIFEST.md"
             if os.path.exists(_manifest_path):
                 with open(_manifest_path, "rb") as f:
-                    capital_manifest_hash = f"sha256:{hashlib.sha256(f.read()).hexdigest()}"
+                    capital_manifest_hash = (
+                        f"sha256:{hashlib.sha256(f.read()).hexdigest()}"
+                    )
         except Exception:
             pass
 
@@ -17102,7 +18059,9 @@ if __name__ == "__main__":
 
     _patch_tool_annotations(mcp)
     _patch_output_schemas(mcp)
-    mcp_app = mcp.http_app(path="/", transport="streamable-http", stateless_http=True, json_response=True)
+    mcp_app = mcp.http_app(
+        path="/", transport="streamable-http", stateless_http=True, json_response=True
+    )
 
     app = Starlette(
         routes=[
@@ -17125,8 +18084,7 @@ if __name__ == "__main__":
     # _KNOWN_MISSING is empty; any unexpected missing tool is a real regression
     # at module-import time before FastMCP decorators finished registering.
     # Deferred to lifespan startup so all @mcp.tool decorators complete first.
-    _KNOWN_MISSING = {
-    }
+    _KNOWN_MISSING = {}
 
     async def _assert_registry() -> None:
         registered = {t.name for t in await mcp.list_tools()}
