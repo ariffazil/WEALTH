@@ -118,7 +118,7 @@
 
 ## Next Steps
 
-1. ✅ Created this registry (PHOENIX-73E)
+1. ✅ Created this registry (LEGACY-TOOL-REGISTRY-RESOLVED-2026-07 (was PHOENIX-73E))
 2. ⬜ Verify 5 missing contract tools (`wealth_screen_opportunity`, etc.) — do they exist under different names?
 3. ⬜ Classify all `UNKNOWN` entries with WEALTH SME review
 4. ⬜ Mark deprecated aliases as `DEPRECATED_ALIAS`
