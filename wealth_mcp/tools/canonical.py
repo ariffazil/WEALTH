@@ -932,50 +932,62 @@ def register_canonical_tools(mcp):
             return wrap_result(tool_name="capital_registry", domain="meta", result=raw)
 
         if m == "domains":
-            return {
-                "version": "2026.07.11",
-                "domains": [
-                    {
-                        "name": "capital",
-                        "kind": "deductive",
-                        "tools": ["capital_primitive", "capital_health"],
-                    },
-                    {
-                        "name": "institutional",
-                        "kind": "abductive",
-                        "tools": ["capital_diagnose"],
-                    },
-                    {
-                        "name": "wisdom",
-                        "kind": "abductive",
-                        "tools": ["capital_wisdom"],
-                    },
-                    {
-                        "name": "market",
-                        "kind": "observational",
-                        "tools": ["capital_market"],
-                    },
-                    {"name": "vault", "kind": "mutating", "tools": ["capital_ledger"]},
-                    {
-                        "name": "meta",
-                        "kind": "observational",
-                        "tools": ["capital_registry"],
-                    },
-                ],
-                "canonical_tool_count": 7,
-                "legacy_tools": "direct_import_engines",
-                "preload_mechanism": "REMOVED_2026-07-07",
-            }
+            return wrap_result(
+                tool_name="capital_registry",
+                domain="meta",
+                result={
+                    "version": "2026.07.11",
+                    "domains": [
+                        {
+                            "name": "capital",
+                            "kind": "deductive",
+                            "tools": ["capital_primitive", "capital_health"],
+                        },
+                        {
+                            "name": "institutional",
+                            "kind": "abductive",
+                            "tools": ["capital_diagnose"],
+                        },
+                        {
+                            "name": "wisdom",
+                            "kind": "abductive",
+                            "tools": ["capital_wisdom"],
+                        },
+                        {
+                            "name": "market",
+                            "kind": "observational",
+                            "tools": ["capital_market"],
+                        },
+                        {
+                            "name": "vault",
+                            "kind": "mutating",
+                            "tools": ["capital_ledger"],
+                        },
+                        {
+                            "name": "meta",
+                            "kind": "observational",
+                            "tools": ["capital_registry"],
+                        },
+                    ],
+                    "canonical_tool_count": 7,
+                    "legacy_tools": "direct_import_engines",
+                    "preload_mechanism": "REMOVED_2026-07-07",
+                },
+            )
 
         if m == "health":
-            return {
-                "status": "ALIVE",
-                "version": "2026.07.11",
-                "domain": "WEALTH Federated Domain",
-                "architecture": "federated-7-canonical",
-                "canonical_tools": 7,
-                "preload_mechanism": "REMOVED_2026-07-07",
-            }
+            return wrap_result(
+                tool_name="capital_registry",
+                domain="meta",
+                result={
+                    "status": "ALIVE",
+                    "version": "2026.07.11",
+                    "domain": "WEALTH Federated Domain",
+                    "architecture": "federated-7-canonical",
+                    "canonical_tools": 7,
+                    "preload_mechanism": "REMOVED_2026-07-07",
+                },
+            )
 
         raise ValueError(
             f"Unknown mode '{mode}'. Valid: status, schema, domains, health"
