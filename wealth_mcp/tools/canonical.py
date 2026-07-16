@@ -895,7 +895,9 @@ def register_canonical_tools(mcp):
         ),
         tags={"domain": "meta", "kind": "observational", "canonical": "v1"},
     )
-    async def capital_registry(mode: str = "status") -> dict:
+    async def capital_registry(
+        mode: str = "status", tool_name: str | None = None
+    ) -> dict:
         m = mode.lower()
         _CANONICAL = [
             "capital_primitive",
@@ -908,18 +910,22 @@ def register_canonical_tools(mcp):
         ]
 
         if m == "status":
-            return {
-                "status": "OK",
-                "organ": "WEALTH",
-                "version": "2026.07.11",
-                "architecture": "federated-7-canonical",
-                "canonical_tools": _CANONICAL,
-                "canonical_tool_count": 7,
-                "registry_truth": "PASS",
-                "legacy_dispatch": "direct_import",
-                "final_authority": "ARIF",
-                "read_only": True,
-            }
+            return wrap_result(
+                tool_name="capital_registry",
+                domain="meta",
+                result={
+                    "status": "OK",
+                    "organ": "WEALTH",
+                    "version": "2026.07.11",
+                    "architecture": "federated-7-canonical",
+                    "canonical_tools": _CANONICAL,
+                    "canonical_tool_count": 7,
+                    "registry_truth": "PASS",
+                    "legacy_dispatch": "direct_import",
+                    "final_authority": "ARIF",
+                    "read_only": True,
+                },
+            )
 
         if m == "schema":
             raw = await _call_legacy_tool("wealth_schema", {})

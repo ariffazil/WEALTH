@@ -81,10 +81,12 @@ _OBSERVE_SURFACE = frozenset(
         "capital_ledger",
         "capital_registry",
         "capital_entropy",
-        "wealth_institutional_stress_index",
-        "wealth_cascade_model",
-        "wealth_governance_capacity",
-        "wealth_external_exploitation_detect",
+        # Legacy wealth_* tools remain callable but NOT advertised.
+        # Each is a mode of capital_diagnose:
+        #   wealth_institutional_stress_index → capital_diagnose(mode=stress_index)
+        #   wealth_cascade_model → capital_diagnose(mode=cascade_model)
+        #   wealth_governance_capacity → capital_diagnose(mode=governance_capacity)
+        #   wealth_external_exploitation_detect → capital_diagnose(mode=exploitation_detect)
     }
 )
 
