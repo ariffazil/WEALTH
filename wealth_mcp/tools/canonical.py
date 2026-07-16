@@ -896,7 +896,10 @@ def register_canonical_tools(mcp):
         tags={"domain": "meta", "kind": "observational", "canonical": "v1"},
     )
     async def capital_registry(
-        mode: str = "status", tool_name: str | None = None
+        mode: str = "status",
+        tool_name: str | None = None,
+        session_id: str | None = None,
+        actor_id: str | None = None,
     ) -> dict:
         m = mode.lower()
         _CANONICAL = [
@@ -913,6 +916,8 @@ def register_canonical_tools(mcp):
             return wrap_result(
                 tool_name="capital_registry",
                 domain="meta",
+                session_id=session_id,
+                actor_id=actor_id,
                 result={
                     "status": "OK",
                     "organ": "WEALTH",
@@ -929,12 +934,20 @@ def register_canonical_tools(mcp):
 
         if m == "schema":
             raw = await _call_legacy_tool("wealth_schema", {})
-            return wrap_result(tool_name="capital_registry", domain="meta", result=raw)
+            return wrap_result(
+                tool_name="capital_registry",
+                domain="meta",
+                result=raw,
+                session_id=session_id,
+                actor_id=actor_id,
+            )
 
         if m == "domains":
             return wrap_result(
                 tool_name="capital_registry",
                 domain="meta",
+                session_id=session_id,
+                actor_id=actor_id,
                 result={
                     "version": "2026.07.11",
                     "domains": [
@@ -979,6 +992,8 @@ def register_canonical_tools(mcp):
             return wrap_result(
                 tool_name="capital_registry",
                 domain="meta",
+                session_id=session_id,
+                actor_id=actor_id,
                 result={
                     "status": "ALIVE",
                     "version": "2026.07.11",
