@@ -1,8 +1,8 @@
 <!-- SOT-MANIFEST
 owner: Arif
-last_verified: 2026-07-16
+last_verified: 2026-07-17
 valid_from: 2026-06-14
-valid_until: 2026-08-15
+valid_until: 2026-08-16
 confidence: high
 scope: /root/WEALTH/BOUNDARY.md
 -->
