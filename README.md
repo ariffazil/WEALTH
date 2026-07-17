@@ -1,6 +1,6 @@
 <!-- SOT-MANIFEST
 federation_release: v2026.07.15-DOMAIN-CONTRAST
-last_verified: 2026-07-16T04:45Z
+last_verified: 2026-07-17T04:45Z
 mcp_tools_live: 12
 domain_law: CAPITAL_LAW
 truth_rule: tools/list + /health beat any static count in prose
