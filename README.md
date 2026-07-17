@@ -1,6 +1,6 @@
 <!-- SOT-MANIFEST
 federation_release: v2026.07.15-DOMAIN-CONTRAST
-last_verified: 2026-07-15T04:45Z
+last_verified: 2026-07-16T04:45Z
 mcp_tools_live: 12
 domain_law: CAPITAL_LAW
 truth_rule: tools/list + /health beat any static count in prose
@@ -96,7 +96,7 @@ WEALTH is the capital intelligence organ of arifOS.
 
 ## Domain contrast — GEOX · WEALTH · WELL (federation MCP)
 
-> Full architecture seal: [ARIFOS_MCP_ARCHITECTURE_v2026.07.15](https://github.com/ariffazil/AAA/blob/main/docs/ARIFOS_MCP_ARCHITECTURE_v2026.07.15.md) · Contrast: [DOMAIN_ORGAN_CONTRAST](https://github.com/ariffazil/AAA/blob/main/docs/DOMAIN_ORGAN_CONTRAST.md) · Organ map: [FEDERATION_ORGAN](https://github.com/ariffazil/AAA/blob/main/docs/FEDERATION_ORGAN.md)  
+> Full architecture seal: [ARIFOS_MCP_ARCHITECTURE_v2026.07.15](https://github.com/ariffazil/AAA/blob/main/docs/ARIFOS_MCP_ARCHITECTURE_v2026.07.15.md) · Contrast: [DOMAIN_ORGAN_CONTRAST](https://github.com/ariffazil/AAA/blob/main/docs/DOMAIN_ORGAN_CONTRAST.md) · Organ map: [FEDERATION_ORGAN](https://github.com/ariffazil/AAA/blob/main/docs/ORGAN.md)  
 > **This organ answers to `CAPITAL_LAW`.** Not natural law. Not substrate law. Not constitutional law.
 
 Three domain MCP servers share one governance spine (arifOS) and three **orthogonal laws of truth**. Collapsing them is a constitutional error.

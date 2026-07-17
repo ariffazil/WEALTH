@@ -1564,7 +1564,7 @@ def wealth_commodity_price(
             "unit": "USD/tonne",
             "source": "ICE API2 assessment",
         },
-        "gold": {"price": 2340.00, "unit": "USD/troy_oz", "source": "LBMA PM fix"},
+        "gold": {"price": 4063.40, "unit": "USD/troy_oz", "source": "LBMA PM fix + 2026 breakout"},
         "malaysia_rsd": {
             "price": 82.00,
             "unit": "USD/bbl",
