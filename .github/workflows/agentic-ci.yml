@@ -55,18 +55,15 @@ jobs:
 
       - name: Type check (MyPy)
         run: mypy src/ --ignore-missing-imports || true
-        continue-on-error: true
 
       - name: Test (Pytest)
         id: test
         run: |
           python -m pytest tests/ -q --tb=short 2>&1 | tee test-output.txt
           echo "passed=$(grep -c 'passed' test-output.txt || echo 0)" >> $GITHUB_OUTPUT
-        continue-on-error: true
 
       - name: Build check
         run: python -c "import import internal" || true
-        continue-on-error: true
 
   # ─────────────────────────────────────────────────────────────
   # LANE 2: AGENTIC CI — BIJAKSANA Physics Gate
@@ -169,11 +166,11 @@ jobs:
           
           # Verdict
           if [ "$STANDARD_OK" = "success" ] && [ "$DS" -lt 50 ] && [ "$PHI" -gt 80 ] && [ "$OMEGA" = "0" ]; then
-            VERDICT="SEAL_READY"
+            VERDICT="CI_PASS"
           elif [ "$STANDARD_OK" = "success" ]; then
-            VERDICT="SABAR"
+            VERDICT='ADVISORY_WARN'
           else
-            VERDICT="HOLD"
+            VERDICT='CI_FAIL'
           fi
           echo "Verdict: $VERDICT"
           
@@ -204,8 +201,8 @@ jobs:
           script: |
             const fs = require('fs');
             const report = JSON.parse(fs.readFileSync('agentic_ci_report.json', 'utf8'));
-            const conclusion = report.verdict === 'SEAL_READY' ? 'success' : 
-                              report.verdict === 'SABAR' ? 'neutral' : 'failure';
+            const conclusion = report.verdict === 'CI_PASS' ? 'success' : 
+                              report.verdict === 'ADVISORY_WARN' ? 'neutral' : 'failure';
             
             await github.rest.checks.create({
               owner: context.repo.owner,
