@@ -12,6 +12,11 @@ domain_contrast: /root/AAA/docs/DOMAIN_ORGAN_CONTRAST.md
 a2a_agent_json: /root/WEALTH/.well-known/agent.json
 -->
 
+[![Agentic CI](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml/badge.svg?branch=main)](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml)
+[![License](https://img.shields.io/github/license/ariffazil/wealth?label=License)](LICENSE)
+[![💰 CAPITAL](https://img.shields.io/badge/%F0%9F%92%B0%20CAPITAL-12%20tools-1f6feb)](https://wealth.arif-fazil.com/mcp)
+[![Federation](https://img.shields.io/badge/Federation-v2026.07.15-0a7b83)](https://arifos.arif-fazil.com)
+
 # WEALTH — Capital Intelligence for arifOS
 
 > **DITEMPA BUKAN DIBERI.** It **computes**. It does **not** move money.
