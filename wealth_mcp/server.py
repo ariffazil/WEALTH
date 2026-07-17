@@ -415,6 +415,70 @@ def create_mcp_server() -> FastMCP:
                 kwargs.get("session_id") or meta.get("session_id") or "_default"
             )
 
+            # ── SCT ingress gate (2026-07-17) ─────────────────────────
+            # Present SCT must verify; absent allowed for OBSERVE (capital compute).
+            try:
+                import sys as _sys
+
+                if "/root/AAA" not in _sys.path:
+                    _sys.path.insert(0, "/root/AAA")
+                from governance.federation_sct import gate_tool_ingress
+
+                # Inject actor into args for expected_actor check
+                _args_for_sct = (
+                    dict(arguments) if isinstance(arguments, dict) else {}
+                )
+                if actor_id and "actor_id" not in _args_for_sct:
+                    _args_for_sct["actor_id"] = actor_id
+                _sct_rej = gate_tool_ingress(
+                    name,
+                    _args_for_sct,
+                    meta=meta if isinstance(meta, dict) else None,
+                    organ="wealth",
+                    require_sct=False,
+                )
+                if _sct_rej is not None:
+                    return ToolResult(
+                        content=[
+                            TextContent(
+                                type="text",
+                                text=json.dumps(_sct_rej, default=str),
+                            )
+                        ],
+                        is_error=True,
+                    )
+                # Strip SCT transport fields before tool schema validation
+                if isinstance(arguments, dict):
+                    for _sk in ("session_token", "sct", "arifos_sct"):
+                        arguments.pop(_sk, None)
+            except Exception as _sct_exc:
+                # If caller sent a token but gate infrastructure failed, fail closed
+                _tok = None
+                if isinstance(arguments, dict):
+                    _tok = (
+                        arguments.get("session_token")
+                        or arguments.get("sct")
+                        or (meta.get("sct") if isinstance(meta, dict) else None)
+                    )
+                if _tok:
+                    return ToolResult(
+                        content=[
+                            TextContent(
+                                type="text",
+                                text=json.dumps(
+                                    {
+                                        "error": "SCT_GATE_INFRA",
+                                        "message": f"SCT present but gate failed: {_sct_exc!r}",
+                                        "tool": name,
+                                        "organ": "wealth",
+                                    },
+                                    default=str,
+                                ),
+                            )
+                        ],
+                        is_error=True,
+                    )
+
             # ── P0-4: Session validation (was defined but never called) ──
             binding = _validate_direct_session_binding(name, actor_id, session_id)
             if not binding.get("ok"):
