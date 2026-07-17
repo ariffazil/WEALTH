@@ -67,7 +67,7 @@ class IntentAction(StrEnum):
     ADVISORY = "advisory"
 
 
-class RiskClass(StrEnum):
+class OperationalRiskTier(StrEnum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -91,11 +91,11 @@ class Tier(StrEnum):
 PAI_RECEIPT_TYPE = "arifOS.PAI.v1"
 CANONICAL_HUMAN_ROOT = "did:web:arif-fazil.com"
 
-RISK_TO_TIER: dict[RiskClass, Tier] = {
-    RiskClass.LOW: Tier.DRAFT,
-    RiskClass.MEDIUM: Tier.EXTERNAL_CLAIM,
-    RiskClass.HIGH: Tier.CONSEQUENTIAL,
-    RiskClass.ATOMIC: Tier.ATOMIC,
+RISK_TO_TIER: dict[OperationalRiskTier, Tier] = {
+    OperationalRiskTier.LOW: Tier.DRAFT,
+    OperationalRiskTier.MEDIUM: Tier.EXTERNAL_CLAIM,
+    OperationalRiskTier.HIGH: Tier.CONSEQUENTIAL,
+    OperationalRiskTier.ATOMIC: Tier.ATOMIC,
 }
 
 INTENT_MIN_TIER: dict[IntentAction, Tier] = {
@@ -135,7 +135,7 @@ class PAIAuthority(BaseModel):
 class PAIIntent(BaseModel):
     action: IntentAction
     scope: str
-    risk_class: RiskClass
+    risk_class: OperationalRiskTier
     external_effect: bool
     reversibility: Reversibility = Reversibility.FULL
     requires_human_intent: bool = False
@@ -196,7 +196,7 @@ def tier_of(receipt: PAIReceipt | dict[str, Any]) -> Tier:
     else:
         risk = receipt.intent.risk_class
         action = receipt.intent.action
-    declared_tier = RISK_TO_TIER[RiskClass(risk)]
+    declared_tier = RISK_TO_TIER[OperationalRiskTier(risk)]
     min_tier = INTENT_MIN_TIER[IntentAction(action)]
     tier_order = [Tier.DRAFT, Tier.INTERNAL, Tier.EXTERNAL_CLAIM, Tier.CONSEQUENTIAL, Tier.ATOMIC]
     if tier_order.index(min_tier) > tier_order.index(declared_tier):
@@ -217,7 +217,7 @@ def mint_pai_receipt(
     organ: Organ,
     action: IntentAction,
     scope: str,
-    risk_class: RiskClass,
+    risk_class: OperationalRiskTier,
     external_effect: bool = False,
     reversibility: Reversibility = Reversibility.FULL,
     delegate: str = "anonymous",
@@ -296,13 +296,13 @@ def wealth_capital_receipt(
       STOP  (refused)   → T4 CONSEQUENTIAL   (HIGH,   ADVISORY, partial)
     """
     mapping = {
-        "SEAL":  (RiskClass.MEDIUM, IntentAction.PUBLISH, Reversibility.FULL),
-        "HOLD":  (RiskClass.MEDIUM, IntentAction.PUBLISH, Reversibility.FULL),
-        "SABAR": (RiskClass.LOW, IntentAction.ANALYZE, Reversibility.FULL),
-        "STOP":  (RiskClass.HIGH, IntentAction.ADVISORY, Reversibility.PARTIAL),
+        "SEAL":  (OperationalRiskTier.MEDIUM, IntentAction.PUBLISH, Reversibility.FULL),
+        "HOLD":  (OperationalRiskTier.MEDIUM, IntentAction.PUBLISH, Reversibility.FULL),
+        "SABAR": (OperationalRiskTier.LOW, IntentAction.ANALYZE, Reversibility.FULL),
+        "STOP":  (OperationalRiskTier.HIGH, IntentAction.ADVISORY, Reversibility.PARTIAL),
     }
     risk_class, action, reversibility = mapping.get(
-        verdict.upper(), (RiskClass.MEDIUM, IntentAction.PUBLISH, Reversibility.FULL)
+        verdict.upper(), (OperationalRiskTier.MEDIUM, IntentAction.PUBLISH, Reversibility.FULL)
     )
     return mint_pai_receipt(
         object_id=f"wealth_{verdict.lower()}_{hash(scope) & 0xffffffff:#x}",
@@ -327,7 +327,7 @@ def wealth_capital_receipt(
 
 __all__ = [
     "PAI_RECEIPT_TYPE", "CANONICAL_HUMAN_ROOT", "RISK_TO_TIER", "INTENT_MIN_TIER",
-    "ProducerType", "Organ", "IntentAction", "RiskClass", "Reversibility", "Tier",
+    "ProducerType", "Organ", "IntentAction", "OperationalRiskTier", "Reversibility", "Tier",
     "PAIOrigin", "PAIAuthority", "PAIIntent", "PAIEvidence", "PAIAudit", "PAIReceipt",
     "tier_of", "content_hash", "mint_pai_receipt", "attach_pai_to_payload",
     "wealth_capital_receipt",
