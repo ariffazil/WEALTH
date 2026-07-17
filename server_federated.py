@@ -35,9 +35,42 @@ if __name__ == "__main__":
     async def health(request):
         # FEDERATION HANDSHAKE (canonical: arifOS/arifosmcp/schemas/federation_enums.py)
         # See: /root/AAA/governance/FEDERATION_HANDSHAKE.md
+        # T5 2026-07-17 — canonical 5-field federation header + organ payload
+        identity_hash = "UNAVAILABLE"
+        try:
+            import hashlib
+            from pathlib import Path
+
+            id_path = Path("/root/WEALTH/identity.toml")
+            if id_path.exists():
+                try:
+                    import blake3  # type: ignore
+
+                    identity_hash = blake3.blake3(id_path.read_bytes()).hexdigest()
+                except Exception:
+                    identity_hash = hashlib.sha256(id_path.read_bytes()).hexdigest()
+        except Exception:
+            identity_hash = "UNAVAILABLE"
+
         return JSONResponse(
             {
-                "status": "ALIVE",
+                "status": "healthy",
+                "identity_hash": identity_hash,
+                "apex_scalars": {
+                    "G": {"value": None, "status": "UNMEASURED"},
+                    "C_dark": {"value": None, "status": "UNMEASURED"},
+                    "W3": {"value": None, "status": "UNMEASURED"},
+                    "h": {"value": None, "status": "UNMEASURED"},
+                    "QDF": {"value": None, "status": "UNMEASURED"},
+                },
+                "federation_geometry": {
+                    "status": "enabled",
+                    "subjects": 0,
+                    "ledger_events": 0,
+                    "witness_oracle": "active",
+                    "note": "geometry owned by arifOS; WEALTH reports local presence only",
+                },
+                "final_authority": "ARIF",
                 "version": "2026.07.12",
                 "federation_schema_version": "2.0.0",
                 "domain": "WEALTH Federated Domain",
