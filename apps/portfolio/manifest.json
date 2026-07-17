@@ -1,0 +1,21 @@
+{
+  "name": "WEALTH Portfolio Dashboard",
+  "description": "Portfolio overview — assets, liabilities, cashflow, runway. Read-only.",
+  "version": "1.0.0",
+  "organ": "wealth",
+  "schema_version": "1.0",
+  "_meta": {
+    "ui": {
+      "csp": {
+        "connectDomains": ["'self'"],
+        "resourceDomains": ["'self'"],
+        "baseUriDomains": ["'self'"]
+      }
+    }
+  },
+  "csp": {
+    "connectDomains": ["'self'"],
+    "resourceDomains": ["'self'"],
+    "baseUriDomains": ["'self'"]
+  }
+}

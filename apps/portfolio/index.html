@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>WEALTH Portfolio Dashboard</title>
+<style>
+  :root {
+    --bg: #0b0f14;
+    --surface: #141a24;
+    --border: #1e293b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --green: #22c55e;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --blue: #3b82f6;
+    --radius: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .card-title {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .big-number { font-size: 28px; font-weight: 700; font-family: monospace; letter-spacing: -0.02em; }
+  .label { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; }
+  .row + .row { border-top: 1px solid rgba(255,255,255,0.04); }
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    height: 200px; color: var(--muted); font-size: 12px; gap: 8px;
+  }
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border); border-top-color: var(--blue);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error { color: var(--red); text-align: center; padding: 20px; font-size: 12px; }
+  .badge {
+    display: inline-block; padding: 1px 6px; border-radius: 999px;
+    font-size: 9px; font-weight: 600;
+  }
+  .badge-green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-red { background: rgba(239,68,68,0.15); color: var(--red); }
+  .badge-amber { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .text-green { color: var(--green); }
+  .text-red { color: var(--red); }
+  .hidden { display: none; }
+  .refresh-btn {
+    background: var(--blue); color: #fff; border: none;
+    padding: 6px 14px; border-radius: var(--radius); cursor: pointer;
+    font-size: 11px; font-weight: 600; float: right;
+  }
+  .refresh-btn:hover { background: #2563eb; }
+  .footer { text-align: center; font-size: 9px; color: var(--muted); margin-top: 16px; }
+  .footer strong { color: var(--text); }
+</style>
+</head>
+<body>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <div>
+      <h1>WEALTH Portfolio</h1>
+      <div class="subtitle">Capital Intelligence · SEP-1865 · Read-Only</div>
+    </div>
+    <button class="refresh-btn" id="refresh-btn" onclick="refreshData()">⟳ Refresh</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <span>Loading portfolio data via WEALTH organ...</span>
+  </div>
+
+  <!-- Error -->
+  <div id="error" class="error hidden"></div>
+
+  <!-- Dashboard Content -->
+  <div id="dashboard" class="hidden">
+
+    <!-- Conservation (Assets / Liabilities / Net Worth) -->
+    <div class="grid" id="conservation-grid">
+      <div class="card">
+        <div class="card-title">Total Assets</div>
+        <div class="big-number" id="total-assets">—</div>
+        <div class="label">Across all portfolios</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Total Liabilities</div>
+        <div class="big-number" id="total-liabilities">—</div>
+        <div class="label">Outstanding obligations</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Net Worth</div>
+        <div class="big-number" id="net-worth">—</div>
+        <div class="label" id="net-worth-label">Net position</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Health Ratio</div>
+        <div class="big-number" id="health-ratio">—</div>
+        <div class="label">Assets / Liabilities</div>
+      </div>
+    </div>
+
+    <!-- Asset Breakdown -->
+    <div class="card" style="margin-bottom:10px;">
+      <div class="card-title">Asset Breakdown</div>
+      <div id="asset-list"><div class="label" style="text-align:center;">No asset data</div></div>
+    </div>
+
+    <!-- Cashflow -->
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">Monthly Income</div>
+        <div class="big-number" id="monthly-income">—</div>
+        <div class="label">Total monthly inflow</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Monthly Expenses</div>
+        <div class="big-number" id="monthly-expenses">—</div>
+        <div class="label">Total monthly outflow</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Net Cashflow</div>
+        <div class="big-number" id="net-cashflow">—</div>
+        <div class="label" id="cashflow-label">Monthly surplus/deficit</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Runway</div>
+        <div class="big-number" id="runway">—</div>
+        <div class="label">Months of survival</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Data from <strong>WEALTH</strong> organ · <span id="last-updated">—</span>
+    </div>
+  </div>
+
+<script>
+(function() {
+  "use strict";
+
+  var requestId = 1;
+
+  function postToHost(msg) {
+    if (parent) parent.postMessage(JSON.stringify(msg), "*");
+  }
+
+  function sendRequest(method, params, callbackId) {
+    var id = callbackId || requestId++;
+    postToHost({ jsonrpc: "2.0", id: id, method: method, params: params || {} });
+    return id;
+  }
+
+  // ── Format helpers ──
+  function fmtCurrency(val) {
+    if (val === undefined || val === null) return "—";
+    var num = typeof val === "number" ? val : parseFloat(val);
+    if (isNaN(num)) return "—";
+    var prefix = num < 0 ? "-" : "";
+    num = Math.abs(num);
+    if (num >= 1e12) return prefix + "MYR " + (num / 1e12).toFixed(2) + "T";
+    if (num >= 1e9) return prefix + "MYR " + (num / 1e9).toFixed(2) + "B";
+    if (num >= 1e6) return prefix + "MYR " + (num / 1e6).toFixed(2) + "M";
+    if (num >= 1e3) return prefix + "MYR " + (num / 1e3).toFixed(1) + "K";
+    return prefix + "MYR " + num.toFixed(2);
+  }
+
+  function fmtPct(val) {
+    if (val === undefined || val === null) return "—";
+    var num = typeof val === "number" ? val : parseFloat(val);
+    if (isNaN(num)) return "—";
+    return (num * 100).toFixed(1) + "%";
+  }
+
+  // ── Render dashboard ──
+  function renderConservation(data) {
+    if (!data) return;
+
+    var assets = data.asset_total || data.total_assets || data.totalAssets || 0;
+    var liabilities = data.liability_total || data.total_liabilities || data.totalLiabilities || 0;
+    var netWorth = data.net_worth || data.netWorth || data.netWorth || (assets - liabilities);
+    var healthRatio = liabilities > 0 ? assets / liabilities : assets > 0 ? 999 : 0;
+
+    document.getElementById("total-assets").textContent = fmtCurrency(assets);
+    document.getElementById("total-liabilities").textContent = fmtCurrency(liabilities);
+    document.getElementById("net-worth").textContent = fmtCurrency(netWorth);
+    document.getElementById("net-worth-label").className = "label" + (netWorth < 0 ? " text-red" : " text-green");
+    document.getElementById("health-ratio").textContent = healthRatio === 999 ? "∞" : healthRatio.toFixed(2);
+
+    // Asset breakdown
+    var assetList = document.getElementById("asset-list");
+    assetList.innerHTML = "";
+    var items = data.assets || data.items || [];
+    if (items.length === 0) {
+      // Try nested structure
+      if (data.breakdown && Array.isArray(data.breakdown)) items = data.breakdown;
+    }
+    if (items.length > 0) {
+      items.forEach(function(item) {
+        var name = item.name || item.label || item.asset || "Unknown";
+        var val = item.value || item.amount || item.balance || 0;
+        var row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML = '<span>' + name + '</span><span style="font-family:monospace">' + fmtCurrency(val) + '</span>';
+        assetList.appendChild(row);
+      });
+    } else {
+      assetList.innerHTML = '<div class="label" style="text-align:center;">Aggregate view — no breakdown</div>';
+    }
+  }
+
+  function renderCashflow(data) {
+    if (!data) return;
+
+    var income = data.monthly_income || data.monthlyIncome || data.total_income || data.totalIncome || data.income || 0;
+    var expenses = data.monthly_expenses || data.monthlyExpenses || data.total_expenses || data.totalExpenses || data.expenses || 0;
+    var netCashflow = income - expenses;
+    var liquid = data.liquid_assets || data.liquidAssets || 0;
+    var burn = data.monthly_burn || data.monthlyBurn || expenses;
+    var runway = burn > 0 ? liquid / burn : 999;
+
+    document.getElementById("monthly-income").textContent = fmtCurrency(income);
+    document.getElementById("monthly-expenses").textContent = fmtCurrency(expenses);
+    document.getElementById("net-cashflow").textContent = fmtCurrency(netCashflow);
+    document.getElementById("cashflow-label").className = "label" + (netCashflow < 0 ? " text-red" : " text-green");
+    document.getElementById("runway").textContent = runway === 999 ? "∞" : runway.toFixed(1) + " mo";
+  }
+
+  // ── Direct fetch fallback (for standalone mode, no host bridge) ──
+  function fetchViaApi(mode, type) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/mcp-apps/tools/call', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          var resp = JSON.parse(xhr.responseText);
+          var toolResult = resp.structuredContent || null;
+          if (!toolResult && resp.content && resp.content.length > 0) {
+            try { toolResult = JSON.parse(resp.content[0].text); } catch(e) {}
+          }
+          var inner = (toolResult && toolResult.result) || toolResult || {};
+          if (type === "conservation") renderConservation(inner);
+          else if (type === "flow") renderCashflow(inner);
+          else if (type === "runway") {
+            var rw = inner.runway || inner.runway_months || 0;
+            document.getElementById("runway").textContent = typeof rw === "number" ? rw.toFixed(1) + " mo" : String(rw);
+          }
+        } catch(e) { console.error('[WEALTH] parse error:', e); }
+      }
+      var key = '__fetch_' + type;
+      window._fetchDone = window._fetchDone || {};
+      window._fetchDone[key] = true;
+      checkAllDone();
+    };
+    xhr.onerror = function() {
+      var key = '__fetch_' + type;
+      window._fetchDone = window._fetchDone || {};
+      window._fetchDone[key] = true;
+      checkAllDone();
+    };
+    xhr.send(JSON.stringify({ appId: 'wealth-portfolio', tool: 'capital_health', arguments: { mode: mode } }));
+  }
+
+  function checkAllDone() {
+    window._fetchDone = window._fetchDone || {};
+    if (window._fetchDone.__fetch_conservation && window._fetchDone.__fetch_flow && window._fetchDone.__fetch_runway) {
+      document.getElementById("loading").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
+      document.getElementById("last-updated").textContent = new Date().toLocaleString();
+    }
+  }
+
+  // ── Data loading ──
+  function refreshData() {
+    document.getElementById("loading").classList.remove("hidden");
+    document.getElementById("dashboard").classList.add("hidden");
+    document.getElementById("error").classList.add("hidden");
+
+    // Try postMessage path first (host bridge mode)
+    var reqConservation = sendRequest("tools/call", {
+      name: "capital_health",
+      arguments: { mode: "conservation" }
+    });
+    var reqFlow = sendRequest("tools/call", {
+      name: "capital_health",
+      arguments: { mode: "flow" }
+    });
+    var reqRunway = sendRequest("tools/call", {
+      name: "capital_health",
+      arguments: { mode: "runway" }
+    });
+
+    window._wealthPending = window._wealthPending || {};
+    window._wealthPending[reqConservation] = { type: "conservation", count: 3, received: 0 };
+    window._wealthPending[reqFlow] = { type: "flow", count: 3, received: 0 };
+    window._wealthPending[reqRunway] = { type: "runway", count: 3, received: 0 };
+
+    // Fallback: if postMessage doesn't resolve within 2s, use direct fetch
+    setTimeout(function() {
+      if (document.getElementById("loading").classList.contains("hidden")) return; // Already done
+      // Fire direct fetches for any unresolved modes
+      fetchViaApi("conservation", "conservation");
+      fetchViaApi("flow", "flow");
+      fetchViaApi("runway", "runway");
+    }, 2000);
+  }
+
+  // ── Host message listener ──
+  window.addEventListener("message", function(ev) {
+    var data = ev.data;
+    if (typeof data === "string") {
+      try { data = JSON.parse(data); } catch(e) { return; }
+    }
+    if (!data || data.jsonrpc !== "2.0") return;
+
+    // ui/initialize handshake
+    if (data.method === "ui/initialize") {
+      postToHost({
+        jsonrpc: "2.0",
+        id: data.id,
+        result: {
+          protocolVersion: "2026-01-26",
+          capabilities: {},
+          clientInfo: { name: "wealth-portfolio", version: "1.0.0" }
+        }
+      });
+      // Auto-load data after init
+      setTimeout(refreshData, 100);
+      return;
+    }
+
+    // Tool result via host bridge (result wraps the proxy response)
+    if (data.id && window._wealthPending && window._wealthPending[data.id]) {
+      var pending = window._wealthPending[data.id];
+      pending.received++;
+
+      // Host bridge returns {jsonrpc, id, result} where result is the proxy response
+      var payload = data.result || data;
+      var toolContent = payload.content || [];
+      var toolText = "";
+      for (var i = 0; i < toolContent.length; i++) {
+        if (toolContent[i].type === "text") toolText = toolContent[i].text;
+      }
+      // Try structuredContent first, then parse text JSON
+      var toolResult = payload.structuredContent || null;
+      if (!toolResult && toolText) {
+        try { toolResult = JSON.parse(toolText); } catch(e) {}
+      }
+
+      if (toolResult) {
+        // Extract the inner result
+        var inner = toolResult.result || toolResult;
+        if (pending.type === "conservation") {
+          renderConservation(inner);
+        } else if (pending.type === "flow") {
+          renderCashflow(inner);
+        } else if (pending.type === "runway") {
+          var rw = inner.runway || inner.runway_months || 0;
+          document.getElementById("runway").textContent = typeof rw === "number"
+            ? rw.toFixed(1) + " mo" : String(rw);
+        }
+      } else if (data.error) {
+        console.error("[WEALTH] tool error:", data.error);
+      }
+
+      // All loaded?
+      if (pending.received >= pending.count) {
+        document.getElementById("loading").classList.add("hidden");
+        document.getElementById("dashboard").classList.remove("hidden");
+        document.getElementById("last-updated").textContent = new Date().toLocaleString();
+        delete window._wealthPending[data.id];
+      }
+      return;
+    }
+
+    // ui/notifications/tool-result (push from host)
+    if (data.method === "ui/notifications/tool-result" && data.params) {
+      var content = data.params.content || [];
+      var structured = data.params.structuredContent || {};
+      var envelope = structured.envelope || {};
+
+      // Check envelope first
+      if (envelope.conservation || envelope.flow || envelope.runway) {
+        if (envelope.conservation) renderConservation(envelope.conservation);
+        if (envelope.flow) renderCashflow(envelope.flow);
+        if (envelope.runway && envelope.runway.runway_months) {
+          document.getElementById("runway").textContent = envelope.runway.runway_months.toFixed(1) + " mo";
+        }
+        document.getElementById("loading").classList.add("hidden");
+        document.getElementById("dashboard").classList.remove("hidden");
+        document.getElementById("last-updated").textContent = new Date().toLocaleString();
+        return;
+      }
+
+      // Try extracting from text content
+      for (var i = 0; i < content.length; i++) {
+        if (content[i].type === "text") {
+          var text = content[i].text;
+          try {
+            var parsed = JSON.parse(text);
+            if (parsed.assets || parsed.total_assets) renderConservation(parsed);
+            if (parsed.income || parsed.expenses || parsed.monthly_income) renderCashflow(parsed);
+            if (parsed.runway) document.getElementById("runway").textContent =
+              typeof parsed.runway === "number" ? parsed.runway.toFixed(1) + " mo" : String(parsed.runway);
+            document.getElementById("loading").classList.add("hidden");
+            document.getElementById("dashboard").classList.remove("hidden");
+            document.getElementById("last-updated").textContent = new Date().toLocaleString();
+          } catch(e) {}
+        }
+      }
+    }
+
+    // Error response
+    if (data.id && data.error) {
+      document.getElementById("loading").classList.add("hidden");
+      document.getElementById("error").classList.remove("hidden");
+      document.getElementById("error").textContent = "WEALTH error: " + (data.error.message || "Unknown");
+    }
+  });
+
+  // ── Init handshake ──
+  sendRequest("ui/initialize", {
+    clientInfo: { name: "wealth-portfolio", version: "1.0.0" },
+    protocolVersion: "2026-01-26",
+  });
+})();
+</script>
+</body>
+</html>

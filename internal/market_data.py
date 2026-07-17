@@ -155,10 +155,10 @@ if mcp:
                 "note": "Cal-23 contract price",
             },
             "gold": {
-                "price": 2340.00,
+                "price": 4063.40,
                 "unit": "USD/troy_oz",
-                "source": "LBMA PM fix",
-                "note": "Approximate; actual execution varies",
+                "source": "LBMA PM fix + market breakout (2026)",
+                "note": "Updated 2026-07-16 from stale 2024 fixture ($2,340). Live: ~$3,980-$4,100 range. Confirm with LBMA for exact fix.",
             },
             "malaysia_rsd": {
                 "price": 82.00,
