@@ -1,0 +1,22 @@
+# Python virtual environments
+pyvenv.cfg
+bin/
+include/
+lib/
+lib64/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Operating data (not source)
+logs/
+data/ingest_cache/
+journal/
+
+# Runtime artifacts (generated, not committed)
+*.log
+*.npy
+
+# Personal artifacts (not source)
+abang_sado_voice.ogg
