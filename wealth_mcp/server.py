@@ -162,32 +162,27 @@ def _validate_direct_session_binding(
     """Session binding without importing the kernel package.
 
     Coupling rule: WEALTH must not `import arifosmcp`.
-    - Unbound/_default + capital_* → OBSERVE_UNBOUND
+    - Unbound/_default + ANY tool → SESSION_REQUIRED (400, FORGED 2026-07-18)
     - Real session_id → HTTP bridge only
     - Non-capital without session → SESSION_REQUIRED
+
+    FORGED 2026-07-18: Anonymous reads removed. All tools require a valid
+    session_id. capital_* tools previously allowed unbound sessions via
+    OBSERVE_UNBOUND — this leak is now closed.
     """
     unbound = session_id in _UNBOUND_SESSION_TOKENS
 
     if unbound:
-        if tool_name in _OBSERVE_SURFACE or (
-            isinstance(tool_name, str) and tool_name.startswith("capital_")
-        ):
-            return {
-                "ok": True,
-                "code": "OBSERVE_UNBOUND",
-                "reason": (
-                    "L11 AUTH: unbound OBSERVE for capital surface — "
-                    "no arifosmcp import; kernel not required for pure compute"
-                ),
-                "actor_id": actor_id or "wealth-mcp",
-                "session_id": session_id,
-                "tool_name": tool_name,
-                "actor_verified": False,
-            }
+        # FORGE 2026-07-18: close anonymous read posture.
+        # Previously capital_* tools got OBSERVE_UNBOUND pass-through.
+        # Now ALL tools require a valid session_id.
         return {
             "ok": False,
             "code": "SESSION_REQUIRED",
-            "reason": "L11 AUTH: session_id missing",
+            "reason": (
+                "L11 AUTH: session_id required for all WEALTH tools "
+                "(FORGE 2026-07-18: anonymous reads blocked)"
+            ),
             "actor_id": actor_id,
             "session_id": session_id,
             "tool_name": tool_name,
@@ -410,9 +405,19 @@ def create_mcp_server() -> FastMCP:
             # ── Pull _meta for actor_id / session_id binding ──────────
             meta = arguments.get("_meta", {}) if isinstance(arguments, dict) else {}
             # Prioritize verified system kwargs over self-reported _meta to prevent spoofing (P0)
-            actor_id = kwargs.get("actor_id") or meta.get("actor_id") or "wealth-mcp"
+            _top_level_actor = arguments.get("actor_id") if isinstance(arguments, dict) else None
+            _top_level_session = arguments.get("session_id") if isinstance(arguments, dict) else None
+            actor_id = (
+                kwargs.get("actor_id")
+                or _top_level_actor
+                or meta.get("actor_id")
+                or "wealth-mcp"
+            )
             session_id = (
-                kwargs.get("session_id") or meta.get("session_id") or "_default"
+                kwargs.get("session_id")
+                or _top_level_session
+                or meta.get("session_id")
+                or "_default"
             )
 
             # ── SCT ingress gate (2026-07-17) ─────────────────────────
