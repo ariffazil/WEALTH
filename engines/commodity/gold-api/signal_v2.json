@@ -1,0 +1,40 @@
+{
+  "signal": {
+    "direction": "FLAT",
+    "strength": "NEUTRAL",
+    "confidence": 0.7,
+    "entry_price": 0.0,
+    "stop_loss": 0.0,
+    "take_profit_1": 0.0,
+    "take_profit_2": 0.0,
+    "rr_ratio": 0.0,
+    "confluence_score": 0.0,
+    "suggested_lot": 0.01,
+    "risk_amount": 0,
+    "verdict": "SABAR",
+    "judge_reason": "Hourly scan [NY_CLOSE] \u2014 NEUTRAL. Awaiting confluence.",
+    "scan_type": "hourly",
+    "session": "NY_CLOSE"
+  },
+  "regime": {
+    "regime": "NEUTRAL",
+    "confidence": 0.7,
+    "price": 0.0,
+    "ema_20": 0.0,
+    "ema_50": 0.0,
+    "ema_200": 0.0,
+    "rsi": 0.0
+  },
+  "zones": {
+    "buy_zone": {
+      "price": 0.0,
+      "strength": 0
+    },
+    "sell_zone": {
+      "price": 0.0,
+      "strength": 0
+    }
+  },
+  "confluence_factors": [],
+  "timestamp": "2026-07-17T20:00:02.407109+00:00"
+}

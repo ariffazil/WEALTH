@@ -742,11 +742,14 @@ def register_canonical_tools(mcp):
         name="capital_market",
         output_schema=WEALTH_OUTPUT_SCHEMA,
         description=(
-            "Market data and stock analysis. Observational only.\n\n"
+            "Market data and commodity analysis. Observational only.\n\n"
             "Top-level: mode, base, targets, commodity, indicator, country. "
             "Stock fields in stock_payload dict.\n\n"
-            "Modes: fx | commodity | indicator | stock\n\n"
-            "Use when: FX, commodities, macro indicators, or stock analysis."
+            "Modes: fx | commodity | indicator | stock | gold | oil | gas\n\n"
+            "For gold/oil/gas, use mode='snapshot' to get ticker+signal+macro.\n"
+            "Use commodity param for analysis type: snapshot|ticker|signal|macro|history|levels\n\n"
+            "Use when: FX, commodities, macro indicators, stock analysis, or "
+            "gold/oil/gas market intelligence."
         ),
         tags={"domain": "market", "kind": "observational", "canonical": "v1"},
     )
@@ -754,7 +757,7 @@ def register_canonical_tools(mcp):
         mode: str,
         base: str = "USD",
         targets: str = "MYR,SGD,GBP",
-        commodity: str = "brent_crude",
+        commodity: str = "snapshot",
         indicator: str = "usd_myr",
         country: str = "MYS",
         stock_payload: CoercedDict = None,
@@ -770,17 +773,20 @@ def register_canonical_tools(mcp):
                 "wealth_market_data", {"mode": "fx", "base": base, "targets": targets}
             )
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
+
         if m == "commodity":
             raw = await _call_legacy_tool(
                 "wealth_market_data", {"mode": "commodity", "commodity": commodity}
             )
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
+
         if m == "indicator":
             raw = await _call_legacy_tool(
                 "wealth_market_data",
                 {"mode": "indicator", "indicator": indicator, "country": country},
             )
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
+
         if m == "stock":
             raw = await _call_legacy_tool(
                 "wealth_stock_analysis",
@@ -797,20 +803,30 @@ def register_canonical_tools(mcp):
                 },
             )
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
-        if m == "gold":
-            analysis = (
-                commodity
-                if commodity in ("snapshot", "decompose", "regime", "structural")
-                else "snapshot"
+
+        # ── Internal engine modes: gold, oil, gas ─────────────────────────
+        # These call the internal commodity engines at :3456-3458.
+        # WEALTH owns meaning. Engines supply evidence.
+        if m in ("gold", "oil", "gas"):
+            from wealth_core.commodity_engines import call_engine, get_snapshot
+
+            op = commodity if commodity else "snapshot"
+
+            if op == "snapshot":
+                raw = await get_snapshot(m)
+            else:
+                raw = await call_engine(m, op)
+
+            return wrap_result(
+                tool_name="capital_market",
+                domain="capital",
+                result=raw,
+                source=f"engine:{m}:{3456 + ['gold', 'oil', 'gas'].index(m)}",
             )
-            raw = await _call_legacy_tool(
-                "wealth_market_data",
-                {"mode": "gold", "commodity": analysis},
-            )
-            return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         raise ValueError(
-            f"Unknown mode '{mode}'. Valid: fx, commodity, indicator, stock, gold"
+            f"Unknown mode '{mode}'. "
+            "Valid: fx, commodity, indicator, stock, gold, oil, gas"
         )
 
     # ═══════════════════════════════════════════════════════════════════
