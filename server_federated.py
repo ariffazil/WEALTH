@@ -71,7 +71,7 @@ if __name__ == "__main__":
                     "note": "geometry owned by arifOS; WEALTH reports local presence only",
                 },
                 "final_authority": "ARIF",
-                "version": "2026.07.12",
+                "version": "v2026.07.17",
                 "federation_schema_version": "2.0.0",
                 "domain": "WEALTH Federated Domain",
                 "transport": "streamable-http",

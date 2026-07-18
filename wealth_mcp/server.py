@@ -203,7 +203,7 @@ def create_mcp_server() -> FastMCP:
 
     mcp = FastMCP(
         "WEALTH Federated Domain",
-        version="2026.07.12",
+        version="v2026.07.17",
         # MCP logging: SEP-2577 deprecated — maintenance only; default min warning.
         client_log_level="warning",
         instructions=(
@@ -425,9 +425,7 @@ def create_mcp_server() -> FastMCP:
                 from governance.federation_sct import gate_tool_ingress
 
                 # Inject actor into args for expected_actor check
-                _args_for_sct = (
-                    dict(arguments) if isinstance(arguments, dict) else {}
-                )
+                _args_for_sct = dict(arguments) if isinstance(arguments, dict) else {}
                 if actor_id and "actor_id" not in _args_for_sct:
                     _args_for_sct["actor_id"] = actor_id
                 _sct_rej = gate_tool_ingress(
