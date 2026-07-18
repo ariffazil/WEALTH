@@ -90,6 +90,14 @@ const handlers = {
     const c = getCache('levels'); if (c) return c;
     const d = await runPython('levels'); setCache('levels', d); return d;
   },
+  // Identity — deployment provenance
+  '/identity': async () => ({
+    service: 'oil',
+    repo: 'github.com/ariffazil/WEALTH',
+    commit: 'bb2f204',
+    engine_version: '1.0.0',
+  }),
+
   '/api/oil/macro': async () => {
     const c = getCache('macro'); if (c) return c;
     const d = await runPython('macro'); setCache('macro', d); return d;
