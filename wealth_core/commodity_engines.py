@@ -3,6 +3,12 @@ WEALTH Commodity Engine Bridge — Internal HTTP to :3456-3458.
 Gold, Oil, Gas are internal engines, NOT separate organs.
 WEALTH capital_market tool routes through this bridge.
 
+Epistemic contract:
+- Price/ticker data → OBSERVED
+- Technical indicators (EMA, RSI, ATR) → DERIVED
+- Trading signals (LONG/SHORT) → INTERPRETED, never authorization
+- Ports :3456-3458 are INTERNAL ONLY — never exposed in public output
+
 DITEMPA BUKAN DIBERI — Forged, not given.
 """
 
@@ -13,14 +19,14 @@ import json
 from typing import Any, Optional
 
 # Engine ports (internal only — NOT exposed via MCP)
+# Source repo: ariffazil/WEALTH/engines/commodity/{gold,oil,gas}-api/
 ENGINE_PORTS = {
     "gold": 3456,
     "oil": 3457,
     "gas": 3458,
 }
 
-# Supported operations per engine
-# Engine actual endpoints:
+# Engine endpoint naming:
 #   /api/{asset}/ticker     — current price + indicators
 #   /api/{asset}/signal_v2  — trading signal (direction, confidence)
 #   /api/{asset}/signals    — recent signals list
@@ -69,15 +75,34 @@ VALID_OPERATIONS = {
     },
 }
 
-DEFAULT_OPERATION = "snapshot"
+# Public operations (documented in capital_market schema)
+PUBLIC_OPERATIONS = {"snapshot", "ticker", "signal", "macro", "history", "levels"}
+
+DEFAULT_OPERATION = None  # No default — fail if invalid
 
 # Timeout for engine calls
 ENGINE_TIMEOUT = 15.0  # seconds
 
+# HTTP engine path prefix
+ENGINE_PATH_PREFIX = "/api/{asset}/{operation}"
+
+
+async def _http_get(url: str, timeout: float = ENGINE_TIMEOUT) -> dict[str, Any]:
+    """Async HTTP GET with timeout. Uses to_thread for sync urllib."""
+    import urllib.request
+
+    def _fetch():
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            body = resp.read().decode("utf-8")
+            return json.loads(body)
+
+    return await asyncio.to_thread(_fetch)
+
 
 async def call_engine(
     asset: str,
-    operation: str = DEFAULT_OPERATION,
+    operation: str,
     extra_params: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """
@@ -85,50 +110,60 @@ async def call_engine(
 
     Args:
         asset: "gold", "oil", or "gas"
-        operation: "ticker", "signal", "signals", "history", "macro",
-                   "levels", "calendar", "apex", "snapshot", "regime"
+        operation: Valid operation from VALID_OPERATIONS[asset]
         extra_params: Optional query parameters
 
     Returns:
-        Engine response as dict
+        Engine response as dict with standard envelope.
+
+    Raises:
+        ValueError: If asset or operation is invalid.
     """
     asset = asset.lower().strip()
     operation = operation.lower().strip()
 
+    # — Fail-closed: unknown asset —
     if asset not in ENGINE_PORTS:
         return {
             "error": True,
-            "message": f"Unknown asset '{asset}'. Valid: {', '.join(ENGINE_PORTS.keys())}",
+            "code": "UNKNOWN_ASSET",
+            "message": f"Unknown asset '{asset}'. Allowed: {', '.join(sorted(ENGINE_PORTS.keys()))}",
             "asset": asset,
+            "requested_operation": operation,
+            "source": "wealth://commodity",
         }
 
     port = ENGINE_PORTS[asset]
     valid_ops = VALID_OPERATIONS[asset]
 
+    # — Fail-closed: unknown operation (never silently fallback) —
     if operation not in valid_ops:
-        operation = DEFAULT_OPERATION
+        return {
+            "error": True,
+            "code": "UNKNOWN_OPERATION",
+            "message": f"Unknown operation '{operation}' for asset '{asset}'. "
+            f"Allowed: {', '.join(sorted(valid_ops))}",
+            "asset": asset,
+            "requested_operation": operation,
+            "source": "wealth://commodity",
+        }
 
-    path = f"/api/{asset}/{operation}"
+    # Build engine URL (port is internal implementation detail)
+    path = ENGINE_PATH_PREFIX.format(asset=asset, operation=operation)
     url = f"http://127.0.0.1:{port}{path}"
 
+    if extra_params:
+        from urllib.parse import urlencode
+
+        url += "?" + urlencode(extra_params)
+
     try:
-        import urllib.request
-
-        req = urllib.request.Request(url, method="GET")
-        if extra_params:
-            from urllib.parse import urlencode
-
-            url += "?" + urlencode(extra_params)
-            req = urllib.request.Request(url, method="GET")
-
-        with urllib.request.urlopen(req, timeout=ENGINE_TIMEOUT) as resp:
-            body = resp.read().decode("utf-8")
-            data = json.loads(body)
+        data = await _http_get(url)
 
         return {
             "asset": asset,
             "operation": operation,
-            "source": f"engine:{asset}:{port}",
+            "source": "wealth://commodity",
             "data": data,
             "error": False,
         }
@@ -137,64 +172,73 @@ async def call_engine(
         return {
             "asset": asset,
             "operation": operation,
-            "source": f"engine:{asset}:{port}",
+            "source": "wealth://commodity",
             "error": True,
+            "code": "ENGINE_FAILURE",
             "message": str(e),
             "data": None,
         }
 
 
 async def get_ticker(asset: str) -> dict[str, Any]:
-    """Get latest price ticker for an asset."""
+    """Get latest price ticker for an asset (OBSERVED class)."""
     return await call_engine(asset, "ticker")
 
 
 async def get_signal(asset: str) -> dict[str, Any]:
-    """Get latest trading signal for an asset."""
+    """Get latest trading signal for an asset (INTERPRETED class)."""
     return await call_engine(asset, "signal_v2")
 
 
 async def get_macro(asset: str) -> dict[str, Any]:
-    """Get macro context for an asset."""
+    """Get macro context for an asset (OBSERVED + DERIVED)."""
     return await call_engine(asset, "macro")
 
 
 async def get_history(asset: str, limit: int = 100) -> dict[str, Any]:
-    """Get price history for an asset."""
+    """Get price history for an asset (OBSERVED class)."""
     return await call_engine(asset, "history", {"limit": str(limit)})
 
 
 async def get_levels(asset: str) -> dict[str, Any]:
-    """Get support/resistance levels for an asset."""
+    """Get support/resistance levels for an asset (DERIVED class)."""
     return await call_engine(asset, "levels")
 
 
 async def get_snapshot(asset: str) -> dict[str, Any]:
     """
     Get full market snapshot for an asset.
-    Aggregates ticker + signal + macro into one response.
+    Aggregates ticker (OBSERVED) + signal (INTERPRETED) + macro (OBSERVED/DERIVED)
+    into one response. Partial success preserved.
     """
-    ticker, signal, macro = await asyncio.gather(
+    ticker, signal_result, macro = await asyncio.gather(
         get_ticker(asset),
         get_signal(asset),
         get_macro(asset),
     )
 
+    snapshot = {}
+    errors = {}
+
+    if ticker.get("error"):
+        errors["ticker"] = ticker["message"]
+    else:
+        snapshot["ticker"] = ticker.get("data")
+
+    if signal_result.get("error"):
+        errors["signal"] = signal_result["message"]
+    else:
+        snapshot["signal"] = signal_result.get("data")
+
+    if macro.get("error"):
+        errors["macro"] = macro["message"]
+    else:
+        snapshot["macro"] = macro.get("data")
+
     return {
         "asset": asset,
-        "snapshot": {
-            "ticker": ticker.get("data"),
-            "signal": signal.get("data"),
-            "macro": macro.get("data"),
-        },
-        "sources": {
-            "ticker": ticker.get("source"),
-            "signal": signal.get("source"),
-            "macro": macro.get("source"),
-        },
-        "errors": {
-            k: v.get("error")
-            for k, v in [("ticker", ticker), ("signal", signal), ("macro", macro)]
-            if v.get("error")
-        },
+        "source": "wealth://commodity",
+        "snapshot": snapshot,
+        "errors": errors if errors else None,
+        "partial": len(errors) > 0,
     }
