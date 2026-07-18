@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-XNATGAS Natural Gas Data Fetcher — WEALTH Organ
-Fetches live gold data from yfinance, computes technical indicators,
+Natural Gas (NG) Data Fetcher — WEALTH Organ
+Fetches live natural gas data from yfinance, computes technical indicators,
 generates trading signals. Called by Node.js API server.
 
 Usage:
-    python3 fetch_gold.py ticker
-    python3 fetch_gold.py history --interval 1h --period 30d
-    python3 fetch_gold.py signals
-    python3 fetch_gold.py levels
-    python3 fetch_gold.py macro
+    python3 fetch_gas.py ticker
+    python3 fetch_gas.py history --interval 1h --period 30d
+    python3 fetch_gas.py signals
+    python3 fetch_gas.py levels
+    python3 fetch_gas.py macro
 
 DITEMPA BUKAN DIBERI — Forged, Not Given.
 """
@@ -98,11 +98,9 @@ def compute_atr(df: pd.DataFrame, period: int = 14) -> pd.Series:
     high = df["high"]
     low = df["low"]
     close = df["close"].shift(1)
-    tr = pd.concat([
-        high - low,
-        (high - close).abs(),
-        (low - close).abs()
-    ], axis=1).max(axis=1)
+    tr = pd.concat([high - low, (high - close).abs(), (low - close).abs()], axis=1).max(
+        axis=1
+    )
     return tr.ewm(span=period, adjust=False).mean()
 
 
@@ -115,11 +113,19 @@ def find_support_resistance(df: pd.DataFrame, lookback: int = 50) -> dict:
     swing_highs = []
     swing_lows = []
     for i in range(2, len(recent) - 2):
-        if highs[i] > highs[i-1] and highs[i] > highs[i-2] and \
-           highs[i] > highs[i+1] and highs[i] > highs[i+2]:
+        if (
+            highs[i] > highs[i - 1]
+            and highs[i] > highs[i - 2]
+            and highs[i] > highs[i + 1]
+            and highs[i] > highs[i + 2]
+        ):
             swing_highs.append(highs[i])
-        if lows[i] < lows[i-1] and lows[i] < lows[i-2] and \
-           lows[i] < lows[i+1] and lows[i] < lows[i+2]:
+        if (
+            lows[i] < lows[i - 1]
+            and lows[i] < lows[i - 2]
+            and lows[i] < lows[i + 1]
+            and lows[i] < lows[i + 2]
+        ):
             swing_lows.append(lows[i])
 
     h = recent["high"].iloc[-1]
@@ -135,12 +141,14 @@ def find_support_resistance(df: pd.DataFrame, lookback: int = 50) -> dict:
     support_raw = swing_lows + [s1, s2, pivot]
 
     resistance = sorted(set(round(r, 2) for r in resistance_raw if r > close_now))
-    support = sorted(set(round(s, 2) for s in support_raw if s < close_now), reverse=True)
+    support = sorted(
+        set(round(s, 2) for s in support_raw if s < close_now), reverse=True
+    )
 
     return {
         "support": support[:3],
         "resistance": resistance[:3],
-        "pivot": round(pivot, 2)
+        "pivot": round(pivot, 2),
     }
 
 
@@ -148,9 +156,9 @@ def detect_divergence(price: pd.Series, rsi: pd.Series, lookback: int = 10) -> s
     if len(price) < lookback * 2:
         return "NONE"
     recent_price = price.iloc[-lookback:]
-    prev_price = price.iloc[-lookback*2:-lookback]
+    prev_price = price.iloc[-lookback * 2 : -lookback]
     recent_rsi = rsi.iloc[-lookback:]
-    prev_rsi = rsi.iloc[-lookback*2:-lookback]
+    prev_rsi = rsi.iloc[-lookback * 2 : -lookback]
     if recent_price.max() > prev_price.max() and recent_rsi.max() < prev_rsi.max():
         return "BEARISH"
     if recent_price.min() < prev_price.min() and recent_rsi.min() > prev_rsi.min():
@@ -173,11 +181,19 @@ def detect_candle_pattern(df: pd.DataFrame) -> str:
         return "HAMMER"
     if upper_wick > body * 2 and lower_wick < body * 0.5:
         return "SHOOTING_STAR"
-    if prev["close"] < prev["open"] and last["close"] > last["open"] and \
-       last["close"] > prev["open"] and last["open"] < prev["close"]:
+    if (
+        prev["close"] < prev["open"]
+        and last["close"] > last["open"]
+        and last["close"] > prev["open"]
+        and last["open"] < prev["close"]
+    ):
         return "ENGULFING_BULL"
-    if prev["close"] > prev["open"] and last["close"] < last["open"] and \
-       last["close"] < prev["open"] and last["open"] > prev["close"]:
+    if (
+        prev["close"] > prev["open"]
+        and last["close"] < last["open"]
+        and last["close"] < prev["open"]
+        and last["open"] > prev["close"]
+    ):
         return "ENGULFING_BEAR"
     return "NONE"
 
@@ -199,7 +215,9 @@ def generate_signal(df: pd.DataFrame) -> dict:
     atr_val = round(float(atr.iloc[-1]), 2)
 
     ema_trend = "BULLISH" if ema20_val > ema50_val else "BEARISH"
-    rsi_state = "OVERBOUGHT" if rsi_val > 70 else ("OVERSOLD" if rsi_val < 30 else "NEUTRAL")
+    rsi_state = (
+        "OVERBOUGHT" if rsi_val > 70 else ("OVERSOLD" if rsi_val < 30 else "NEUTRAL")
+    )
     divergence = detect_divergence(close, rsi)
     pattern = detect_candle_pattern(df)
     sr = find_support_resistance(df)
@@ -243,8 +261,16 @@ def generate_signal(df: pd.DataFrame) -> dict:
             confluence.append("NEAR_SUPPORT")
             reasons.append(f"Near support ${nearest_sup}")
 
-    bearish_score = sum(1 for c in confluence if any(k in c for k in ["BEAR", "OVERBOUGHT", "RESISTANCE", "SHOOTING"]))
-    bullish_score = sum(1 for c in confluence if any(k in c for k in ["BULL", "OVERSOLD", "SUPPORT", "HAMMER"]))
+    bearish_score = sum(
+        1
+        for c in confluence
+        if any(k in c for k in ["BEAR", "OVERBOUGHT", "RESISTANCE", "SHOOTING"])
+    )
+    bullish_score = sum(
+        1
+        for c in confluence
+        if any(k in c for k in ["BULL", "OVERSOLD", "SUPPORT", "HAMMER"])
+    )
 
     if bearish_score >= 2 and bearish_score > bullish_score:
         signal = "SHORT"
@@ -265,15 +291,29 @@ def generate_signal(df: pd.DataFrame) -> dict:
     rr = round(abs(tp - price) / max(abs(sl - price), 0.01), 1)
 
     return {
-        "price": price, "ema_fast": ema20_val, "ema_slow": ema50_val,
-        "ema_trend": ema_trend, "ema200": ema200_val, "rsi": rsi_val,
-        "rsi_state": rsi_state, "rsi_divergence": divergence,
-        "candle_pattern": pattern, "atr": atr_val, "signal": signal,
-        "confidence": round(confidence, 2), "entry": price, "sl": sl,
-        "tp": tp, "rr_ratio": rr, "support_levels": sr["support"],
-        "resistance_levels": sr["resistance"], "pivot": sr["pivot"],
-        "confluence_count": len(confluence), "confluence_signals": confluence,
-        "reasons": reasons, "all_signals": confluence,
+        "price": price,
+        "ema_fast": ema20_val,
+        "ema_slow": ema50_val,
+        "ema_trend": ema_trend,
+        "ema200": ema200_val,
+        "rsi": rsi_val,
+        "rsi_state": rsi_state,
+        "rsi_divergence": divergence,
+        "candle_pattern": pattern,
+        "atr": atr_val,
+        "signal": signal,
+        "confidence": round(confidence, 2),
+        "entry": price,
+        "sl": sl,
+        "tp": tp,
+        "rr_ratio": rr,
+        "support_levels": sr["support"],
+        "resistance_levels": sr["resistance"],
+        "pivot": sr["pivot"],
+        "confluence_count": len(confluence),
+        "confluence_signals": confluence,
+        "reasons": reasons,
+        "all_signals": confluence,
     }
 
 
@@ -291,12 +331,21 @@ def cmd_ticker(args):
     change_pct = round(change / prev_close * 100, 2)
 
     result = {
-        "symbol": "XNATGAS", "price": sig["price"], "change": change,
-        "changePct": change_pct, "rsi": sig["rsi"], "rsiState": sig["rsi_state"],
-        "signal": sig["signal"], "confidence": sig["confidence"],
-        "ema20": sig["ema_fast"], "ema50": sig["ema_slow"], "ema200": sig["ema200"],
-        "emaTrend": sig["ema_trend"], "support": sig["support_levels"],
-        "resistance": sig["resistance_levels"], "pivot": sig["pivot"],
+        "symbol": "XNATGAS",
+        "price": sig["price"],
+        "change": change,
+        "changePct": change_pct,
+        "rsi": sig["rsi"],
+        "rsiState": sig["rsi_state"],
+        "signal": sig["signal"],
+        "confidence": sig["confidence"],
+        "ema20": sig["ema_fast"],
+        "ema50": sig["ema_slow"],
+        "ema200": sig["ema200"],
+        "emaTrend": sig["ema_trend"],
+        "support": sig["support_levels"],
+        "resistance": sig["resistance_levels"],
+        "pivot": sig["pivot"],
         "timestamp": datetime.now(MYT).isoformat(),
     }
     _write_cache(cache, result)
@@ -320,22 +369,43 @@ def cmd_history(args):
     candles = []
     for ts, row in df.iterrows():
         t = int(ts.timestamp())
-        candles.append({
-            "time": t, "open": round(float(row["open"]), 2),
-            "high": round(float(row["high"]), 2), "low": round(float(row["low"]), 2),
-            "close": round(float(row["close"]), 2),
-            "volume": int(row["volume"]) if not np.isnan(row["volume"]) else 0,
-        })
+        candles.append(
+            {
+                "time": t,
+                "open": round(float(row["open"]), 2),
+                "high": round(float(row["high"]), 2),
+                "low": round(float(row["low"]), 2),
+                "close": round(float(row["close"]), 2),
+                "volume": int(row["volume"]) if not np.isnan(row["volume"]) else 0,
+            }
+        )
 
-    ema20_line = [{"time": int(ts.timestamp()), "value": round(float(row["ema20"]), 2)} for ts, row in df.iterrows()]
-    ema50_line = [{"time": int(ts.timestamp()), "value": round(float(row["ema50"]), 2)} for ts, row in df.iterrows()]
-    ema200_line = [{"time": int(ts.timestamp()), "value": round(float(row["ema200"]), 2)} for ts, row in df.iterrows()]
-    rsi_line = [{"time": int(ts.timestamp()), "value": round(float(row["rsi"]), 1)} for ts, row in df.iterrows()]
+    ema20_line = [
+        {"time": int(ts.timestamp()), "value": round(float(row["ema20"]), 2)}
+        for ts, row in df.iterrows()
+    ]
+    ema50_line = [
+        {"time": int(ts.timestamp()), "value": round(float(row["ema50"]), 2)}
+        for ts, row in df.iterrows()
+    ]
+    ema200_line = [
+        {"time": int(ts.timestamp()), "value": round(float(row["ema200"]), 2)}
+        for ts, row in df.iterrows()
+    ]
+    rsi_line = [
+        {"time": int(ts.timestamp()), "value": round(float(row["rsi"]), 1)}
+        for ts, row in df.iterrows()
+    ]
 
     result = {
-        "candles": candles, "ema20": ema20_line, "ema50": ema50_line,
-        "ema200": ema200_line, "rsi": rsi_line, "interval": interval,
-        "period": period, "count": len(candles),
+        "candles": candles,
+        "ema20": ema20_line,
+        "ema50": ema50_line,
+        "ema200": ema200_line,
+        "rsi": rsi_line,
+        "interval": interval,
+        "period": period,
+        "count": len(candles),
     }
     _write_cache(cache, result)
     return result
@@ -372,9 +442,12 @@ def cmd_levels(args):
         pass
 
     result = {
-        "support_1h": sr_1h["support"], "resistance_1h": sr_1h["resistance"],
-        "support_daily": sr_daily["support"], "resistance_daily": sr_daily["resistance"],
-        "pivot": sr_1h["pivot"], "timestamp": datetime.now(MYT).isoformat(),
+        "support_1h": sr_1h["support"],
+        "resistance_1h": sr_1h["resistance"],
+        "support_daily": sr_daily["support"],
+        "resistance_daily": sr_daily["resistance"],
+        "pivot": sr_1h["pivot"],
+        "timestamp": datetime.now(MYT).isoformat(),
     }
     _write_cache(cache, result)
     return result
@@ -387,21 +460,31 @@ def cmd_macro(args):
         return cached
 
     import yfinance as yf
+
     result = {"timestamp": datetime.now(MYT).isoformat()}
 
-    for sym, key in [("DX-Y.NYB", "dxy"), ("^VIX", "vix"), ("^TNX", "us10y"), ("SI=F", "silver")]:
+    for sym, key in [
+        ("DX-Y.NYB", "dxy"),
+        ("^VIX", "vix"),
+        ("^TNX", "us10y"),
+        ("SI=F", "silver"),
+    ]:
         try:
             t = yf.Ticker(sym)
             h = t.history(period="5d")
             if not h.empty:
-                result[key] = round(float(h["Close"].iloc[-1]), 2 if key != "us10y" else 3)
+                result[key] = round(
+                    float(h["Close"].iloc[-1]), 2 if key != "us10y" else 3
+                )
         except Exception:
             result[key] = None
 
     if result.get("silver"):
         ticker_data = cmd_ticker({})
         if ticker_data.get("price"):
-            result["gold_silver_ratio"] = round(ticker_data["price"] / result["silver"], 1)
+            result["gold_silver_ratio"] = round(
+                ticker_data["price"] / result["silver"], 1
+            )
 
     _write_cache(cache, result)
     return result
@@ -416,6 +499,7 @@ def cmd_apex(args):
         return cached
 
     import sys
+
     sys.path.insert(0, "/root")
     from trading.core.config import get_config
     from trading.core.models import OHLCV
@@ -432,9 +516,20 @@ def cmd_apex(args):
     try:
         df_4h_raw = fetch_ohlcv("1h", "60d")
         if not df_4h_raw.empty:
-            df_4h = df_4h_raw[["open", "high", "low", "close", "volume"]].resample("4h").agg({
-                "open": "first", "high": "max", "low": "min", "close": "last", "volume": "sum",
-            }).dropna(subset=["open"])
+            df_4h = (
+                df_4h_raw[["open", "high", "low", "close", "volume"]]
+                .resample("4h")
+                .agg(
+                    {
+                        "open": "first",
+                        "high": "max",
+                        "low": "min",
+                        "close": "last",
+                        "volume": "sum",
+                    }
+                )
+                .dropna(subset=["open"])
+            )
     except Exception:
         pass
 
@@ -446,12 +541,20 @@ def cmd_apex(args):
     def _df_to_ohlcv(df):
         candles = []
         for ts, row in df.iterrows():
-            candles.append(OHLCV(
-                timestamp=ts.to_pydatetime() if hasattr(ts, "to_pydatetime") else datetime.now(MYT),
-                open=float(row["open"]), high=float(row["high"]),
-                low=float(row["low"]), close=float(row["close"]),
-                volume=int(row.get("volume", 0)) if not np.isnan(row.get("volume", 0)) else 0,
-            ))
+            candles.append(
+                OHLCV(
+                    timestamp=ts.to_pydatetime()
+                    if hasattr(ts, "to_pydatetime")
+                    else datetime.now(MYT),
+                    open=float(row["open"]),
+                    high=float(row["high"]),
+                    low=float(row["low"]),
+                    close=float(row["close"]),
+                    volume=int(row.get("volume", 0))
+                    if not np.isnan(row.get("volume", 0))
+                    else 0,
+                )
+            )
         return candles
 
     candles_1h = _df_to_ohlcv(df_1h)
@@ -460,6 +563,7 @@ def cmd_apex(args):
 
     # Compute indicators
     from trading.signals.scanner import atr as atr_calc
+
     ind = compute_indicators(candles_1h, cfg)
     atr_vals = atr_calc(candles_1h, 14)
     atr_val = atr_vals[-1] if atr_vals else 10.0
@@ -470,15 +574,23 @@ def cmd_apex(args):
         candles_1h=candles_1h,
         candles_4h=candles_4h if candles_4h else None,
         candles_1d=candles_1d if candles_1d else None,
-        ema_20=ind.ema_20, ema_50=ind.ema_50, ema_200=ind.ema_200,
-        atr_val=atr_val, atr_avg=atr_avg,
+        ema_20=ind.ema_20,
+        ema_50=ind.ema_50,
+        ema_200=ind.ema_200,
+        atr_val=atr_val,
+        atr_avg=atr_avg,
     )
 
     price = float(df_1h["close"].iloc[-1])
 
     result = {
-        "apex": {"A": round(apex.A, 4), "P": round(apex.P, 4), "E": round(apex.E, 4),
-                 "X": round(apex.X, 4), "Phi": round(apex.Phi, 4)},
+        "apex": {
+            "A": round(apex.A, 4),
+            "P": round(apex.P, 4),
+            "E": round(apex.E, 4),
+            "X": round(apex.X, 4),
+            "Phi": round(apex.Phi, 4),
+        },
         "G": round(apex.G, 4),
         "C_dark": round(apex.C_dark, 4),
         "dS": round(apex.dS, 4),
@@ -496,7 +608,11 @@ def cmd_apex(args):
         "ema_200": round(ind.ema_200, 2),
         "rsi_14": round(ind.rsi_14, 1),
         "atr_14": round(atr_val, 2),
-        "data_points": {"1H": len(candles_1h), "4H": len(candles_4h), "1D": len(candles_1d)},
+        "data_points": {
+            "1H": len(candles_1h),
+            "4H": len(candles_4h),
+            "1D": len(candles_1d),
+        },
         "timestamp": datetime.now(MYT).isoformat(),
     }
     _write_cache(cache, result)
@@ -511,6 +627,7 @@ def cmd_signal_v2(args):
         return cached
 
     import sys
+
     sys.path.insert(0, "/root")
     from trading.core.config import get_config
     from trading.core.models import OHLCV, RiskState
@@ -526,31 +643,46 @@ def cmd_signal_v2(args):
     def _df_to_ohlcv(df):
         candles = []
         for ts, row in df.iterrows():
-            candles.append(OHLCV(
-                timestamp=ts.to_pydatetime() if hasattr(ts, "to_pydatetime") else datetime.now(MYT),
-                open=float(row["open"]), high=float(row["high"]),
-                low=float(row["low"]), close=float(row["close"]),
-                volume=int(row.get("volume", 0)) if not np.isnan(row.get("volume", 0)) else 0,
-            ))
+            candles.append(
+                OHLCV(
+                    timestamp=ts.to_pydatetime()
+                    if hasattr(ts, "to_pydatetime")
+                    else datetime.now(MYT),
+                    open=float(row["open"]),
+                    high=float(row["high"]),
+                    low=float(row["low"]),
+                    close=float(row["close"]),
+                    volume=int(row.get("volume", 0))
+                    if not np.isnan(row.get("volume", 0))
+                    else 0,
+                )
+            )
         return candles
 
     candles = _df_to_ohlcv(df)
 
     if len(candles) < 200:
-        return {"error": f"Insufficient data: {len(candles)} candles, need 200+", "timestamp": datetime.now(MYT).isoformat()}
+        return {
+            "error": f"Insufficient data: {len(candles)} candles, need 200+",
+            "timestamp": datetime.now(MYT).isoformat(),
+        }
 
     # Generate signal
     signal = generate_signal_v2(candles, cfg)
 
     # Get regime
     ind = compute_indicators(candles, cfg)
-    state = compute_market_state(candles, ind.ema_20, ind.ema_50, ind.ema_200, ind.rsi_14)
+    state = compute_market_state(
+        candles, ind.ema_20, ind.ema_50, ind.ema_200, ind.rsi_14
+    )
 
     # Position sizing
     risk_state = RiskState(
         equity=cfg.syed_balance_estimate,
         balance=cfg.syed_balance_estimate,
-        open_positions=0, daily_pnl=0.0, can_trade=True,
+        open_positions=0,
+        daily_pnl=0.0,
+        can_trade=True,
     )
     lots, risk_amount = compute_position_size(signal, risk_state, cfg)
     signal.suggested_lot = lots
@@ -586,11 +718,26 @@ def cmd_signal_v2(args):
             "rsi": round(state.rsi, 1),
         },
         "zones": {
-            "buy_zone": {"price": state.buy_zone.price, "strength": state.buy_zone.strength} if state.buy_zone else None,
-            "sell_zone": {"price": state.sell_zone.price, "strength": state.sell_zone.strength} if state.sell_zone else None,
+            "buy_zone": {
+                "price": state.buy_zone.price,
+                "strength": state.buy_zone.strength,
+            }
+            if state.buy_zone
+            else None,
+            "sell_zone": {
+                "price": state.sell_zone.price,
+                "strength": state.sell_zone.strength,
+            }
+            if state.sell_zone
+            else None,
         },
         "confluence_factors": [
-            {"name": f.name, "direction": f.direction.value, "weight": f.weight, "confidence": f.confidence}
+            {
+                "name": f.name,
+                "direction": f.direction.value,
+                "weight": f.weight,
+                "confidence": f.confidence,
+            }
             for f in signal.confluence_factors
         ],
         "timestamp": datetime.now(MYT).isoformat(),
@@ -619,7 +766,11 @@ def cmd_calendar(args):
         with urllib.request.urlopen(req, timeout=15) as resp:
             raw = json.loads(resp.read())
     except Exception as e:
-        return {"error": str(e), "events": [], "timestamp": datetime.now(MYT).isoformat()}
+        return {
+            "error": str(e),
+            "events": [],
+            "timestamp": datetime.now(MYT).isoformat(),
+        }
 
     # Filter USD high/medium impact, upcoming only
     now = dt.now()
@@ -631,7 +782,12 @@ def cmd_calendar(args):
         if impact not in ("High", "Medium"):
             continue
         try:
-            ev_dt = dt.fromisoformat(ev["date"].replace("Z", "+00:00").replace("-04:00", "-0400").replace("-05:00", "-0500"))
+            ev_dt = dt.fromisoformat(
+                ev["date"]
+                .replace("Z", "+00:00")
+                .replace("-04:00", "-0400")
+                .replace("-05:00", "-0500")
+            )
             ev_dt_local = ev_dt.astimezone(MYT) if ev_dt.tzinfo else ev_dt
         except Exception:
             ev_dt_local = None
@@ -642,17 +798,19 @@ def cmd_calendar(args):
             if diff_hours < -4:
                 continue
 
-        events.append({
-            "datetime": ev_dt_local.isoformat() if ev_dt_local else None,
-            "date": ev_dt_local.strftime("%a %b %d") if ev_dt_local else "",
-            "time": ev_dt_local.strftime("%H:%M") if ev_dt_local else "",
-            "currency": "USD",
-            "impact": impact.lower(),
-            "event": ev.get("title", ""),
-            "actual": ev.get("actual", "") or "—",
-            "forecast": ev.get("forecast", "") or "—",
-            "previous": ev.get("previous", "") or "—",
-        })
+        events.append(
+            {
+                "datetime": ev_dt_local.isoformat() if ev_dt_local else None,
+                "date": ev_dt_local.strftime("%a %b %d") if ev_dt_local else "",
+                "time": ev_dt_local.strftime("%H:%M") if ev_dt_local else "",
+                "currency": "USD",
+                "impact": impact.lower(),
+                "event": ev.get("title", ""),
+                "actual": ev.get("actual", "") or "—",
+                "forecast": ev.get("forecast", "") or "—",
+                "previous": ev.get("previous", "") or "—",
+            }
+        )
 
     # Sort by datetime
     events.sort(key=lambda x: x.get("datetime") or "")
@@ -667,20 +825,41 @@ def cmd_calendar(args):
     _write_cache(cache, result)
     return result
 
+
 def main():
     parser = argparse.ArgumentParser(description="XNATGAS Natural Gas Data Fetcher")
-    parser.add_argument("command", choices=["ticker", "history", "signals", "levels", "macro", "apex", "signal_v2", "calendar"])
+    parser.add_argument(
+        "command",
+        choices=[
+            "ticker",
+            "history",
+            "signals",
+            "levels",
+            "macro",
+            "apex",
+            "signal_v2",
+            "calendar",
+        ],
+    )
     parser.add_argument("--interval", default="1h")
     parser.add_argument("--period", default="30d")
     args = parser.parse_args()
 
     handlers = {
-        "ticker": cmd_ticker, "history": cmd_history, "signals": cmd_signals,
-        "levels": cmd_levels, "macro": cmd_macro, "apex": cmd_apex, "signal_v2": cmd_signal_v2, "calendar": cmd_calendar,
+        "ticker": cmd_ticker,
+        "history": cmd_history,
+        "signals": cmd_signals,
+        "levels": cmd_levels,
+        "macro": cmd_macro,
+        "apex": cmd_apex,
+        "signal_v2": cmd_signal_v2,
+        "calendar": cmd_calendar,
     }
 
     try:
-        result = handlers[args.command]({"interval": args.interval, "period": args.period})
+        result = handlers[args.command](
+            {"interval": args.interval, "period": args.period}
+        )
         print(json.dumps(result, default=str, indent=2))
     except Exception as e:
         print(json.dumps({"error": str(e)}, indent=2))
