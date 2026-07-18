@@ -56,6 +56,8 @@ def register_institutional_tools(mcp: FastMCP) -> None:
         workforce_signals: dict,
         legal_signals: dict,
         exploitation_signals: dict,
+        session_id: str | None = None,
+        actor_id: str | None = None,
     ) -> dict:
         """
         Composite institutional stress index (0-1).
@@ -111,6 +113,8 @@ def register_institutional_tools(mcp: FastMCP) -> None:
     async def wealth_cascade_model(
         timeline: list,
         intervention_scenario: dict | None = None,
+        session_id: str | None = None,
+        actor_id: str | None = None,
     ) -> dict:
         """
         Model feedback loops between institutional stress dimensions.
@@ -153,6 +157,8 @@ def register_institutional_tools(mcp: FastMCP) -> None:
         board_members: list,
         committees: list,
         stress_level: float,
+        session_id: str | None = None,
+        actor_id: str | None = None,
     ) -> dict:
         """
         Monitor board governance capacity relative to stress level.
@@ -199,6 +205,8 @@ def register_institutional_tools(mcp: FastMCP) -> None:
     async def wealth_external_exploitation_detect(
         counterparty_actions: list,
         institution_state: dict,
+        session_id: str | None = None,
+        actor_id: str | None = None,
     ) -> dict:
         """
         Detect "simulative neutral" counterparty behavior.
