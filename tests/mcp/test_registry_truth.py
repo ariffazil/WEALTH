@@ -10,10 +10,16 @@ DITEMPA BUKAN DIBERI.
 
 from __future__ import annotations
 
+import pytest
+
 from wealth_mcp.server import create_mcp_server
 
 
 EXPECTED_TOOLS = [
+    "wealth_institutional_stress_index",
+    "wealth_cascade_model",
+    "wealth_governance_capacity",
+    "wealth_external_exploitation_detect",
     "capital_primitive",
     "capital_health",
     "capital_diagnose",
@@ -42,16 +48,26 @@ class TestRegistryTruth:
         assert mcp is not None
 
     def test_expected_tool_count(self):
-        """Must have exactly the 7 canonical tools."""
+        """Must expose the current registered surface without omissions."""
         mcp = create_mcp_server()
         tool_names = _tool_names(mcp)
         for expected in EXPECTED_TOOLS:
             assert expected in tool_names, f"Missing tool: {expected}"
-        assert len([t for t in tool_names if t in EXPECTED_TOOLS]) == 8
+        assert len(tool_names) == len(EXPECTED_TOOLS)
 
     def test_no_phantom_tools(self):
-        """Registered public tools must be subset of the 7-canonical set."""
+        """Registered public tools must match the declared runtime set."""
         mcp = create_mcp_server()
         tool_names = _tool_names(mcp)
         for name in tool_names:
             assert name in EXPECTED_TOOLS, f"Phantom tool: {name}"
+
+    @pytest.mark.asyncio
+    async def test_every_public_schema_can_carry_session_envelope(self):
+        """Runtime auth must never require fields absent from discovery."""
+        mcp = create_mcp_server()
+        tools = await mcp.list_tools()
+        for tool in tools:
+            properties = tool.parameters.get("properties", {})
+            assert "session_id" in properties, f"{tool.name} cannot carry session_id"
+            assert "actor_id" in properties, f"{tool.name} cannot carry actor_id"

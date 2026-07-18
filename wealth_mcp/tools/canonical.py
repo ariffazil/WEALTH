@@ -112,6 +112,8 @@ def register_canonical_tools(mcp):
         scenario_data: CoercedDictList = None,
         risk_constraint: float | None = None,
         seed: int | None = None,
+        session_id: str | None = None,
+        actor_id: str | None = None,
     ) -> dict:
         # Coerce MCP transport string serialization (fallback for non-Annotated params)
 
@@ -307,6 +309,8 @@ def register_canonical_tools(mcp):
         monthly_income_v: float | None = None,
         monthly_expenses_v: float | None = None,
         horizon_months: int = 12,
+        session_id: str | None = None,
+        actor_id: str | None = None,
     ) -> dict:
         # Coerce MCP transport string serialization
 
@@ -439,6 +443,8 @@ def register_canonical_tools(mcp):
         mode: str,
         domain_scope: str = "",
         payload: CoercedDict = None,
+        session_id: str | None = None,
+        actor_id: str | None = None,
     ) -> dict:
         """Mode-dispatched institutional diagnostics (ZEN 2026-07-11 W3).
 
@@ -691,6 +697,8 @@ def register_canonical_tools(mcp):
         context: CoercedDict = None,
         memory_query: str = "",
         target: str = "",
+        session_id: str | None = None,
+        actor_id: str | None = None,
     ) -> dict:
         # Coerce MCP transport string serialization
 
@@ -767,6 +775,8 @@ def register_canonical_tools(mcp):
         indicator: str = "usd_myr",
         country: str = "MYS",
         stock_payload: CoercedDict = None,
+        session_id: str | None = None,
+        actor_id: str | None = None,
     ) -> dict:
         """Market data (ZEN 2026-07-11 W4). Stock fields in stock_payload."""
         # Coerce MCP transport string serialization
@@ -874,6 +884,8 @@ def register_canonical_tools(mcp):
         currency: str = "MYR",
         description: str = "",
         ack_irreversible: bool = False,
+        session_id: str | None = None,
+        actor_id: str | None = None,
     ) -> dict:
         m = mode.lower()
 
@@ -1191,6 +1203,8 @@ def register_canonical_tools(mcp):
         actor_ref: str | None = None,
         local_efficiency_claims: CoercedDict = None,
         exported_costs: CoercedDictList = None,
+        session_id: str | None = None,
+        actor_id: str | None = None,
     ) -> dict:
         """Entropy Integrity Mesh — WEALTH domain witness."""
         # Coerce MCP transport string serialization
