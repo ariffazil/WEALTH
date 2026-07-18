@@ -746,8 +746,7 @@ def register_canonical_tools(mcp):
             "Top-level: mode, base, targets, commodity, indicator, country. "
             "Stock fields in stock_payload dict.\n\n"
             "Modes: fx | commodity | indicator | stock | gold | oil | gas\n\n"
-            "For gold/oil/gas, use mode='snapshot' to get ticker+signal+macro.\n"
-            "Use commodity param for analysis type: snapshot|ticker|signal|macro|history|levels\n\n"
+            "For gold/oil/gas, use mode='gold'|'oil'|'gas' with commodity='snapshot'|'ticker'|'signal'|'macro'|'history'|'levels'.\n\n"
             "Use when: FX, commodities, macro indicators, stock analysis, or "
             "gold/oil/gas market intelligence."
         ),
@@ -757,7 +756,7 @@ def register_canonical_tools(mcp):
         mode: str,
         base: str = "USD",
         targets: str = "MYR,SGD,GBP",
-        commodity: str = "snapshot",
+        commodity: str = "brent_crude",
         indicator: str = "usd_myr",
         country: str = "MYS",
         stock_payload: CoercedDict = None,
