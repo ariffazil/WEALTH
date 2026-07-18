@@ -1,0 +1,53 @@
+{
+  "version": "1.0.0",
+  "created": "2026-07-14",
+  "trader": "Abang Sado Udin",
+  "instrument": "XAUUSD",
+  "style": {
+    "timeframe_primary": "H1",
+    "timeframe_context": ["H4", "D1"],
+    "ema_fast": 20,
+    "ema_slow": 50,
+    "rsi_period": 14,
+    "rsi_divergence": true,
+    "candle_confirmation": true,
+    "support_resistance": true,
+    "min_confluence": 2
+  },
+  "risk": {
+    "max_risk_pct": 1.0,
+    "min_rr_ratio": 2.0,
+    "ideal_rr_ratio": 3.0,
+    "max_trades_per_day": 2,
+    "max_daily_loss_pct": 2.0
+  },
+  "sessions": {
+    "allowed": ["london", "newyork"],
+    "blocked": ["asian"],
+    "london_open_utc": "07:00",
+    "london_close_utc": "16:00",
+    "ny_open_utc": "12:00",
+    "ny_close_utc": "21:00"
+  },
+  "time_filter": {
+    "skip_events": ["NFP", "CPI", "FOMC", "FOMC_MINUTES"],
+    "skip_minutes_before": 30,
+    "skip_minutes_after": 60
+  },
+  "confluence_rules": {
+    "required": 2,
+    "indicators": ["ema_crossover", "sr_level", "candle_pattern", "rsi_divergence"],
+    "single_indicator_violation": "F3_WITNESS_BREACH"
+  },
+  "briefing": {
+    "time_myt": "08:00",
+    "delivery": "telegram_dm",
+    "format": "signal_or_no_signal"
+  },
+  "data_source": {
+    "price": "yfinance",
+    "macro_dxy": "yfinance",
+    "macro_yields": "yfinance",
+    "calendar": "manual"
+  }
+}
