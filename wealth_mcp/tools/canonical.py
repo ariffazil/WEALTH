@@ -742,11 +742,18 @@ def register_canonical_tools(mcp):
         name="capital_market",
         output_schema=WEALTH_OUTPUT_SCHEMA,
         description=(
-            "Market data and commodity analysis. Observational only.\n\n"
-            "Top-level: mode, base, targets, commodity, indicator, country. "
+            "Market data and commodity intelligence. Observational with "
+            "derived and interpreted fields.\n\n"
+            "Top-level: mode, base, targets, commodity, operation, country. "
             "Stock fields in stock_payload dict.\n\n"
             "Modes: fx | commodity | indicator | stock | gold | oil | gas\n\n"
-            "For gold/oil/gas, use mode='gold'|'oil'|'gas' with commodity='snapshot'|'ticker'|'signal'|'macro'|'history'|'levels'.\n\n"
+            "For gold/oil/gas: mode='gold'|'oil'|'gas' with "
+            "operation='snapshot'|'ticker'|'signal'|'macro'|'history'|'levels'.\n"
+            "Legacy: use commodity param for operation (deprecated).\n\n"
+            "Epistemic classes per output field:\n"
+            "  OBSERVED — price, volume, timestamp\n"
+            "  DERIVED — EMA, RSI, support/resistance\n"
+            "  INTERPRETED — LONG/SHORT/NEUTRAL signal\n\n"
             "Use when: FX, commodities, macro indicators, stock analysis, or "
             "gold/oil/gas market intelligence."
         ),
@@ -809,11 +816,16 @@ def register_canonical_tools(mcp):
         if m in ("gold", "oil", "gas"):
             from wealth_core.commodity_engines import call_engine, get_snapshot
 
-            op = commodity if commodity else "snapshot"
+            # Map commodity parameter to operation (backward compat)
+            # Preferred: capital_market(mode="gold", operation="snapshot")
+            if "operation" in sp and sp["operation"]:
+                op = sp["operation"]
+            else:
+                op = commodity if commodity != "brent_crude" else "snapshot"
 
-            # Map common operation names to engine endpoint names
+            # Map common names to engine endpoint names
             op_map = {
-                "signal": "signal_v2",  # engine uses signal_v2, not signal
+                "signal": "signal_v2",
                 "daily": "daily_brief",
             }
             engine_op = op_map.get(op, op)
@@ -827,7 +839,7 @@ def register_canonical_tools(mcp):
                 tool_name="capital_market",
                 domain="capital",
                 result=raw,
-                source=f"engine:{m}:{3456 + ['gold', 'oil', 'gas'].index(m)}",
+                source="wealth://commodity",
             )
 
         raise ValueError(
