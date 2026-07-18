@@ -811,10 +811,17 @@ def register_canonical_tools(mcp):
 
             op = commodity if commodity else "snapshot"
 
-            if op == "snapshot":
+            # Map common operation names to engine endpoint names
+            op_map = {
+                "signal": "signal_v2",  # engine uses signal_v2, not signal
+                "daily": "daily_brief",
+            }
+            engine_op = op_map.get(op, op)
+
+            if engine_op == "snapshot":
                 raw = await get_snapshot(m)
             else:
-                raw = await call_engine(m, op)
+                raw = await call_engine(m, engine_op)
 
             return wrap_result(
                 tool_name="capital_market",

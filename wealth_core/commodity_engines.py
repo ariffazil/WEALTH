@@ -20,42 +20,52 @@ ENGINE_PORTS = {
 }
 
 # Supported operations per engine
+# Engine actual endpoints:
+#   /api/{asset}/ticker     — current price + indicators
+#   /api/{asset}/signal_v2  — trading signal (direction, confidence)
+#   /api/{asset}/signals    — recent signals list
+#   /api/{asset}/macro      — macro context
+#   /api/{asset}/history    — price history
+#   /api/{asset}/levels     — support/resistance
+#   /api/{asset}/calendar   — economic events
+#   /api/{asset}/apex       — apex prediction
+#   /api/{asset}/daily_brief — daily briefing
 VALID_OPERATIONS = {
     "gold": {
         "ticker",
-        "signal",
+        "signal_v2",
         "signals",
         "history",
         "macro",
         "levels",
         "calendar",
         "apex",
+        "daily_brief",
         "snapshot",
-        "regime",
     },
     "oil": {
         "ticker",
-        "signal",
+        "signal_v2",
         "signals",
         "history",
         "macro",
         "levels",
         "calendar",
         "apex",
+        "daily_brief",
         "snapshot",
-        "regime",
     },
     "gas": {
         "ticker",
-        "signal",
+        "signal_v2",
         "signals",
         "history",
         "macro",
         "levels",
         "calendar",
         "apex",
+        "daily_brief",
         "snapshot",
-        "regime",
     },
 }
 
@@ -141,7 +151,7 @@ async def get_ticker(asset: str) -> dict[str, Any]:
 
 async def get_signal(asset: str) -> dict[str, Any]:
     """Get latest trading signal for an asset."""
-    return await call_engine(asset, "signal")
+    return await call_engine(asset, "signal_v2")
 
 
 async def get_macro(asset: str) -> dict[str, Any]:
