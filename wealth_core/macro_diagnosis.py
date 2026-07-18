@@ -219,6 +219,13 @@ def diagnose_gold_snapshot(engine_data: dict[str, Any]) -> dict[str, Any]:
     return {
         "asset": "gold",
         "diagnosed_at": now,
+        "summary": {
+            "price": ticker.get("price"),
+            "rsi": ticker.get("rsi"),
+            "signal": ticker.get("signal"),
+            "xau_myr": derivatives.get("xau_myr", {}).get("value"),
+            "dxy": macro.get("dxy"),
+        },
         "observations": observations,
         "derivatives": derivatives,
         "interpretations": [d.to_dict() for d in diagnoses],
@@ -227,6 +234,7 @@ def diagnose_gold_snapshot(engine_data: dict[str, Any]) -> dict[str, Any]:
             "dxy": "CURRENT",
             "xau_myr": "DERIVED",
         },
+        "_compact": True,
     }
 
 
