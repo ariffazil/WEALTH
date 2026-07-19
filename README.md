@@ -13,7 +13,7 @@ a2a_agent_json: /root/WEALTH/.well-known/agent.json
 
 [![Agentic CI](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml/badge.svg?branch=main)](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml)
 [![💰 CAPITAL](https://img.shields.io/badge/%F0%9F%92%B0%20CAPITAL-12%20tools-1f6feb)](https://wealth.arif-fazil.com/mcp)
-[![Federation](https://img.shields.io/badge/Federation-v2026.07.17-0a7b83)](https://arifos.arif-fazil.com)
+[![Federation](https://img.shields.io/badge/Federation-v2026.07.19-0a7b83)](https://arifos.arif-fazil.com)
 [![License](https://img.shields.io/github/license/ariffazil/wealth?label=License)](LICENSE)
 
 # WEALTH — Capital Intelligence for arifOS
