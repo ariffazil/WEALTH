@@ -17,17 +17,65 @@ concurrency:
 
 jobs:
   federation-check:
+
+  protocol-alignment:
+    runs-on: ubuntu-latest
+    needs: [federation-check]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Protocol alignment gate
+        run: bash AAA/scripts/check_protocol_alignment.sh
     name: 🗺️ Federation Check
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
       - uses: actions/checkout@v7
       - name: Validate FEDERATION.md
+
+  protocol-alignment:
+    runs-on: ubuntu-latest
+    needs: [federation-check]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Protocol alignment gate
+        run: bash AAA/scripts/check_protocol_alignment.sh
         run: |
           test -f FEDERATION.md || (echo "❌ Missing FEDERATION.md" && exit 1)
+
+  protocol-alignment:
+    runs-on: ubuntu-latest
+    needs: [federation-check]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Protocol alignment gate
+        run: bash AAA/scripts/check_protocol_alignment.sh
           grep -q "role: DOMAIN" FEDERATION.md
+
+  protocol-alignment:
+    runs-on: ubuntu-latest
+    needs: [federation-check]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Protocol alignment gate
+        run: bash AAA/scripts/check_protocol_alignment.sh
           grep -q "layer: L3" FEDERATION.md
+
+  protocol-alignment:
+    runs-on: ubuntu-latest
+    needs: [federation-check]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Protocol alignment gate
+        run: bash AAA/scripts/check_protocol_alignment.sh
           echo "✅ WEALTH FEDERATION.md valid — L3 DOMAIN"
+
+  protocol-alignment:
+    runs-on: ubuntu-latest
+    needs: [federation-check]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Protocol alignment gate
+        run: bash AAA/scripts/check_protocol_alignment.sh
 
   standard:
     name: "Lane 1 — Standard CI"
