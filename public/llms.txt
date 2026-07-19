@@ -1,0 +1,17 @@
+# WEALTH — arifOS Federation
+
+> Capital Intelligence — NPV, IRR, EMV, Kelly, Markowitz, institutional stress, collapse detection.
+
+## MCP Endpoint
+https://wealth.arif-fazil.com/mcp
+
+## Transport
+streamable-http
+
+## Tools
+See: https://wealth.arif-fazil.com/health
+
+## Governance
+- Constitution: arifOS F1-F13
+- Organ role: L3 DOMAIN
+- Doctrine: DITEMPA BUKAN DIBERI
