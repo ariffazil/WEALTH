@@ -1,0 +1,32 @@
+schema_version: 1
+organ: wealth
+repo: ariffazil/wealth
+role: domain_evidence
+authority_ceiling: COMPUTE_ONLY
+default_branch: main
+
+interfaces:
+  mcp_manifest: contracts/mcp-surface.json
+  health_schema: contracts/health.schema.json
+
+owned_domains:
+  - capital_computation
+  - financial_modeling
+  - market_data
+  - portfolio_analysis
+
+forbidden_domains:
+  - constitutional_judgment
+  - capital_allocation
+  - investment_authority
+  - deployment_authorization
+
+build:
+  runtime: python-3.12
+  install: pip install -e ".[dev]"
+  test: pytest tests/ -q --tb=short
+  lint: ruff check . && ruff format --check .
+  artifact: wheel
+
+rollback:
+  strategy: previous_verified_digest

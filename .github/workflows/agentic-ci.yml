@@ -17,65 +17,35 @@ concurrency:
 
 jobs:
   federation-check:
-
-  protocol-alignment:
-    runs-on: ubuntu-latest
-    needs: [federation-check]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Protocol alignment gate
-        run: bash AAA/scripts/check_protocol_alignment.sh
     name: 🗺️ Federation Check
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - uses: actions/checkout@v7
-      - name: Validate FEDERATION.md
-
-  protocol-alignment:
-    runs-on: ubuntu-latest
-    needs: [federation-check]
-    steps:
       - uses: actions/checkout@v4
-      - name: Protocol alignment gate
-        run: bash AAA/scripts/check_protocol_alignment.sh
+      - name: Validate FEDERATION.md
         run: |
           test -f FEDERATION.md || (echo "❌ Missing FEDERATION.md" && exit 1)
-
-  protocol-alignment:
-    runs-on: ubuntu-latest
-    needs: [federation-check]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Protocol alignment gate
-        run: bash AAA/scripts/check_protocol_alignment.sh
-          grep -q "role: DOMAIN" FEDERATION.md
-
-  protocol-alignment:
-    runs-on: ubuntu-latest
-    needs: [federation-check]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Protocol alignment gate
-        run: bash AAA/scripts/check_protocol_alignment.sh
-          grep -q "layer: L3" FEDERATION.md
-
-  protocol-alignment:
-    runs-on: ubuntu-latest
-    needs: [federation-check]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Protocol alignment gate
-        run: bash AAA/scripts/check_protocol_alignment.sh
+          grep -q "role: DOMAIN" FEDERATION.md || (echo "❌ Missing role: DOMAIN" && exit 1)
+          grep -q "layer: L3" FEDERATION.md || (echo "❌ Missing layer: L3" && exit 1)
           echo "✅ WEALTH FEDERATION.md valid — L3 DOMAIN"
 
   protocol-alignment:
+    name: 📋 Protocol Alignment
     runs-on: ubuntu-latest
     needs: [federation-check]
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
       - name: Protocol alignment gate
-        run: bash AAA/scripts/check_protocol_alignment.sh
+        run: |
+          if [ -f AAA/scripts/check_protocol_alignment.sh ]; then
+            bash AAA/scripts/check_protocol_alignment.sh
+          else
+            echo "ℹ️ Protocol alignment script not found — running basic checks"
+            grep -q "role: DOMAIN" FEDERATION.md || (echo "❌ Missing role" && exit 1)
+            grep -q "layer: L3" FEDERATION.md || (echo "❌ Missing layer" && exit 1)
+            echo "✅ Basic protocol alignment passed"
+          fi
 
   standard:
     name: "Lane 1 — Standard CI"
