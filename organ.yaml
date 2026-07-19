@@ -30,3 +30,4 @@ build:
 
 rollback:
   strategy: previous_verified_digest
+# Federation CI test — 2026-07-19T18:18:51Z
