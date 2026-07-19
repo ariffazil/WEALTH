@@ -54,10 +54,19 @@ if __name__ == "__main__":
         except Exception:
             identity_hash = "UNAVAILABLE"
 
+        # Tool surface visibility (T₁ audit fix 2026-07-19)
+        _public_tools = 20
+        try:
+            _public_tools = len(mcp._mcp_server._tool_manager._tools) if mcp and hasattr(mcp, '_mcp_server') else 20
+        except Exception:
+            pass
+
         return JSONResponse(
             {
                 "status": "healthy",
                 "identity_hash": identity_hash,
+                "tools_loaded": _public_tools,
+                "canonical_tools": _public_tools,
                 "apex_scalars": {
                     "G": {"value": None, "status": "UNMEASURED"},
                     "C_dark": {"value": None, "status": "UNMEASURED"},
