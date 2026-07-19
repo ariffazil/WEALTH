@@ -14,8 +14,10 @@ DITEMPA BUKAN DIBERI — Forged, not given.
 
 from __future__ import annotations
 
+import json
 import os
 import sys
+import uuid
 
 # Ensure parent directory is in path
 base_dir = os.path.abspath(os.path.dirname(__file__))
@@ -191,6 +193,88 @@ if __name__ == "__main__":
         "https://127.0.0.1",
     )
 
+    # ── Session Store ──────────────────────────────────────────────────────
+    # In-memory set of valid MCP session IDs for transport-level enforcement.
+    _valid_mcp_sessions: set[str] = set()
+
+    class McpSessionEnforcementMiddleware(BaseHTTPMiddleware):
+        """Enforce Mcp-Session-Id header on all MCP tool calls.
+
+        Strict-organ doctrine: domain operations require a session. Always.
+        Three-way taxonomy: 400 missing / 401 invalid / 403 insufficient.
+        Initialize requests are exempt (they bootstrap the session).
+        """
+
+        _EXEMPT_METHODS = frozenset({"initialize", "notifications/initialized"})
+
+        async def dispatch(self, request: StarletteRequest, call_next):
+            if request.method == "POST" and request.url.path.startswith("/mcp"):
+                body = await request.body()
+                method = None
+                if body:
+                    try:
+                        payload = json.loads(body)
+                        method = payload.get("method", "")
+                    except (json.JSONDecodeError, UnicodeDecodeError):
+                        pass
+
+                # Initialize bootstraps the session — allow through
+                if method in self._EXEMPT_METHODS:
+                    # Generate and store session ID for initialize
+                    if method == "initialize":
+                        new_sid = uuid.uuid4().hex
+                        _valid_mcp_sessions.add(new_sid)
+                        # Rebuild request with new scope including session_key
+                        scope = dict(request.scope)
+                        scope["mcp_session_id"] = new_sid
+                        # Restore body for downstream
+                        request._body = body
+                        response = await call_next(request)
+                        # Inject Mcp-Session-Id header into the response
+                        response.headers["Mcp-Session-Id"] = new_sid
+                        return response
+                    request._body = body
+                    return await call_next(request)
+
+                # Non-initialize requests must have Mcp-Session-Id
+                session_id = request.headers.get(
+                    "Mcp-Session-Id"
+                ) or request.headers.get("mcp-session-id")
+
+                if not session_id:
+                    return StarletteResponse(
+                        content=json.dumps(
+                            {
+                                "jsonrpc": "2.0",
+                                "error": {
+                                    "code": -32000,
+                                    "message": "SESSION_MISSING: Mcp-Session-Id header required",
+                                },
+                            }
+                        ),
+                        status_code=400,
+                        media_type="application/json",
+                    )
+
+                # Validate session exists
+                if session_id not in _valid_mcp_sessions:
+                    return StarletteResponse(
+                        content=json.dumps(
+                            {
+                                "jsonrpc": "2.0",
+                                "error": {
+                                    "code": -32000,
+                                    "message": "SESSION_INVALID: Unknown or expired session ID",
+                                },
+                            }
+                        ),
+                        status_code=404,
+                        media_type="application/json",
+                    )
+                request._body = body
+
+            return await call_next(request)
+
     class DNSRebindingProtection(BaseHTTPMiddleware):
         async def dispatch(self, request: StarletteRequest, call_next):
             if request.url.path.startswith("/mcp"):
@@ -212,7 +296,10 @@ if __name__ == "__main__":
                     )
             return await call_next(request)
 
+    # Order matters: session enforcement OUTERMOST (runs first in Starlette)
+    # DNS protection runs last (inner) so session check happens before host check.
     app.add_middleware(DNSRebindingProtection)
+    app.add_middleware(McpSessionEnforcementMiddleware)
 
     print("WEALTH Federated Domain starting on port 18082...")
     print("  Architecture: 5-layer federated")

@@ -16978,7 +16978,11 @@ def _patch_output_schemas(mcp_server: Any) -> None:
 
 
 class OriginValidationMiddleware:
-    """Validate Origin header on MCP endpoints to prevent DNS rebinding (SEP-2243)."""
+    """Validate Origin header and session token on MCP endpoints.
+
+    SEP-2243: DNS rebinding protection (Origin check).
+    FORGE 2026-07-18: Session token validation (anonymous read posture fix).
+    """
 
     ALLOWED_ORIGIN_PREFIXES: tuple[str, ...] = (
         "https://wealth.arif-fazil.com",
@@ -16992,6 +16996,7 @@ class OriginValidationMiddleware:
     async def __call__(self, scope, receive, send):
         if scope["type"] == "http" and scope.get("path", "").startswith("/mcp"):
             headers = dict(scope.get("headers", []))
+            # ── Origin validation (SEP-2243) ──
             origin_bytes = headers.get(b"origin", b"")
             origin = (
                 origin_bytes.decode()
@@ -17015,6 +17020,38 @@ class OriginValidationMiddleware:
                     }
                 )
                 return
+            # ── Session token validation (FORGE 2026-07-18) ──
+            # POST requests to /mcp must carry a session token.
+            # Reject anonymous reads at the HTTP layer.
+            method = scope.get("method", "GET").upper()
+            if method == "POST":
+                session_token = headers.get(b"x-session-token", b"")
+                if isinstance(session_token, bytes):
+                    session_token = session_token.decode()
+                # Also check Authorization header as fallback
+                if not session_token:
+                    auth_header = headers.get(b"authorization", b"")
+                    if isinstance(auth_header, bytes):
+                        auth_header = auth_header.decode()
+                    if auth_header.startswith("Bearer "):
+                        session_token = auth_header[7:]
+                if not session_token or session_token.strip() in (
+                    "", "anonymous", "null", "None", "_default"
+                ):
+                    await send(
+                        {
+                            "type": "http.response.start",
+                            "status": 400,
+                            "headers": [[b"content-type", b"application/json"]],
+                        }
+                    )
+                    await send(
+                        {
+                            "type": "http.response.body",
+                            "body": b'{"error":"SESSION_MISSING","message":"session_id required (FORGE 2026-07-18: anonymous reads blocked)","http_status":400}',
+                        }
+                    )
+                    return
         await self.app(scope, receive, send)
 
     def __init__(self, app):
