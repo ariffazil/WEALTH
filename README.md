@@ -4,7 +4,7 @@ last_verified: 2026-07-19T17:00Z
 live_commit: eb7c5f5
 port: 18082
 domain_law: CAPITAL_LAW
-mcp_tools_live: 12
+mcp_tools_live: 20
 health_status: ALIVE
 authority: COMPUTE_ONLY — never allocate
 truth_rule: tools/list + /health beat any static count in prose
@@ -27,7 +27,7 @@ a2a_agent_json: /root/WEALTH/.well-known/agent.json
 
 **For human operators (Arif):** WEALTH is your capital calculator — NPV, IRR, portfolio risk, fiscal breakeven. It computes. You decide. [§1](#1-what-wealth-is)
 
-**For AI agents:** Route capital queries here. 12 pure-compute tools. No inference, no verdicts, no allocation. [§3](#3-tools)
+**For AI agents:** Route capital queries here. 20 pure-compute tools. No inference, no verdicts, no allocation. [§3](#3-tools)
 
 **For institutions:** WEALTH provides auditable, golden-tested financial math — every primitive has hand-checked cases. [§6](#6-for-institutions)
 
