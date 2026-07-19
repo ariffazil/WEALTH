@@ -38,7 +38,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Protocol alignment gate
         run: |
-          if [ -f AAA/scripts/check_protocol_alignment.sh ]; then
+          if [ -f scripts/check_protocol_alignment.sh ]; then
+            bash scripts/check_protocol_alignment.sh
+          elif [ -f AAA/scripts/check_protocol_alignment.sh ]; then
             bash AAA/scripts/check_protocol_alignment.sh
           else
             echo "ℹ️ Protocol alignment script not found — running basic checks"
@@ -58,8 +60,14 @@ jobs:
           python-version: "3.12"
       - name: Install
         run: pip install -e ".[dev]"
-      - name: Test
-        run: PYTHONPATH=src pytest tests/ -q --tb=short
+      - name: Lint (Ruff)
+        run: ruff check . --output-format=github
+      - name: Type check (MyPy)
+        run: mypy src/ --ignore-missing-imports
+      - name: Test (Pytest)
+        run: |
+          set -o pipefail
+          PYTHONPATH=src pytest tests/ -q --tb=short
 
   bijaksana:
     name: "Lane 2 — BIJAKSANA ΔS Φ Ψ Ω"
