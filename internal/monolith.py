@@ -1565,7 +1565,11 @@ def wealth_commodity_price(
             "unit": "USD/tonne",
             "source": "ICE API2 assessment",
         },
-        "gold": {"price": 4063.40, "unit": "USD/troy_oz", "source": "LBMA PM fix + 2026 breakout"},
+        "gold": {
+            "price": 4063.40,
+            "unit": "USD/troy_oz",
+            "source": "LBMA PM fix + 2026 breakout",
+        },
         "malaysia_rsd": {
             "price": 82.00,
             "unit": "USD/bbl",
@@ -1730,19 +1734,43 @@ def wealth_market_data(
         )
     elif mode == "gold":
         # Gold intelligence surface — reads from market_observation DB
-        analysis = commodity if commodity in ("snapshot", "decompose", "regime", "structural") else "snapshot"
+        analysis = (
+            commodity
+            if commodity in ("snapshot", "decompose", "regime", "structural")
+            else "snapshot"
+        )
         db_container, db_user, db_name = "postgres", "arifos_admin", "vault999"
 
         def _query_db(sql: str) -> list:
             try:
                 result = _subprocess.run(
-                    ["docker", "exec", db_container, "psql", "-U", db_user, "-d", db_name,
-                     "-t", "-A", "-F", "|", "-c", sql],
-                    capture_output=True, text=True, timeout=10,
+                    [
+                        "docker",
+                        "exec",
+                        db_container,
+                        "psql",
+                        "-U",
+                        db_user,
+                        "-d",
+                        db_name,
+                        "-t",
+                        "-A",
+                        "-F",
+                        "|",
+                        "-c",
+                        sql,
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
                 )
                 if result.returncode != 0:
                     return []
-                return [line.split("|") for line in result.stdout.strip().split("\n") if line]
+                return [
+                    line.split("|")
+                    for line in result.stdout.strip().split("\n")
+                    if line
+                ]
             except Exception:
                 return []
 
@@ -1754,7 +1782,7 @@ def wealth_market_data(
                 "analysis": analysis,
                 "status": "deferred",
                 "message": f"{analysis} requires accumulated history. "
-                           "Check back after 30+ daily observations.",
+                "Check back after 30+ daily observations.",
                 "recommendation_only": True,
                 "final_authority": "Arif",
             }
@@ -1776,7 +1804,7 @@ def wealth_market_data(
                 "analysis": analysis,
                 "status": "no_data",
                 "message": "No gold data yet. Daily ingestion runs at 08:00 MYT. "
-                           "Run manually: python3 internal/ingest/market_daily.py",
+                "Run manually: python3 internal/ingest/market_daily.py",
                 "recommendation_only": True,
                 "final_authority": "Arif",
             }
@@ -1785,28 +1813,35 @@ def wealth_market_data(
         for parts in rows:
             if len(parts) >= 6:
                 snapshot[parts[0]] = {
-                    "value": float(parts[1]), "unit": parts[2],
-                    "source": parts[3], "confidence": float(parts[4]),
+                    "value": float(parts[1]),
+                    "unit": parts[2],
+                    "source": parts[3],
+                    "confidence": float(parts[4]),
                     "observed_at": parts[5],
                 }
 
         result = {
-            "mcp": "WEALTH", "tool": "wealth_market_data",
-            "mode": "gold", "analysis": analysis,
-            "currency": "MYR", "snapshot": snapshot,
-            "recommendation_only": True, "final_authority": "Arif",
+            "mcp": "WEALTH",
+            "tool": "wealth_market_data",
+            "mode": "gold",
+            "analysis": analysis,
+            "currency": "MYR",
+            "snapshot": snapshot,
+            "recommendation_only": True,
+            "final_authority": "Arif",
         }
 
         if analysis == "decompose" and "XAU_USD" in snapshot and "USD_MYR" in snapshot:
             xau_usd = snapshot["XAU_USD"]["value"]
             usd_myr = snapshot["USD_MYR"]["value"]
             result["decomposition"] = {
-                "xau_usd": xau_usd, "usd_myr": usd_myr,
+                "xau_usd": xau_usd,
+                "usd_myr": usd_myr,
                 "xau_myr_oz": round(xau_usd * usd_myr, 2),
                 "xau_myr_gram": round(xau_usd * usd_myr / 31.1035, 2),
                 "formula": "XAU/MYR = XAU/USD × USD/MYR",
                 "note": "Local dealer premiums not yet tracked — "
-                        "actual purchase price may differ by 3-8%.",
+                "actual purchase price may differ by 3-8%.",
             }
 
         # Recent signals
@@ -1819,10 +1854,16 @@ def wealth_market_data(
         """)
         if sig_rows:
             result["signals"] = [
-                {"instrument": p[0], "signal_type": p[1],
-                 "value": float(p[2]) if p[2] else None,
-                 "severity": p[3], "regime_label": p[4], "calculated_at": p[5]}
-                for p in sig_rows if len(p) >= 6
+                {
+                    "instrument": p[0],
+                    "signal_type": p[1],
+                    "value": float(p[2]) if p[2] else None,
+                    "severity": p[3],
+                    "regime_label": p[4],
+                    "calculated_at": p[5],
+                }
+                for p in sig_rows
+                if len(p) >= 6
             ]
 
         return result
@@ -13557,12 +13598,20 @@ def wealth_hysteresis_ledger(
 
 
 @mcp.tool(name="wealth_system_registry_status")
-async def wealth_system_registry_status(mode: str = "registry") -> dict[str, Any]:
+async def wealth_system_registry_status(
+    mode: str = "registry",
+    session_id: str | None = None,
+    actor_id: str | None = None,
+) -> dict[str, Any]:
     """Registry truth diagnostic — intended, registered, and alias surfaces.
 
     Modes:
       registry — Full tool/resource/prompt surface audit (default)
       health   — Lightweight liveness probe (~1ms, for systemd health checks)
+
+    session_id / actor_id — Optional federation authority envelope.
+      Not required for anonymous read-only registry discovery.
+      Required for authenticated mutating tools.
     """
     if mode == "health":
         # Wrap the health check in the standard WEALTH envelope so it matches
@@ -17037,7 +17086,11 @@ class OriginValidationMiddleware:
                     if auth_header.startswith("Bearer "):
                         session_token = auth_header[7:]
                 if not session_token or session_token.strip() in (
-                    "", "anonymous", "null", "None", "_default"
+                    "",
+                    "anonymous",
+                    "null",
+                    "None",
+                    "_default",
                 ):
                     await send(
                         {
