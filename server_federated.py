@@ -61,10 +61,27 @@ if __name__ == "__main__":
         except Exception:
             pass
 
+        git_commit = "UNAVAILABLE"
+        try:
+            import subprocess
+            r = subprocess.run(["git", "-C", "/root/WEALTH", "rev-parse", "--short=7", "HEAD"],
+                               capture_output=True, text=True, timeout=3)
+            if r.returncode == 0:
+                git_commit = r.stdout.strip()
+        except Exception:
+            pass
+        if git_commit == "UNAVAILABLE":
+            try:
+                git_commit = Path("/root/WEALTH/.git_commit").read_text().strip()
+            except Exception:
+                pass
+
         return JSONResponse(
             {
                 "status": "healthy",
+                "identity": identity_hash,
                 "identity_hash": identity_hash,
+                "git_commit": git_commit,
                 "tools_loaded": _public_tools,
                 "canonical_tools": _public_tools,
                 "apex_scalars": {
