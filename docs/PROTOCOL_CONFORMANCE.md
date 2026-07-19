@@ -1,5 +1,6 @@
 # PROTOCOL_CONFORMANCE.md — WEALTH (L3 DOMAIN)
 
+<!-- PROTOCOL_TAGS: MCP-Server JSON-RPC Well-Known -->
 ```yaml
 organ: WEALTH
 layer: L3 DOMAIN
