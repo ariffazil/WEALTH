@@ -78,3 +78,4 @@ coverage.xml
 # GitHub Copilot workspace — not VPS-aware, do not commit
 Copilot/
 site/
+data/gold_alert_chart.png
