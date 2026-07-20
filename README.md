@@ -128,3 +128,73 @@ WEALTH provides auditable, bounded financial computation:
 WEALTH · Port 18082 · 12 tools · CAPITAL_LAW · AGPL-3.0
 Computes, never allocates. DITEMPA BUKAN DIBERI.
 ```
+
+---
+
+## 🛡️ Federation Governance
+
+This organ operates under the [arifOS Federation Contract](FEDERATION_CONTRACT.md). All 13 constitutional floors (F1-F13) apply. Compute only — never allocate capital. All outputs labeled OBS/DER/INT/SPEC per F2 TRUTH.
+
+### Constitutional Compliance
+- **F1 AMANAH:** All mutations reversible or backed up
+- **F2 TRUTH:** Epistemic labels on all substantive claims
+- **F3 WITNESS:** Tri-witness required for SEAL-grade outputs
+- **F4 CLARITY:** ΔS ≤ 0 — every output reduces entropy
+- **F11 AUDIT:** Every tool call logged to VAULT999
+
+### Quick Links
+- [Federation Landing](/root/AGENTS.md)
+- [Organ Map](/root/AAA/docs/ORGAN.md)
+- [VAULT999](/root/VAULT999/)
+- [Secrets Vault](/root/.secrets/INDEX.md)
+
+---
+
+## 🔧 Tool Registry
+
+This organ exposes MCP tools discoverable via `tools/list` on port 18082. For the canonical tool manifest, query the live registry.
+
+### Epistemic Standards (F2 TRUTH)
+All tool outputs follow the epistemic labeling convention:
+- **OBS** — Direct observation from market data or measurement
+- **DER** — Derived from OBS via deterministic computation
+- **INT** — Interpretation requiring capital/financial expertise
+- **SPEC** — Speculative, forward-looking, or hypothetical
+
+### Audit Trail (F11)
+Every tool invocation that produces evidence is logged to VAULT999 with actor signature. Immutable. Append-only. Hash-chained.
+
+### Connection
+```bash
+curl -s http://localhost:18082/health | python3 -m json.tool
+```
+
+---
+
+*Maintained under F13 SOVEREIGN by Muhammad Arif bin Fazil.*
+*DITEMPA BUKAN DIBERI — Forged, Not Given.*
+
+### Capital Primitives
+
+| Mode | Description |
+|------|-------------|
+| `npv` | Net Present Value |
+| `irr` | Internal Rate of Return |
+| `emv` | Expected Monetary Value |
+| `evoi` | Expected Value of Information |
+| `mc` | Monte Carlo simulation |
+| `kelly` | Kelly criterion position sizing |
+| `markowitz` | Modern portfolio optimization |
+| `robust` | Robust optimization under uncertainty |
+| `chance_constrained` | Chance-constrained stochastic programming |
+| `two_stage` | Two-stage stochastic programming with recourse |
+
+All primitives are pure deductive math — golden-tested against hand-checked cases.
+
+### Market Intelligence
+FX rates, commodity prices, stock analysis, gold/oil/gas signals — observational with derived and interpreted fields. Never a trading recommendation. WEALTH computes; arifOS judges; Arif decides.
+
+### Capital Wisdom
+Multi-dimensional proposal evaluation across dignity, sovereignty, resilience, inequality, ecological cost, and optionality. Advisory only. Does NOT emit GO/HOLD/SEAL verdicts — those are arifOS's domain.
+
+*Compute only. Never allocate. VAULT999-audited. F13 sovereign.*
