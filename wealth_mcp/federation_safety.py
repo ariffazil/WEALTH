@@ -234,7 +234,15 @@ def classify_error(
 
     # Missing/required patterns
     elif any(
-        kw in msg_lower for kw in ["missing", "required", "cannot be null", "undefined"]
+        kw in msg_lower
+        for kw in [
+            "missing",
+            "required",
+            "requires",
+            "cannot be null",
+            "undefined",
+            "must provide",
+        ]
     ):
         error_class = ErrorClass.MISSING_REQUIRED_FIELD
         recoverability = Recoverability.AGENT_CAN_RETRY

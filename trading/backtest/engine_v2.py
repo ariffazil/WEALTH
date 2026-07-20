@@ -23,6 +23,127 @@ sys.path.insert(0, '/root')
 from trading.signals.scanner import ema, rsi, atr
 from trading.signals.regime import detect_regime, find_swing_points, Regime
 from trading.core.models import OHLCV
+from trading.core.models import Signal, SignalStrength, Direction, Verdict, ConfluenceFactor, Indicators
+from trading.apex.apex_predictor import evaluate_market, APEXMarketState
+
+
+def generate_signal_v2(
+    candles: list,
+    cfg=None,
+    candles_4h: Optional[list] = None,
+    candles_1d: Optional[list] = None,
+) -> Signal:
+    """Shim for the gold-api signal_v2 endpoint.
+
+    The original v2 generator was a fuller pipeline (with explicit confluence
+    factor walk, position-size layer, governance gate). That pipeline was
+    dismantled during the trading/ package split (signals -> apex/backtest).
+    Rather than reconstruct the full pipeline, this shim:
+
+      1. Runs the apex market evaluation (G, C_dark, dS, state, direction).
+      2. Builds a Signal envelope with entry = last close, SL = ±2*ATR,
+         TP1/TP2 = ±1R/±2R. Risk:Reward falls out of those levels.
+      3. Surfaces the dominant confluence factor as the APEX components.
+
+    This gives the gold dashboard a live, defensible signal without claiming
+    full engine-v2 fidelity. F2: the response shape is a Signal; the caller
+    (fetch_gold.py:cmd_signal_v2) treats it as such.
+    """
+    if not candles:
+        raise ValueError("generate_signal_v2: empty candles list")
+
+    last = candles[-1]
+    last_price = float(last.close)
+    closes = [float(c.close) for c in candles]
+    highs = [float(c.high) for c in candles]
+    lows = [float(c.low) for c in candles]
+    volumes = [int(c.volume) for c in candles]
+
+    ema_20 = ema(closes, 20)[-1] if len(closes) >= 20 else last_price
+    ema_50 = ema(closes, 50)[-1] if len(closes) >= 50 else last_price
+    ema_200 = ema(closes, 200)[-1] if len(closes) >= 200 else last_price
+    rsi_14 = rsi(closes, 14)[-1] if len(closes) >= 15 else 50.0
+    atr_14 = atr(candles, 14)[-1] if len(candles) >= 15 else 10.0
+
+    apex: APEXMarketState = evaluate_market(
+        candles_1h=candles,
+        candles_4h=candles_4h,
+        candles_1d=candles_1d,
+        ema_20=ema_20, ema_50=ema_50, ema_200=ema_200,
+        atr_val=atr_14, atr_avg=atr_14,
+    )
+
+    # APEX direction.value is e.g. "LONG"/"SHORT"/"NEUTRAL" — map to engine Direction.
+    apex_dir = (apex.direction.value or "NEUTRAL").upper()
+    if apex_dir in ("LONG", "BUY"):
+        direction = Direction.BUY
+    elif apex_dir in ("SHORT", "SELL"):
+        direction = Direction.SELL
+    else:
+        direction = Direction.FLAT
+
+    apex_verdict = (apex.verdict or "").upper()
+    if apex_verdict in ("PROCEED", "SEAL", "LONG"):
+        verdict = Verdict.PROCEED
+        strength = SignalStrength.STRONG if apex.confidence > 0.7 else SignalStrength.MODERATE
+    elif apex_verdict in ("REVIEW", "SABAR", "HOLD"):
+        verdict = Verdict.HOLD
+        strength = SignalStrength.WEAK
+    else:
+        verdict = Verdict.HOLD
+        strength = SignalStrength.NONE
+
+    # Entry / SL / TP geometry — 2R/3R bracketing the apex verdict direction.
+    if direction == Direction.BUY:
+        entry_price = last_price
+        stop_loss = last_price - 2.0 * atr_14
+        take_profit_1 = last_price + 2.0 * atr_14
+        take_profit_2 = last_price + 3.0 * atr_14
+    elif direction == Direction.SELL:
+        entry_price = last_price
+        stop_loss = last_price + 2.0 * atr_14
+        take_profit_1 = last_price - 2.0 * atr_14
+        take_profit_2 = last_price - 3.0 * atr_14
+    else:
+        entry_price = stop_loss = take_profit_1 = take_profit_2 = last_price
+    risk = abs(entry_price - stop_loss) or 1e-9
+    reward = abs(take_profit_1 - entry_price)
+    rr_ratio = reward / risk
+
+    indicators = Indicators(
+        timestamp=datetime.now(),
+        ema_20=ema_20, ema_50=ema_50, ema_200=ema_200,
+        rsi_14=rsi_14, atr_14=atr_14,
+    )
+
+    factors = [
+        ConfluenceFactor(name=f"APEX.A={apex.A:.2f}",  direction=direction, weight=0.2, confidence=apex.A),
+        ConfluenceFactor(name=f"APEX.P={apex.P:.2f}",  direction=direction, weight=0.2, confidence=apex.P),
+        ConfluenceFactor(name=f"APEX.E={apex.E:.2f}",  direction=direction, weight=0.2, confidence=apex.E),
+        ConfluenceFactor(name=f"APEX.X={apex.X:.2f}",  direction=direction, weight=0.2, confidence=apex.X),
+        ConfluenceFactor(name=f"APEX.Φ={apex.Phi:.2f}", direction=direction, weight=0.2, confidence=apex.Phi),
+    ]
+    confluence_score = round(apex.G, 3)
+
+    return Signal(
+        symbol="XAUUSD",
+        direction=direction,
+        strength=strength,
+        confidence=apex.confidence,
+        entry_price=round(entry_price, 2),
+        stop_loss=round(stop_loss, 2),
+        take_profit_1=round(take_profit_1, 2),
+        take_profit_2=round(take_profit_2, 2),
+        rr_ratio=round(rr_ratio, 2),
+        confluence_factors=factors,
+        confluence_score=confluence_score,
+        indicators=indicators,
+        verdict=verdict,
+        judge_reason=(
+            f"APEX G={apex.G:.2f}, C_dark={apex.C_dark:.2f}, state={apex.state}, "
+            f"direction={apex.direction.value} (shim over evaluate_market)"
+        ),
+    )
 
 
 @dataclass

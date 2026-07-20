@@ -719,13 +719,22 @@ def register_canonical_tools(mcp):
             )
 
         if m == "omni":
-            # Omni wisdom delegates to the server-side tool
-            return await _call_legacy_tool(
+            # Omni wisdom delegates to the server-side tool.
+            # MUST wrap in WealthEnvelope — output_schema requires tool_name.
+            raw = await _call_legacy_tool(
                 "wealth_omni_wisdom",
                 {
                     "mode": "synthesize",
                     "memory_query": memory_query,
                 },
+            )
+            return wrap_result(
+                tool_name="capital_wisdom",
+                domain="wisdom",
+                result=raw if isinstance(raw, dict) else {"result": raw},
+                epistemic_tag=EpistemicTag.INTERPRETED,
+                evidence_quality=EvidenceQuality.WEAK,
+                source_attribution=["omni_wisdom_synthesis"],
             )
 
         if m == "epistemic":
@@ -849,7 +858,11 @@ def register_canonical_tools(mcp):
                 tool_name="capital_market",
                 domain="capital",
                 result=raw,
-                source="wealth://commodity",
+                epistemic_tag=EpistemicTag.OBSERVED
+                if engine_op == "snapshot"
+                else EpistemicTag.INTERPRETED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=[f"wealth://commodity/{m}/{engine_op}"],
             )
 
         raise ValueError(
@@ -1207,8 +1220,9 @@ def register_canonical_tools(mcp):
         actor_id: str | None = None,
     ) -> dict:
         """Entropy Integrity Mesh — WEALTH domain witness."""
-        # Coerce MCP transport string serialization
-        veto_holders = _coerce(veto_holders)
+        # NOTE: All parameters are already coerced by Pydantic BeforeValidator
+        # (_coerce_json_string) via CoercedDictList / CoercedStrList type annotations.
+        # No runtime _coerce() call needed — schema-level coercion handles MCP transport.
 
         # Normalize veto_holders: accept strings, convert to dicts (fixed 2026-07-12)
         if veto_holders is not None:
@@ -1230,12 +1244,35 @@ def register_canonical_tools(mcp):
                 "wealth",
             )
 
-            if m == "power_consequence_map":
-                _spec = importlib.util.spec_from_file_location(
-                    "pcm", os.path.join(_base, "power_consequence_map.py")
-                )
+            # P3 (2026-07-20): Harden dynamic imports against race conditions
+            # and missing modules. spec_from_file_location returns None if
+            # the file doesn't exist or the path is invalid.
+            def _safe_load_module(name: str, filename: str):
+                if not os.path.isdir(_base):
+                    raise ImportError(
+                        f"entropy-integrity module directory not found: {_base}. "
+                        "The entropy-integrity package may not be installed. "
+                        "Install with: pip install entropy-integrity or clone from source."
+                    )
+                filepath = os.path.join(_base, filename)
+                if not os.path.isfile(filepath):
+                    raise ImportError(
+                        f"entropy-integrity module file not found: {filepath}. "
+                        f"Valid files in {_base}: "
+                        f"{os.listdir(_base) if os.path.isdir(_base) else 'N/A'}"
+                    )
+                _spec = importlib.util.spec_from_file_location(name, filepath)
+                if _spec is None or _spec.loader is None:
+                    raise ImportError(
+                        f"Failed to create module spec for {filepath}. "
+                        "The file may be corrupt, empty, or not a valid Python module."
+                    )
                 _mod = importlib.util.module_from_spec(_spec)
                 _spec.loader.exec_module(_mod)
+                return _mod
+
+            if m == "power_consequence_map":
+                _mod = _safe_load_module("pcm", "power_consequence_map.py")
                 return wrap_result(
                     "capital_entropy",
                     "institutional",
@@ -1248,11 +1285,7 @@ def register_canonical_tools(mcp):
                 )
 
             elif m == "metric_purpose_audit":
-                _spec = importlib.util.spec_from_file_location(
-                    "mpa", os.path.join(_base, "metric_purpose_audit.py")
-                )
-                _mod = importlib.util.module_from_spec(_spec)
-                _spec.loader.exec_module(_mod)
+                _mod = _safe_load_module("mpa", "metric_purpose_audit.py")
                 return wrap_result(
                     "capital_entropy",
                     "institutional",
@@ -1265,11 +1298,7 @@ def register_canonical_tools(mcp):
                 )
 
             elif m == "responsibility_ledger":
-                _spec = importlib.util.spec_from_file_location(
-                    "rl", os.path.join(_base, "responsibility_ledger.py")
-                )
-                _mod = importlib.util.module_from_spec(_spec)
-                _spec.loader.exec_module(_mod)
+                _mod = _safe_load_module("rl", "responsibility_ledger.py")
                 return wrap_result(
                     "capital_entropy",
                     "institutional",
@@ -1279,11 +1308,7 @@ def register_canonical_tools(mcp):
                 )
 
             elif m == "trust_capital_decay":
-                _spec = importlib.util.spec_from_file_location(
-                    "tcd", os.path.join(_base, "trust_capital_decay.py")
-                )
-                _mod = importlib.util.module_from_spec(_spec)
-                _spec.loader.exec_module(_mod)
+                _mod = _safe_load_module("tcd", "trust_capital_decay.py")
                 return wrap_result(
                     "capital_entropy",
                     "institutional",
@@ -1294,11 +1319,7 @@ def register_canonical_tools(mcp):
                 )
 
             elif m == "coercive_order_cost":
-                _spec = importlib.util.spec_from_file_location(
-                    "coc", os.path.join(_base, "coercive_order_cost.py")
-                )
-                _mod = importlib.util.module_from_spec(_spec)
-                _spec.loader.exec_module(_mod)
+                _mod = _safe_load_module("coc", "coercive_order_cost.py")
                 return wrap_result(
                     "capital_entropy",
                     "institutional",
@@ -1309,11 +1330,7 @@ def register_canonical_tools(mcp):
                 )
 
             elif m == "entropy_externality":
-                _spec = importlib.util.spec_from_file_location(
-                    "ee", os.path.join(_base, "entropy_externality.py")
-                )
-                _mod = importlib.util.module_from_spec(_spec)
-                _spec.loader.exec_module(_mod)
+                _mod = _safe_load_module("ee", "entropy_externality.py")
                 return wrap_result(
                     "capital_entropy",
                     "institutional",
@@ -1336,6 +1353,13 @@ def register_canonical_tools(mcp):
                         "entropy_externality",
                     ],
                 }
+        except ImportError as e:
+            return {
+                "error": f"ENTROPY_MODULE_MISSING: {e}",
+                "tool": "capital_entropy",
+                "mode": m,
+                "action": "Install entropy-integrity package or ensure module files exist",
+            }
         except Exception as e:
             return {"error": str(e), "tool": "capital_entropy", "mode": m}
 
