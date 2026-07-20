@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate FEDERATION.md
         run: |
           test -f FEDERATION.md || (echo "❌ Missing FEDERATION.md" && exit 1)
@@ -35,7 +35,7 @@ jobs:
     needs: [federation-check]
     timeout-minutes: 3
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Protocol alignment gate
         run: |
           if [ -f scripts/check_protocol_alignment.sh ]; then
