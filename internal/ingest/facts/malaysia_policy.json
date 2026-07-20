@@ -1,0 +1,87 @@
+{
+  "_meta": {
+    "source": "Official government announcements, verified news, maintained by arifOS",
+    "last_verified": "2026-07-20",
+    "note": "Inject this file as system context before AI briefing generation. These are ground-truth facts, not model memory."
+  },
+
+  "fuel_subsidies": {
+    "ron95_subsidy": {
+      "status": "REFORMED via BUDI95",
+      "detail": "BUDI95 launched in phases September 27–30, 2025. Subsidised RON95 at RM1.99/L with 300L/month quota for eligible households. Unsubsidised RON95 market price is RM3.72/L (June 2026).",
+      "current_price_rm": 3.72,
+      "budimentari": "BUDI Individu (personal) and BUDI Keluarga (family) streams launched 2025-09-27",
+      "source": "KPDN official gazette, September 2025"
+    },
+    "diesel_subsidy": {
+      "status": "REFORMED",
+      "detail": "Peninsula Malaysia diesel subsidy removed June 10, 2024. Float price as of June 2026 is RM4.37/L. Sabah and Sarawak still subsidised at RM2.15/L.",
+      "peninsula_price_rm": 4.37,
+      "east_malaysia_price_rm": 2.15,
+      "source": "Ministry of Finance, June 2024"
+    }
+  },
+
+  "fomc_schedule_2026": {
+    "note": "All dates are publicly scheduled FOMC meetings. Briefings must NEVER report outcomes before these dates.",
+    "meetings": [
+      {"date": "2026-01-27", "status": "PAST"},
+      {"date": "2026-03-17", "status": "PAST"},
+      {"date": "2026-05-06", "status": "PAST"},
+      {"date": "2026-06-17", "status": "PAST"},
+      {"date": "2026-07-28", "status": "UPCOMING"},
+      {"date": "2026-09-16", "status": "UPCOMING"},
+      {"date": "2026-11-04", "status": "UPCOMING"},
+      {"date": "2026-12-16", "status": "UPCOMING"}
+    ]
+  },
+
+  "gdp_advance_estimates": {
+    "q2_2026": {
+      "growth_pct": 5.8,
+      "source_institution": "DOSM (Department of Statistics Malaysia)",
+      "release_date": "2026-07-17",
+      "detail": "Q2 2026 advance estimate released by DOSM at 5.8%. BNM does not release advance GDP estimates. BNM's role is monetary policy and OPR."
+    }
+  },
+
+  "opr": {
+    "current": 3.0,
+    "detail": "Bank Negara Malaysia Overnight Policy Rate at 3.00%. Last changed May 2023. No change since.",
+    "monetary_policy_committee": {
+      "next_meeting": "2026-09-04",
+      "frequency": "6 times per year (Jan, Mar, May, Jul, Sep, Nov)"
+    }
+  },
+
+  "polling": {
+    "merdeka_center_june_2026": {
+      "anwar_approval_pct": 52,
+      "country_direction_right_pct": 42,
+      "note": "52% is Anwar's approval rating. 42% is the separate 'country moving in right direction' metric. These are two different survey questions, not interchangeable.",
+      "source": "Merdeka Center National Public Opinion Survey, June 2026"
+    }
+  },
+
+  "brent_crude": {
+    "last_actual_settle_july19_2026": {
+      "price_usd": 88.10,
+      "date": "2026-07-17",
+      "note": "Last weekly close before July 19. Brent did NOT trade at $90.67 on July 19 — markets were closed (Sunday). $90.50 was the futures screen at time of writing, not a settled price."
+    }
+  },
+
+  "cpi_june_2026": {
+    "headline_pct": 2.1,
+    "core_pct": 2.0,
+    "source": "DOSM",
+    "note": "June 2026 CPI at 2.1% YoY is plausible but unconfirmed via official release. Core inflation was stable."
+  },
+
+  "institutional_roles": {
+    "dosm": "Department of Statistics Malaysia — releases GDP advance estimates, CPI, employment data",
+    "bnm": "Bank Negara Malaysia — sets OPR, releases monetary policy statements, financial stability reports",
+    "kpdn": "Ministry of Domestic Trade and Cost of Living — oversees price controls, subsidies",
+    "mof": "Ministry of Finance — budget, fiscal policy"
+  }
+}
