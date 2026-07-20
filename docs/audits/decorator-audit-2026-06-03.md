@@ -84,7 +84,7 @@ Legend: **N** = named, **U** = unnamed, **S** = stateful (touches DB/cache/IO), 
 
 | # | Line | Function | Exposed | N/U | S/P/G/H | Family | Disposition | Notes |
 |---|---|---|---|---|---|---|---|---|
-| 26 | 6372 | `vault_write()` | `vault_write` (case-collides) | U | G | governance-leak | **hide + remove** | Exposes VAULT internals to MCP. Should be `arif_vault_seal` (kernel tool), not local. |
+| 26 | 6372 | `vault_write()` | `vault_write` (case-collides) | U | G | governance-leak | **hide + remove** | Exposes VAULT internals to MCP. Should be `arif_seal` (kernel tool), not local. |
 | 27 | 6434 | `vaultwrite()` | `vault_write` (variant) | U | G | governance-leak | **hide + remove** | Same function, no underscore. DEAD VARIANT. Remove. |
 | 28 | 6457 | `vault_query()` | `vault_query` (case-collides) | U | G | governance-leak | **hide + remove** | VAULT read should route through arifOS. |
 | 29 | 6474 | `vaultquery()` | `vault_query` (variant) | U | G | governance-leak | **hide + remove** | Same function, no underscore. DEAD VARIANT. Remove. |
@@ -185,7 +185,7 @@ The grep counted 84 total but my parser found 82. The 2 missing are likely the 2
 The 49 unnamed `@mcp.tool()` decorators are mostly stateless math functions that **should** be in the surface. The audit's default-to-hide heuristic over-counted the smell. Most of these are clean.
 
 ### 2. 🔴 4 VAULT leaks (governance violation)
-`vault_write`, `vaultwrite`, `vault_query`, `vaultquery` (Section D) are the most serious finding. **Disposition: remove all 4.** WEALTH should not expose vault access to MCP. Vault access should route through arifOS kernel (`arif_vault_seal`).
+`vault_write`, `vaultwrite`, `vault_query`, `vaultquery` (Section D) are the most serious finding. **Disposition: remove all 4.** WEALTH should not expose vault access to MCP. Vault access should route through arifOS kernel (`arif_seal`).
 
 ### 3. 🟡 1 typo: `wealth mass_networth` (space in function name)
 L7355. Auto-exposes to a malformed name. FastMCP likely de-dupes with the canonical `wealth_net_worth_snapshot` but the malformed name is a code smell. **Disposition: remove.** The canonical snapshot tool already exists.

@@ -47,5 +47,24 @@ entrypoints:
 
 ---
 
+## Cross-Organ Federation Links
+
+| Organ | Role | Connection |
+|-------|------|------------|
+| **arifOS** (:8088) | Constitutional Kernel | Routes WEALTH evidence via `wealth_arifos_bridge/judge_handoff.py`. All irreversible decisions gated by `arif_judge`. |
+| **AAA** (:3001) | Control Plane / A2A Gateway | Federation topology, agent routing, cockpit visibility. WEALTH registers tools via `tools/list` for AAA discovery. |
+| **A-FORGE** (:7071) | Execution Shell | Receives SEAL'd judge envelopes for capital execution. WEALTH never self-executes — only computes evidence. |
+| **GEOX** (:8081) | Earth Intelligence | Receives prospect economics via `geox_to_wealth_bridge` — POS, NPV, risk inputs. |
+| **WELL** (:18083) | Human Readiness | Livelihood handoff — capital readiness requires human readiness. |
+| **VAULT999** | Immutable Ledger | All SEAL'd capital decisions anchored to VAULT999 hash chain. |
+
+### Data Flow
+
+```
+WEALTH (compute) → arif_judge (verdict) → A-FORGE (execute) → VAULT999 (seal)
+     ↑                                                    ↑
+  GEOX (prospect)                                    WELL (readiness)
+```
+
 **DITEMPA BUKAN DIBERI — Forged, Not Given.**
-**Part of the arifOS Federation. See `/root/AAA/docs/FEDERATION_MAP.md` for canonical topology.**
+**Part of the arifOS Federation. See [`/root/AAA/docs/FEDERATION_MAP.md`](../../AAA/docs/FEDERATION_MAP.md) for canonical topology.**

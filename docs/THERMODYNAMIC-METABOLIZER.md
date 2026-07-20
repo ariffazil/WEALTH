@@ -72,7 +72,7 @@ The Metabolizer is a **predictive model of institutional dynamics**. In the WEAL
 
 Critically, the Metabolizer does not generate language. It operates entirely in the thermodynamic state space. Its output feeds both the Decoder (for human-legible explanation) and back into the Encoder (as a predicted state that can be compared against observed reality for model validation).
 
-The Metabolizer is also the **closing of the governance loop**. When arif_judge_deliberate receives a proposal, the Metabolizer computes: if we do this, what happens to our thermodynamic state over the next N periods? This is not risk analysis in the conventional sense. It is the thermodynamic projection of institutional trajectory.
+The Metabolizer is also the **closing of the governance loop**. When arif_judge receives a proposal, the Metabolizer computes: if we do this, what happens to our thermodynamic state over the next N periods? This is not risk analysis in the conventional sense. It is the thermodynamic projection of institutional trajectory.
 
 ### 2.3 DECODER — Semantic Extrapolation from State
 
@@ -227,7 +227,7 @@ Homeostasis — the biological mechanism by which organisms maintain stable inte
 | Thermoregulatory response | Metabolizer (state update) |
 | Sensory detection | Encoder (signal → state) |
 | Conscious awareness | Decoder (articulation of state) |
-| Feedback loop | arif_judge_deliberate → human ratification |
+| Feedback loop | arif_judge → human ratification |
 | Failure modes | Institutional collapse (G→0) |
 
 The biological analogy is precise enough to be useful, but limited: biological organisms have millions of years of evolutionary calibration for their homeostatic mechanisms. WEALTH has none. The biological metaphor is a *structural template*, not a quantitative model.
@@ -347,7 +347,7 @@ complexity than the state requires.
 
 **Status:** Future work.
 
-Integration into arifOS: the D-M-E loop runs within arif_judge_deliberate, producing a thermodynamic diagnosis alongside the constitutional floor check. The human governor sees both.
+Integration into arifOS: the D-M-E loop runs within arif_judge, producing a thermodynamic diagnosis alongside the constitutional floor check. The human governor sees both.
 
 Validation: track G-Score trajectories for decisions that were approved vs. rejected, and compare outcomes. If the Metabolizer's predictions are accurate (approved decisions → G improved or stable; rejected decisions → G was indeed declining), the model is validated. If not, recalibrate.
 
