@@ -1,6 +1,6 @@
 """
-WEALTH Daily Briefing — full refresh with TokenRouter AI synthesis.
-Fetches market data via yfinance, then uses TokenRouter + deepseek
+WEALTH Daily Briefing — full refresh with FLAME AI synthesis.
+Fetches market data via yfinance, then uses FLAME (free-tier LLM router)
 to generate the So What analysis, economy signals, politics, social, and global context.
 """
 
@@ -16,17 +16,7 @@ SOURCE_REPO = Path(
     "/root/arif-sites/sites/arif-fazil.com/public/data/wealth/latest.json"
 )
 
-# Load TokenRouter config from env
-TOKENROUTER_KEY = os.environ.get("TOKENROUTER_API_KEY", "")
-if not TOKENROUTER_KEY:
-    # Source vault.env if not in environment
-    env_path = "/root/.secrets/vault.env"
-    if os.path.exists(env_path):
-        for line in open(env_path):
-            if "TOKENROUTER_API_KEY" in line and "=" in line:
-                TOKENROUTER_KEY = line.split("=", 1)[1].strip().strip('"').strip("'")
-TOKENROUTER_URL = "https://api.tokenrouter.com/v1/chat/completions"
-MODEL = "deepseek/deepseek-v4-flash"
+FLAME_BIN = "/usr/local/bin/flame"
 
 
 def get_stock(symbol):
@@ -74,10 +64,10 @@ def get_brent():
 
 
 def synthesize_with_ai(klci, klci_pct, usd_myr, brent, date_str):
-    """Use TokenRouter + deepseek to generate the briefing narrative.
+    """Use FLAME (free-tier LLM router) to generate the briefing narrative.
     Grounded in Malaysian policy facts file — never from training memory."""
-    if not TOKENROUTER_KEY:
-        print("  No TokenRouter key — skipping AI synthesis")
+    if not os.path.exists(FLAME_BIN):
+        print("  FLAME binary not found — skipping AI synthesis")
         return None
 
     market_data = {
@@ -95,7 +85,6 @@ def synthesize_with_ai(klci, klci_pct, usd_myr, brent, date_str):
         with open(facts_path) as f:
             policy_facts = json.load(f)
 
-    # System context: always-true facts
     system_context = f"""You are the WEALTH capital intelligence engine for arifOS. These are GROUND TRUTH facts about Malaysian policy and global schedules. You MUST USE these facts. You MUST NOT contradict them. If a fact is not in this context, say "No data" rather than relying on your training memory.
 
 GROUND TRUTH — MALAYSIA POLICY (current as of {date_str}):
@@ -174,46 +163,41 @@ HARD RULES — VIOLATION WILL VOID THE OUTPUT:
 10. Be direct, no corporate speak. Malaysian context. Return ONLY valid JSON. No markdown."""
 
     try:
-        import urllib.request
-
-        req = urllib.request.Request(
-            TOKENROUTER_URL,
-            data=json.dumps(
-                {
-                    "model": MODEL,
-                    "messages": [
-                        {"role": "system", "content": system_context},
-                        {"role": "user", "content": prompt},
-                    ],
-                    "temperature": 0.3,
-                    "max_tokens": 3000,
-                }
-            ).encode(),
-            headers={
-                "Authorization": f"Bearer {TOKENROUTER_KEY}",
-                "Content-Type": "application/json",
-            },
-            method="POST",
+        result = subprocess.run(
+            [
+                FLAME_BIN,
+                "--mode",
+                "summarize",
+                "--system",
+                system_context,
+                "--temperature",
+                "0.3",
+                "--max-tokens",
+                "3000",
+            ],
+            input=prompt,
+            capture_output=True,
+            text=True,
+            timeout=180,
         )
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            result = json.loads(resp.read())
-            content = result["choices"][0]["message"]["content"]
-            content = content.strip()
-            if content.startswith("```"):
-                content = content.split("\n", 1)[1].rsplit("```", 1)[0].strip()
-            parsed = json.loads(content)
-            so_what = parsed.get("so_what", [])
-            economy = parsed.get("economy", {}).get("items", [])
-            print(
-                f"  AI synthesis: {len(so_what)} signals, {len(economy)} economy items"
-            )
+        if result.returncode != 0:
+            print(f"  FLAME error: {result.stderr.strip()}")
+            return None
 
-            # Validate source_ids — flag any "NONE" entries
-            for s in so_what:
-                if s.get("source_id") == "NONE":
-                    s["delta"] = s.get("delta", "") + " [UNVERIFIED]"
-                    s["omega"] = s.get("omega", "") + " [UNVERIFIED]"
-            return parsed
+        content = result.stdout.strip()
+        if content.startswith("```"):
+            content = content.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+        parsed = json.loads(content)
+        so_what = parsed.get("so_what", [])
+        economy = parsed.get("economy", {}).get("items", [])
+        print(f"  AI synthesis: {len(so_what)} signals, {len(economy)} economy items")
+
+        # Validate source_ids — flag any "NONE" entries
+        for s in so_what:
+            if s.get("source_id") == "NONE":
+                s["delta"] = s.get("delta", "") + " [UNVERIFIED]"
+                s["omega"] = s.get("omega", "") + " [UNVERIFIED]"
+        return parsed
     except Exception as e:
         print(f"  AI synthesis error: {e}")
         return None
@@ -237,8 +221,8 @@ def main():
         "meta": {
             "date": TODAY,
             "generated_at": NOW.isoformat(),
-            "source": "arifOS WEALTH — yfinance + TokenRouter deepseek",
-            "model_note": f"Synth via {MODEL}. Market data from yfinance.",
+            "source": "arifOS WEALTH — yfinance + FLAME (free-tier LLM)",
+            "model_note": "Synth via FLAME free-tier mesh. Market data from yfinance.",
         },
         "bursa": {
             "klci_close": klci,
