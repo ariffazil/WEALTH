@@ -1,7 +1,7 @@
 <!-- SOT-MANIFEST
-federation_release: v2026.07.19-ZEN-CONVERGENCE
-last_verified: 2026-07-19T17:00Z
-live_commit: eb7c5f5
+federation_release: v2026.07.20-ZEN-CONVERGENCE
+last_verified: 2026-07-20T16:25Z
+live_commit: ad2d5a1
 port: 18082
 domain_law: CAPITAL_LAW
 mcp_tools_live: 20
