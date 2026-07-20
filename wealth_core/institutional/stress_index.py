@@ -300,7 +300,11 @@ def _audit_signal_fields(
     """
     sig = sig or {}
     if not isinstance(sig, dict):
-        return [], list(_EXPECTED_FIELDS.get(name, ())), [f"{name}: expected dict, got {type(sig).__name__}"]
+        return (
+            [],
+            list(_EXPECTED_FIELDS.get(name, ())),
+            [f"{name}: expected dict, got {type(sig).__name__}"],
+        )
     expected = _EXPECTED_FIELDS.get(name, ())
     present = [k for k in expected if k in sig and sig[k] is not None and sig[k] != ""]
     missing = [k for k in expected if k not in present]
@@ -335,7 +339,9 @@ def compute_stress_index(
       - fields_present / fields_missing / warnings: anti-silent-drop (P0 #34/#35)
     """
     financial_signals = financial_signals if isinstance(financial_signals, dict) else {}
-    governance_signals = governance_signals if isinstance(governance_signals, dict) else {}
+    governance_signals = (
+        governance_signals if isinstance(governance_signals, dict) else {}
+    )
     workforce_signals = workforce_signals if isinstance(workforce_signals, dict) else {}
     legal_signals = legal_signals if isinstance(legal_signals, dict) else {}
     exploitation_signals = (
@@ -400,6 +406,20 @@ def compute_stress_index(
     expected_total = sum(len(v) for v in _EXPECTED_FIELDS.values())
     coverage = len(fields_present) / max(1, expected_total)
     confidence = min(_CONFIDENCE_CAP, coverage)
+
+    # P0 #36 (2026-07-20): SILENT_DEFAULT_RISK hardening.
+    # When coverage < 0.15 (fewer than 15% of expected fields present),
+    # override risk_level to INSUFFICIENT_DATA regardless of computed score.
+    # A 0.0 stress_index with zero data is NOT "GREEN" — it's "we have no data."
+    if coverage < 0.15:
+        original_level = risk_level
+        risk_level = "INSUFFICIENT_DATA"
+        warnings.append(
+            f"RISK_LEVEL_OVERRIDE: coverage={coverage:.0%} < 15% threshold. "
+            f"risk_level downgraded from '{original_level}' to "
+            f"'INSUFFICIENT_DATA'. Provide at least 3 of {expected_total} expected "
+            f"fields across any dimension for a meaningful stress assessment."
+        )
 
     return {
         "org_name": org_name,

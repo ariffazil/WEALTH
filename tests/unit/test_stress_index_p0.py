@@ -8,7 +8,8 @@ from wealth_core.institutional.stress_index import compute_stress_index
 def test_empty_signals_warn_and_low_confidence():
     r = compute_stress_index("TEST_ORG")
     assert r["stress_index"] == 0.0
-    assert r["risk_level"] == "GREEN"
+    # P0 #36: empty signals → INSUFFICIENT_DATA, not GREEN
+    assert r["risk_level"] == "INSUFFICIENT_DATA"
     assert r["fields_missing"]
     assert any("SILENT_DEFAULT_RISK" in w for w in r["warnings"])
     assert r["confidence"] < 0.2

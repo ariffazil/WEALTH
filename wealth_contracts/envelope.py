@@ -467,6 +467,14 @@ def wrap_result(
     witness = kwargs.pop("witness", None)
     pipeline_stage = kwargs.pop("pipeline_stage", None)
     forge_laws = kwargs.pop("forge_laws", None)
+    # Pop non-WealthEnvelope kwargs before passing to constructor.
+    # source is a provenance tag; route to source_attribution.
+    source = kwargs.pop("source", None)
+    if source:
+        if source_attribution is None:
+            source_attribution = [source]
+        else:
+            source_attribution = list(source_attribution) + [source]
 
     if kappa_r is None:
         kappa_r = compute_kappa_r(0.9, 0.95)
