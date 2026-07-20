@@ -44,7 +44,7 @@ Read:
 - **EVIDENCE_ONLY** — WEALTH computes capital metrics but does not execute trades
 - **Compute-only** — Never allocates capital, authorizes trades, or moves money
 - **Evidence-tagged** — Every output carries epistemic band (CLAIM / PLAUSIBLE / HYPOTHESIS / ESTIMATE / UNKNOWN)
-- **Kernel-gated** — Irreversible financial decisions require `arif_judge_deliberate → SEAL` from arifOS
+- **Kernel-gated** — Irreversible financial decisions require `arif_judge → SEAL` from arifOS
 - **Downside-honest** — Risk models surface worst-case, not just expected value
 - **888_HOLD required** — Any irreversible financial action stages in `888_ACTIVE.md` before execution
 - **Canonical server** — `internal/monolith.py` on port 18082 (live via `wealth-organ.service`)

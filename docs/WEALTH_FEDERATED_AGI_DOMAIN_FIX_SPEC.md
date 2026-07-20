@@ -849,7 +849,7 @@ async def seal_to_vault(
     """
     Seal a computation result to VAULT999.
     Only for SEALED claims. Requires ack_irreversible=True.
-    Routes to arifOS arif_vault_seal tool.
+    Routes to arifOS arif_seal tool.
     """
 ```
 

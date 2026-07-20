@@ -25,7 +25,7 @@ isa_cores:
       - "AAA planning / decomposition (Cockpit / 333-AGI)"
       - "A-FORGE internal chaining (forge_plan, forge_dry_run)"
       - "000-333-777 in the pipeline (INIT, THINK, REASON)"
-      - "arif_mind_reason (canonical MCP tool)"
+      - "arif_think (canonical MCP tool)"
     example_primitives:
       ARIF_PLAN: "decompose task under Floors"
       ARIF_REFLECT: "check prior steps vs Floors"
@@ -89,7 +89,7 @@ isa_cores:
       - "Floors F1-F13 (constitutional rules)"
       - "888_HOLD (sovereign interrupt)"
       - "999_SEAL (immutable record)"
-      - "arif_judge_deliberate (canonical MCP tool)"
+      - "arif_judge (canonical MCP tool)"
       - "VAULT999 (append-only ledger)"
     example_primitives:
       ARIF_VERIFY: "invoke conformance checks (e.g. arif_conformance_report 8/8)"
@@ -198,10 +198,10 @@ wire_topology:
 eureka: |
   arifOS already implements the 5-core Agent-OS ISA (Cognitive / Memory /
   Execution / Normative / Meta-cognitive). The mapping is 1:1:
-    - Cognitive = AAA planning + A-FORGE 000-333-777 + arif_mind_reason
+    - Cognitive = AAA planning + A-FORGE 000-333-777 + arif_think
     - Memory = AAA state + organ stores + VAULT999 + arif_memory_recall
     - Execution = A-FORGE 8-class taxonomy + MCP tools + CLI (per-call envelope)
-    - Normative = F1-F13 + 888_HOLD + 999_SEAL + arif_judge_deliberate
+    - Normative = F1-F13 + 888_HOLD + 999_SEAL + arif_judge
     - Meta-cognitive = 000-999 pipeline + Observatory + arif_ops_measure
 
   The federation has been reality-engineering for a year. The vocabulary

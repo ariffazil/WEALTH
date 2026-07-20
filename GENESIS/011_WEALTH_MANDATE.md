@@ -13,7 +13,7 @@ WEALTH is the **capital intelligence organ** of the arifOS federation. It comput
 
 1. **Compute-only.** WEALTH never allocates capital, authorizes trades, or moves money.
 2. **Evidence-tagged.** Every output carries epistemic band (CLAIM/PLAUSIBLE/HYPOTHESIS/ESTIMATE/UNKNOWN).
-3. **Kernel-gated.** Irreversible financial decisions require `arif_judge_deliberate → SEAL`.
+3. **Kernel-gated.** Irreversible financial decisions require `arif_judge → SEAL`.
 4. **Downside-honest.** Risk models surface worst-case, not just expected value.
 
 ## Boundaries
