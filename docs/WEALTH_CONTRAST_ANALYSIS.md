@@ -27,11 +27,11 @@ An external agent (not Arif, not our federation context) produced a WEALTH MCP d
 | Legacy aliases | ✅ | `compatibility_map.py` — 33→13 mapping |
 | W0-W5 decision classes | ✅ | `classify_decision_class()` |
 | Constitutional governance | ✅ | `organ_governance.py` — F1-F13 wrapper |
-| arifOS/arif gateway | ✅ | `arif_gateway_connect`, `arif_judge_deliberate` |
+| arifOS/arif gateway | ✅ | `arif_gateway_connect`, `arif_judge` |
 | Federation memory | ✅ | 6-layer architecture integration |
 | Wealth_synthesize | ✅ | Final integrator with governance verdict |
 | Wealth_kernel_route | ✅ | Routing by risk class |
-| VAULT999 sealing | ✅ | `arif_vault_seal` pathway |
+| VAULT999 sealing | ✅ | `arif_seal` pathway |
 
 ### Current 13 Canonical Tools
 
@@ -148,7 +148,7 @@ resource://wealth/ledger/decisions.jsonl
 | Legacy alias preservation | ✅ 33→13 mapping | ❌ Not mentioned |
 | arifOS federation integration | ✅ Full | ❌ Not mentioned |
 | Constitutional F1-F13 wrapper | ✅ Active | ❌ Not mentioned |
-| VAULT999 sealing pathway | ✅ Via arif_vault_seal | ❌ Not mentioned |
+| VAULT999 sealing pathway | ✅ Via arif_seal | ❌ Not mentioned |
 
 ### Structural Difference
 

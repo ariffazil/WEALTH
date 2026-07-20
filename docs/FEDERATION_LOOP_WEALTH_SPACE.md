@@ -19,13 +19,13 @@ WEALTH Engine
 arif_evidence_fetch (222)        ← WEALTH enters arifOS HERE
         │  capital_intelligence field
         ▼
-arif_judge_deliberate (888)      ← constitutional verdict
+arif_judge (888)      ← constitutional verdict
         │
    [SEAL only]
-arif_vault_seal (999)            ← immutable ledger entry
+arif_seal (999)            ← immutable ledger entry
 ```
 
-**Rule:** WEALTH does not make decisions. It produces capital intelligence — NPV, IRR, EMV, crisis triage, civilization stewardship — that `arif_judge_deliberate` ratifies or voids. arifOS never allocates capital without WEALTH's input.
+**Rule:** WEALTH does not make decisions. It produces capital intelligence — NPV, IRR, EMV, crisis triage, civilization stewardship — that `arif_judge` ratifies or voids. arifOS never allocates capital without WEALTH's input.
 
 ***
 
@@ -43,7 +43,7 @@ WEALTH contributes three primary tools to `arif_evidence_fetch`:
 
 ### F3 Tri-Witness Contribution
 
-WEALTH populates the capital dimension of `witness.earth` in the F3 Tri-Witness gate. A capital decision missing WEALTH output cannot receive a `SEAL` from `arif_judge_deliberate`.
+WEALTH populates the capital dimension of `witness.earth` in the F3 Tri-Witness gate. A capital decision missing WEALTH output cannot receive a `SEAL` from `arif_judge`.
 
 ### G-Score — Governance Health Kernel
 
