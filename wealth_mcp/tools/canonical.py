@@ -896,6 +896,8 @@ def register_canonical_tools(mcp):
         amount: float = 0,
         currency: str = "MYR",
         description: str = "",
+        amount_satoshi: int = 0,
+        payment_hash: str = "",
         ack_irreversible: bool = False,
         session_id: str | None = None,
         actor_id: str | None = None,
@@ -932,6 +934,8 @@ def register_canonical_tools(mcp):
                     "amount": amount,
                     "currency": currency,
                     "description": description,
+                    "amount_satoshi": amount_satoshi,
+                    "payment_hash": payment_hash,
                     "ack_irreversible": True,
                 },
             )
