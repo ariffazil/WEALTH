@@ -31,6 +31,17 @@ function setCache(key, data) {
   }
 }
 
+function validateSnapshot(data, asset) {
+  const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+  if (!data || data.schema !== 'wealth.snapshot.v1' || data.asset !== asset ||
+      typeof data.observed_at !== 'string' || Number.isNaN(Date.parse(data.observed_at)) ||
+      !isRecord(data.ticker) || !isRecord(data.levels) || !isRecord(data.macro) ||
+      typeof data.coherence_id !== 'string' || !/^[a-f0-9]{64}$/.test(data.coherence_id)) {
+    throw new Error(`Invalid ${asset} snapshot contract`);
+  }
+  return data;
+}
+
 function runPython(command, args = []) {
   return new Promise((resolve, reject) => {
     execFile(PYTHON, [SCRIPT, command, ...args], {
@@ -58,12 +69,18 @@ const handlers = {
     const c = getCache('signal_v2'); if (c) return c;
     const d = await runPython('signal_v2'); setCache('signal_v2', d); return d;
   },
+  '/api/gas/snapshot': async () => {
+    const c = getCache('snapshot'); if (c) return c;
+    const d = validateSnapshot(await runPython('snapshot'), 'gas');
+    setCache('snapshot', d); return d;
+  },
   '/api/gas/calendar': async () => {
     const c = getCache('calendar'); if (c) return c;
     const d = await runPython('calendar'); setCache('calendar', d); return d;
   },
   '/api/apex': async () => handlers['/api/gas/apex'](),
   '/api/signal_v2': async () => handlers['/api/gas/signal_v2'](),
+  '/api/snapshot': async () => handlers['/api/gas/snapshot'](),
   '/api/calendar': async () => handlers['/api/gas/calendar'](),
   '/api/macro': async () => handlers['/api/gas/macro'](),
   '/api/ticker': async () => handlers['/api/gas/ticker'](),
@@ -139,6 +156,15 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data));
   } catch (err) {
+    const isSnapshot = parsed.pathname === '/api/gas/snapshot' || parsed.pathname === '/api/snapshot';
+    if (isSnapshot) {
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        schema: 'wealth.snapshot.v1', asset: 'gas', error: true,
+        code: 'SNAPSHOT_UNAVAILABLE', message: err.message, data: null,
+      }));
+      return;
+    }
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: err.message }));
   }
