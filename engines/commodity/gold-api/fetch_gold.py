@@ -287,6 +287,25 @@ def _without_timestamp(value):
     return value
 
 
+def _node_body(value):
+    """Recursively rewrite Python floats to Node-compat integers when safe.
+
+    JSON.stringify on the Node side drops the trailing `.0` from any
+    whole-number float. To keep the coherence_id reproducible, the
+    canonical hash MUST be computed over the wire form, so we mirror
+    the conversion here.
+    """
+    if isinstance(value, float):
+        if value.is_integer():
+            return int(value)
+        return value
+    if isinstance(value, dict):
+        return {key: _node_body(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_node_body(item) for item in value]
+    return value
+
+
 def build_snapshot(asset, ticker, levels, macro, observed_at=None):
     """Build a deterministic, unsigned-body-hashed public snapshot."""
     observed_at = observed_at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -298,7 +317,16 @@ def build_snapshot(asset, ticker, levels, macro, observed_at=None):
         "levels": _without_timestamp(levels),
         "macro": _without_timestamp(macro),
     }
-    canonical = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
+    # The hash is computed over the wire form: sort_keys + Node-compatible
+    # number serialization (1.0 → 1, 4055.0 → 4055, 0.0 → 0) so the verification
+    # at the HTTP layer reproduces it. Python's default encoder would emit
+    # `4055.0` but Node's JSON.stringify emits `4055`, so we pre-process the
+    # body to the Node form before hashing.
+    node_body = _node_body(body)
+    canonical = json.dumps(
+        node_body, sort_keys=True, separators=(",", ":"),
+        ensure_ascii=False, allow_nan=False,
+    )
     body["coherence_id"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     return body
 
@@ -752,7 +780,19 @@ def main():
 
     try:
         result = handlers[args.command]({"interval": args.interval, "period": args.period})
-        print(json.dumps(result, default=str, indent=2))
+        if (
+            args.command == "snapshot"
+            and isinstance(result, dict)
+            and result.get("schema") == "wealth.snapshot.v1"
+            and isinstance(result.get("coherence_id"), str)
+        ):
+            # Re-serialize through the Node-compatible form so the printed
+            # bytes match the wire bytes from the Node server. We KEEP
+            # the coherence_id in the printed body so downstream tooling
+            # that reads the snapshot from stdout can re-verify the hash.
+            print(json.dumps(_node_body(result), sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False))
+        else:
+            print(json.dumps(result, default=str, indent=2))
     except Exception as e:
         print(json.dumps({"error": str(e)}, indent=2))
         sys.exit(1)
