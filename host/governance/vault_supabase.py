@@ -369,6 +369,8 @@ def record_transaction(
     source_tool: Optional[str] = None,
     notes: Optional[str] = None,
     metadata: Optional[Dict[str, Any]] = None,
+    amount_satoshi: int = 0,
+    payment_hash: str = "",
 ) -> Dict[str, Any]:
     """
     Record a financial transaction to public.arifosmcp_transactions via Supabase REST API.
@@ -400,6 +402,8 @@ def record_transaction(
         "fees": fees,
         "category": category,
         "source": source_tool,
+        "amount_satoshi": amount_satoshi,
+        "payment_hash": payment_hash,
     }
 
     result = {}
