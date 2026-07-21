@@ -7,8 +7,14 @@ DITEMPA BUKAN DIBERI — Forged, not given.
 
 from __future__ import annotations
 
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+from unittest.mock import AsyncMock, patch
+
+import pandas as pd
 import pytest
-from unittest.mock import patch, AsyncMock
 
 
 class TestCommodityEngineBridge:
@@ -126,8 +132,6 @@ class TestCommodityEngineBridge:
             assert "ticker" in VALID_OPERATIONS[asset]
             assert "signal_v2" in VALID_OPERATIONS[asset]
             assert "macro" in VALID_OPERATIONS[asset]
-            assert "snapshot" in VALID_OPERATIONS[asset]
-
     def test_source_no_port(self):
         """source field never contains port numbers."""
         from wealth_core.commodity_engines import ENGINE_PORTS
@@ -135,3 +139,117 @@ class TestCommodityEngineBridge:
         for asset, port in ENGINE_PORTS.items():
             assert isinstance(port, int)
             assert 3456 <= port <= 3458  # internal only
+
+
+FETCHER_PATHS = {
+    asset: Path(f"/root/WEALTH/engines/commodity/{asset}-api/fetch_{asset}.py")
+    for asset in ("gold", "oil", "gas")
+}
+PUBLIC_PAGE_PATHS = [
+    Path("/root/arif-sites/sites/arif-fazil.com/public") / asset / "index.html"
+    for asset in ("gold", "oil", "gas")
+]
+
+
+def _load_fetcher(asset):
+    spec = importlib.util.spec_from_file_location(f"commodity_{asset}_fetch_test", FETCHER_PATHS[asset])
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _sample_frame():
+    index = pd.date_range("2026-07-20", periods=64, freq="h", tz="UTC")
+    close = pd.Series([100 + index_value * 0.1 for index_value in range(len(index))], index=index)
+    return pd.DataFrame(
+        {
+            "open": close - 0.2,
+            "high": close + 0.5,
+            "low": close - 0.5,
+            "close": close,
+            "volume": 1000,
+        },
+        index=index,
+    )
+
+
+def _count_key(value, key):
+    if isinstance(value, dict):
+        return (1 if key in value else 0) + sum(_count_key(item, key) for item in value.values())
+    if isinstance(value, list):
+        return sum(_count_key(item, key) for item in value)
+    return 0
+
+
+@pytest.mark.parametrize("asset", ("gold", "oil", "gas"))
+def test_fetcher_snapshot_shape_one_timestamp_and_coherence(asset):
+    module = _load_fetcher(asset)
+    observed_at = "2026-07-21T03:00:00Z"
+    snapshot = module.build_snapshot(
+        asset,
+        {"symbol": asset.upper(), "price": 100.0, "timestamp": "stale", "nested": {"timestamp": "stale"}},
+        {"support": [99.0], "resistance": [101.0], "timestamp": "stale"},
+        {"dxy": 100.0, "timestamp": "stale"},
+        observed_at,
+    )
+
+    assert snapshot["schema"] == "wealth.snapshot.v1"
+    assert snapshot["asset"] == asset
+    assert snapshot["observed_at"] == observed_at
+    assert set(("ticker", "levels", "macro", "coherence_id")) <= snapshot.keys()
+    assert _count_key(snapshot, "observed_at") == 1
+    assert _count_key(snapshot, "timestamp") == 0
+
+    unsigned = {key: value for key, value in snapshot.items() if key != "coherence_id"}
+    canonical = json.dumps(unsigned, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
+    assert snapshot["coherence_id"] == hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+@pytest.mark.parametrize("asset", ("gold", "oil", "gas"))
+def test_fetcher_snapshot_hash_invalidates_when_unsigned_body_changes(asset):
+    module = _load_fetcher(asset)
+    base = module.build_snapshot(asset, {"price": 100.0}, {"support": [99.0]}, {"dxy": 100.0}, "2026-07-21T03:00:00Z")
+    changed = module.build_snapshot(asset, {"price": 101.0}, {"support": [99.0]}, {"dxy": 100.0}, "2026-07-21T03:00:00Z")
+    assert base["coherence_id"] != changed["coherence_id"]
+
+
+@pytest.mark.parametrize("asset", ("gold", "oil", "gas"))
+def test_fetcher_snapshot_uses_one_primary_data_fetch(asset, tmp_path, monkeypatch):
+    module = _load_fetcher(asset)
+    calls = []
+    monkeypatch.setattr(module, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(module, "fetch_ohlcv", lambda **kwargs: calls.append(kwargs) or _sample_frame())
+    monkeypatch.setattr(module, "_fetch_macro", lambda price=None: {"dxy": 100.0, "price_seen": price})
+
+    snapshot = module.cmd_snapshot({})
+
+    assert len(calls) == 1
+    assert snapshot["ticker"]["price"] == 106.3
+    assert snapshot["levels"]["support"]
+    assert snapshot["observed_at"]
+
+
+@pytest.mark.parametrize("asset", ("gold", "oil", "gas"))
+def test_fetcher_snapshot_fails_closed_on_primary_fetch_error(asset, tmp_path, monkeypatch):
+    module = _load_fetcher(asset)
+    monkeypatch.setattr(module, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(module, "fetch_ohlcv", lambda **kwargs: (_ for _ in ()).throw(ConnectionError("offline")))
+
+    with pytest.raises(RuntimeError, match="SNAPSHOT_UNAVAILABLE"):
+        module.cmd_snapshot({})
+
+
+def test_public_pages_have_no_stale_snapshot_markers():
+    forbidden = (
+        "0x999_TRINITY_SEALED_20260719",
+        "2026-07-19",
+        "Fed Rate 5.25%-5.50%",
+        "999 SEAL ALIVE",
+    )
+    for page_path in PUBLIC_PAGE_PATHS:
+        html = page_path.read_text(encoding="utf-8")
+        assert all(marker not in html for marker in forbidden), page_path
+        assert "apiFetch('/snapshot')" in html
+        assert "wealth.snapshot.v1" in html
+        assert "coherence_id" in html

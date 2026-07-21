@@ -10,6 +10,7 @@ Usage:
     python3 fetch_gold.py signals
     python3 fetch_gold.py levels
     python3 fetch_gold.py macro
+    python3 fetch_oil.py snapshot
 
 DITEMPA BUKAN DIBERI — Forged, Not Given.
 """
@@ -277,6 +278,31 @@ def generate_signal(df: pd.DataFrame) -> dict:
     }
 
 
+def _without_timestamp(value):
+    """Remove nested endpoint timestamps so the snapshot has one clock."""
+    if isinstance(value, dict):
+        return {key: _without_timestamp(item) for key, item in value.items() if key != "timestamp"}
+    if isinstance(value, list):
+        return [_without_timestamp(item) for item in value]
+    return value
+
+
+def build_snapshot(asset, ticker, levels, macro, observed_at=None):
+    """Build a deterministic, unsigned-body-hashed public snapshot."""
+    observed_at = observed_at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    body = {
+        "schema": "wealth.snapshot.v1",
+        "asset": asset,
+        "observed_at": observed_at,
+        "ticker": _without_timestamp(ticker),
+        "levels": _without_timestamp(levels),
+        "macro": _without_timestamp(macro),
+    }
+    canonical = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
+    body["coherence_id"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    return body
+
+
 # ── Endpoint Handlers ────────────────────────────────────────────
 def cmd_ticker(args):
     cache = _cache_key("ticker")
@@ -380,15 +406,10 @@ def cmd_levels(args):
     return result
 
 
-def cmd_macro(args):
-    cache = _cache_key("macro")
-    cached = _read_cache(cache)
-    if cached:
-        return cached
-
+def _fetch_macro(price=None):
     import yfinance as yf
-    result = {"timestamp": datetime.now(MYT).isoformat()}
 
+    result = {}
     for sym, key in [("DX-Y.NYB", "dxy"), ("^VIX", "vix"), ("^TNX", "us10y"), ("SI=F", "silver")]:
         try:
             t = yf.Ticker(sym)
@@ -398,10 +419,59 @@ def cmd_macro(args):
         except Exception:
             result[key] = None
 
-    if result.get("silver"):
-        ticker_data = cmd_ticker({})
-        if ticker_data.get("price"):
-            result["gold_silver_ratio"] = round(ticker_data["price"] / result["silver"], 1)
+    if result.get("silver") and price:
+        result["gold_silver_ratio"] = round(price / result["silver"], 1)
+    return result
+
+
+def cmd_macro(args):
+    cache = _cache_key("macro")
+    cached = _read_cache(cache)
+    if cached:
+        return cached
+
+    result = _fetch_macro()
+    result["timestamp"] = datetime.now(MYT).isoformat()
+    _write_cache(cache, result)
+    return result
+
+
+def cmd_snapshot(args):
+    """Return one coherent price, level, and macro observation."""
+    cache = _cache_key("snapshot")
+    cached = _read_cache(cache)
+    if cached and cached.get("schema") == "wealth.snapshot.v1" and cached.get("asset") == "oil":
+        return cached
+
+    observed_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    try:
+        # One primary market fetch feeds both ticker price and support/resistance.
+        df = fetch_ohlcv(interval="1h", period="30d")
+        sig = generate_signal(df)
+        prev_close = float(df["close"].iloc[-2])
+        change = round(sig["price"] - prev_close, 2)
+        change_pct = round(change / prev_close * 100, 2)
+        ticker = {
+            "symbol": "XBRENT", "price": sig["price"], "change": change,
+            "changePct": change_pct, "rsi": sig["rsi"], "rsiState": sig["rsi_state"],
+            "signal": sig["signal"], "confidence": sig["confidence"],
+            "ema20": sig["ema_fast"], "ema50": sig["ema_slow"], "ema200": sig["ema200"],
+            "emaTrend": sig["ema_trend"], "support": sig["support_levels"],
+            "resistance": sig["resistance_levels"], "pivot": sig["pivot"],
+        }
+        sr = find_support_resistance(df, lookback=50)
+        levels = {
+            "support": sr["support"], "resistance": sr["resistance"],
+            "support_1h": sr["support"], "resistance_1h": sr["resistance"],
+            "support_daily": sr["support"], "resistance_daily": sr["resistance"],
+            "pivot": sr["pivot"],
+        }
+        macro = _fetch_macro(sig["price"])
+        if not any(value is not None for value in macro.values()):
+            raise ValueError("No macro data available")
+        result = build_snapshot("oil", ticker, levels, macro, observed_at)
+    except Exception as exc:
+        raise RuntimeError(f"SNAPSHOT_UNAVAILABLE: {exc}") from exc
 
     _write_cache(cache, result)
     return result
@@ -669,14 +739,15 @@ def cmd_calendar(args):
 
 def main():
     parser = argparse.ArgumentParser(description="XBRENT Brent Crude Oil Data Fetcher")
-    parser.add_argument("command", choices=["ticker", "history", "signals", "levels", "macro", "apex", "signal_v2", "calendar"])
+    parser.add_argument("command", choices=["ticker", "history", "signals", "levels", "macro", "snapshot", "apex", "signal_v2", "calendar"])
     parser.add_argument("--interval", default="1h")
     parser.add_argument("--period", default="30d")
     args = parser.parse_args()
 
     handlers = {
         "ticker": cmd_ticker, "history": cmd_history, "signals": cmd_signals,
-        "levels": cmd_levels, "macro": cmd_macro, "apex": cmd_apex, "signal_v2": cmd_signal_v2, "calendar": cmd_calendar,
+        "levels": cmd_levels, "macro": cmd_macro, "snapshot": cmd_snapshot,
+        "apex": cmd_apex, "signal_v2": cmd_signal_v2, "calendar": cmd_calendar,
     }
 
     try:
