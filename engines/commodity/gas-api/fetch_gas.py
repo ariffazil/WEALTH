@@ -327,6 +327,19 @@ def _without_timestamp(value):
     return value
 
 
+def _node_body(value):
+    """Recursively rewrite Python floats to Node-compat integers when safe."""
+    if isinstance(value, float):
+        if value.is_integer():
+            return int(value)
+        return value
+    if isinstance(value, dict):
+        return {key: _node_body(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_node_body(item) for item in value]
+    return value
+
+
 def build_snapshot(asset, ticker, levels, macro, observed_at=None):
     """Build a deterministic, unsigned-body-hashed public snapshot."""
     observed_at = observed_at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -338,8 +351,15 @@ def build_snapshot(asset, ticker, levels, macro, observed_at=None):
         "levels": _without_timestamp(levels),
         "macro": _without_timestamp(macro),
     }
-    canonical = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
+    node_body = _node_body(body)
+    canonical = json.dumps(node_body, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
     body["coherence_id"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    # `coherence_id` is the SHA-256 of the canonical (minified, sorted) form
+    # of the body without the id itself. Caller MUST serialize the body
+    # with `separators=(",", ":")` and `sort_keys=True` to recompute the hash.
+    # The summary printer below uses the same serializer so the on-disk
+    # artifact matches the hash.
+    _CANONICAL_OUTPUT = body
     return body
 
 
@@ -941,7 +961,19 @@ def main():
         result = handlers[args.command](
             {"interval": args.interval, "period": args.period}
         )
-        print(json.dumps(result, default=str, indent=2))
+        # If the command produced a snapshot with a coherence_id, re-serialize
+        # using the same canonical form the hash was computed over so callers
+        # that re-hash the bytes see the contract honored. Other commands
+        # keep their previous pretty form.
+        if (
+            args.command == "snapshot"
+            and isinstance(result, dict)
+            and result.get("schema") == "wealth.snapshot.v1"
+            and isinstance(result.get("coherence_id"), str)
+        ):
+            print(json.dumps(_node_body(result), sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False))
+        else:
+            print(json.dumps(result, default=str, indent=2))
     except Exception as e:
         print(json.dumps({"error": str(e)}, indent=2))
         sys.exit(1)

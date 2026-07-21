@@ -202,6 +202,10 @@ def test_fetcher_snapshot_shape_one_timestamp_and_coherence(asset):
     assert _count_key(snapshot, "timestamp") == 0
 
     unsigned = {key: value for key, value in snapshot.items() if key != "coherence_id"}
+    # Mirror Node JSON.stringify number semantics: a whole-number float becomes
+    # an integer. The production serializer uses _node_body to apply the
+    # same conversion before hashing.
+    unsigned = module._node_body(unsigned)
     canonical = json.dumps(unsigned, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
     assert snapshot["coherence_id"] == hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
