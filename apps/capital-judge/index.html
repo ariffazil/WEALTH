@@ -652,6 +652,399 @@
       grid-template-columns: 1fr 1fr;
     }
   }
+
+  /* ── WIZARD MODE (v1.1.0+AAA) ── */
+  .wizard-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 1.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+  }
+  .wizard-toggle-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    flex: 1;
+  }
+  .wizard-toggle-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.4rem 0.8rem;
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .wizard-toggle-btn:hover { border-color: var(--gold); background: rgba(201,168,76,0.06); }
+  .wizard-toggle-btn.active { background: var(--gold-dim); color: var(--bg); }
+
+  /* Step navigator */
+  .wizard-nav {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border);
+    padding: 0.5rem;
+    background: var(--surface);
+  }
+  .step-tab {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.6rem 0.8rem;
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .step-tab:hover { color: var(--text); border-color: var(--text-dim); }
+  .step-tab.active {
+    border-color: var(--gold-dim);
+    color: var(--gold);
+    background: rgba(201,168,76,0.06);
+  }
+  .step-tab.done {
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .step-tab.done::before {
+    content: '✓ ';
+    margin-right: 0.2rem;
+  }
+
+  /* Wizard panel */
+  .wizard-panel {
+    border: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    background: var(--surface);
+    min-height: 360px;
+  }
+  .wizard-panel.hidden { display: none; }
+
+  .wizard-step-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .wizard-step-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    color: var(--text);
+  }
+  .wizard-step-title em {
+    font-style: italic;
+    color: var(--gold);
+    margin-right: 0.4rem;
+  }
+  .wizard-step-counter {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  .wizard-step-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .wizard-step-body.single { grid-template-columns: 1fr; }
+
+  .wizard-nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .wizard-nav-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .wizard-nav-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+  .wizard-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .wizard-nav-btn.primary { border-color: var(--gold-dim); color: var(--gold); }
+
+  /* STUB badge — honest marker for non-wired surface */
+  .stub-badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    padding: 0.15rem 0.4rem;
+    border: 1px dashed var(--amber);
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  /* 13 primitives grid */
+  .primitives-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
+  }
+  .primitive-card {
+    border: 1px solid var(--border2);
+    padding: 0.85rem;
+    background: var(--surface2);
+    transition: border-color 0.2s;
+  }
+  .primitive-card:hover { border-color: var(--gold-dim); }
+  .primitive-card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+  }
+  .primitive-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--gold);
+    font-weight: 500;
+  }
+  .primitive-domain {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .primitive-desc {
+    font-size: 0.7rem;
+    color: var(--text-mid);
+    line-height: 1.4;
+  }
+  .primitive-status {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    margin-top: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .primitive-status.wired { color: var(--green); }
+  .primitive-status.partial { color: var(--amber); }
+  .primitive-status.stub { color: var(--red); }
+
+  /* Contradiction gauge */
+  .contradiction-gauge {
+    border: 1px solid var(--border2);
+    padding: 1.5rem;
+    background: var(--surface2);
+    text-align: center;
+  }
+  .gauge-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.75rem;
+  }
+  .gauge-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 3rem;
+    color: var(--text-mid);
+  }
+  .gauge-sublabel {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    margin-top: 0.4rem;
+  }
+
+  .contradiction-list {
+    margin-top: 1rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+  }
+  .contradiction-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    font-size: 0.7rem;
+    border-bottom: 1px dashed var(--border);
+  }
+  .contradiction-row:last-child { border-bottom: none; }
+  .contradiction-type {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-mid);
+  }
+  .contradiction-strength {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .contradiction-strength.weak { color: var(--red); }
+  .contradiction-strength.strong { color: var(--green); }
+  .contradiction-strength.missing { color: var(--amber); }
+
+  /* Risk radar (5-dim visual) */
+  .risk-radar {
+    border: 1px solid var(--border2);
+    padding: 1.5rem;
+    background: var(--surface2);
+    text-align: center;
+  }
+  .risk-dim-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.7rem;
+  }
+  .risk-dim-bar:last-child { margin-bottom: 0; }
+  .risk-dim-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    width: 80px;
+    text-align: left;
+    flex-shrink: 0;
+  }
+  .risk-dim-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    position: relative;
+  }
+  .risk-dim-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--text-dim);
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  .risk-dim-fill.low { background: var(--green); }
+  .risk-dim-fill.med { background: var(--amber); }
+  .risk-dim-fill.high { background: var(--red); }
+
+  /* Vault readiness strip */
+  .vault-readiness {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    margin-bottom: 2rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+  }
+  .readiness-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+  }
+  .readiness-label {
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.55rem;
+  }
+  .readiness-value {
+    color: var(--text-mid);
+    font-size: 0.7rem;
+  }
+  .readiness-value.ok { color: var(--green); }
+  .readiness-value.warn { color: var(--amber); }
+  .readiness-value.muted { color: var(--text-dim); font-style: italic; }
+
+  /* Witness gate callout */
+  .witness-gate {
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+  }
+  .witness-gate-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+  }
+  .witness-gate-body {
+    font-size: 0.75rem;
+    color: var(--text-mid);
+    line-height: 1.5;
+  }
+
+  /* Evidence attachment */
+  .evidence-zone {
+    border: 1px dashed var(--border2);
+    padding: 1.5rem;
+    text-align: center;
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-size: 0.75rem;
+  }
+  .evidence-list {
+    margin-top: 1rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+  }
+  .evidence-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    font-size: 0.7rem;
+    border-bottom: 1px dashed var(--border);
+    color: var(--text-mid);
+  }
+  .evidence-item:last-child { border-bottom: none; }
+  .evidence-empty { font-style: italic; color: var(--text-dim); }
+
+  /* Wizard verdict (step 5) */
+  .wizard-verdict-hero {
+    text-align: center;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 900px) {
+    .wizard-nav { grid-template-columns: repeat(2, 1fr); }
+    .wizard-step-body { grid-template-columns: 1fr; }
+    .vault-readiness { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 </head>
 <body>
@@ -690,6 +1083,291 @@
         <span class="floor-badge active">F11</span>
         <span class="floor-badge active">F13</span>
       </div>
+    </div>
+  </div>
+
+  <!-- ── WIZARD MODE TOGGLE (v1.1.0-AAA) ── -->
+  <div class="wizard-toggle">
+    <span class="wizard-toggle-label">Mode: <span id="modeLabel">Single-Shot Score (default per v1.1.0 manifest)</span></span>
+    <button class="wizard-toggle-btn" id="wizardToggleBtn" onclick="toggleWizard()">Switch to Wizard</button>
+  </div>
+
+  <!-- ── WIZARD NAVIGATOR (hidden by default) ── -->
+  <div class="wizard-nav" id="wizardNav" style="display:none;">
+    <button class="step-tab active" data-step="1" onclick="showStep(1)">1. Evidence</button>
+    <button class="step-tab" data-step="2" onclick="showStep(2)">2. 13 Primitives</button>
+    <button class="step-tab" data-step="3" onclick="showStep(3)">3. Contradiction</button>
+    <button class="step-tab" data-step="4" onclick="showStep(4)">4. Risk</button>
+    <button class="step-tab" data-step="5" onclick="showStep(5)">5. Verdict</button>
+  </div>
+
+  <!-- ── STEP 1: EVIDENCE COMPLETENESS ── -->
+  <div class="wizard-panel" id="step-1" style="display:none;">
+    <div class="wizard-step-header">
+      <div class="wizard-step-title"><em>01</em>Evidence Completeness</div>
+      <div class="wizard-step-counter">STEP 1 / 5</div>
+    </div>
+    <div class="wizard-step-body">
+      <div>
+        <div class="panel-section-title">Project Identity</div>
+        <div class="field-row single">
+          <div class="field">
+            <label>Project Name</label>
+            <input type="text" id="wizProjectName" placeholder="e.g. Block K Development" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Initial Investment</label>
+            <input type="number" id="wizCapex" placeholder="0" />
+            <span class="field-unit">USD (negative capex)</span>
+          </div>
+          <div class="field">
+            <label>Horizon</label>
+            <input type="number" id="wizHorizon" placeholder="7" min="1" max="10" />
+            <span class="field-unit">years</span>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Risk Classification</label>
+            <input type="text" id="wizRiskClass" placeholder="low | medium | high | existential" />
+            <span class="field-unit">PEACE² consideration</span>
+          </div>
+          <div class="field">
+            <label>Decision Class</label>
+            <input type="text" id="wizDecisionClass" placeholder="C0_AUTO | C1_STANDARD | C2_PRIVILEGED | C3_SOVEREIGN" />
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel-section-title">Evidence Attachment <span class="stub-badge">STUB</span></div>
+        <div class="evidence-zone">
+          Drop PDF / text / numbers here<br>
+          <span style="font-size:0.65rem;opacity:0.6;">(live ingest not wired — v1.1.0 wizard-shell stage)</span>
+        </div>
+        <div class="evidence-list">
+          <div class="evidence-item">
+            <span>📄 feasibility_study.pdf</span>
+            <span class="readiness-value ok">attached</span>
+          </div>
+          <div class="evidence-item">
+            <span>📊 geological_survey.csv</span>
+            <span class="readiness-value ok">attached</span>
+          </div>
+          <div class="evidence-item">
+            <span>📝 board_minutes_2026Q2.docx</span>
+            <span class="readiness-value warn">pending witness</span>
+          </div>
+          <div class="evidence-item">
+            <span>💰 treasury_lock.txt</span>
+            <span class="evidence-empty">no evidence yet</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wizard-nav-buttons">
+      <button class="wizard-nav-btn" disabled>← Back</button>
+      <button class="wizard-nav-btn primary" onclick="showStep(2)">Next: 13 Primitives →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: 13 CAPITAL PRIMITIVES ── -->
+  <div class="wizard-panel" id="step-2" style="display:none;">
+    <div class="wizard-step-header">
+      <div class="wizard-step-title"><em>02</em>13 Capital Primitives</div>
+      <div class="wizard-step-counter">STEP 2 / 5</div>
+    </div>
+    <div style="margin-bottom:1rem; font-size:0.75rem; color:var(--text-mid);">
+      Capital case evaluated against WEALTH's 13 thermodynamic primitives. Each primitive is a deductive primitive — no inference, no governance verdict. <span class="stub-badge">PARTIAL — 4/13 wired in v1.1.0</span>
+    </div>
+    <div class="primitives-grid" id="primitivesGrid"><!-- rendered by JS --></div>
+    <div class="wizard-nav-buttons">
+      <button class="wizard-nav-btn" onclick="showStep(1)">← Back</button>
+      <button class="wizard-nav-btn primary" onclick="showStep(3)">Next: Contradiction →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: CONTRADICTION SCAN (GEOX) ── -->
+  <div class="wizard-panel" id="step-3" style="display:none;">
+    <div class="wizard-step-header">
+      <div class="wizard-step-title"><em>03</em>Contradiction Scan <span class="stub-badge">STUB — calls geox_contradiction_scan</span></div>
+      <div class="wizard-step-counter">STEP 3 / 5</div>
+    </div>
+    <div class="wizard-step-body">
+      <div>
+        <div class="contradiction-gauge">
+          <div class="gauge-label">Cross-Claim Contradiction Index</div>
+          <div class="gauge-value" id="contradictionScore">—</div>
+          <div class="gauge-sublabel">0.00 = aligned · 1.00 = FATAL contradiction</div>
+        </div>
+        <div class="witness-gate">
+          <div class="witness-gate-title">⚠ F3 WITNESS + F7 HUMILITY</div>
+          <div class="witness-gate-body">
+            Contradiction detection is a GEOX responsibility. Capital Judge delegates via <code>geox_contradiction_scan</code> and renders the result, never recomputes.
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel-section-title">Claim Deductions</div>
+        <div class="contradiction-list">
+          <div class="contradiction-row">
+            <span class="contradiction-type">IRR vs market comp</span>
+            <span class="contradiction-strength weak">WEAK</span>
+          </div>
+          <div class="contradiction-row">
+            <span class="contradiction-type">NPV vs risk class</span>
+            <span class="contradiction-strength strong">STRONG</span>
+          </div>
+          <div class="contradiction-row">
+            <span class="contradiction-type">DSCR vs hurdle</span>
+            <span class="contradiction-strength strong">STRONG</span>
+          </div>
+          <div class="contradiction-row">
+            <span class="contradiction-type">Confluence vs entropy</span>
+            <span class="contradiction-strength missing">MISSING</span>
+          </div>
+          <div class="contradiction-row">
+            <span class="contradiction-type">Power asymmetry vs capture</span>
+            <span class="contradiction-strength missing">MISSING</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wizard-nav-buttons">
+      <button class="wizard-nav-btn" onclick="showStep(2)">← Back</button>
+      <button class="wizard-nav-btn primary" onclick="showStep(4)">Next: Risk →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: RISK SIGNATURE ── -->
+  <div class="wizard-panel" id="step-4" style="display:none;">
+    <div class="wizard-step-header">
+      <div class="wizard-step-title"><em>04</em>Risk Signature <span class="stub-badge">STUB — risk radar not computed</span></div>
+      <div class="wizard-step-counter">STEP 4 / 5</div>
+    </div>
+    <div class="wizard-step-body">
+      <div class="risk-radar">
+        <div class="gauge-label">5-Dimensional Risk Profile</div>
+        <div class="risk-dim-bar">
+          <span class="risk-dim-name">Leverage</span>
+          <div class="risk-dim-track"><div class="risk-dim-fill med" style="width:55%"></div></div>
+          <span class="dim-value" style="width:48px;">0.55</span>
+        </div>
+        <div class="risk-dim-bar">
+          <span class="risk-dim-name">Capture</span>
+          <div class="risk-dim-track"><div class="risk-dim-fill low" style="width:22%"></div></div>
+          <span class="dim-value" style="width:48px;">0.22</span>
+        </div>
+        <div class="risk-dim-bar">
+          <span class="risk-dim-name">Power</span>
+          <div class="risk-dim-track"><div class="risk-dim-fill high" style="width:78%"></div></div>
+          <span class="dim-value" style="width:48px;">0.78</span>
+        </div>
+        <div class="risk-dim-bar">
+          <span class="risk-dim-name">Asymmetry</span>
+          <div class="risk-dim-track"><div class="risk-dim-fill med" style="width:48%"></div></div>
+          <span class="dim-value" style="width:48px;">0.48</span>
+        </div>
+        <div class="risk-dim-bar">
+          <span class="risk-dim-name">Entropy Δ</span>
+          <div class="risk-dim-track"><div class="risk-dim-fill low" style="width:18%"></div></div>
+          <span class="dim-value" style="width:48px;">0.18</span>
+        </div>
+      </div>
+      <div class="witness-gate">
+        <div class="witness-gate-title">⚠ F8 GENIUS + F5 PEACE²</div>
+        <div class="witness-gate-body">
+          Risk signature must satisfy G ≥ 0.80 AND C_dark &lt; 0.30 to proceed to verdict. If any single dimension exceeds 0.70, route to 888-HOLD regardless of capital metrics.
+        </div>
+      </div>
+    </div>
+    <div class="wizard-nav-buttons">
+      <button class="wizard-nav-btn" onclick="showStep(3)">← Back</button>
+      <button class="wizard-nav-btn primary" onclick="showStep(5)">Next: Verdict →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 5: VERDICT PROPOSAL ── -->
+  <div class="wizard-panel" id="step-5" style="display:none;">
+    <div class="wizard-step-header">
+      <div class="wizard-step-title"><em>05</em>Verdict Proposal</div>
+      <div class="wizard-step-counter">STEP 5 / 5</div>
+    </div>
+    <div class="wizard-verdict-hero">
+      <div class="verdict-label">Sovereign Verdict · Capital Judge</div>
+      <div class="verdict-word idle" id="wizardVerdictWord">QUALIFY</div>
+      <div class="verdict-sublabel" id="wizardVerdictSub">
+        Project meets financial and sovereign criteria.
+      </div>
+    </div>
+    <div class="wizard-step-body">
+      <div>
+        <div class="panel-section-title">Verdict Grammar <span class="stub-badge">LOCKED</span></div>
+        <div class="contradiction-list">
+          <div class="contradiction-row">
+            <span class="contradiction-type">QUALIFY</span>
+            <span class="contradiction-strength strong">admissible</span>
+          </div>
+          <div class="contradiction-row">
+            <span class="contradiction-type">REJECT</span>
+            <span class="contradiction-strength strong">admissible</span>
+          </div>
+          <div class="contradiction-row">
+            <span class="contradiction-type">888-HOLD</span>
+            <span class="contradiction-strength weak">sovereign gate</span>
+          </div>
+          <div class="contradiction-row">
+            <span class="contradiction-type">SEAL / SABAR / VOID</span>
+            <span class="contradiction-strength missing">FORBIDDEN — F10</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel-section-title">VAULT999 Readiness</div>
+        <div class="contradiction-list">
+          <div class="contradiction-row">
+            <span class="contradiction-type">capital_ledger</span>
+            <span class="readiness-value ok">READY</span>
+          </div>
+          <div class="contradiction-row">
+            <span class="contradiction-type">cooling_ledger</span>
+            <span class="readiness-value muted">STUB</span>
+          </div>
+          <div class="contradiction-row">
+            <span class="contradiction-type">witness_state (W³)</span>
+            <span class="readiness-value muted">STUB</span>
+          </div>
+          <div class="contradiction-row">
+            <span class="contradiction-type">governance_floors</span>
+            <span class="readiness-value ok">F1·F2·F4·F5·F11·F13</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wizard-nav-buttons">
+      <button class="wizard-nav-btn" onclick="showStep(4)">← Back</button>
+      <button class="wizard-nav-btn primary" onclick="proposeVerdict()">⚖ Propose Verdict</button>
+    </div>
+  </div>
+
+  <!-- ── VAULT999 READINESS STRIP (always visible) ── -->
+  <div class="vault-readiness">
+    <div class="readiness-cell">
+      <span class="readiness-label">VAULT999 Readiness</span>
+      <span class="readiness-value ok">READ-ONLY</span>
+    </div>
+    <div class="readiness-cell">
+      <span class="readiness-label">Cooling Ledger</span>
+      <span class="readiness-value muted">STUB</span>
+    </div>
+    <div class="readiness-cell">
+      <span class="readiness-label">Witness Required</span>
+      <span class="readiness-value muted">STUB</span>
+    </div>
+    <div class="readiness-cell">
+      <span class="readiness-label">Manifest</span>
+      <span class="readiness-value ok">v1.1.0-AAA</span>
     </div>
   </div>
 
@@ -1113,6 +1791,128 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && e.ctrlKey) runJudge();
   });
+
+  // ── WIZARD MODE (v1.1.0-AAA) ──
+  // 13 Capital Primitives — per /root/wiki/domains/wealth.md
+  const capital_primitives = [
+    { id: 'npv',           name: 'NPV',          domain: 'Reward',     desc: 'Net present value of project cashflows',            status: 'wired',   wired_modes: ['npv'] },
+    { id: 'emv',           name: 'EMV',          domain: 'Reward',     desc: 'Expected monetary value under uncertainty',         status: 'wired',   wired_modes: ['emv'] },
+    { id: 'evoi',          name: 'EVOI',         domain: 'Information',desc: 'Expected value of information gathering',           status: 'wired',   wired_modes: ['evoi'] },
+    { id: 'irr',           name: 'IRR',          domain: 'Energy',     desc: 'Internal rate of return vs hurdle',                 status: 'wired',   wired_modes: ['irr'] },
+    { id: 'runway',        name: 'Runway',       domain: 'Survival',   desc: 'Months of operating capital remaining',             status: 'stub',    wired_modes: [] },
+    { id: 'entropy_delta', name: 'Entropy Δ',    domain: 'Entropy',    desc: 'Information disorder change (ΔS)',                  status: 'wired',   wired_modes: ['capital_entropy'] },
+    { id: 'capital_flow',  name: 'Flow',         domain: 'Flow',       desc: 'Capital movement and velocity',                     status: 'wired',   wired_modes: ['capital_health.flow'] },
+    { id: 'conservation',  name: 'Conservation', domain: 'Law',        desc: 'Asset/liability conservation check',                status: 'wired',   wired_modes: ['capital_health.conservation'] },
+    { id: 'asymmetry',     name: 'Asymmetry',    domain: 'Power',      desc: 'Power asymmetry between parties',                   status: 'stub',    wired_modes: [] },
+    { id: 'confluence',    name: 'Confluence',   domain: 'Signal',     desc: 'Multi-indicator agreement index',                   status: 'stub',    wired_modes: [] },
+    { id: 'capture',       name: 'Capture',      domain: 'Risk',       desc: 'Counterparty capture detection',                    status: 'stub',    wired_modes: [] },
+    { id: 'power',         name: 'Power',        domain: 'Power',      desc: 'Power concentration index',                         status: 'stub',    wired_modes: [] },
+    { id: 'wisdom',        name: 'Wisdom',       domain: 'Synthesis',  desc: '6-dimension wisdom evaluation',                     status: 'wired',   wired_modes: ['capital_wisdom'] }
+  ];
+
+  const wiredCount = capital_primitives.filter(p => p.status === 'wired').length;
+  const stubCount = capital_primitives.filter(p => p.status === 'stub').length;
+
+  function renderPrimitives() {
+    const grid = document.getElementById('primitivesGrid');
+    if (!grid) return;
+    grid.innerHTML = capital_primitives.map(p => `
+      <div class="primitive-card">
+        <div class="primitive-card-head">
+          <span class="primitive-name">${p.name}</span>
+          <span class="primitive-domain">${p.domain}</span>
+        </div>
+        <div class="primitive-desc">${p.desc}</div>
+        <div class="primitive-status ${p.status}">
+          ${p.status === 'wired' ? '● wired → ' + p.wired_modes.join(', ') : '○ stub — pending B-Full'}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  let wizardActive = false;
+  let currentStep = 1;
+
+  function toggleWizard() {
+    wizardActive = !wizardActive;
+    const nav = document.getElementById('wizardNav');
+    const btn = document.getElementById('wizardToggleBtn');
+    const label = document.getElementById('modeLabel');
+    const cockpitGrid = document.querySelector('.cockpit-grid');
+
+    if (wizardActive) {
+      nav.style.display = 'grid';
+      btn.textContent = 'Switch to Single-Shot';
+      btn.classList.add('active');
+      label.textContent = 'Wizard Mode (5-step / 13 primitives)';
+      if (cockpitGrid) cockpitGrid.style.display = 'none';
+      renderPrimitives();
+      showStep(1);
+    } else {
+      nav.style.display = 'none';
+      btn.textContent = 'Switch to Wizard';
+      btn.classList.remove('active');
+      label.textContent = 'Single-Shot Score (default per v1.1.0 manifest)';
+      if (cockpitGrid) cockpitGrid.style.display = 'grid';
+      // hide all wizard steps
+      for (let i = 1; i <= 5; i++) {
+        const el = document.getElementById('step-' + i);
+        if (el) el.style.display = 'none';
+      }
+    }
+  }
+
+  function showStep(n) {
+    if (!wizardActive) return;
+    currentStep = n;
+    for (let i = 1; i <= 5; i++) {
+      const el = document.getElementById('step-' + i);
+      if (el) el.style.display = (i === n) ? 'block' : 'none';
+    }
+    document.querySelectorAll('.step-tab').forEach(tab => {
+      const step = parseInt(tab.dataset.step, 10);
+      tab.classList.remove('active', 'done');
+      if (step === n) tab.classList.add('active');
+      else if (step < n) tab.classList.add('done');
+    });
+    if (n === 2) renderPrimitives();
+    if (n === 5) syncWizardVerdict();
+  }
+
+  // Sync wizard step 5 verdict with the single-shot result if available
+  function syncWizardVerdict() {
+    const word = document.getElementById('wizardVerdictWord');
+    const sub = document.getElementById('wizardVerdictSub');
+    if (!word || !sub) return;
+    const src = document.getElementById('verdictWord');
+    if (src && src.textContent && src.textContent !== 'PENDING') {
+      word.textContent = src.textContent;
+      word.className = 'verdict-word ' + (src.className.split(' ').filter(c => ['qualify','reject','hold','idle'].includes(c)).join(' ') || 'idle');
+      const srcSub = document.getElementById('verdictSublabel');
+      if (srcSub) sub.textContent = srcSub.textContent;
+    } else {
+      word.textContent = 'QUALIFY';
+      word.className = 'verdict-word qualify';
+      sub.textContent = 'Project meets financial and sovereign criteria. (Wizard verdict — not yet bound to single-shot.)';
+    }
+  }
+
+  function proposeVerdict() {
+    // In v1.1.0 wizard-shell stage, this is a UI affordance only.
+    // Real proposal writes through arifOS jarif_seal pipeline (B-Full).
+    const word = document.getElementById('wizardVerdictWord');
+    if (!word) return;
+    const stamp = new Date().toISOString().replace('T', ' ').split('.')[0];
+    const projectName = (document.getElementById('wizProjectName') || {}).value || 'unnamed';
+    alert(`Verdict "${word.textContent}" proposed for "${projectName}" at ${stamp} UTC.\n\n` +
+          `Wizard-shell stage: no VAULT999 write is performed yet.\n` +
+          `B-Full will wire this to arifOS jarif_seal pipeline.\n` +
+          `Receipt policy: Salam Receipt v1 / Scar Ledger v1 are NOT supported.\n` +
+          `Only VAULT999 proposals are accepted.`);
+  }
+
+  // Prime primitives grid on load even before wizard opens (so DOM is ready)
+  renderPrimitives();
 </script>
 </body>
 </html>
