@@ -1,21 +1,37 @@
 {
   "$schema": "https://geox.arif-fazil.com/schemas/app-manifest/v1.json",
   "app_id": "wealth.capital.judge",
-  "version": "1.0.0-AAA",
+  "version": "1.1.0-AAA",
   "domain": "finance",
   "display_name": "Capital Judge",
-  "description": "Sovereign Capital Allocation Cockpit — v1.3.1 Dimensional Forge",
+  "description": "Sovereign Capital Allocation Cockpit — v1.1.0-AAA Honest Wiring. Capital allocation evaluated against 13 thermodynamic primitives, with cross-organ contradiction scan and VAULT999 readiness surface. v1.1.0 fixes the phantom tool names from v1.0.0 and locks the F10 verdict grammar.",
   "icon": "https://wealth.arif-fazil.com/apps/capital_judge/icon.svg",
   "required_tools": [
-    "mcp.wealth.wealth_npv_reward",
-    "mcp.wealth.wealth_score_kernel",
-    "mcp.wealth.wealth_audit_entropy"
+    "mcp.wealth.capital_primitive",
+    "mcp.wealth.capital_health",
+    "mcp.wealth.capital_diagnose",
+    "mcp.wealth.capital_entropy"
   ],
   "optional_tools": [
-    "mcp.wealth.wealth_dscr_leverage",
-    "mcp.wealth.wealth_irr_yield",
-    "mcp.wealth.wealth_payback_time"
+    "mcp.wealth.capital_wisdom",
+    "mcp.wealth.capital_ledger",
+    "mcp.wealth.capital_market",
+    "mcp.wealth.capital_registry"
   ],
+  "cross_organ_dependencies": {
+    "geox_contradiction_scan": {
+      "tool": "mcp.arifos.geox_contradiction_scan",
+      "required": true,
+      "scope": "contradiction_engine",
+      "rationale": "Contradiction detection is a GEOX responsibility. Capital Judge consumes, never duplicates."
+    },
+    "arifos_judge_proxy": {
+      "tool": "mcp.arifos.arif_judge",
+      "required": false,
+      "scope": "verdict_proposal",
+      "rationale": "Capital verdicts are advisory. arifOS retains constitutional judgment authority."
+    }
+  },
   "ui_entry": {
     "resource_uri": "https://wealth.arif-fazil.com/apps/capital_judge/index.html",
     "mode": "inline-or-external",
@@ -30,11 +46,65 @@
     "required_floors": ["F1", "F2", "F4", "F5", "F11", "F13"],
     "audit_level": "full",
     "vault_route": "999_VAULT",
-    "human_in_the_loop": ["fund_approval", "waiver_issue"]
+    "human_in_the_loop": ["fund_approval", "waiver_issue", "888_hold_resolution"]
+  },
+  "verdict_grammar": {
+    "locked": true,
+    "states": ["QUALIFY", "REJECT", "888-HOLD"],
+    "forbidden": ["SEAL", "SABAR", "VOID", "HOLD"],
+    "rationale": "Capital allocation outcomes are not constitutional verdicts. SEAL/SABAR/VOID are reserved for arifOS kernel. HOLD is too generic for capital domain. 888-HOLD is the only sovereign-pause state and routes to VAULT999.",
+    "reviewed_in_v1.1.0": "2026-07-23"
+  },
+  "wizard_mode": {
+    "enabled": true,
+    "steps": [
+      "evidence_completeness",
+      "13_capital_primitives",
+      "contradiction_scan",
+      "risk_signature",
+      "verdict_proposal"
+    ],
+    "default_flow": "single_shot",
+    "schema_version": "wizard-v1"
+  },
+  "thirteen_capital_primitives": {
+    "enabled": true,
+    "primitives": [
+      "npv", "emv", "evoi", "irr", "runway",
+      "entropy_delta", "capital_flow", "conservation",
+      "asymmetry", "confluence", "capture", "power", "wisdom"
+    ],
+    "ui_exposure": "tabs_or_dropdown",
+    "rationale": "13 primitives are the WEALTH capital thermodynamic surface per /root/wiki/domains/wealth.md. v1.0.0 only exposed 5 (NPV, IRR, DSCR, PI, Payback). v1.1.0 surfaces all 13."
+  },
+  "vault_readiness": {
+    "enabled": true,
+    "mode": "read_only",
+    "sources": [
+      "mcp.wealth.capital_ledger",
+      "arifOS://cooling_ledger",
+      "arifOS://witness_state"
+    ],
+    "write_permission": false,
+    "rationale": "Capital Judge proposes VAULT999 entries only. Writes go through arifOS jarir_seal pipeline, never directly from the app. 888-HOLD is the only state that triggers a proposal."
+  },
+  "audit_link": {
+    "f11_audit": true,
+    "sink": "mcp.wealth.capital_ledger",
+    "rationale": "Every judgment execution writes a capital_ledger entry. F11 AUDIT satisfied."
+  },
+  "receipt_policy": {
+    "supported": ["vault999_proposal"],
+    "unsupported": ["salam_receipt_v1", "scar_ledger_v1"],
+    "rationale": "Salam Receipt v1 and Scar Ledger v1 are not canonical artifacts in the federation. The real receipt surface is VAULT999, which Capital Judge can only propose (never directly write)."
   },
   "verdict_states": {
     "QUALIFY": "Project meets financial and sovereign criteria.",
     "REJECT": "Value destruction or ethical breach detected.",
-    "888-HOLD": "Critical leverage or dignity flags require human intervention."
+    "888-HOLD": "Critical leverage or dignity flags require human intervention before proceeding."
+  },
+  "changelog": {
+    "1.0.0-AAA": "Initial release with 5-dimension UI and phantom tool references in manifest.",
+    "1.1.0-AAA": "Reconcile required_tools with real capital_* modes. Lock verdict grammar. Add wizard_mode, cross_organ_dependencies, thirteen_capital_primitives, vault_readiness, audit_link, receipt_policy. No runtime code changes in this release — manifest hardening only."
   }
 }
