@@ -1,19 +1,17 @@
 <!-- SOT-MANIFEST
-federation_release: v2026.07.20-ZEN-CONVERGENCE
-last_verified: 2026-07-20T16:25Z
-live_commit: ad2d5a1
+federation_release: v2026.07.23
+last_verified: 2026-07-23T22:00Z
+live_commit: e962114
 port: 18082
-domain_law: CAPITAL_LAW
+health: healthy
 mcp_tools_live: 20
-health_status: ALIVE
 authority: COMPUTE_ONLY — never allocate
 truth_rule: tools/list + /health beat any static count in prose
-a2a_agent_json: /root/WEALTH/.well-known/agent.json
 -->
 
 [![Agentic CI](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml/badge.svg?branch=main)](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml)
-[![💰 CAPITAL](https://img.shields.io/badge/%F0%9F%92%B0%20CAPITAL-12%20tools-1f6feb)](https://wealth.arif-fazil.com/mcp)
-[![Federation](https://img.shields.io/badge/Federation-v2026.07.19-0a7b83)](https://arifos.arif-fazil.com)
+[![💰 CAPITAL](https://img.shields.io/badge/%F0%9F%92%B0%20CAPITAL-20%20tools-1f6feb)](https://wealth.arif-fazil.com/mcp)
+[![Federation](https://img.shields.io/badge/Federation-v2026.07.23-0a7b83)](https://arifos.arif-fazil.com)
 [![License](https://img.shields.io/github/license/ariffazil/wealth?label=License)](LICENSE)
 
 # WEALTH — Capital Intelligence for arifOS
@@ -125,7 +123,7 @@ WEALTH provides auditable, bounded financial computation:
 **Muhammad Arif bin Fazil** is F13 SOVEREIGN. His capital decisions are final.
 
 ```
-WEALTH · Port 18082 · 12 tools · CAPITAL_LAW · AGPL-3.0
+WEALTH · Port 18082 · 20 tools · CAPITAL_LAW · AGPL-3.0
 Computes, never allocates. DITEMPA BUKAN DIBERI.
 ```
 
