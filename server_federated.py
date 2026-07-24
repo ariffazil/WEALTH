@@ -54,18 +54,24 @@ if __name__ == "__main__":
         except Exception:
             identity_hash = "UNAVAILABLE"
 
-        # Tool surface visibility (T₁ audit fix 2026-07-19)
-        _public_tools = 20
+        # Tool surface visibility (live async count — fixed 2026-07-24)
+        _public_tools = 12  # sane default (12 canonical tools as of v2026.07.17)
         try:
-            _public_tools = len(mcp._mcp_server._tool_manager._tools) if mcp and hasattr(mcp, '_mcp_server') else 20
+            tools = await mcp.list_tools()
+            _public_tools = len(tools)
         except Exception:
             pass
 
         git_commit = "UNAVAILABLE"
         try:
             import subprocess
-            r = subprocess.run(["git", "-C", "/root/WEALTH", "rev-parse", "--short=7", "HEAD"],
-                               capture_output=True, text=True, timeout=3)
+
+            r = subprocess.run(
+                ["git", "-C", "/root/WEALTH", "rev-parse", "--short=7", "HEAD"],
+                capture_output=True,
+                text=True,
+                timeout=3,
+            )
             if r.returncode == 0:
                 git_commit = r.stdout.strip()
         except Exception:
