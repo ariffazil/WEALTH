@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """
-Natural Gas (NG) Data Fetcher — WEALTH Organ
-Fetches live natural gas data from yfinance, computes technical indicators,
+XNATGAS Natural Gas Data Fetcher — WEALTH Organ
+Fetches live gold data from yfinance, computes technical indicators,
 generates trading signals. Called by Node.js API server.
 
 Usage:
-    python3 fetch_gas.py ticker
-    python3 fetch_gas.py history --interval 1h --period 30d
-    python3 fetch_gas.py signals
-    python3 fetch_gas.py levels
-    python3 fetch_gas.py macro
-    python3 fetch_gas.py snapshot
+    python3 fetch_gold.py ticker
+    python3 fetch_gold.py history --interval 1h --period 30d
+    python3 fetch_gold.py signals
+    python3 fetch_gold.py levels
+    python3 fetch_gold.py macro
 
 DITEMPA BUKAN DIBERI — Forged, Not Given.
 """
@@ -32,6 +31,8 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_TTL = 300  # 5 minutes
 
 MYT = timezone(timedelta(hours=8))
+
+ASSET_KEY = "gas"
 
 
 def _cache_key(endpoint: str, **kwargs) -> Path:
@@ -58,6 +59,20 @@ def _write_cache(path: Path, data: dict):
     except Exception:
         pass
 
+
+
+def _read_stale(path: Path) -> dict | None:
+    """Rate-limit fallback: serve expired cache rather than fail (F2: marked stale)."""
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text())
+        age = int(datetime.now().timestamp() - path.stat().st_mtime)
+        data["stale"] = True
+        data["stale_age_s"] = age
+        return data
+    except Exception:
+        return None
 
 # ── Data Fetch ───────────────────────────────────────────────────
 def fetch_ohlcv(interval: str = "1h", period: str = "30d") -> pd.DataFrame:
@@ -318,51 +333,6 @@ def generate_signal(df: pd.DataFrame) -> dict:
     }
 
 
-def _without_timestamp(value):
-    """Remove nested endpoint timestamps so the snapshot has one clock."""
-    if isinstance(value, dict):
-        return {key: _without_timestamp(item) for key, item in value.items() if key != "timestamp"}
-    if isinstance(value, list):
-        return [_without_timestamp(item) for item in value]
-    return value
-
-
-def _node_body(value):
-    """Recursively rewrite Python floats to Node-compat integers when safe."""
-    if isinstance(value, float):
-        if value.is_integer():
-            return int(value)
-        return value
-    if isinstance(value, dict):
-        return {key: _node_body(item) for key, item in value.items()}
-    if isinstance(value, list):
-        return [_node_body(item) for item in value]
-    return value
-
-
-def build_snapshot(asset, ticker, levels, macro, observed_at=None):
-    """Build a deterministic, unsigned-body-hashed public snapshot."""
-    observed_at = observed_at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    body = {
-        "schema": "wealth.snapshot.v1",
-        "asset": asset,
-        "observed_at": observed_at,
-        "ticker": _without_timestamp(ticker),
-        "levels": _without_timestamp(levels),
-        "macro": _without_timestamp(macro),
-    }
-    node_body = _node_body(body)
-    canonical = json.dumps(node_body, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
-    body["coherence_id"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-    # `coherence_id` is the SHA-256 of the canonical (minified, sorted) form
-    # of the body without the id itself. Caller MUST serialize the body
-    # with `separators=(",", ":")` and `sort_keys=True` to recompute the hash.
-    # The summary printer below uses the same serializer so the on-disk
-    # artifact matches the hash.
-    _CANONICAL_OUTPUT = body
-    return body
-
-
 # ── Endpoint Handlers ────────────────────────────────────────────
 def cmd_ticker(args):
     cache = _cache_key("ticker")
@@ -401,6 +371,8 @@ def cmd_ticker(args):
 def cmd_history(args):
     interval = args.get("interval", "1h")
     period = args.get("period", "30d")
+    # Normalize shorthand to yfinance-valid periods (F2: fail loud otherwise)
+    period = {"1M": "1mo", "3M": "3mo", "6M": "6mo", "1Y": "1y", "2Y": "2y"}.get(period, period)
     cache = _cache_key("history", interval=interval, period=period)
     cached = _read_cache(cache)
     if cached:
@@ -499,15 +471,22 @@ def cmd_levels(args):
     return result
 
 
-def _fetch_macro(price=None):
+def cmd_macro(args):
+    cache = _cache_key("macro")
+    cached = _read_cache(cache)
+    if cached:
+        return cached
+
     import yfinance as yf
 
-    result = {}
+    result = {"timestamp": datetime.now(MYT).isoformat()}
+
     for sym, key in [
         ("DX-Y.NYB", "dxy"),
         ("^VIX", "vix"),
         ("^TNX", "us10y"),
         ("SI=F", "silver"),
+        ("MYR=X", "usmyr"),
     ]:
         try:
             t = yf.Ticker(sym)
@@ -519,71 +498,12 @@ def _fetch_macro(price=None):
         except Exception:
             result[key] = None
 
-    if result.get("silver") and price:
-        result["gold_silver_ratio"] = round(price / result["silver"], 1)
-    return result
-
-
-def cmd_macro(args):
-    cache = _cache_key("macro")
-    cached = _read_cache(cache)
-    if cached:
-        return cached
-
-    result = _fetch_macro()
-    result["timestamp"] = datetime.now(MYT).isoformat()
-    _write_cache(cache, result)
-    return result
-
-
-def cmd_snapshot(args):
-    """Return one coherent price, level, and macro observation."""
-    cache = _cache_key("snapshot")
-    cached = _read_cache(cache)
-    if cached and cached.get("schema") == "wealth.snapshot.v1" and cached.get("asset") == "gas":
-        return cached
-
-    observed_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    try:
-        # One primary market fetch feeds both ticker price and support/resistance.
-        df = fetch_ohlcv(interval="1h", period="30d")
-        sig = generate_signal(df)
-        prev_close = float(df["close"].iloc[-2])
-        change = round(sig["price"] - prev_close, 2)
-        change_pct = round(change / prev_close * 100, 2)
-        ticker = {
-            "symbol": "XNATGAS",
-            "price": sig["price"],
-            "change": change,
-            "changePct": change_pct,
-            "rsi": sig["rsi"],
-            "rsiState": sig["rsi_state"],
-            "signal": sig["signal"],
-            "confidence": sig["confidence"],
-            "ema20": sig["ema_fast"],
-            "ema50": sig["ema_slow"],
-            "ema200": sig["ema200"],
-            "emaTrend": sig["ema_trend"],
-            "support": sig["support_levels"],
-            "resistance": sig["resistance_levels"],
-            "pivot": sig["pivot"],
-        }
-        sr = find_support_resistance(df, lookback=50)
-        levels = {
-            "support": sr["support"],
-            "resistance": sr["resistance"],
-            "support_1h": sr["support"],
-            "resistance_1h": sr["resistance"],
-            "support_daily": sr["support"],
-            "resistance_daily": sr["resistance"],
-            "pivot": sr["pivot"],
-        }
-        macro = _fetch_macro(sig["price"])
-        if not any(value is not None for value in macro.values()):
-            raise ValueError("No macro data available")
-        result = build_snapshot("gas", ticker, levels, macro, observed_at)
-    except Exception as exc:
-        raise RuntimeError(f"SNAPSHOT_UNAVAILABLE: {exc}") from exc
+    if result.get("silver"):
+        ticker_data = cmd_ticker({})
+        if ticker_data.get("price"):
+            result["gold_silver_ratio"] = round(
+                ticker_data["price"] / result["silver"], 1
+            )
 
     _write_cache(cache, result)
     return result
@@ -599,11 +519,11 @@ def cmd_apex(args):
 
     import sys
 
-    sys.path.insert(0, "/root")
+    sys.path.insert(0, "/root/WEALTH")
     from trading.core.config import get_config
     from trading.core.models import OHLCV
     from trading.signals.scanner import compute_indicators
-    from trading.signals.apex_predictor import evaluate_market
+    from trading.apex.apex_predictor import evaluate_market
 
     cfg = get_config()
 
@@ -727,10 +647,10 @@ def cmd_signal_v2(args):
 
     import sys
 
-    sys.path.insert(0, "/root")
+    sys.path.insert(0, "/root/WEALTH")
     from trading.core.config import get_config
     from trading.core.models import OHLCV, RiskState
-    from trading.signals.engine_v2 import generate_signal_v2
+    from trading.backtest.engine_v2 import generate_signal_v2
     from trading.signals.scanner import compute_indicators
     from trading.signals.regime import compute_market_state
     from trading.risk.position_sizer import compute_position_size
@@ -925,6 +845,178 @@ def cmd_calendar(args):
     return result
 
 
+def cmd_snapshot(args):
+    """Return raw ticker data — server wraps with schema/asset/coherence_id."""
+    return cmd_ticker(args)
+
+
+# ── Forecast Engine (wealth.forecast.v1) ─────────────────────────
+# The organ does not prophesy. It publishes an ATR-scaled drift cone,
+# a scenario ladder with falsification levels, and an epistemic tag.
+# Every fresh forecast is appended to a local hash-chained log for
+# T+N outcome scoring. Sealing to VAULT999 is arifOS's lane, not ours.
+FORECAST_LOG = Path("/root/WEALTH/data/forecast_log.jsonl")
+
+_INSTITUTIONAL_CONTEXT = {
+    "gold": "Gold bid + soft DXY = monetary-hedge demand; XAU/MYR moderated by ringgit. Pressures no sovereign tripwire directly.",
+    "oil": "Brent feeds the PETRONAS fiscal chain (CFFO, dividend, O&G revenue share). Sustained drift toward TRIP 70 pressures the sovereign BODY score.",
+    "gas": "LNG/JKM complex feeds PETRONAS gas revenue and Bintulu utilization. Volatility here propagates to the same fiscal chain as Brent.",
+}
+
+
+def _lin_slope(values) -> float:
+    """Least-squares slope of a 1-D series, in units-per-step."""
+    ys = np.asarray(values, dtype=float)
+    n = len(ys)
+    if n < 2:
+        return 0.0
+    xs = np.arange(n, dtype=float)
+    denom = float(((xs - xs.mean()) ** 2).sum())
+    if denom == 0.0:
+        return 0.0
+    return float(((xs - xs.mean()) * (ys - ys.mean())).sum() / denom)
+
+
+def _forecast_log_append(record: dict) -> None:
+    """Append forecast to local hash-chained log. Never breaks the endpoint."""
+    try:
+        FORECAST_LOG.parent.mkdir(parents=True, exist_ok=True)
+        prev_hash = ""
+        if FORECAST_LOG.exists():
+            with FORECAST_LOG.open("r") as f:
+                lines = [l for l in f.read().strip().splitlines() if l.strip()]
+            if lines:
+                prev_hash = json.loads(lines[-1]).get("hash", "")
+        body = dict(record)
+        body["prev_hash"] = prev_hash
+        digest = hashlib.sha256(
+            json.dumps(body, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
+        ).hexdigest()
+        body["hash"] = digest
+        with FORECAST_LOG.open("a") as f:
+            f.write(json.dumps(body, sort_keys=True, default=str) + "\n")
+    except Exception:
+        pass
+
+
+def cmd_forecast(args):
+    horizon = int(args.get("horizon", 30))
+    if horizon not in (30, 60, 90):
+        horizon = 30
+    cache = _cache_key("forecast", horizon=horizon)
+    cached = _read_cache(cache)
+    if cached:
+        return cached
+
+    df = fetch_ohlcv(interval="1d", period="1y")
+    close = df["close"]
+    atr_val = round(float(compute_atr(df, 14).iloc[-1]), 2)
+    ema20_val = round(float(compute_ema(close, 20).iloc[-1]), 2)
+    ema50_val = round(float(compute_ema(close, 50).iloc[-1]), 2)
+    ema200_val = round(float(compute_ema(close, 200).iloc[-1]), 2)
+    rsi_val = round(float(compute_rsi(close, 14).iloc[-1]), 1)
+    price = round(float(close.iloc[-1]), 2)
+
+    # 1. Drift — regression slope of last 20 daily closes, ATR-clamped
+    slope = _lin_slope(close.tail(20).values)
+    slope = max(-atr_val, min(atr_val, slope))
+    slope = round(slope, 4)
+
+    # 2. Regime — matches the Technical Forge definition
+    trending = abs(ema20_val - ema50_val) > 0.5 * atr_val
+    if trending:
+        regime = "TRENDING_UP" if ema20_val > ema50_val else "TRENDING_DOWN"
+    else:
+        regime = "SIDEWAYS"
+
+    # 3. Cone — p50 drifts, blends toward EMA200; bands are ATR·√t
+    blend_w = 0.2 if trending else 0.5
+    last_date = df.index[-1].date()
+    t_dates, p10, p25, p50, p75, p90 = [], [], [], [], [], []
+    for t in range(1, horizon + 1):
+        mid = price + slope * t
+        mid += (ema200_val - mid) * (1 - np.exp(-t / 20)) * blend_w
+        sigma = atr_val * np.sqrt(t)
+        t_dates.append((last_date + timedelta(days=t)).isoformat())
+        p10.append(round(mid - 1.282 * sigma, 2))
+        p25.append(round(mid - 0.674 * sigma, 2))
+        p50.append(round(mid, 2))
+        p75.append(round(mid + 0.674 * sigma, 2))
+        p90.append(round(mid + 1.282 * sigma, 2))
+
+    # 4. Scenario ladder from daily swing S/R — falsification on its face
+    sr = find_support_resistance(df)
+    r1 = sr["resistance"][0] if sr["resistance"] else round(price + atr_val, 2)
+    r2 = sr["resistance"][1] if len(sr["resistance"]) > 1 else round(r1 + 2 * atr_val, 2)
+    s1 = sr["support"][0] if sr["support"] else round(price - atr_val, 2)
+    s2 = sr["support"][1] if len(sr["support"]) > 1 else round(s1 - 2 * atr_val, 2)
+    rate = max(abs(slope), 0.25 * atr_val)
+
+    def _eta(target):
+        d = abs(target - price) / rate
+        return f"{max(1, int(d * 0.6))}–{max(2, int(d * 1.4))}"
+
+    long_conf = sum([
+        ema20_val > ema50_val,
+        rsi_val > 55,
+        regime == "TRENDING_UP",
+        slope > 0,
+        price > ema200_val,
+    ])
+    short_conf = sum([
+        ema20_val < ema50_val,
+        rsi_val < 45,
+        regime == "TRENDING_DOWN",
+        slope < 0,
+        price < ema200_val,
+    ])
+    scenarios = [
+        {"side": "LONG", "trigger": f"daily close > {r1} (R1)", "objective": r2,
+         "invalidation": s1, "confluence": long_conf, "of": 5, "eta_days": _eta(r2)},
+        {"side": "SHORT", "trigger": f"daily close < {s1} (S1)", "objective": s2,
+         "invalidation": r1, "confluence": short_conf, "of": 5, "eta_days": _eta(s2)},
+    ]
+
+    # 5. Bias — one engine, one voice. Derived, never hardcoded.
+    if long_conf >= 3 and long_conf > short_conf:
+        bias = "BULLISH"
+    elif short_conf >= 3 and short_conf > long_conf:
+        bias = "BEARISH"
+    else:
+        bias = "NEUTRAL"
+
+    side200 = "above" if price > ema200_val else "below"
+    institutional_read = (
+        f"{regime} regime · price {side200} EMA200 ({ema200_val}) · RSI {rsi_val} · ATR {atr_val}. "
+        + _INSTITUTIONAL_CONTEXT.get(ASSET_KEY, "")
+    ).strip()
+
+    generated_at = datetime.now(MYT).isoformat()
+    result = {
+        "schema": "wealth.forecast.v1",
+        "asset": ASSET_KEY,
+        "generated_at": generated_at,
+        "horizon_days": horizon,
+        "basis": {"close": price, "atr14": atr_val, "slope_per_day": slope,
+                  "regime": regime, "rsi": rsi_val,
+                  "ema20": ema20_val, "ema50": ema50_val, "ema200": ema200_val},
+        "bias": bias,
+        "cone": {"t": t_dates, "p10": p10, "p25": p25, "p50": p50, "p75": p75, "p90": p90},
+        "scenarios": scenarios,
+        "institutional_read": institutional_read,
+        "epistemic": "INTERPRET — ATR-scaled drift cone, not prophecy. Falsification levels stated. Human decides.",
+    }
+    _write_cache(cache, result)
+    _forecast_log_append({
+        "schema": "wealth.forecastlog.v1", "asset": ASSET_KEY,
+        "generated_at": generated_at, "horizon_days": horizon, "close": price,
+        "bias": bias, "p50_end": p50[-1], "p10_end": p10[-1], "p90_end": p90[-1],
+        "long_objective": r2, "short_objective": s2,
+        "long_confluence": long_conf, "short_confluence": short_conf,
+    })
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description="XNATGAS Natural Gas Data Fetcher")
     parser.add_argument(
@@ -935,14 +1027,16 @@ def main():
             "signals",
             "levels",
             "macro",
-            "snapshot",
             "apex",
             "signal_v2",
             "calendar",
+            "snapshot",
+        "forecast",
         ],
     )
     parser.add_argument("--interval", default="1h")
     parser.add_argument("--period", default="30d")
+    parser.add_argument("--horizon", type=int, default=30)
     args = parser.parse_args()
 
     handlers = {
@@ -951,30 +1045,34 @@ def main():
         "signals": cmd_signals,
         "levels": cmd_levels,
         "macro": cmd_macro,
-        "snapshot": cmd_snapshot,
         "apex": cmd_apex,
         "signal_v2": cmd_signal_v2,
         "calendar": cmd_calendar,
+        "snapshot": cmd_snapshot,
+          "forecast": cmd_forecast,
     }
 
     try:
         result = handlers[args.command](
-            {"interval": args.interval, "period": args.period}
+            {
+            "interval": args.interval,
+            "period": args.period,
+            "horizon": args.horizon,
+        }
         )
-        # If the command produced a snapshot with a coherence_id, re-serialize
-        # using the same canonical form the hash was computed over so callers
-        # that re-hash the bytes see the contract honored. Other commands
-        # keep their previous pretty form.
-        if (
-            args.command == "snapshot"
-            and isinstance(result, dict)
-            and result.get("schema") == "wealth.snapshot.v1"
-            and isinstance(result.get("coherence_id"), str)
-        ):
-            print(json.dumps(_node_body(result), sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False))
-        else:
-            print(json.dumps(result, default=str, indent=2))
+        print(json.dumps(result, default=str, indent=2))
     except Exception as e:
+        # Stale fallback: serve expired cache rather than VOID the panel
+        if args.command == "history":
+            stale_key = _cache_key("history", interval=args.interval, period=args.period)
+        elif args.command in ("ticker", "snapshot"):
+            stale_key = _cache_key("ticker")
+        else:
+            stale_key = _cache_key(args.command)
+        stale = _read_stale(stale_key)
+        if stale is not None:
+            print(json.dumps(stale, default=str, indent=2))
+            sys.exit(0)
         print(json.dumps({"error": str(e)}, indent=2))
         sys.exit(1)
 
