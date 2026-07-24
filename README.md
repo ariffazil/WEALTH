@@ -186,6 +186,7 @@ Arif (F13) → AAA → arifOS → Domain Organs → A-FORGE → VAULT999
 | A-FORGE | Execution shell | 7071 | [ariffazil/A-FORGE](https://github.com/ariffazil/A-FORGE) |
 | GEOX | Earth intelligence | 8081 | [ariffazil/geox](https://github.com/ariffazil/geox) |
 | WELL | Vitality guard | 18083 | [ariffazil/well](https://github.com/ariffazil/well) |
+| HERMES | Multi-modal bridge + Telegram relay | 8644 | [ariffazil/HERMES](https://github.com/ariffazil/HERMES) |
 | **WEALTH** | Capital intelligence | 18082 | ← you are here |
 
 ---
