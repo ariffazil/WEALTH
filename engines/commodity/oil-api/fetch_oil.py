@@ -10,7 +10,6 @@ Usage:
     python3 fetch_gold.py signals
     python3 fetch_gold.py levels
     python3 fetch_gold.py macro
-    python3 fetch_oil.py snapshot
 
 DITEMPA BUKAN DIBERI — Forged, Not Given.
 """
@@ -32,6 +31,8 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_TTL = 300  # 5 minutes
 
 MYT = timezone(timedelta(hours=8))
+
+ASSET_KEY = "oil"
 
 
 def _cache_key(endpoint: str, **kwargs) -> Path:
@@ -58,6 +59,20 @@ def _write_cache(path: Path, data: dict):
     except Exception:
         pass
 
+
+
+def _read_stale(path: Path) -> dict | None:
+    """Rate-limit fallback: serve expired cache rather than fail (F2: marked stale)."""
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text())
+        age = int(datetime.now().timestamp() - path.stat().st_mtime)
+        data["stale"] = True
+        data["stale_age_s"] = age
+        return data
+    except Exception:
+        return None
 
 # ── Data Fetch ───────────────────────────────────────────────────
 def fetch_ohlcv(interval: str = "1h", period: str = "30d") -> pd.DataFrame:
@@ -99,11 +114,9 @@ def compute_atr(df: pd.DataFrame, period: int = 14) -> pd.Series:
     high = df["high"]
     low = df["low"]
     close = df["close"].shift(1)
-    tr = pd.concat([
-        high - low,
-        (high - close).abs(),
-        (low - close).abs()
-    ], axis=1).max(axis=1)
+    tr = pd.concat([high - low, (high - close).abs(), (low - close).abs()], axis=1).max(
+        axis=1
+    )
     return tr.ewm(span=period, adjust=False).mean()
 
 
@@ -116,11 +129,19 @@ def find_support_resistance(df: pd.DataFrame, lookback: int = 50) -> dict:
     swing_highs = []
     swing_lows = []
     for i in range(2, len(recent) - 2):
-        if highs[i] > highs[i-1] and highs[i] > highs[i-2] and \
-           highs[i] > highs[i+1] and highs[i] > highs[i+2]:
+        if (
+            highs[i] > highs[i - 1]
+            and highs[i] > highs[i - 2]
+            and highs[i] > highs[i + 1]
+            and highs[i] > highs[i + 2]
+        ):
             swing_highs.append(highs[i])
-        if lows[i] < lows[i-1] and lows[i] < lows[i-2] and \
-           lows[i] < lows[i+1] and lows[i] < lows[i+2]:
+        if (
+            lows[i] < lows[i - 1]
+            and lows[i] < lows[i - 2]
+            and lows[i] < lows[i + 1]
+            and lows[i] < lows[i + 2]
+        ):
             swing_lows.append(lows[i])
 
     h = recent["high"].iloc[-1]
@@ -136,12 +157,14 @@ def find_support_resistance(df: pd.DataFrame, lookback: int = 50) -> dict:
     support_raw = swing_lows + [s1, s2, pivot]
 
     resistance = sorted(set(round(r, 2) for r in resistance_raw if r > close_now))
-    support = sorted(set(round(s, 2) for s in support_raw if s < close_now), reverse=True)
+    support = sorted(
+        set(round(s, 2) for s in support_raw if s < close_now), reverse=True
+    )
 
     return {
         "support": support[:3],
         "resistance": resistance[:3],
-        "pivot": round(pivot, 2)
+        "pivot": round(pivot, 2),
     }
 
 
@@ -149,9 +172,9 @@ def detect_divergence(price: pd.Series, rsi: pd.Series, lookback: int = 10) -> s
     if len(price) < lookback * 2:
         return "NONE"
     recent_price = price.iloc[-lookback:]
-    prev_price = price.iloc[-lookback*2:-lookback]
+    prev_price = price.iloc[-lookback * 2 : -lookback]
     recent_rsi = rsi.iloc[-lookback:]
-    prev_rsi = rsi.iloc[-lookback*2:-lookback]
+    prev_rsi = rsi.iloc[-lookback * 2 : -lookback]
     if recent_price.max() > prev_price.max() and recent_rsi.max() < prev_rsi.max():
         return "BEARISH"
     if recent_price.min() < prev_price.min() and recent_rsi.min() > prev_rsi.min():
@@ -174,11 +197,19 @@ def detect_candle_pattern(df: pd.DataFrame) -> str:
         return "HAMMER"
     if upper_wick > body * 2 and lower_wick < body * 0.5:
         return "SHOOTING_STAR"
-    if prev["close"] < prev["open"] and last["close"] > last["open"] and \
-       last["close"] > prev["open"] and last["open"] < prev["close"]:
+    if (
+        prev["close"] < prev["open"]
+        and last["close"] > last["open"]
+        and last["close"] > prev["open"]
+        and last["open"] < prev["close"]
+    ):
         return "ENGULFING_BULL"
-    if prev["close"] > prev["open"] and last["close"] < last["open"] and \
-       last["close"] < prev["open"] and last["open"] > prev["close"]:
+    if (
+        prev["close"] > prev["open"]
+        and last["close"] < last["open"]
+        and last["close"] < prev["open"]
+        and last["open"] > prev["close"]
+    ):
         return "ENGULFING_BEAR"
     return "NONE"
 
@@ -200,7 +231,9 @@ def generate_signal(df: pd.DataFrame) -> dict:
     atr_val = round(float(atr.iloc[-1]), 2)
 
     ema_trend = "BULLISH" if ema20_val > ema50_val else "BEARISH"
-    rsi_state = "OVERBOUGHT" if rsi_val > 70 else ("OVERSOLD" if rsi_val < 30 else "NEUTRAL")
+    rsi_state = (
+        "OVERBOUGHT" if rsi_val > 70 else ("OVERSOLD" if rsi_val < 30 else "NEUTRAL")
+    )
     divergence = detect_divergence(close, rsi)
     pattern = detect_candle_pattern(df)
     sr = find_support_resistance(df)
@@ -244,8 +277,16 @@ def generate_signal(df: pd.DataFrame) -> dict:
             confluence.append("NEAR_SUPPORT")
             reasons.append(f"Near support ${nearest_sup}")
 
-    bearish_score = sum(1 for c in confluence if any(k in c for k in ["BEAR", "OVERBOUGHT", "RESISTANCE", "SHOOTING"]))
-    bullish_score = sum(1 for c in confluence if any(k in c for k in ["BULL", "OVERSOLD", "SUPPORT", "HAMMER"]))
+    bearish_score = sum(
+        1
+        for c in confluence
+        if any(k in c for k in ["BEAR", "OVERBOUGHT", "RESISTANCE", "SHOOTING"])
+    )
+    bullish_score = sum(
+        1
+        for c in confluence
+        if any(k in c for k in ["BULL", "OVERSOLD", "SUPPORT", "HAMMER"])
+    )
 
     if bearish_score >= 2 and bearish_score > bullish_score:
         signal = "SHORT"
@@ -266,55 +307,30 @@ def generate_signal(df: pd.DataFrame) -> dict:
     rr = round(abs(tp - price) / max(abs(sl - price), 0.01), 1)
 
     return {
-        "price": price, "ema_fast": ema20_val, "ema_slow": ema50_val,
-        "ema_trend": ema_trend, "ema200": ema200_val, "rsi": rsi_val,
-        "rsi_state": rsi_state, "rsi_divergence": divergence,
-        "candle_pattern": pattern, "atr": atr_val, "signal": signal,
-        "confidence": round(confidence, 2), "entry": price, "sl": sl,
-        "tp": tp, "rr_ratio": rr, "support_levels": sr["support"],
-        "resistance_levels": sr["resistance"], "pivot": sr["pivot"],
-        "confluence_count": len(confluence), "confluence_signals": confluence,
-        "reasons": reasons, "all_signals": confluence,
+        "price": price,
+        "ema_fast": ema20_val,
+        "ema_slow": ema50_val,
+        "ema_trend": ema_trend,
+        "ema200": ema200_val,
+        "rsi": rsi_val,
+        "rsi_state": rsi_state,
+        "rsi_divergence": divergence,
+        "candle_pattern": pattern,
+        "atr": atr_val,
+        "signal": signal,
+        "confidence": round(confidence, 2),
+        "entry": price,
+        "sl": sl,
+        "tp": tp,
+        "rr_ratio": rr,
+        "support_levels": sr["support"],
+        "resistance_levels": sr["resistance"],
+        "pivot": sr["pivot"],
+        "confluence_count": len(confluence),
+        "confluence_signals": confluence,
+        "reasons": reasons,
+        "all_signals": confluence,
     }
-
-
-def _without_timestamp(value):
-    """Remove nested endpoint timestamps so the snapshot has one clock."""
-    if isinstance(value, dict):
-        return {key: _without_timestamp(item) for key, item in value.items() if key != "timestamp"}
-    if isinstance(value, list):
-        return [_without_timestamp(item) for item in value]
-    return value
-
-
-def _node_body(value):
-    """Recursively rewrite Python floats to Node-compat integers when safe."""
-    if isinstance(value, float):
-        if value.is_integer():
-            return int(value)
-        return value
-    if isinstance(value, dict):
-        return {key: _node_body(item) for key, item in value.items()}
-    if isinstance(value, list):
-        return [_node_body(item) for item in value]
-    return value
-
-
-def build_snapshot(asset, ticker, levels, macro, observed_at=None):
-    """Build a deterministic, unsigned-body-hashed public snapshot."""
-    observed_at = observed_at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    body = {
-        "schema": "wealth.snapshot.v1",
-        "asset": asset,
-        "observed_at": observed_at,
-        "ticker": _without_timestamp(ticker),
-        "levels": _without_timestamp(levels),
-        "macro": _without_timestamp(macro),
-    }
-    node_body = _node_body(body)
-    canonical = json.dumps(node_body, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
-    body["coherence_id"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-    return body
 
 
 # ── Endpoint Handlers ────────────────────────────────────────────
@@ -331,12 +347,21 @@ def cmd_ticker(args):
     change_pct = round(change / prev_close * 100, 2)
 
     result = {
-        "symbol": "XBRENT", "price": sig["price"], "change": change,
-        "changePct": change_pct, "rsi": sig["rsi"], "rsiState": sig["rsi_state"],
-        "signal": sig["signal"], "confidence": sig["confidence"],
-        "ema20": sig["ema_fast"], "ema50": sig["ema_slow"], "ema200": sig["ema200"],
-        "emaTrend": sig["ema_trend"], "support": sig["support_levels"],
-        "resistance": sig["resistance_levels"], "pivot": sig["pivot"],
+        "symbol": "XBRENT",
+        "price": sig["price"],
+        "change": change,
+        "changePct": change_pct,
+        "rsi": sig["rsi"],
+        "rsiState": sig["rsi_state"],
+        "signal": sig["signal"],
+        "confidence": sig["confidence"],
+        "ema20": sig["ema_fast"],
+        "ema50": sig["ema_slow"],
+        "ema200": sig["ema200"],
+        "emaTrend": sig["ema_trend"],
+        "support": sig["support_levels"],
+        "resistance": sig["resistance_levels"],
+        "pivot": sig["pivot"],
         "timestamp": datetime.now(MYT).isoformat(),
     }
     _write_cache(cache, result)
@@ -346,6 +371,8 @@ def cmd_ticker(args):
 def cmd_history(args):
     interval = args.get("interval", "1h")
     period = args.get("period", "30d")
+    # Normalize shorthand to yfinance-valid periods (F2: fail loud otherwise)
+    period = {"1M": "1mo", "3M": "3mo", "6M": "6mo", "1Y": "1y", "2Y": "2y"}.get(period, period)
     cache = _cache_key("history", interval=interval, period=period)
     cached = _read_cache(cache)
     if cached:
@@ -360,22 +387,43 @@ def cmd_history(args):
     candles = []
     for ts, row in df.iterrows():
         t = int(ts.timestamp())
-        candles.append({
-            "time": t, "open": round(float(row["open"]), 2),
-            "high": round(float(row["high"]), 2), "low": round(float(row["low"]), 2),
-            "close": round(float(row["close"]), 2),
-            "volume": int(row["volume"]) if not np.isnan(row["volume"]) else 0,
-        })
+        candles.append(
+            {
+                "time": t,
+                "open": round(float(row["open"]), 2),
+                "high": round(float(row["high"]), 2),
+                "low": round(float(row["low"]), 2),
+                "close": round(float(row["close"]), 2),
+                "volume": int(row["volume"]) if not np.isnan(row["volume"]) else 0,
+            }
+        )
 
-    ema20_line = [{"time": int(ts.timestamp()), "value": round(float(row["ema20"]), 2)} for ts, row in df.iterrows()]
-    ema50_line = [{"time": int(ts.timestamp()), "value": round(float(row["ema50"]), 2)} for ts, row in df.iterrows()]
-    ema200_line = [{"time": int(ts.timestamp()), "value": round(float(row["ema200"]), 2)} for ts, row in df.iterrows()]
-    rsi_line = [{"time": int(ts.timestamp()), "value": round(float(row["rsi"]), 1)} for ts, row in df.iterrows()]
+    ema20_line = [
+        {"time": int(ts.timestamp()), "value": round(float(row["ema20"]), 2)}
+        for ts, row in df.iterrows()
+    ]
+    ema50_line = [
+        {"time": int(ts.timestamp()), "value": round(float(row["ema50"]), 2)}
+        for ts, row in df.iterrows()
+    ]
+    ema200_line = [
+        {"time": int(ts.timestamp()), "value": round(float(row["ema200"]), 2)}
+        for ts, row in df.iterrows()
+    ]
+    rsi_line = [
+        {"time": int(ts.timestamp()), "value": round(float(row["rsi"]), 1)}
+        for ts, row in df.iterrows()
+    ]
 
     result = {
-        "candles": candles, "ema20": ema20_line, "ema50": ema50_line,
-        "ema200": ema200_line, "rsi": rsi_line, "interval": interval,
-        "period": period, "count": len(candles),
+        "candles": candles,
+        "ema20": ema20_line,
+        "ema50": ema50_line,
+        "ema200": ema200_line,
+        "rsi": rsi_line,
+        "interval": interval,
+        "period": period,
+        "count": len(candles),
     }
     _write_cache(cache, result)
     return result
@@ -412,29 +460,14 @@ def cmd_levels(args):
         pass
 
     result = {
-        "support_1h": sr_1h["support"], "resistance_1h": sr_1h["resistance"],
-        "support_daily": sr_daily["support"], "resistance_daily": sr_daily["resistance"],
-        "pivot": sr_1h["pivot"], "timestamp": datetime.now(MYT).isoformat(),
+        "support_1h": sr_1h["support"],
+        "resistance_1h": sr_1h["resistance"],
+        "support_daily": sr_daily["support"],
+        "resistance_daily": sr_daily["resistance"],
+        "pivot": sr_1h["pivot"],
+        "timestamp": datetime.now(MYT).isoformat(),
     }
     _write_cache(cache, result)
-    return result
-
-
-def _fetch_macro(price=None):
-    import yfinance as yf
-
-    result = {}
-    for sym, key in [("DX-Y.NYB", "dxy"), ("^VIX", "vix"), ("^TNX", "us10y"), ("SI=F", "silver")]:
-        try:
-            t = yf.Ticker(sym)
-            h = t.history(period="5d")
-            if not h.empty:
-                result[key] = round(float(h["Close"].iloc[-1]), 2 if key != "us10y" else 3)
-        except Exception:
-            result[key] = None
-
-    if result.get("silver") and price:
-        result["gold_silver_ratio"] = round(price / result["silver"], 1)
     return result
 
 
@@ -444,48 +477,33 @@ def cmd_macro(args):
     if cached:
         return cached
 
-    result = _fetch_macro()
-    result["timestamp"] = datetime.now(MYT).isoformat()
-    _write_cache(cache, result)
-    return result
+    import yfinance as yf
 
+    result = {"timestamp": datetime.now(MYT).isoformat()}
 
-def cmd_snapshot(args):
-    """Return one coherent price, level, and macro observation."""
-    cache = _cache_key("snapshot")
-    cached = _read_cache(cache)
-    if cached and cached.get("schema") == "wealth.snapshot.v1" and cached.get("asset") == "oil":
-        return cached
+    for sym, key in [
+        ("DX-Y.NYB", "dxy"),
+        ("^VIX", "vix"),
+        ("^TNX", "us10y"),
+        ("SI=F", "silver"),
+        ("MYR=X", "usmyr"),
+    ]:
+        try:
+            t = yf.Ticker(sym)
+            h = t.history(period="5d")
+            if not h.empty:
+                result[key] = round(
+                    float(h["Close"].iloc[-1]), 2 if key != "us10y" else 3
+                )
+        except Exception:
+            result[key] = None
 
-    observed_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    try:
-        # One primary market fetch feeds both ticker price and support/resistance.
-        df = fetch_ohlcv(interval="1h", period="30d")
-        sig = generate_signal(df)
-        prev_close = float(df["close"].iloc[-2])
-        change = round(sig["price"] - prev_close, 2)
-        change_pct = round(change / prev_close * 100, 2)
-        ticker = {
-            "symbol": "XBRENT", "price": sig["price"], "change": change,
-            "changePct": change_pct, "rsi": sig["rsi"], "rsiState": sig["rsi_state"],
-            "signal": sig["signal"], "confidence": sig["confidence"],
-            "ema20": sig["ema_fast"], "ema50": sig["ema_slow"], "ema200": sig["ema200"],
-            "emaTrend": sig["ema_trend"], "support": sig["support_levels"],
-            "resistance": sig["resistance_levels"], "pivot": sig["pivot"],
-        }
-        sr = find_support_resistance(df, lookback=50)
-        levels = {
-            "support": sr["support"], "resistance": sr["resistance"],
-            "support_1h": sr["support"], "resistance_1h": sr["resistance"],
-            "support_daily": sr["support"], "resistance_daily": sr["resistance"],
-            "pivot": sr["pivot"],
-        }
-        macro = _fetch_macro(sig["price"])
-        if not any(value is not None for value in macro.values()):
-            raise ValueError("No macro data available")
-        result = build_snapshot("oil", ticker, levels, macro, observed_at)
-    except Exception as exc:
-        raise RuntimeError(f"SNAPSHOT_UNAVAILABLE: {exc}") from exc
+    if result.get("silver"):
+        ticker_data = cmd_ticker({})
+        if ticker_data.get("price"):
+            result["gold_silver_ratio"] = round(
+                ticker_data["price"] / result["silver"], 1
+            )
 
     _write_cache(cache, result)
     return result
@@ -500,11 +518,12 @@ def cmd_apex(args):
         return cached
 
     import sys
-    sys.path.insert(0, "/root")
+
+    sys.path.insert(0, "/root/WEALTH")
     from trading.core.config import get_config
     from trading.core.models import OHLCV
     from trading.signals.scanner import compute_indicators
-    from trading.signals.apex_predictor import evaluate_market
+    from trading.apex.apex_predictor import evaluate_market
 
     cfg = get_config()
 
@@ -516,9 +535,20 @@ def cmd_apex(args):
     try:
         df_4h_raw = fetch_ohlcv("1h", "60d")
         if not df_4h_raw.empty:
-            df_4h = df_4h_raw[["open", "high", "low", "close", "volume"]].resample("4h").agg({
-                "open": "first", "high": "max", "low": "min", "close": "last", "volume": "sum",
-            }).dropna(subset=["open"])
+            df_4h = (
+                df_4h_raw[["open", "high", "low", "close", "volume"]]
+                .resample("4h")
+                .agg(
+                    {
+                        "open": "first",
+                        "high": "max",
+                        "low": "min",
+                        "close": "last",
+                        "volume": "sum",
+                    }
+                )
+                .dropna(subset=["open"])
+            )
     except Exception:
         pass
 
@@ -530,12 +560,20 @@ def cmd_apex(args):
     def _df_to_ohlcv(df):
         candles = []
         for ts, row in df.iterrows():
-            candles.append(OHLCV(
-                timestamp=ts.to_pydatetime() if hasattr(ts, "to_pydatetime") else datetime.now(MYT),
-                open=float(row["open"]), high=float(row["high"]),
-                low=float(row["low"]), close=float(row["close"]),
-                volume=int(row.get("volume", 0)) if not np.isnan(row.get("volume", 0)) else 0,
-            ))
+            candles.append(
+                OHLCV(
+                    timestamp=ts.to_pydatetime()
+                    if hasattr(ts, "to_pydatetime")
+                    else datetime.now(MYT),
+                    open=float(row["open"]),
+                    high=float(row["high"]),
+                    low=float(row["low"]),
+                    close=float(row["close"]),
+                    volume=int(row.get("volume", 0))
+                    if not np.isnan(row.get("volume", 0))
+                    else 0,
+                )
+            )
         return candles
 
     candles_1h = _df_to_ohlcv(df_1h)
@@ -544,6 +582,7 @@ def cmd_apex(args):
 
     # Compute indicators
     from trading.signals.scanner import atr as atr_calc
+
     ind = compute_indicators(candles_1h, cfg)
     atr_vals = atr_calc(candles_1h, 14)
     atr_val = atr_vals[-1] if atr_vals else 10.0
@@ -554,15 +593,23 @@ def cmd_apex(args):
         candles_1h=candles_1h,
         candles_4h=candles_4h if candles_4h else None,
         candles_1d=candles_1d if candles_1d else None,
-        ema_20=ind.ema_20, ema_50=ind.ema_50, ema_200=ind.ema_200,
-        atr_val=atr_val, atr_avg=atr_avg,
+        ema_20=ind.ema_20,
+        ema_50=ind.ema_50,
+        ema_200=ind.ema_200,
+        atr_val=atr_val,
+        atr_avg=atr_avg,
     )
 
     price = float(df_1h["close"].iloc[-1])
 
     result = {
-        "apex": {"A": round(apex.A, 4), "P": round(apex.P, 4), "E": round(apex.E, 4),
-                 "X": round(apex.X, 4), "Phi": round(apex.Phi, 4)},
+        "apex": {
+            "A": round(apex.A, 4),
+            "P": round(apex.P, 4),
+            "E": round(apex.E, 4),
+            "X": round(apex.X, 4),
+            "Phi": round(apex.Phi, 4),
+        },
         "G": round(apex.G, 4),
         "C_dark": round(apex.C_dark, 4),
         "dS": round(apex.dS, 4),
@@ -580,7 +627,11 @@ def cmd_apex(args):
         "ema_200": round(ind.ema_200, 2),
         "rsi_14": round(ind.rsi_14, 1),
         "atr_14": round(atr_val, 2),
-        "data_points": {"1H": len(candles_1h), "4H": len(candles_4h), "1D": len(candles_1d)},
+        "data_points": {
+            "1H": len(candles_1h),
+            "4H": len(candles_4h),
+            "1D": len(candles_1d),
+        },
         "timestamp": datetime.now(MYT).isoformat(),
     }
     _write_cache(cache, result)
@@ -595,10 +646,11 @@ def cmd_signal_v2(args):
         return cached
 
     import sys
-    sys.path.insert(0, "/root")
+
+    sys.path.insert(0, "/root/WEALTH")
     from trading.core.config import get_config
     from trading.core.models import OHLCV, RiskState
-    from trading.signals.engine_v2 import generate_signal_v2
+    from trading.backtest.engine_v2 import generate_signal_v2
     from trading.signals.scanner import compute_indicators
     from trading.signals.regime import compute_market_state
     from trading.risk.position_sizer import compute_position_size
@@ -610,31 +662,46 @@ def cmd_signal_v2(args):
     def _df_to_ohlcv(df):
         candles = []
         for ts, row in df.iterrows():
-            candles.append(OHLCV(
-                timestamp=ts.to_pydatetime() if hasattr(ts, "to_pydatetime") else datetime.now(MYT),
-                open=float(row["open"]), high=float(row["high"]),
-                low=float(row["low"]), close=float(row["close"]),
-                volume=int(row.get("volume", 0)) if not np.isnan(row.get("volume", 0)) else 0,
-            ))
+            candles.append(
+                OHLCV(
+                    timestamp=ts.to_pydatetime()
+                    if hasattr(ts, "to_pydatetime")
+                    else datetime.now(MYT),
+                    open=float(row["open"]),
+                    high=float(row["high"]),
+                    low=float(row["low"]),
+                    close=float(row["close"]),
+                    volume=int(row.get("volume", 0))
+                    if not np.isnan(row.get("volume", 0))
+                    else 0,
+                )
+            )
         return candles
 
     candles = _df_to_ohlcv(df)
 
     if len(candles) < 200:
-        return {"error": f"Insufficient data: {len(candles)} candles, need 200+", "timestamp": datetime.now(MYT).isoformat()}
+        return {
+            "error": f"Insufficient data: {len(candles)} candles, need 200+",
+            "timestamp": datetime.now(MYT).isoformat(),
+        }
 
     # Generate signal
     signal = generate_signal_v2(candles, cfg)
 
     # Get regime
     ind = compute_indicators(candles, cfg)
-    state = compute_market_state(candles, ind.ema_20, ind.ema_50, ind.ema_200, ind.rsi_14)
+    state = compute_market_state(
+        candles, ind.ema_20, ind.ema_50, ind.ema_200, ind.rsi_14
+    )
 
     # Position sizing
     risk_state = RiskState(
         equity=cfg.syed_balance_estimate,
         balance=cfg.syed_balance_estimate,
-        open_positions=0, daily_pnl=0.0, can_trade=True,
+        open_positions=0,
+        daily_pnl=0.0,
+        can_trade=True,
     )
     lots, risk_amount = compute_position_size(signal, risk_state, cfg)
     signal.suggested_lot = lots
@@ -670,11 +737,26 @@ def cmd_signal_v2(args):
             "rsi": round(state.rsi, 1),
         },
         "zones": {
-            "buy_zone": {"price": state.buy_zone.price, "strength": state.buy_zone.strength} if state.buy_zone else None,
-            "sell_zone": {"price": state.sell_zone.price, "strength": state.sell_zone.strength} if state.sell_zone else None,
+            "buy_zone": {
+                "price": state.buy_zone.price,
+                "strength": state.buy_zone.strength,
+            }
+            if state.buy_zone
+            else None,
+            "sell_zone": {
+                "price": state.sell_zone.price,
+                "strength": state.sell_zone.strength,
+            }
+            if state.sell_zone
+            else None,
         },
         "confluence_factors": [
-            {"name": f.name, "direction": f.direction.value, "weight": f.weight, "confidence": f.confidence}
+            {
+                "name": f.name,
+                "direction": f.direction.value,
+                "weight": f.weight,
+                "confidence": f.confidence,
+            }
             for f in signal.confluence_factors
         ],
         "timestamp": datetime.now(MYT).isoformat(),
@@ -703,7 +785,11 @@ def cmd_calendar(args):
         with urllib.request.urlopen(req, timeout=15) as resp:
             raw = json.loads(resp.read())
     except Exception as e:
-        return {"error": str(e), "events": [], "timestamp": datetime.now(MYT).isoformat()}
+        return {
+            "error": str(e),
+            "events": [],
+            "timestamp": datetime.now(MYT).isoformat(),
+        }
 
     # Filter USD high/medium impact, upcoming only
     now = dt.now()
@@ -715,7 +801,12 @@ def cmd_calendar(args):
         if impact not in ("High", "Medium"):
             continue
         try:
-            ev_dt = dt.fromisoformat(ev["date"].replace("Z", "+00:00").replace("-04:00", "-0400").replace("-05:00", "-0500"))
+            ev_dt = dt.fromisoformat(
+                ev["date"]
+                .replace("Z", "+00:00")
+                .replace("-04:00", "-0400")
+                .replace("-05:00", "-0500")
+            )
             ev_dt_local = ev_dt.astimezone(MYT) if ev_dt.tzinfo else ev_dt
         except Exception:
             ev_dt_local = None
@@ -726,17 +817,19 @@ def cmd_calendar(args):
             if diff_hours < -4:
                 continue
 
-        events.append({
-            "datetime": ev_dt_local.isoformat() if ev_dt_local else None,
-            "date": ev_dt_local.strftime("%a %b %d") if ev_dt_local else "",
-            "time": ev_dt_local.strftime("%H:%M") if ev_dt_local else "",
-            "currency": "USD",
-            "impact": impact.lower(),
-            "event": ev.get("title", ""),
-            "actual": ev.get("actual", "") or "—",
-            "forecast": ev.get("forecast", "") or "—",
-            "previous": ev.get("previous", "") or "—",
-        })
+        events.append(
+            {
+                "datetime": ev_dt_local.isoformat() if ev_dt_local else None,
+                "date": ev_dt_local.strftime("%a %b %d") if ev_dt_local else "",
+                "time": ev_dt_local.strftime("%H:%M") if ev_dt_local else "",
+                "currency": "USD",
+                "impact": impact.lower(),
+                "event": ev.get("title", ""),
+                "actual": ev.get("actual", "") or "—",
+                "forecast": ev.get("forecast", "") or "—",
+                "previous": ev.get("previous", "") or "—",
+            }
+        )
 
     # Sort by datetime
     events.sort(key=lambda x: x.get("datetime") or "")
@@ -751,31 +844,235 @@ def cmd_calendar(args):
     _write_cache(cache, result)
     return result
 
+
+def cmd_snapshot(args):
+    """Return raw ticker data — server wraps with schema/asset/coherence_id."""
+    return cmd_ticker(args)
+
+
+# ── Forecast Engine (wealth.forecast.v1) ─────────────────────────
+# The organ does not prophesy. It publishes an ATR-scaled drift cone,
+# a scenario ladder with falsification levels, and an epistemic tag.
+# Every fresh forecast is appended to a local hash-chained log for
+# T+N outcome scoring. Sealing to VAULT999 is arifOS's lane, not ours.
+FORECAST_LOG = Path("/root/WEALTH/data/forecast_log.jsonl")
+
+_INSTITUTIONAL_CONTEXT = {
+    "gold": "Gold bid + soft DXY = monetary-hedge demand; XAU/MYR moderated by ringgit. Pressures no sovereign tripwire directly.",
+    "oil": "Brent feeds the PETRONAS fiscal chain (CFFO, dividend, O&G revenue share). Sustained drift toward TRIP 70 pressures the sovereign BODY score.",
+    "gas": "LNG/JKM complex feeds PETRONAS gas revenue and Bintulu utilization. Volatility here propagates to the same fiscal chain as Brent.",
+}
+
+
+def _lin_slope(values) -> float:
+    """Least-squares slope of a 1-D series, in units-per-step."""
+    ys = np.asarray(values, dtype=float)
+    n = len(ys)
+    if n < 2:
+        return 0.0
+    xs = np.arange(n, dtype=float)
+    denom = float(((xs - xs.mean()) ** 2).sum())
+    if denom == 0.0:
+        return 0.0
+    return float(((xs - xs.mean()) * (ys - ys.mean())).sum() / denom)
+
+
+def _forecast_log_append(record: dict) -> None:
+    """Append forecast to local hash-chained log. Never breaks the endpoint."""
+    try:
+        FORECAST_LOG.parent.mkdir(parents=True, exist_ok=True)
+        prev_hash = ""
+        if FORECAST_LOG.exists():
+            with FORECAST_LOG.open("r") as f:
+                lines = [l for l in f.read().strip().splitlines() if l.strip()]
+            if lines:
+                prev_hash = json.loads(lines[-1]).get("hash", "")
+        body = dict(record)
+        body["prev_hash"] = prev_hash
+        digest = hashlib.sha256(
+            json.dumps(body, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
+        ).hexdigest()
+        body["hash"] = digest
+        with FORECAST_LOG.open("a") as f:
+            f.write(json.dumps(body, sort_keys=True, default=str) + "\n")
+    except Exception:
+        pass
+
+
+def cmd_forecast(args):
+    horizon = int(args.get("horizon", 30))
+    if horizon not in (30, 60, 90):
+        horizon = 30
+    cache = _cache_key("forecast", horizon=horizon)
+    cached = _read_cache(cache)
+    if cached:
+        return cached
+
+    df = fetch_ohlcv(interval="1d", period="1y")
+    close = df["close"]
+    atr_val = round(float(compute_atr(df, 14).iloc[-1]), 2)
+    ema20_val = round(float(compute_ema(close, 20).iloc[-1]), 2)
+    ema50_val = round(float(compute_ema(close, 50).iloc[-1]), 2)
+    ema200_val = round(float(compute_ema(close, 200).iloc[-1]), 2)
+    rsi_val = round(float(compute_rsi(close, 14).iloc[-1]), 1)
+    price = round(float(close.iloc[-1]), 2)
+
+    # 1. Drift — regression slope of last 20 daily closes, ATR-clamped
+    slope = _lin_slope(close.tail(20).values)
+    slope = max(-atr_val, min(atr_val, slope))
+    slope = round(slope, 4)
+
+    # 2. Regime — matches the Technical Forge definition
+    trending = abs(ema20_val - ema50_val) > 0.5 * atr_val
+    if trending:
+        regime = "TRENDING_UP" if ema20_val > ema50_val else "TRENDING_DOWN"
+    else:
+        regime = "SIDEWAYS"
+
+    # 3. Cone — p50 drifts, blends toward EMA200; bands are ATR·√t
+    blend_w = 0.2 if trending else 0.5
+    last_date = df.index[-1].date()
+    t_dates, p10, p25, p50, p75, p90 = [], [], [], [], [], []
+    for t in range(1, horizon + 1):
+        mid = price + slope * t
+        mid += (ema200_val - mid) * (1 - np.exp(-t / 20)) * blend_w
+        sigma = atr_val * np.sqrt(t)
+        t_dates.append((last_date + timedelta(days=t)).isoformat())
+        p10.append(round(mid - 1.282 * sigma, 2))
+        p25.append(round(mid - 0.674 * sigma, 2))
+        p50.append(round(mid, 2))
+        p75.append(round(mid + 0.674 * sigma, 2))
+        p90.append(round(mid + 1.282 * sigma, 2))
+
+    # 4. Scenario ladder from daily swing S/R — falsification on its face
+    sr = find_support_resistance(df)
+    r1 = sr["resistance"][0] if sr["resistance"] else round(price + atr_val, 2)
+    r2 = sr["resistance"][1] if len(sr["resistance"]) > 1 else round(r1 + 2 * atr_val, 2)
+    s1 = sr["support"][0] if sr["support"] else round(price - atr_val, 2)
+    s2 = sr["support"][1] if len(sr["support"]) > 1 else round(s1 - 2 * atr_val, 2)
+    rate = max(abs(slope), 0.25 * atr_val)
+
+    def _eta(target):
+        d = abs(target - price) / rate
+        return f"{max(1, int(d * 0.6))}–{max(2, int(d * 1.4))}"
+
+    long_conf = sum([
+        ema20_val > ema50_val,
+        rsi_val > 55,
+        regime == "TRENDING_UP",
+        slope > 0,
+        price > ema200_val,
+    ])
+    short_conf = sum([
+        ema20_val < ema50_val,
+        rsi_val < 45,
+        regime == "TRENDING_DOWN",
+        slope < 0,
+        price < ema200_val,
+    ])
+    scenarios = [
+        {"side": "LONG", "trigger": f"daily close > {r1} (R1)", "objective": r2,
+         "invalidation": s1, "confluence": long_conf, "of": 5, "eta_days": _eta(r2)},
+        {"side": "SHORT", "trigger": f"daily close < {s1} (S1)", "objective": s2,
+         "invalidation": r1, "confluence": short_conf, "of": 5, "eta_days": _eta(s2)},
+    ]
+
+    # 5. Bias — one engine, one voice. Derived, never hardcoded.
+    if long_conf >= 3 and long_conf > short_conf:
+        bias = "BULLISH"
+    elif short_conf >= 3 and short_conf > long_conf:
+        bias = "BEARISH"
+    else:
+        bias = "NEUTRAL"
+
+    side200 = "above" if price > ema200_val else "below"
+    institutional_read = (
+        f"{regime} regime · price {side200} EMA200 ({ema200_val}) · RSI {rsi_val} · ATR {atr_val}. "
+        + _INSTITUTIONAL_CONTEXT.get(ASSET_KEY, "")
+    ).strip()
+
+    generated_at = datetime.now(MYT).isoformat()
+    result = {
+        "schema": "wealth.forecast.v1",
+        "asset": ASSET_KEY,
+        "generated_at": generated_at,
+        "horizon_days": horizon,
+        "basis": {"close": price, "atr14": atr_val, "slope_per_day": slope,
+                  "regime": regime, "rsi": rsi_val,
+                  "ema20": ema20_val, "ema50": ema50_val, "ema200": ema200_val},
+        "bias": bias,
+        "cone": {"t": t_dates, "p10": p10, "p25": p25, "p50": p50, "p75": p75, "p90": p90},
+        "scenarios": scenarios,
+        "institutional_read": institutional_read,
+        "epistemic": "INTERPRET — ATR-scaled drift cone, not prophecy. Falsification levels stated. Human decides.",
+    }
+    _write_cache(cache, result)
+    _forecast_log_append({
+        "schema": "wealth.forecastlog.v1", "asset": ASSET_KEY,
+        "generated_at": generated_at, "horizon_days": horizon, "close": price,
+        "bias": bias, "p50_end": p50[-1], "p10_end": p10[-1], "p90_end": p90[-1],
+        "long_objective": r2, "short_objective": s2,
+        "long_confluence": long_conf, "short_confluence": short_conf,
+    })
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description="XBRENT Brent Crude Oil Data Fetcher")
-    parser.add_argument("command", choices=["ticker", "history", "signals", "levels", "macro", "snapshot", "apex", "signal_v2", "calendar"])
+    parser.add_argument(
+        "command",
+        choices=[
+            "ticker",
+            "history",
+            "signals",
+            "levels",
+            "macro",
+            "apex",
+            "signal_v2",
+            "calendar",
+            "snapshot",
+        "forecast",
+        ],
+    )
     parser.add_argument("--interval", default="1h")
     parser.add_argument("--period", default="30d")
+    parser.add_argument("--horizon", type=int, default=30)
     args = parser.parse_args()
 
     handlers = {
-        "ticker": cmd_ticker, "history": cmd_history, "signals": cmd_signals,
-        "levels": cmd_levels, "macro": cmd_macro, "snapshot": cmd_snapshot,
-        "apex": cmd_apex, "signal_v2": cmd_signal_v2, "calendar": cmd_calendar,
+        "ticker": cmd_ticker,
+        "history": cmd_history,
+        "signals": cmd_signals,
+        "levels": cmd_levels,
+        "macro": cmd_macro,
+        "apex": cmd_apex,
+        "signal_v2": cmd_signal_v2,
+        "calendar": cmd_calendar,
+        "snapshot": cmd_snapshot,
+          "forecast": cmd_forecast,
     }
 
     try:
-        result = handlers[args.command]({"interval": args.interval, "period": args.period})
-        if (
-            args.command == "snapshot"
-            and isinstance(result, dict)
-            and result.get("schema") == "wealth.snapshot.v1"
-            and isinstance(result.get("coherence_id"), str)
-        ):
-            print(json.dumps(_node_body(result), sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False))
-        else:
-            print(json.dumps(result, default=str, indent=2))
+        result = handlers[args.command](
+            {
+            "interval": args.interval,
+            "period": args.period,
+            "horizon": args.horizon,
+        }
+        )
+        print(json.dumps(result, default=str, indent=2))
     except Exception as e:
+        # Stale fallback: serve expired cache rather than VOID the panel
+        if args.command == "history":
+            stale_key = _cache_key("history", interval=args.interval, period=args.period)
+        elif args.command in ("ticker", "snapshot"):
+            stale_key = _cache_key("ticker")
+        else:
+            stale_key = _cache_key(args.command)
+        stale = _read_stale(stale_key)
+        if stale is not None:
+            print(json.dumps(stale, default=str, indent=2))
+            sys.exit(0)
         print(json.dumps({"error": str(e)}, indent=2))
         sys.exit(1)
 
