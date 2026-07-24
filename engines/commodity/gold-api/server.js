@@ -6,6 +6,7 @@
 
 const http = require('http');
 const { execFile } = require('child_process');
+const crypto = require('crypto');
 const path = require('path');
 const url = require('url');
 
@@ -29,17 +30,6 @@ function setCache(key, data) {
     const now = Date.now();
     for (const [k, v] of cache) { if (now - v.ts > CACHE_TTL * 2) cache.delete(k); }
   }
-}
-
-function validateSnapshot(data, asset) {
-  const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
-  if (!data || data.schema !== 'wealth.snapshot.v1' || data.asset !== asset ||
-      typeof data.observed_at !== 'string' || Number.isNaN(Date.parse(data.observed_at)) ||
-      !isRecord(data.ticker) || !isRecord(data.levels) || !isRecord(data.macro) ||
-      typeof data.coherence_id !== 'string' || !/^[a-f0-9]{64}$/.test(data.coherence_id)) {
-    throw new Error(`Invalid ${asset} snapshot contract`);
-  }
-  return data;
 }
 
 function runPython(command, args = []) {
@@ -70,26 +60,71 @@ const handlers = {
     const c = getCache('signal_v2'); if (c) return c;
     const d = await runPython('signal_v2'); setCache('signal_v2', d); return d;
   },
-  '/api/gold/snapshot': async () => {
-    const c = getCache('snapshot'); if (c) return c;
-    const d = validateSnapshot(await runPython('snapshot'), 'gold');
-    setCache('snapshot', d); return d;
-  },
   '/api/gold/calendar': async () => {
     const c = getCache('calendar'); if (c) return c;
     const d = await runPython('calendar'); setCache('calendar', d); return d;
   },
+  '/api/gold/snapshot': async () => {
+    const c = getCache('snapshot'); if (c) return c;
+    const [ticker, levels, macro] = await Promise.all([
+      runPython('ticker').catch(() => null),
+      runPython('levels').catch(() => null),
+      runPython('macro').catch(() => null),
+    ]);
+    if (!ticker || ticker.error) throw new Error('snapshot: ticker unavailable');
+    const observed_at = new Date().toISOString();
+    const unsigned = {
+      schema: 'wealth.snapshot.v1',
+      asset: 'gold',
+      observed_at,
+      source: 'yfinance + technical analysis (WEALTH commodity engine)',
+      ticker: {
+        symbol: ticker.symbol, price: ticker.price, change: ticker.change,
+        changePct: ticker.changePct, rsi: ticker.rsi, rsiState: ticker.rsiState,
+        signal: ticker.signal, confidence: ticker.confidence,
+        ema20: ticker.ema20, ema50: ticker.ema50, ema200: ticker.ema200,
+        emaTrend: ticker.emaTrend, pivot: ticker.pivot,
+        stale: ticker.stale || false, stale_age_s: ticker.stale_age_s || 0,
+      },
+      levels: levels && !levels.error ? {
+        support: levels.support_1h || [], resistance: levels.resistance_1h || [],
+        support_daily: levels.support_daily || [], resistance_daily: levels.resistance_daily || [],
+        pivot: levels.pivot,
+      } : { support: ticker.support || [], resistance: ticker.resistance || [] },
+      macro: macro && !macro.error ? {
+        dxy: macro.dxy, us10y: macro.us10y, vix: macro.vix,
+        silver: macro.silver, gsr: macro.gold_silver_ratio,
+        usmyr: macro.usmyr,
+      } : {},
+    };
+    const canonical = JSON.stringify(unsigned, Object.keys(unsigned).sort());
+    unsigned.coherence_id = crypto.createHash('sha256').update(canonical).digest('hex');
+    setCache('snapshot', unsigned); return unsigned;
+  },
   // Short aliases (for Caddy strip_prefix: /wealth/gold/api/* → /api/*)
   '/api/apex': async () => handlers['/api/gold/apex'](),
   '/api/signal_v2': async () => handlers['/api/gold/signal_v2'](),
-  '/api/snapshot': async () => handlers['/api/gold/snapshot'](),
   '/api/calendar': async () => handlers['/api/gold/calendar'](),
+  '/api/gold/proxies': async () => {
+    const c = getCache('proxies'); if (c) return c;
+    const d = await runPython('proxies'); setCache('proxies', d); return d;
+  },
+  '/api/proxies': async () => handlers['/api/gold/proxies'](),
+  '/api/snapshot': async () => handlers['/api/gold/snapshot'](),
   '/api/macro': async () => handlers['/api/gold/macro'](),
   '/api/ticker': async () => handlers['/api/gold/ticker'](),
   '/api/history': async (req, res, params) => handlers['/api/gold/history'](req, res, params),
   '/api/signals': async () => handlers['/api/gold/signals'](),
   '/api/levels': async () => handlers['/api/gold/levels'](),
   // Existing endpoints
+  '/api/gold/forecast': async (req, res, params) => {
+    const horizon = params.get('horizon') || '30';
+    const key = `forecast_${horizon}`;
+    const c = getCache(key); if (c) return c;
+    const d = await runPython('forecast', ['--horizon', horizon]);
+    setCache(key, d); return d;
+  },
+  '/api/forecast': async (req, res, params) => handlers['/api/gold/forecast'](req, res, params),
   '/api/gold/ticker': async () => {
     const c = getCache('ticker'); if (c) return c;
     const d = await runPython('ticker'); setCache('ticker', d); return d;
@@ -110,14 +145,6 @@ const handlers = {
     const c = getCache('levels'); if (c) return c;
     const d = await runPython('levels'); setCache('levels', d); return d;
   },
-  // Identity — deployment provenance
-  '/identity': async () => ({
-    service: 'gold',
-    repo: 'github.com/ariffazil/WEALTH',
-    commit: 'bb2f204',
-    engine_version: '1.0.0',
-  }),
-
   '/api/gold/macro': async () => {
     const c = getCache('macro'); if (c) return c;
     const d = await runPython('macro'); setCache('macro', d); return d;
@@ -159,15 +186,6 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data));
   } catch (err) {
-    const isSnapshot = parsed.pathname === '/api/gold/snapshot' || parsed.pathname === '/api/snapshot';
-    if (isSnapshot) {
-      res.writeHead(503, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        schema: 'wealth.snapshot.v1', asset: 'gold', error: true,
-        code: 'SNAPSHOT_UNAVAILABLE', message: err.message, data: null,
-      }));
-      return;
-    }
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: err.message }));
   }
