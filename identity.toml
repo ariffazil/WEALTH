@@ -2,7 +2,7 @@
 canonical_name = "WEALTH Capital Intelligence"
 short_name = "WEALTH"
 service_id = "wealth-organ"
-version = "2026.07.19"
+version = "2026.07.24"
 authority = "F13_SOVEREIGN"
 role = "Capital computation, risk, wisdom, flow, conservation"
 
