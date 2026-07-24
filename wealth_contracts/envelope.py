@@ -106,6 +106,7 @@ class WealthEnvelope:
         source_attribution: Optional[List[str]] = None,
         session_id: Optional[str] = None,
         actor_id: Optional[str] = None,
+        trace_id: Optional[str] = None,
         missing_inputs: Optional[List[MissingInput]] = None,
         metadata: Optional[Dict[str, Any]] = None,
         warnings: Optional[List[str]] = None,
@@ -157,6 +158,7 @@ class WealthEnvelope:
         self.computation_timestamp = datetime.now(timezone.utc).isoformat()
         self.session_id = session_id
         self.actor_id = actor_id
+        self.trace_id = trace_id
 
         # Missing evidence
         self.missing_inputs = missing_inputs or []
@@ -231,6 +233,8 @@ class WealthEnvelope:
             d["who_carries_downside"] = self.who_carries_downside
         if self.session_id:
             d["session_id"] = self.session_id
+        if self.trace_id:
+            d["trace_id"] = self.trace_id
         if self.actor_id:
             d["actor_id"] = self.actor_id
 
@@ -414,6 +418,7 @@ WEALTH_OUTPUT_SCHEMA: dict = {
         "dignity_impact": {"type": "string"},
         "sovereignty_effect": {"type": "string"},
         "session_id": {"type": "string"},
+        "trace_id": {"type": "string"},
         "actor_id": {"type": "string"},
         "witness": {"type": "object"},
         "shadow": {"type": "boolean"},
