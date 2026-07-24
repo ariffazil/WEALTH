@@ -186,7 +186,9 @@ def create_mcp_server() -> FastMCP:
 
     mcp = FastMCP(
         "WEALTH Federated Domain",
-        version=(f"v{WEALTH_VERSION}" if WEALTH_VERSION != "UNAVAILABLE" else WEALTH_VERSION),
+        version=(
+            f"v{WEALTH_VERSION}" if WEALTH_VERSION != "UNAVAILABLE" else WEALTH_VERSION
+        ),
         # MCP logging: SEP-2577 deprecated — maintenance only; default min warning.
         client_log_level="warning",
         instructions=(
@@ -338,37 +340,55 @@ def create_mcp_server() -> FastMCP:
             session_id: str,
             receipt_id: str,
         ) -> ToolResult:
-            """Append envelope as a second TextContent block.
+            """Ensure every WEALTH response carries the canonical output envelope.
 
-            The original content[0] is preserved unchanged so any
-            outputSchema validation still passes. Envelope metadata
-            is appended as content[1] for downstream parsing.
+            The tools already produce `WealthEnvelope` via `wrap_result()` which
+            matches `WEALTH_OUTPUT_SCHEMA`. This wrapper:
+            1. Preserves existing structured_content from the tool
+            2. Adds governance verdict + identity if not already present
+            3. Returns exactly ONE content block
+
+            PARSER-SAFE: single TextContent, single structured_content.
+            No second text attachment. No parser-dependent metadata block.
             """
             try:
-                envelope_payload = {
-                    "envelope": {
-                        "receipt_id": receipt_id,
-                        "schema_version": _SCHEMA_VERSION,
-                        "epistemic_state": _domain_default_epistemic(
-                            _infer_domain(tool_name)
-                        ),
-                        "freshness_utc": _now_iso(),
-                        "actor_id": actor_id,
-                        "session_id": session_id,
-                        "governance_status": verdict or "PASS",
-                        "transport": "mcp_call_tool",
-                        "domain": _infer_domain(tool_name),
-                        "tool_name": tool_name,
-                    }
-                }
-                envelope_text = json.dumps(envelope_payload, indent=2)
-                envelope_content = TextContent(
-                    type="text",
-                    text=f"\n\n--- wealth://envelope ---\n{envelope_text}",
-                    annotations={"audience": ["assistant"], "priority": 0.9},
+                existing_structured = getattr(result, "structured_content", None)
+
+                if existing_structured and isinstance(existing_structured, dict):
+                    enriched = dict(existing_structured)
+                else:
+                    original_text = ""
+                    if result.content and len(result.content) > 0:
+                        first = result.content[0]
+                        if hasattr(first, "text"):
+                            original_text = first.text
+                    try:
+                        enriched = json.loads(original_text)
+                        if not isinstance(enriched, dict):
+                            enriched = {"raw": str(enriched)}
+                    except (json.JSONDecodeError, TypeError):
+                        enriched = {"raw": str(original_text)[:2000]}
+
+                if "session_id" not in enriched or not enriched["session_id"]:
+                    enriched["session_id"] = session_id
+                if "actor_id" not in enriched or not enriched["actor_id"]:
+                    enriched["actor_id"] = actor_id
+                if "trace_id" not in enriched:
+                    enriched["trace_id"] = receipt_id or ""
+
+                enriched["execution_authorized"] = enriched.get(
+                    "execution_authorized", False
                 )
-                new_content = list(result.content) + [envelope_content]
-                return ToolResult(content=new_content, is_error=result.is_error)
+                enriched.setdefault("human_final_authority", "Arif")
+
+                enriched_text = json.dumps(enriched, default=str)
+                wrapped = ToolResult(
+                    content=[TextContent(type="text", text=enriched_text)],
+                    is_error=result.is_error,
+                    meta=dict(getattr(result, "meta", None) or {}),
+                )
+                wrapped.structured_content = enriched
+                return wrapped
             except Exception as e:
                 print(f"[ENVELOPE] wrap failed for {tool_name}: {e}")
                 return result
@@ -392,8 +412,12 @@ def create_mcp_server() -> FastMCP:
             # ── Pull _meta for actor_id / session_id binding ──────────
             meta = arguments.get("_meta", {}) if isinstance(arguments, dict) else {}
             # Prioritize verified system kwargs over self-reported _meta to prevent spoofing (P0)
-            _top_level_actor = arguments.get("actor_id") if isinstance(arguments, dict) else None
-            _top_level_session = arguments.get("session_id") if isinstance(arguments, dict) else None
+            _top_level_actor = (
+                arguments.get("actor_id") if isinstance(arguments, dict) else None
+            )
+            _top_level_session = (
+                arguments.get("session_id") if isinstance(arguments, dict) else None
+            )
             actor_id = (
                 kwargs.get("actor_id")
                 or _top_level_actor
@@ -406,6 +430,24 @@ def create_mcp_server() -> FastMCP:
                 or meta.get("session_id")
                 or "_default"
             )
+
+            # ── RESULT FINALIZER — wraps ALL return paths with envelope ─
+            def _finalize(
+                raw_result: ToolResult,
+                verdict_str: str,
+                is_err: bool | None = None,
+            ) -> ToolResult:
+                """Apply envelope on success, error, blocked, and timeout paths.
+                All returns go through this gate — no bare ToolResult escapes."""
+                _err = is_err if is_err is not None else raw_result.is_error
+                _r = ToolResult(
+                    content=raw_result.content,
+                    is_error=_err,
+                    meta=raw_result.meta if hasattr(raw_result, "meta") else None,
+                )
+                return _wrap_envelope(
+                    name, arguments, _r, verdict_str, actor_id, session_id, ""
+                )
 
             # ── SCT ingress gate (2026-07-17) ─────────────────────────
             # Present SCT must verify; absent allowed for OBSERVE (capital compute).
@@ -428,14 +470,18 @@ def create_mcp_server() -> FastMCP:
                     require_sct=False,
                 )
                 if _sct_rej is not None:
-                    return ToolResult(
-                        content=[
-                            TextContent(
-                                type="text",
-                                text=json.dumps(_sct_rej, default=str),
-                            )
-                        ],
-                        is_error=True,
+                    return _finalize(
+                        ToolResult(
+                            content=[
+                                TextContent(
+                                    type="text",
+                                    text=json.dumps(_sct_rej, default=str),
+                                )
+                            ],
+                            is_error=True,
+                        ),
+                        "BLOCKED",
+                        is_err=True,
                     )
                 # Strip SCT transport fields before tool schema validation
                 if isinstance(arguments, dict):
@@ -451,45 +497,55 @@ def create_mcp_server() -> FastMCP:
                         or (meta.get("sct") if isinstance(meta, dict) else None)
                     )
                 if _tok:
-                    return ToolResult(
-                        content=[
-                            TextContent(
-                                type="text",
-                                text=json.dumps(
-                                    {
-                                        "error": "SCT_GATE_INFRA",
-                                        "message": f"SCT present but gate failed: {_sct_exc!r}",
-                                        "tool": name,
-                                        "organ": "wealth",
-                                    },
-                                    default=str,
-                                ),
-                            )
-                        ],
-                        is_error=True,
+                    return _finalize(
+                        ToolResult(
+                            content=[
+                                TextContent(
+                                    type="text",
+                                    text=json.dumps(
+                                        {
+                                            "error": "SCT_GATE_INFRA",
+                                            "message": f"SCT present but gate failed: {_sct_exc!r}",
+                                            "tool": name,
+                                            "organ": "wealth",
+                                        },
+                                        default=str,
+                                    ),
+                                )
+                            ],
+                            is_error=True,
+                        ),
+                        "BLOCKED",
+                        is_err=True,
                     )
 
             # ── P0-4: Session validation (was defined but never called) ──
             binding = _validate_direct_session_binding(name, actor_id, session_id)
             if not binding.get("ok"):
-                return ToolResult(
-                    content=[
-                        TextContent(
-                            type="text",
-                            text=json.dumps(
-                                {
-                                    "tool": name,
-                                    "error_code": binding.get(
-                                        "code", "SESSION_REQUIRED"
-                                    ),
-                                    "reason": binding.get("reason", "L11 AUTH failed"),
-                                    "actor_id": binding.get("actor_id"),
-                                    "session_id": binding.get("session_id"),
-                                }
-                            ),
-                        )
-                    ],
-                    is_error=True,
+                return _finalize(
+                    ToolResult(
+                        content=[
+                            TextContent(
+                                type="text",
+                                text=json.dumps(
+                                    {
+                                        "tool": name,
+                                        "error_code": binding.get(
+                                            "code", "SESSION_REQUIRED"
+                                        ),
+                                        "reason": binding.get(
+                                            "reason", "L11 AUTH failed"
+                                        ),
+                                        "actor_id": binding.get("actor_id"),
+                                        "session_id": binding.get("session_id"),
+                                    }
+                                ),
+                            )
+                        ],
+                        is_error=True,
+                    ),
+                    "BLOCKED",
+                    is_err=True,
                 )
 
             # Use resolved actor from binding
@@ -549,10 +605,14 @@ def create_mcp_server() -> FastMCP:
                     )
                 except Exception:
                     pass
-                return ToolResult(
-                    content=[TextContent(type="text", text=error_text)],
-                    meta={"wealth_receipt": receipt_state},
-                    is_error=True,
+                return _finalize(
+                    ToolResult(
+                        content=[TextContent(type="text", text=error_text)],
+                        meta={"wealth_receipt": receipt_state},
+                        is_error=True,
+                    ),
+                    "BLOCKED",
+                    is_err=True,
                 )
 
             # ── Execute + envelope + receipt ───────────────────────────
@@ -597,12 +657,18 @@ def create_mcp_server() -> FastMCP:
                     )
                 except Exception:
                     pass
-                return ToolResult(
-                    content=[
-                        TextContent(type="text", text=json.dumps(err_env, default=str))
-                    ],
-                    meta={"wealth_receipt": receipt_state},
-                    is_error=True,
+                return _finalize(
+                    ToolResult(
+                        content=[
+                            TextContent(
+                                type="text", text=json.dumps(err_env, default=str)
+                            )
+                        ],
+                        meta={"wealth_receipt": receipt_state},
+                        is_error=True,
+                    ),
+                    "ERROR",
+                    is_err=True,
                 )
 
             call_status = _tool_result_status(result)
@@ -614,7 +680,11 @@ def create_mcp_server() -> FastMCP:
                 actor_id=actor_id,
                 session_id=session_id,
             )
-            return _attach_receipt_meta(result, receipt_state)
+            return _finalize(
+                _attach_receipt_meta(result, receipt_state),
+                verdict,
+                is_err=False,
+            )
 
         mcp.call_tool = _governance_call_tool
 
