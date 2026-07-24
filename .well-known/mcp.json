@@ -8,33 +8,33 @@
     "finance",
     "mcp",
     "governance",
-    "capital-allocation",
+    "capital-intelligence",
     "arifos"
   ],
-  "description": "WEALTH is the constitutional capital allocation layer in the arifOS organism. Canonical runtime: wealth_mcp/server.py. Tool surface discoverable via tools/list. License: AGPL-3.0.",
-  "display_name": "WEALTH \u2014 Capital Intelligence",
+  "description": "WEALTH is the compute-only capital intelligence organ in the arifOS federation. Canonical runtime: server_federated.py → wealth_mcp/server.py. The 12-tool public surface is discoverable via tools/list.",
+  "display_name": "WEALTH — Capital Intelligence",
   "homepage": "https://github.com/ariffazil/wealth",
-  "language": [
-    "en"
-  ],
+  "language": ["en"],
   "license": "AGPL-3.0",
   "metadata": {
-    "backward_compat_entrypoint": "server.py",
-    "canonical_entrypoint": "internal/monolith.py",
+    "canonical_entrypoint": "server_federated.py",
+    "fastmcp_registration": "wealth_mcp/server.py",
+    "legacy_library": "internal/monolith.py",
     "civilizational_entrypoint": "mcp/server.py",
-    "last_updated": "2026-06-30",
-    "live_runtime_as_of": "2026-06-30",
-    "live_runtime_count": 30,
+    "last_updated": "2026-07-24",
+    "public_tool_count": 12,
+    "canonical_capital_count": 8,
+    "institutional_compatibility_count": 4,
     "organism_role": "Capital intelligence lane",
     "runtime_surfaces": {
-      "canonical_kernel": {
-        "primitives": 20,
-        "resources": 7,
-        "tools": 20
+      "canonical_federated": {
+        "tools": 12,
+        "entrypoint": "server_federated.py"
       },
-      "civilizational demo": {
+      "civilizational_demo": {
         "resources": 3,
-        "tools": 6
+        "tools": 6,
+        "entrypoint": "mcp/server.py"
       }
     }
   },
@@ -73,5 +73,5 @@
   ],
   "schema_version": "0.2.0",
   "spec_version": "2026-04-29",
-  "version": "2026.06.30"
+  "version": "2026.07.19"
 }

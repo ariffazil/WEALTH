@@ -2,8 +2,8 @@
   "$schema": "https://gofastmcp.com/public/schemas/fastmcp.json/v1.json",
   "capabilities": {
     "tools": {
-      "count": 7,
-      "source": "7 canonical capital_* surface (ZEN migration 2026-07-11)"
+      "count": 12,
+      "source": "8 canonical capital_* tools plus 4 institutional compatibility tools"
     }
   },
   "deployment": {
@@ -13,7 +13,7 @@
     "port": 18082,
     "transport": "http"
   },
-  "description": "Sovereign Wealth & Capital Allocation Engine \u2014 7 canonical tools (ZEN surface). Capital primitives only.",
+  "description": "WEALTH Capital Intelligence — 12 public tools. Computes, never allocates.",
   "environment": {
     "project": ".",
     "python": ">=3.12",
@@ -25,5 +25,5 @@
     "path": "server_federated.py",
     "type": "filesystem"
   },
-  "version": "2026.07.11"
+  "version": "2026.07.19"
 }

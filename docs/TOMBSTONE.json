@@ -20,9 +20,15 @@
     {
       "item": "wiki/ (content copy)",
       "archived_at": "2026-07-15T04:55:00Z",
+      "deleted_at": "2026-07-24T09:47:57Z",
       "archive_path": "docs/archive/wiki/",
-      "reason": "Unindexed concept sprawl",
-      "reversible": true
+      "reason": "28 files were byte-identical to the archive copy",
+      "deleted_count": 28,
+      "deleted_bytes": 51225,
+      "retained": "wiki/TOMBSTONE.md",
+      "verification": "cmp + SHA-256 equality before deletion",
+      "reversible": true,
+      "rollback": "git restore --source=97e5ec2 -- wiki/"
     },
     {
       "item": "memory/2026-*.md",
@@ -45,6 +51,39 @@
       "reason": "Dual entry entropy",
       "reversible": true,
       "note": "server.py redirects to federated; monolith import still for tests"
+    },
+    {
+      "item": "scripts/meme_gen_safe.py",
+      "deleted_at": "2026-07-24T09:47:57Z",
+      "reason": "Tracked side-effectful generator with zero repository references",
+      "verification": "repo-wide exact name/path reference scan returned zero matches",
+      "reversible": true,
+      "rollback": "git restore --source=97e5ec2 -- scripts/meme_gen_safe.py"
+    },
+    {
+      "item": "skills/SHARED_SKILL_SOURCE.md",
+      "deleted_at": "2026-07-24T09:47:57Z",
+      "canonical": "/root/AAA/skills/ and WELL skills/",
+      "reason": "Informational pointer with zero repository references",
+      "verification": "repo-wide exact name/path reference scan returned zero matches",
+      "reversible": true,
+      "rollback": "git restore --source=97e5ec2 -- skills/SHARED_SKILL_SOURCE.md"
+    },
+    {
+      "item": ".well-known/agent-card.json",
+      "deleted_at": "2026-07-24T10:05:17Z",
+      "canonical": ".well-known/agent.json (federation-consolidated A2A card) + .well-known/mcp.json + .well-known/mcp/server.json",
+      "reason": "Federation-wide A2A card consolidation — local static agent-card surface removed; consolidated card lives at .well-known/agent.json. Removal matches the existing A2A consolidation contract in tests/test_a2a_card_consolidation.py.",
+      "verification": [
+        "sha256 (pre-delete): 4012a425fc40501ce835f7a71eb42f5b89a46e3f380020f811b5eb551319755a",
+        "size: 2429 bytes, 43 lines",
+        "git ls-files prior: .well-known/agent-card.json tracked (commit 6ef6ad8 — [FORGE] create .well-known/agent-card.json for A2A discovery — fed-phase-4)",
+        "tracked deletion via: git rm .well-known/agent-card.json",
+        "active non-test references at deletion time: .well-known/agent.json:3 (arifos_internal_card), .well-known/agent.json:80 (agent_card_internal endpoint), PROTOCOL_CONFORMANCE.md:22 (documentation line) — left untouched in pre-existing dirty files per task constraint",
+        "contract tests at tests/test_a2a_card_consolidation.py:127-138 (test_local_agent_card_file_removed, test_well_known_directory_has_no_agent_card_json) previously failed with the file present"
+      ],
+      "reversible": true,
+      "rollback": "git restore --source=HEAD -- .well-known/agent-card.json"
     }
   ]
 }

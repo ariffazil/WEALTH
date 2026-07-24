@@ -118,6 +118,9 @@ tools:
       domain: vault
       kind: mutating
       canonical: v1
+      action_class: IRREVERSIBLE
+      risk_class: C2
+      query_override: READONLY
 
   - name: capital_registry
     access: public

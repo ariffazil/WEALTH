@@ -14,11 +14,13 @@ import hashlib
 import json
 import os
 from datetime import datetime, date, timezone
+from pathlib import Path
 from typing import Any, Dict, Optional, List
 
 import httpx
 
-DEFAULT_VAULT_PATH = os.path.join(os.getcwd(), "data", "vault999.jsonl")
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_VAULT_PATH = str(_REPO_ROOT / "data" / "vault999.jsonl")
 INTEGRITY_SALT = "WEALTH-VAULT999-2026"
 SUPABASE_URL = os.environ.get(
     "SUPABASE_URL", "https://utbmmjmbolmuahwixjqc.supabase.co"
@@ -75,7 +77,7 @@ def _safe_arg(arg: Any) -> Any:
     return arg
 
 
-def _fallback_jsonl(payload: Dict[str, Any]) -> None:
+def _fallback_jsonl(payload: Dict[str, Any]) -> Dict[str, Any]:
     def _sanitize(obj):
         if isinstance(obj, datetime):
             return obj.isoformat()
@@ -89,14 +91,21 @@ def _fallback_jsonl(payload: Dict[str, Any]) -> None:
             )
         return obj
 
+    target = Path(DEFAULT_VAULT_PATH)
+    if not target.is_file():
+        return {
+            "status": "ERROR",
+            "path": str(target),
+            "error": "vault JSONL target is not provisioned; no file was created",
+        }
+
     entry = json.dumps(_sanitize(payload))
     try:
-        path = os.path.join(os.getcwd(), "data", "vault999.jsonl")
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "a", encoding="utf-8") as f:
-            f.write(entry + "\n")
-    except Exception:
-        pass
+        with target.open("a", encoding="utf-8") as stream:
+            stream.write(entry + "\n")
+    except OSError as exc:
+        return {"status": "ERROR", "path": str(target), "error": str(exc)}
+    return {"status": "APPENDED", "path": str(target)}
 
 
 async def _supabase_insert(
@@ -592,14 +601,34 @@ def append_vault999(
         )
         entry["transaction_result"] = tx_result
 
-    # Always mirror to local append-only ledger
-    try:
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry, default=str) + "\n")
-    except Exception:
-        pass
+    # Mirror only to the pre-provisioned in-repository append-only ledger.
+    target = Path(path).resolve()
+    if not target.is_relative_to(_REPO_ROOT):
+        persistence = {
+            "status": "ERROR",
+            "path": str(target),
+            "error": "vault path must remain inside the WEALTH repository",
+        }
+    elif not target.is_file():
+        persistence = {
+            "status": "ERROR",
+            "path": str(target),
+            "error": "vault JSONL target is not provisioned; no file was created",
+        }
+    else:
+        try:
+            with target.open("a", encoding="utf-8") as stream:
+                stream.write(json.dumps(entry, default=str) + "\n")
+        except OSError as exc:
+            persistence = {
+                "status": "ERROR",
+                "path": str(target),
+                "error": str(exc),
+            }
+        else:
+            persistence = {"status": "APPENDED", "path": str(target)}
 
+    entry["persistence"] = persistence
     return entry
 
 
