@@ -229,6 +229,23 @@ def test_health_route_preserved():
     )
 
 
+def test_source_commit_fallback_is_never_reported_as_live(tmp_path, monkeypatch):
+    import server_federated as sf
+
+    (tmp_path / ".git_commit").write_text("deadbee\n", encoding="utf-8")
+
+    def unavailable(*args, **kwargs):
+        raise OSError("git unavailable")
+
+    monkeypatch.setattr(sf.subprocess, "run", unavailable)
+    identity = sf._resolve_source_commit(tmp_path)
+
+    assert identity["git_commit"] == "UNAVAILABLE"
+    assert identity["source_sha_available"] is False
+    assert identity["git_commit_fallback"] == "deadbee"
+    assert identity["git_commit_fallback_trusted"] is False
+
+
 def test_tools_route_preserved():
     """/tools capital-surface discovery route must remain."""
     tree = _module_ast(SERVER_FEDERATED)

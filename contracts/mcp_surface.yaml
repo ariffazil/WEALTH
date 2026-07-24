@@ -1,16 +1,19 @@
-schema_version: 2
+schema_version: 3
 kind: arifos.mcp_surface
 owner_repo: WEALTH
 status: contract
-last_verified: "2026-06-30"
+last_verified: "2026-07-24"
 implementation_status:
-  phase: "Next Horizon — 7 absorptions, 26→19 tools"
+  phase: "Federated 12-tool mode-dispatched surface"
 runtime_surface:
   primary_transport: streamable_http
   primary_port: 18082
   public_domain: https://wealth.arif-fazil.com
-  public_surface_count: 20
-  hidden_alias_count: 34
+  entrypoint: server_federated.py
+  public_surface_count: 12
+  canonical_capital_count: 8
+  institutional_compatibility_count: 4
+  hidden_alias_count: 0
   registry_truth: PASS
 authority:
   owns:
@@ -20,7 +23,7 @@ authority:
     - portfolio_scenarios
     - decision_memos
     - ledger_operations
-    - personal_finance
+    - institutional_diagnostics
   resources_owned:
     - wealth://schema
     - wealth://tools/registry
@@ -42,38 +45,31 @@ authority:
     - geological_truth
     - deployment_substrate
     - final_capital_commitment
-canonical_tools:
-  L0_kernel:
-    - wealth_system_registry_status   # +mode="health"
-    - wealth_omni_wisdom
-    - wealth_agent_path
-  L1_physics_organs:
-    - wealth_conservation_capital      # +mode="ledger_read", "ledger_seal"
-    - wealth_flow_liquidity
-    - wealth_gradient_price
-    - wealth_entropy_risk             # +mode="institutional"
-    - wealth_energy_productivity
-    - wealth_time_discount
-    - wealth_inertia_leverage
-    - wealth_field_macro
-    - wealth_signal_information
-    - wealth_game_coordination        # +mode="preference"
-    - wealth_boundary_governance
-  L2_specialists:
-    - wealth_governance_verdict
-    - wealth_inequality_kernel
-  L3_applications:
-    - wealth_survival_engine
-    - wealth_personal_finance         # +mode="epf", "zakat"
-    - wealth_market_data
-absorption_log_2026_06_05:
-  - wealth_epf_project → wealth_personal_finance(mode="epf")
-  - wealth_zakat_calculate → wealth_personal_finance(mode="zakat")
-  - wealth_health_check → wealth_system_registry_status(mode="health")
-  - wealth_ledger_query → wealth_conservation_capital(mode="ledger_read")
-  - wealth_ledger_write → wealth_conservation_capital(mode="ledger_seal")
-  - wealth_entropy_audit → wealth_entropy_risk(mode="institutional")
-  - wealth_preference_rank → wealth_game_coordination(mode="preference")
+public_tools:
+  canonical_capital:
+    - capital_primitive
+    - capital_health
+    - capital_diagnose
+    - capital_wisdom
+    - capital_market
+    - capital_ledger
+    - capital_registry
+    - capital_entropy
+  institutional_compatibility:
+    - wealth_institutional_stress_index
+    - wealth_cascade_model
+    - wealth_governance_capacity
+    - wealth_external_exploitation_detect
+governance:
+  capital_ledger:
+    default_action_class: IRREVERSIBLE
+    risk_class: C2
+    query_override: READONLY
+    write_requires:
+      - arifOS_SEAL
+      - ack_irreversible
+  all_other_public_tools:
+    execution_authority: compute_or_observe_only
 artifact_policy:
   machine_readable: required
   human_readable: required_for_memos

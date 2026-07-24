@@ -8,8 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from internal.invariants import get_g_score
-from internal.monolith import (
+from internal.invariants import get_g_score  # noqa: E402
+from internal.monolith import (  # noqa: E402
     _PUBLIC_TOOLS,
     wealth_energy_productivity,
     wealth_field_macro,
@@ -22,8 +22,8 @@ from internal.monolith import (
     wealth_system_registry_status,
     wealth_time_discount,
 )
-from host.ingest.health import HealthTracker
-from host.ingest.registry import _cache_age_hours
+from host.ingest.health import HealthTracker  # noqa: E402
+from host.ingest.registry import _cache_age_hours  # noqa: E402
 
 
 def test_g_score_engine_imports_and_runs():
@@ -44,7 +44,7 @@ def test_mcp_tool_surface_matches_public_registry():
     # L3 PHOENIX-73F tools (screen_opportunity, compute_viability, score_risk,
     # compare_scenarios, emit_investment_memo) are declared in WEALTH_PUBLIC_TOOL_ORDER
     # but not yet registered — runtime surface is a subset of _PUBLIC_TOOLS by design.
-    # 2026-07-07: 7 canonical tools (capital_*) added as new surface — allowed additions.
+    # 2026-07-24: 8 canonical tools (capital_*) are allowed additions.
     CANONICAL_ADDITIONS = {
         "capital_primitive",
         "capital_health",
@@ -53,6 +53,7 @@ def test_mcp_tool_surface_matches_public_registry():
         "capital_market",
         "capital_ledger",
         "capital_registry",
+        "capital_entropy",
     }
     allowed = _PUBLIC_TOOLS | CANONICAL_ADDITIONS
     assert tool_names <= allowed, (

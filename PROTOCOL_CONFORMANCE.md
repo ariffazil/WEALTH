@@ -5,10 +5,10 @@
 ## MCP Conformance
 | Requirement | Status | Evidence |
 |------------|--------|----------|
-| llms.txt | ✅ | `/root/WEALTH/llms.txt` — 20 public MCP tools, URAI (Universal Resource Allocation Intelligence) |
-| tools/list | ✅ | `:18082` — 20 tools loaded, 20 canonical (capital_primitive, capital_health, capital_diagnose, capital_market, capital_wisdom, capital_entropy, capital_ledger, capital_registry) |
-| health endpoint | ✅ | `:18082/health` — returns status, identity_hash, tools_loaded (20), canonical_tools (20) |
-| Surface audit | ✅ | Zero drift — tools_loaded matches canonical_tools |
+| llms.txt | ✅ | `/root/WEALTH/llms.txt` — 12 public MCP tools, compute-only |
+| tools/list | ✅ | `:18082` — 12 tools loaded: 8 `capital_*` tools plus 4 institutional compatibility tools |
+| health endpoint | ✅ | `:18082/health` — distinguishes live tool count and source SHA from declared or unverified fallback metadata |
+| Surface audit | ✅ | Source registration and manifests declare the same 12-tool surface |
 
 ## FastMCP Conformance
 | Requirement | Status | Evidence |
@@ -19,7 +19,7 @@
 ## A2A Conformance
 | Requirement | Status | Evidence |
 |------------|--------|----------|
-| Agent card | ✅ | `/.well-known/agent-card.json` — full schema with capabilities, skills |
+| Agent card | ✅ | `/.well-known/agent.json` — consolidated federation card |
 | Task schema | ⚠️ | Supports A2A task operations via federation routing (AAA gateway) |
 | Streaming | ❌ | No SSE streaming support |
 | MCP server discovery | ✅ | `/.well-known/mcp/server.json` and `/.well-known/agent.json` |
@@ -40,7 +40,7 @@
 ## Required Compliance
 - L3 Protocol: MCP (mandatory) + FastMCP (mandatory for Python organs) + A2A (agent card mandatory)
 - WEALTH is compute-only — never allocates capital, never adjudicates
-- 20 operational tools, zero drift
+- 12 operational public tools, zero source-manifest drift
 - Pure deductive math — golden-tested hand-checked cases for every `capital_primitive` mode
 - Next milestone: Zero gaps in current compliance
 

@@ -71,7 +71,7 @@ _TOOL_METABOLIC_DEFAULTS: dict[str, dict[str, Any]] = {
     },
     "wealth_synthesize": {
         "witness_type": WitnessType.REPORT.value,
-        "next_best_tool": "arif_judge_deliberate",
+        "next_best_tool": "arif_judge",
         "required_next_tests": [
             "wealth_check_floors",
         ],
@@ -223,7 +223,7 @@ def build_metabolic_output(
     verdict = str(result.get("governance_verdict", result.get("verdict", "SABAR")))
     flags: list[str] = result.get("failure_flags", [])
     epistemic = str(result.get("epistemic", "CLAIM"))
-    status = str(result.get("status", "OK"))
+    _ = str(result.get("status", "OK"))  # reserved: status field for future metabolic scoring
 
     # Tool-specific config
     tool_config = _TOOL_METABOLIC_DEFAULTS.get(tool_name, {})

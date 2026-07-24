@@ -50,7 +50,8 @@ def register_canonical_tools(mcp):
     """Register the 8 canonical WEALTH tools. Call from server.py after imports."""
 
     # Core math
-    from wealth_core.math import npv as _npv, irr as _irr, emv as _emv
+    from wealth_core.math import irr as _irr
+    from wealth_core.math import npv as _npv
     from wealth_core.capital import compute_conservation, compute_flow, compute_runway
     from wealth_core.risk import (
         compute_emv,
@@ -992,7 +993,7 @@ def register_canonical_tools(mcp):
                         "message": "Write requires ack_irreversible=true. This action is irreversible.",
                     },
                     epistemic_tag=EpistemicTag.DERIVED,
-                    evidence_quality=EvidenceQuality.MISSING,
+                    evidence_quality=EvidenceQuality.SPECULATED,
                     execution_authority=ExecutionAuthority.BLOCKED,
                     requires_888_hold=True,
                     source_attribution=["ledger_write_gate"],
@@ -1023,7 +1024,7 @@ def register_canonical_tools(mcp):
                 result=raw,
                 epistemic_tag=EpistemicTag.OBSERVED,
                 evidence_quality=(
-                    EvidenceQuality.OBSERVED if persisted else EvidenceQuality.MISSING
+                    EvidenceQuality.OBSERVED if persisted else EvidenceQuality.SPECULATED
                 ),
                 execution_authority=(
                     ExecutionAuthority.OBSERVATION
@@ -1383,7 +1384,7 @@ def register_canonical_tools(mcp):
                 domain="institutional",
                 result=result,
                 epistemic_tag=EpistemicTag.OBSERVED,
-                evidence_quality=EvidenceQuality.MISSING,
+                evidence_quality=EvidenceQuality.SPECULATED,
                 execution_authority=ExecutionAuthority.BLOCKED,
                 requires_888_hold=False,
                 source_attribution=["entropy_integrity_dependency_check"],

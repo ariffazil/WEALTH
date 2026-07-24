@@ -2,7 +2,7 @@
 
 > ⚰️ **DESIGN HISTORY — SUPERSEDED BY 2026-06-12 FEDERATION ALIGNMENT**
 > This blueprint predates the canonical topology ratification. The **live surface** is:
-> - **20 public MCP tools** + **34 hidden aliases** (65 `@mcp.tool` decorators)
+> - **12 public MCP tools** (8 canonical capital + 4 institutional compatibility)
 > - Port **18082**, bound to **127.0.0.1**
 > - arifOS kernel port **8088**
 > The architectural direction below remains aspirational and is not yet implemented.
@@ -16,7 +16,7 @@
 
 ## Executive Summary
 
-This blueprint assumed **47 tools** (13 canonical + 6 domain + 2 vault + 25 legacy aliases + 1 health), **13 resources**, and **0 prompts**. The live canonical surface is **20 public tools + 34 hidden aliases** (65 `@mcp.tool` decorators).
+This blueprint assumed **47 tools** (13 canonical + 6 domain + 2 vault + 25 legacy aliases + 1 health), **13 resources**, and **0 prompts**. The live surface is now **12 public tools** (8 canonical capital + 4 institutional compatibility).
 
 The problem isn't quantity — it's **category impurity**. Many "tools" are orchestration wrappers that should be prompts. The naming mixes abstraction levels (`reason_`, `mind_`, `survival_`).
 
@@ -395,7 +395,7 @@ WEALTH MCP
 ```
 
 **Blueprint target surface (not live): 36 + 6 domain = 42 tools | 12 prompts | 21 resources**  
-**Live canonical surface: 20 public tools + 34 hidden aliases | prompts/resources per runtime**
+**Live surface: 12 public tools (8 canonical capital + 4 institutional compatibility) | prompts/resources per runtime**
 
 ---
 
