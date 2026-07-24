@@ -134,6 +134,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.OBSERVED,
                 source_attribution=["user_provided_inputs"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "irr":
@@ -146,6 +148,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.OBSERVED,
                 source_attribution=["user_provided_inputs"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "emv":
@@ -158,6 +162,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["user_provided_scenarios"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "evoi":
@@ -181,6 +187,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["user_provided_inputs"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "mc":
@@ -200,6 +208,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["monte_carlo_simulation"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "kelly":
@@ -212,6 +222,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["kelly_criterion"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "markowitz":
@@ -226,6 +238,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["markowitz_optimization"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "robust":
@@ -240,6 +254,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["robust_optimization"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "chance_constrained":
@@ -252,6 +268,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["chance_constrained_optimization"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "two_stage":
@@ -264,6 +282,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["two_stage_recourse"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         raise ValueError(
@@ -326,6 +346,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["user_provided_assets"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "flow":
@@ -336,6 +358,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["user_provided_cashflows"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "runway":
@@ -348,6 +372,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["user_provided_assets"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "survival":
@@ -388,6 +414,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["fiscal_breakeven_model"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "confluence":
@@ -400,6 +428,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["indicator_analysis"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "asymmetry":
@@ -414,6 +444,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["scenario_analysis"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         raise ValueError(
@@ -480,6 +512,8 @@ def register_canonical_tools(mcp):
                     "governance_signals",
                     "workforce_signals",
                 ],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "governance_capacity":
@@ -496,6 +530,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["governance_analysis"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "cascade_model":
@@ -510,6 +546,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["cascade_model"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "exploitation_detect":
@@ -525,6 +563,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["exploitation_detection"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "collapse_signature":
@@ -537,6 +577,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "beautiful_mouse":
@@ -551,6 +593,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["calhoun_phase_c_indicators"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "capture_scan":
@@ -586,6 +630,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.WEAK,
                 source_attribution=["scenario_text_analysis"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "bid_surface":
@@ -598,6 +644,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["bid_scoring_surface"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "optimize_mwc":
@@ -613,6 +661,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["mwc_optimization"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "cadence_monitor":
@@ -638,6 +688,8 @@ def register_canonical_tools(mcp):
                     "contract_velocity",
                     "budget_release_timing",
                 ],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "crisis_reflex":
@@ -669,6 +721,8 @@ def register_canonical_tools(mcp):
                     "external_posture",
                     "human_dignity",
                 ],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         raise ValueError(
@@ -720,6 +774,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.WEAK,
                 source_attribution=["proposal_text_analysis"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "omni":
@@ -739,6 +795,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.WEAK,
                 source_attribution=["omni_wisdom_synthesis"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         if m == "epistemic":
@@ -751,6 +809,8 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["epistemic_audit"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         raise ValueError(f"Unknown mode '{mode}'. Valid: wisdom, omni, epistemic")
@@ -868,6 +928,8 @@ def register_canonical_tools(mcp):
                 else EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=[f"wealth://commodity/{m}/{engine_op}"],
+                session_id=session_id,
+                actor_id=actor_id,
             )
 
         raise ValueError(
@@ -932,6 +994,8 @@ def register_canonical_tools(mcp):
                     epistemic_tag=EpistemicTag.DERIVED,
                     evidence_quality=EvidenceQuality.WEAK,
                     source_attribution=["ledger_write_gate"],
+                session_id=session_id,
+                actor_id=actor_id,
                 )
             return await _call_legacy_tool(
                 "wealth_vault_write",
