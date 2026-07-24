@@ -1,7 +1,7 @@
 """
-WEALTH Canonical Tools — 7-mode surface (FORGED 2026-07-07).
+WEALTH Canonical Tools — 8-mode capital surface (FORGED 2026-07-07).
 
-Collapses ~40 flat tools into 7 mode-dispatched canonical tools.
+Collapses ~40 flat tools into 8 mode-dispatched canonical tools.
 All existing implementations preserved. Legacy tool names survive as wrappers.
 
 DITEMPA BUKAN DIBERI — Forged from the SVB backtest, not given.
@@ -13,8 +13,15 @@ import json
 from typing import Annotated, Any
 
 from pydantic import BeforeValidator
-from wealth_contracts.envelope import wrap_result, WEALTH_OUTPUT_SCHEMA
+from wealth_contracts.authority import ExecutionAuthority
+from wealth_contracts.envelope import WEALTH_OUTPUT_SCHEMA, wrap_result
 from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality
+from wealth_mcp import (
+    CAPITAL_TOOL_NAMES,
+    INSTITUTIONAL_TOOL_NAMES,
+    PUBLIC_TOOL_NAMES,
+    WEALTH_VERSION,
+)
 
 
 def _coerce_json_string(v: Any) -> Any:
@@ -40,7 +47,7 @@ CoercedStrList = Annotated[list[str] | None, BeforeValidator(_coerce_json_string
 
 
 def register_canonical_tools(mcp):
-    """Register the 7 canonical WEALTH tools. Call from server.py after imports."""
+    """Register the 8 canonical WEALTH tools. Call from server.py after imports."""
 
     # Core math
     from wealth_core.math import npv as _npv, irr as _irr, emv as _emv
@@ -68,17 +75,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_primitive",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description=(
-            "Deductive capital math primitives. Pure computation — no inference, "
-            "no governance verdict. Every mode is golden-tested against hand-checked "
-            "cases. Standard cash flow convention: CF[0] at t=0 (initial investment, "
-            "typically negative), CF[1:] at t=1, t=2, ...\n\n"
-            "Modes: npv | irr | emv | evoi | mc | kelly | markowitz | "
-            "robust | chance_constrained | two_stage\n\n"
-            "Use when: the user asks about NPV, IRR, expected monetary value, "
-            "Kelly criterion sizing, Markowitz portfolio optimization, Monte Carlo "
-            "simulation, or any deductive capital math computation."
-        ),
+        description="Deductive capital math primitives — pure computation, no inference or governance verdict.",
         tags={"domain": "capital", "kind": "deductive", "canonical": "v1"},
     )
     async def capital_primitive(
@@ -119,6 +116,24 @@ def register_canonical_tools(mcp):
         # Coerce MCP transport string serialization (fallback for non-Annotated params)
 
         m = mode.lower()
+        # SURVIVAL-OF-THE-FITTEST FIX 2026-07-24: alias normalization.
+        # Accept common aliases so callers using verbose mode names
+        # (e.g. "monte_carlo") still hit the canonical short name ("mc").
+        # One-way: canonical modes win if both are aliased.
+        _MODE_ALIASES = {
+            "monte_carlo": "mc",
+            "monte-carlo": "mc",
+            "expected_monetary_value": "emv",
+            "expected_value_of_information": "evoi",
+            "value_of_information": "evoi",
+            "expected_value": "emv",
+            "kelly_criterion": "kelly",
+            "mean_variance": "markowitz",
+            "markowitz_mean_variance": "markowitz",
+            "net_present_value": "npv",
+            "internal_rate_of_return": "irr",
+        }
+        m = _MODE_ALIASES.get(m, m)
 
         if m == "npv":
             if cash_flows is None or discount_rate is None:
@@ -297,15 +312,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_health",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description=(
-            "Financial health metrics. Deductive computation from structured inputs. "
-            "No inference, no governance verdict.\n\n"
-            "Modes: conservation | flow | runway | survival | fiscal_breakeven | "
-            "confluence | asymmetry\n\n"
-            "Use when: the user asks about net worth, cash flow, financial runway, "
-            "burn rate, fiscal breakeven oil price, or false-confluence detection "
-            "in financial indicators."
-        ),
+        description="Financial health metrics — deductive computation from structured inputs, no inference or governance verdict.",
         tags={"domain": "capital", "kind": "deductive", "canonical": "v1"},
     )
     async def capital_health(
@@ -459,18 +466,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_diagnose",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description=(
-            "Abductive institutional diagnostics — inference from partial evidence. "
-            "Surface: mode, domain_scope, payload (dict). Mode-specific fields go in "
-            "payload. REQUIRED: domain_scope declares calibration domain. Unknown "
-            "fields are REJECTED (not silently dropped to 0.0).\n\n"
-            "Modes: stress_index | governance_capacity | cascade_model | "
-            "exploitation_detect | collapse_signature | beautiful_mouse | "
-            "capture_scan | power_audit | bid_surface | optimize_mwc | "
-            "cadence_monitor | crisis_reflex\n\n"
-            "Use when: institutional stress, governance, collapse, power, MWC, "
-            "cadence monitoring, or crisis reflex analysis."
-        ),
+        description="Abductive institutional diagnostics — inference from partial evidence across stress, governance, and institutional domains.",
         tags={"domain": "institutional", "kind": "abductive", "canonical": "v1"},
     )
     async def capital_diagnose(
@@ -634,6 +630,29 @@ def register_canonical_tools(mcp):
                 actor_id=actor_id,
             )
 
+        if m in ("petronas_vitals", "sovereign_pulse", "petronas_phi"):
+            # COMPUTE_ONLY distance-to-trip organ — no allocation, no trade signal
+            from wealth_core.petronas_vitals import compute_petronas_vitals
+
+            result = compute_petronas_vitals(
+                tripwires=p.get("tripwires"),
+                weights=p.get("weights"),
+            )
+            return wrap_result(
+                tool_name="capital_diagnose",
+                domain="institutional",
+                result=result,
+                epistemic_tag=EpistemicTag.INTERPRETED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=[
+                    "PETRONAS Group FRA FY2025 IFR",
+                    "wealth_core.petronas_vitals",
+                    "arif-fazil.com/vitals",
+                ],
+                session_id=session_id,
+                actor_id=actor_id,
+            )
+
         if m == "bid_surface":
             from wealth_mcp.tools.bid_surface import compute_bid_surface
 
@@ -736,15 +755,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_wisdom",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description=(
-            "Capital wisdom synthesis — evaluates proposals across dignity, sovereignty, "
-            "resilience, inequality, ecological cost, and optionality. Advisory only. "
-            "Does NOT emit GO/HOLD/SEAL verdicts — those are arifOS's domain.\n\n"
-            "Modes: wisdom | omni | epistemic\n\n"
-            "Use when: the user wants a wisdom-weighted evaluation of a capital "
-            "proposal, deal framing, hysteresis-aware path analysis, or counterfactual "
-            "reasoning across 13 capital primitives."
-        ),
+        description="Capital wisdom synthesis — evaluates proposals across dignity, sovereignty, resilience, inequality, ecological cost, and optionality. Advisory only.",
         tags={"domain": "wisdom", "kind": "abductive", "canonical": "v1"},
     )
     async def capital_wisdom(
@@ -822,22 +833,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_market",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description=(
-            "Market data and commodity intelligence. Observational with "
-            "derived and interpreted fields.\n\n"
-            "Top-level: mode, base, targets, commodity, operation, country. "
-            "Stock fields in stock_payload dict.\n\n"
-            "Modes: fx | commodity | indicator | stock | gold | oil | gas\n\n"
-            "For gold/oil/gas: mode='gold'|'oil'|'gas' with "
-            "operation='snapshot'|'ticker'|'signal'|'macro'|'history'|'levels'.\n"
-            "Legacy: use commodity param for operation (deprecated).\n\n"
-            "Epistemic classes per output field:\n"
-            "  OBSERVED — price, volume, timestamp\n"
-            "  DERIVED — EMA, RSI, support/resistance\n"
-            "  INTERPRETED — LONG/SHORT/NEUTRAL signal\n\n"
-            "Use when: FX, commodities, macro indicators, stock analysis, or "
-            "gold/oil/gas market intelligence."
-        ),
+        description="Market data and commodity intelligence — observational with derived and interpreted fields.",
         tags={"domain": "market", "kind": "observational", "canonical": "v1"},
     )
     async def capital_market(
@@ -944,15 +940,8 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_ledger",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description=(
-            "VAULT999 immutable ledger access. Query is read-only (no ack required). "
-            "Write requires explicit human acknowledgment (ack_irreversible=true). "
-            "WEALTH computes. arifOS judges. Arif decides. WEALTH does not self-seal.\n\n"
-            "Modes: query | write\n\n"
-            "Use when: the user wants to query past capital transactions from "
-            "VAULT999, or write a new transaction (requires human ack for writes)."
-        ),
-        tags={"domain": "vault", "kind": "mutating", "canonical": "v1"},
+        description="VAULT999 immutable ledger access — query read-only, write requires human acknowledgment.",
+        tags={"domain", "kind", "canonical", "action:irreversible", "risk:c2"},
     )
     async def capital_ledger(
         mode: str,
@@ -979,9 +968,20 @@ def register_canonical_tools(mcp):
                     "query": query,
                     "limit": limit,
                     "asset_id": asset_id,
+                    "session_id": session_id,
                 },
             )
-            return wrap_result(tool_name="capital_ledger", domain="vault", result=raw)
+            return wrap_result(
+                tool_name="capital_ledger",
+                domain="vault",
+                result=raw,
+                epistemic_tag=EpistemicTag.OBSERVED,
+                evidence_quality=EvidenceQuality.OBSERVED,
+                source_attribution=["vault999_query"],
+                session_id=session_id,
+                trace_id=trace_id,
+                actor_id=actor_id,
+            )
         if m == "write":
             if not ack_irreversible:
                 return wrap_result(
@@ -992,12 +992,16 @@ def register_canonical_tools(mcp):
                         "message": "Write requires ack_irreversible=true. This action is irreversible.",
                     },
                     epistemic_tag=EpistemicTag.DERIVED,
-                    evidence_quality=EvidenceQuality.WEAK,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    execution_authority=ExecutionAuthority.BLOCKED,
+                    requires_888_hold=True,
                     source_attribution=["ledger_write_gate"],
-                session_id=session_id,
-                actor_id=actor_id,
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                    warnings=["No ledger mutation was attempted."],
                 )
-            return await _call_legacy_tool(
+            raw = await _call_legacy_tool(
                 "wealth_vault_write",
                 {
                     "tx_type": tx_type,
@@ -1007,7 +1011,31 @@ def register_canonical_tools(mcp):
                     "amount_satoshi": amount_satoshi,
                     "payment_hash": payment_hash,
                     "ack_irreversible": True,
+                    "session_id": session_id,
+                    "trace_id": trace_id,
+                    "actor_id": actor_id,
                 },
+            )
+            persisted = raw.get("status") == "APPENDED"
+            return wrap_result(
+                tool_name="capital_ledger",
+                domain="vault",
+                result=raw,
+                epistemic_tag=EpistemicTag.OBSERVED,
+                evidence_quality=(
+                    EvidenceQuality.OBSERVED if persisted else EvidenceQuality.MISSING
+                ),
+                execution_authority=(
+                    ExecutionAuthority.OBSERVATION
+                    if persisted
+                    else ExecutionAuthority.BLOCKED
+                ),
+                requires_888_hold=not persisted,
+                source_attribution=["vault999_local_append"],
+                session_id=session_id,
+                trace_id=trace_id,
+                actor_id=actor_id,
+                errors=[] if persisted else ["Ledger persistence was not confirmed."],
             )
 
         raise ValueError(f"Unknown mode '{mode}'. Valid: query, write")
@@ -1019,13 +1047,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_registry",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description=(
-            "WEALTH meta/introspection. Registry status, tool schema, domain index, "
-            "health check. Observational only.\n\n"
-            "Modes: status | schema | domains | health\n\n"
-            "Use when: the user wants to inspect the WEALTH tool registry, "
-            "check available domains, view tool schemas, or run a health check."
-        ),
+        description="WEALTH meta/introspection — registry status, tool schema, domain index, health check. Observational only.",
         tags={"domain": "meta", "kind": "observational", "canonical": "v1"},
     )
     async def capital_registry(
@@ -1035,30 +1057,28 @@ def register_canonical_tools(mcp):
         trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
+        del tool_name  # Reserved for schema lookup compatibility.
         m = mode.lower()
-        _CANONICAL = [
-            "capital_primitive",
-            "capital_health",
-            "capital_diagnose",
-            "capital_wisdom",
-            "capital_market",
-            "capital_ledger",
-            "capital_registry",
-        ]
+        canonical_tools = list(CAPITAL_TOOL_NAMES)
+        public_tools = list(PUBLIC_TOOL_NAMES)
+        architecture = f"federated-{len(canonical_tools)}-canonical"
 
         if m == "status":
             return wrap_result(
                 tool_name="capital_registry",
                 domain="meta",
                 session_id=session_id,
+                trace_id=trace_id,
                 actor_id=actor_id,
                 result={
                     "status": "OK",
                     "organ": "WEALTH",
-                    "version": "2026.07.11",
-                    "architecture": "federated-7-canonical",
-                    "canonical_tools": _CANONICAL,
-                    "canonical_tool_count": 7,
+                    "version": WEALTH_VERSION,
+                    "architecture": architecture,
+                    "canonical_tools": canonical_tools,
+                    "canonical_tool_count": len(canonical_tools),
+                    "public_tools": public_tools,
+                    "public_tool_count": len(public_tools),
                     "registry_truth": "PASS",
                     "legacy_dispatch": "direct_import",
                     "final_authority": "ARIF",
@@ -1073,6 +1093,7 @@ def register_canonical_tools(mcp):
                 domain="meta",
                 result=raw,
                 session_id=session_id,
+                trace_id=trace_id,
                 actor_id=actor_id,
             )
 
@@ -1081,9 +1102,10 @@ def register_canonical_tools(mcp):
                 tool_name="capital_registry",
                 domain="meta",
                 session_id=session_id,
+                trace_id=trace_id,
                 actor_id=actor_id,
                 result={
-                    "version": "2026.07.11",
+                    "version": WEALTH_VERSION,
                     "domains": [
                         {
                             "name": "capital",
@@ -1093,7 +1115,11 @@ def register_canonical_tools(mcp):
                         {
                             "name": "institutional",
                             "kind": "abductive",
-                            "tools": ["capital_diagnose"],
+                            "tools": [
+                                "capital_diagnose",
+                                "capital_entropy",
+                                *INSTITUTIONAL_TOOL_NAMES,
+                            ],
                         },
                         {
                             "name": "wisdom",
@@ -1116,7 +1142,8 @@ def register_canonical_tools(mcp):
                             "tools": ["capital_registry"],
                         },
                     ],
-                    "canonical_tool_count": 7,
+                    "canonical_tool_count": len(canonical_tools),
+                    "public_tool_count": len(public_tools),
                     "legacy_tools": "direct_import_engines",
                     "preload_mechanism": "REMOVED_2026-07-07",
                 },
@@ -1127,13 +1154,15 @@ def register_canonical_tools(mcp):
                 tool_name="capital_registry",
                 domain="meta",
                 session_id=session_id,
+                trace_id=trace_id,
                 actor_id=actor_id,
                 result={
                     "status": "ALIVE",
-                    "version": "2026.07.11",
+                    "version": WEALTH_VERSION,
                     "domain": "WEALTH Federated Domain",
-                    "architecture": "federated-7-canonical",
-                    "canonical_tools": 7,
+                    "architecture": architecture,
+                    "canonical_tools": len(canonical_tools),
+                    "public_tools": len(public_tools),
                     "preload_mechanism": "REMOVED_2026-07-07",
                 },
             )
@@ -1180,20 +1209,50 @@ def register_canonical_tools(mcp):
                 }
 
             if tool_name in ("wealth_vault_write", "vault_write"):
-                from internal.monolith import vault_write
+                import asyncio
 
-                result = vault_write(
-                    action=str(
-                        args.get("tx_type") or args.get("action") or "capital_tx"
-                    ),
-                    payload={
+                from host.governance.vault_supabase import append_vault999
+
+                action = str(args.get("tx_type") or args.get("action") or "capital_tx")
+                record = {
+                    "tool": "capital_ledger",
+                    "action": action,
+                    "payload": {
                         "amount": args.get("amount"),
+                        "amount_satoshi": args.get("amount_satoshi"),
                         "currency": args.get("currency"),
                         "description": args.get("description"),
+                        "payment_hash": args.get("payment_hash"),
                     },
-                    ack_irreversible=bool(args.get("ack_irreversible", True)),
-                )
-                return result if isinstance(result, dict) else {"result": result}
+                    "verdict": "SEAL",
+                    "session_id": args.get("session_id"),
+                    "trace_id": args.get("trace_id"),
+                    "actor_id": args.get("actor_id"),
+                }
+                result = await asyncio.to_thread(append_vault999, record)
+                if not isinstance(result, dict):
+                    return {
+                        "status": "ERROR",
+                        "error": "VAULT999 append returned no observable result.",
+                    }
+
+                persistence = result.get("persistence") or {
+                    "status": "UNCONFIRMED",
+                    "error": "VAULT999 append did not report persistence state.",
+                }
+                response = {
+                    "status": persistence.get("status", "UNCONFIRMED"),
+                    "action": action,
+                    "persistence": persistence,
+                    "integrity": result.get("integrity"),
+                }
+                vault_id = result.get("event_id") or result.get("ledger_id")
+                chain_hash = result.get("chain_hash")
+                if vault_id:
+                    response["vault_id"] = vault_id
+                if chain_hash:
+                    response["chain_hash"] = chain_hash
+                return response
 
             if tool_name in (
                 "wealth_registry_status",
@@ -1210,19 +1269,13 @@ def register_canonical_tools(mcp):
             if tool_name in ("wealth_schema", "schema"):
                 return {
                     "organ": "WEALTH",
-                    "version": "2026.07.11",
+                    "version": WEALTH_VERSION,
                     "role": "Capital Intelligence for arifOS federation",
                     "authority": "WEALTH computes. arifOS judges. Arif decides.",
-                    "canonical_tools": [
-                        "capital_primitive",
-                        "capital_health",
-                        "capital_diagnose",
-                        "capital_wisdom",
-                        "capital_market",
-                        "capital_ledger",
-                        "capital_registry",
-                    ],
-                    "canonical_tool_count": 7,
+                    "canonical_tools": list(CAPITAL_TOOL_NAMES),
+                    "canonical_tool_count": len(CAPITAL_TOOL_NAMES),
+                    "public_tools": list(PUBLIC_TOOL_NAMES),
+                    "public_tool_count": len(PUBLIC_TOOL_NAMES),
                     "legacy_mcp_dispatch": "direct_import",
                 }
 
@@ -1258,13 +1311,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_entropy",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description=(
-            "Capital and institutional entropy analysis. Modes: "
-            "power_consequence_map, metric_purpose_audit, responsibility_ledger, "
-            "trust_capital_decay, coercive_order_cost, entropy_externality. "
-            "Measures information loss, consequence displacement, metric drift. "
-            "Computes, never allocates."
-        ),
+        description="Capital and institutional entropy analysis — measures information loss, consequence displacement, and metric drift. Computes, never allocates.",
         tags={
             "domain": "institutional",
             "kind": "abductive",
@@ -1296,148 +1343,172 @@ def register_canonical_tools(mcp):
         actor_id: str | None = None,
     ) -> dict:
         """Entropy Integrity Mesh — WEALTH domain witness."""
-        # NOTE: All parameters are already coerced by Pydantic BeforeValidator
-        # (_coerce_json_string) via CoercedDictList / CoercedStrList type annotations.
-        # No runtime _coerce() call needed — schema-level coercion handles MCP transport.
-
-        # Normalize veto_holders: accept strings, convert to dicts (fixed 2026-07-12)
+        # Parameters are coerced by the Pydantic BeforeValidator annotations.
         if veto_holders is not None:
             veto_holders = [
-                {"name": v} if isinstance(v, str) else v for v in veto_holders
+                {"name": value} if isinstance(value, str) else value
+                for value in veto_holders
             ]
+
+        def _wrap_entropy(result: dict) -> dict:
+            return wrap_result(
+                tool_name="capital_entropy",
+                domain="institutional",
+                result=result,
+                source_attribution=["entropy_integrity_local_dependency"],
+                session_id=session_id,
+                trace_id=trace_id,
+                actor_id=actor_id,
+            )
+
+        def _entropy_failure(
+            code: str,
+            message: str,
+            *,
+            action: str,
+            hold: bool,
+        ) -> dict:
+            result = {
+                "status": "UNAVAILABLE" if hold else "ERROR",
+                "error_code": code,
+                "message": message,
+                "tool": "capital_entropy",
+                "mode": m,
+                "action": action,
+            }
+            if hold:
+                result["holds"] = [code]
+            return wrap_result(
+                tool_name="capital_entropy",
+                domain="institutional",
+                result=result,
+                epistemic_tag=EpistemicTag.OBSERVED,
+                evidence_quality=EvidenceQuality.MISSING,
+                execution_authority=ExecutionAuthority.BLOCKED,
+                requires_888_hold=False,
+                source_attribution=["entropy_integrity_dependency_check"],
+                session_id=session_id,
+                trace_id=trace_id,
+                actor_id=actor_id,
+                errors=[message],
+            )
 
         m = mode.lower().strip()
         try:
-            import importlib.util, os
+            import importlib.util
+            from pathlib import Path
 
-            _base = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)),
-                "..",
-                "..",
-                "..",
-                "entropy-integrity",
-                "mcp",
-                "wealth",
+            base = (
+                Path(__file__).resolve().parents[2]
+                / "entropy-integrity"
+                / "mcp"
+                / "wealth"
             )
 
-            # P3 (2026-07-20): Harden dynamic imports against race conditions
-            # and missing modules. spec_from_file_location returns None if
-            # the file doesn't exist or the path is invalid.
             def _safe_load_module(name: str, filename: str):
-                if not os.path.isdir(_base):
+                if not base.is_dir():
                     raise ImportError(
-                        f"entropy-integrity module directory not found: {_base}. "
-                        "The entropy-integrity package may not be installed. "
-                        "Install with: pip install entropy-integrity or clone from source."
+                        f"optional dependency directory is absent from this repository: {base}"
                     )
-                filepath = os.path.join(_base, filename)
-                if not os.path.isfile(filepath):
+                filepath = base / filename
+                if not filepath.is_file():
                     raise ImportError(
-                        f"entropy-integrity module file not found: {filepath}. "
-                        f"Valid files in {_base}: "
-                        f"{os.listdir(_base) if os.path.isdir(_base) else 'N/A'}"
+                        f"optional dependency module is absent: {filepath}"
                     )
-                _spec = importlib.util.spec_from_file_location(name, filepath)
-                if _spec is None or _spec.loader is None:
+                spec = importlib.util.spec_from_file_location(name, filepath)
+                if spec is None or spec.loader is None:
                     raise ImportError(
-                        f"Failed to create module spec for {filepath}. "
-                        "The file may be corrupt, empty, or not a valid Python module."
+                        f"cannot load optional dependency module: {filepath}"
                     )
-                _mod = importlib.util.module_from_spec(_spec)
-                _spec.loader.exec_module(_mod)
-                return _mod
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                return module
 
             if m == "power_consequence_map":
-                _mod = _safe_load_module("pcm", "power_consequence_map.py")
-                return wrap_result(
-                    "capital_entropy",
-                    "institutional",
-                    _mod.wealth_power_consequence_map(
+                module = _safe_load_module("pcm", "power_consequence_map.py")
+                return _wrap_entropy(
+                    module.wealth_power_consequence_map(
                         decision_makers=decision_makers or [],
                         beneficiaries=beneficiaries or [],
                         cost_bearers=cost_bearers or [],
                         veto_holders=veto_holders,
-                    ),
+                    )
                 )
 
-            elif m == "metric_purpose_audit":
-                _mod = _safe_load_module("mpa", "metric_purpose_audit.py")
-                return wrap_result(
-                    "capital_entropy",
-                    "institutional",
-                    _mod.wealth_metric_purpose_audit(
+            if m == "metric_purpose_audit":
+                module = _safe_load_module("mpa", "metric_purpose_audit.py")
+                return _wrap_entropy(
+                    module.wealth_metric_purpose_audit(
                         declared_purpose=declared_purpose or "",
                         current_kpis=current_kpis or [],
                         actual_behaviors=actual_behaviors or [],
                         excluded_outcomes=excluded_outcomes,
-                    ),
+                    )
                 )
 
-            elif m == "responsibility_ledger":
-                _mod = _safe_load_module("rl", "responsibility_ledger.py")
-                return wrap_result(
-                    "capital_entropy",
-                    "institutional",
-                    _mod.wealth_responsibility_ledger(
+            if m == "responsibility_ledger":
+                module = _safe_load_module("rl", "responsibility_ledger.py")
+                return _wrap_entropy(
+                    module.wealth_responsibility_ledger(
                         decision_ref=decision_ref or "", actors=actors or []
-                    ),
+                    )
                 )
 
-            elif m == "trust_capital_decay":
-                _mod = _safe_load_module("tcd", "trust_capital_decay.py")
-                return wrap_result(
-                    "capital_entropy",
-                    "institutional",
-                    _mod.wealth_trust_capital_decay(
+            if m == "trust_capital_decay":
+                module = _safe_load_module("tcd", "trust_capital_decay.py")
+                return _wrap_entropy(
+                    module.wealth_trust_capital_decay(
                         trust_events=trust_events or [],
                         current_trust_balance=current_trust_balance,
-                    ),
+                    )
                 )
 
-            elif m == "coercive_order_cost":
-                _mod = _safe_load_module("coc", "coercive_order_cost.py")
-                return wrap_result(
-                    "capital_entropy",
-                    "institutional",
-                    _mod.wealth_coercive_order_cost(
+            if m == "coercive_order_cost":
+                module = _safe_load_module("coc", "coercive_order_cost.py")
+                return _wrap_entropy(
+                    module.wealth_coercive_order_cost(
                         order_indicators=order_indicators or {},
                         suppression_indicators=suppression_indicators or {},
-                    ),
+                    )
                 )
 
-            elif m == "entropy_externality":
-                _mod = _safe_load_module("ee", "entropy_externality.py")
-                return wrap_result(
-                    "capital_entropy",
-                    "institutional",
-                    _mod.wealth_entropy_externality(
+            if m == "entropy_externality":
+                module = _safe_load_module("ee", "entropy_externality.py")
+                return _wrap_entropy(
+                    module.wealth_entropy_externality(
                         actor_ref=actor_ref or "",
                         local_efficiency_claims=local_efficiency_claims or {},
                         exported_costs=exported_costs or [],
-                    ),
+                    )
                 )
 
-            else:
-                return {
-                    "error": "UNKNOWN_MODE",
-                    "valid": [
-                        "power_consequence_map",
-                        "metric_purpose_audit",
-                        "responsibility_ledger",
-                        "trust_capital_decay",
-                        "coercive_order_cost",
-                        "entropy_externality",
-                    ],
-                }
-        except ImportError as e:
-            return {
-                "error": f"ENTROPY_MODULE_MISSING: {e}",
-                "tool": "capital_entropy",
-                "mode": m,
-                "action": "Install entropy-integrity package or ensure module files exist",
-            }
-        except Exception as e:
-            return {"error": str(e), "tool": "capital_entropy", "mode": m}
+            return _entropy_failure(
+                "UNKNOWN_MODE",
+                f"Unknown mode '{mode}'.",
+                action=(
+                    "Use one of: power_consequence_map, metric_purpose_audit, "
+                    "responsibility_ledger, trust_capital_decay, "
+                    "coercive_order_cost, entropy_externality"
+                ),
+                hold=False,
+            )
+        except ImportError as exc:
+            return _entropy_failure(
+                "ENTROPY_MODULE_MISSING",
+                str(exc),
+                action=(
+                    "Declare and vendor the optional entropy-integrity dependency "
+                    "inside this repository before enabling this mode."
+                ),
+                hold=True,
+            )
+        except Exception as exc:
+            return _entropy_failure(
+                "ENTROPY_COMPUTE_ERROR",
+                f"{type(exc).__name__}: {exc}",
+                action="Inspect the named local dependency module and retry.",
+                hold=True,
+            )
 
     return {
         "capital_primitive": capital_primitive,
