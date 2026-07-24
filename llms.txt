@@ -1,72 +1,126 @@
-# WEALTH — Capital Intelligence Sovereign Kernel
-> Universal Resource Allocation Intelligence (URAI). 20 public MCP tools.
-> Port: 18082. License: AGPL-3.0. Status: OPERATIONAL. Version: 2026.06.06.
+# WEALTH — Capital Intelligence (arifOS Federation)
+## Machine & Agent Interface Specification
 
-## Quick Context
-- **What:** Capital computation engine — NPV/IRR/EMV, portfolio, stock analysis
-- **Role:** ADVISORY_ONLY — computes value, never authorizes allocation
-- **Federation:** WEALTH computes. arifOS judges. Arif decides.
-- **Ingress:** Cloudflare Tunnel → wealth.arif-fazil.com/mcp
+**Version:** 2026.07.24  
+**URL:** https://wealth.arif-fazil.com  
+**MCP:** https://wealth.arif-fazil.com/mcp  
+**Source:** https://github.com/ariffazil/WEALTH  
+**Port (local):** 18082 · **Tools:** 12 public · **License:** AGPL-3.0  
 
-## Key Files
-- README.md — Full human-readable narrative (1007 lines)
-- AGENTS.md — Agent rules, build/test commands
-- GENESIS/011_WEALTH_MANDATE.md — Constitutional mandate
-- TOOL_SURFACE.md — Complete tool surface documentation
-- CONTEXT.md — Live organ state
+> **WEALTH computes. arifOS judges. Arif decides.**  
+> Authority ceiling: **COMPUTE_ONLY** — never allocates capital, never issues SEAL/VOID.
 
-## Entry Points
-- internal/monolith.py — FastMCP monolith server (~16K lines, 20 tools + 34 hidden aliases)
-- internal/stock/ — D4 Stock Analysis (12 modes, 7 modules)
-- internal/engines/ — Canonical tools, Five Seals, advisory engine
-- internal/domains/ — Domain modules (INEQUALITY_KERNEL)
-- internal/shared/ — Shared libraries
-- internal/personal_finance.py — Personal finance (EPF, zakat, runway)
+---
+
+## What WEALTH Is
+
+Capital intelligence organ of the arifOS federation. Deductive math (NPV/IRR/EMV),
+institutional stress diagnostics, market signals, and sovereign pulse compute
+(PETRONAS·φ VITALS). Outputs are envelopes with epistemic tags — not trade tickets.
+
+## Federation Organs
+
+| Organ | Role | Port | Link |
+|-------|------|------|------|
+| arifOS | Constitutional kernel — judge, seal | 8088 | https://arifos.arif-fazil.com |
+| AAA | Cockpit + A2A | 3001 | https://aaa.arif-fazil.com |
+| A-FORGE | Execution shell | 7071 | https://mcp.arif-fazil.com |
+| GEOX | Earth intelligence | 8081 | https://geox.arif-fazil.com |
+| **WEALTH** | Capital intelligence | 18082 | ← you are here |
+| WELL | Vitality guard (REFLECT_ONLY) | 18083 | https://well.arif-fazil.com |
+| HERMES | Multi-modal / Telegram bridge | — | https://t.me/arifos |
+
+Contract: https://arifos.arif-fazil.com · `/root/FEDERATION_CONTRACT.md`
+
+---
+
+## Discovery Endpoints
+
+| Path | Purpose |
+|------|---------|
+| `/health` | Runtime health + tool count |
+| `/mcp` | MCP streamable-http (POST tools; GET discovery card) |
+| `/llms.txt` | This file — agent map |
+| `/data/wealth/latest.json` | Daily capital market snapshot (public site) |
+| `/data/wealth/petronas_vitals.json` | PETRONAS·φ pulse compute mirror |
+| Human vitals UI | https://arif-fazil.com/vitals/ |
+| Agent card | `/.well-known/agent-card.json` (repo) |
+
+**Truth rule:** live `tools/list` and `/health` beat static prose.
+
+---
+
+## Public MCP Tools (12)
+
+### Canonical capital family (8) — mode-dispatched
+
+| Tool | Purpose |
+|------|---------|
+| `capital_primitive` | NPV, IRR, EMV, EVOI, Monte Carlo, Kelly, Markowitz, robust / chance-constrained |
+| `capital_health` | Conservation, flow, runway, survival, fiscal breakeven |
+| `capital_diagnose` | Institutional stress, governance, cascade, collapse, power, **petronas_vitals** |
+| `capital_wisdom` | Advisory wisdom / epistemic synthesis |
+| `capital_market` | FX, commodities, indicators, stocks |
+| `capital_ledger` | Query; write is C2/IRREVERSIBLE (human ack) |
+| `capital_registry` | Live status, schema, domains, health |
+| `capital_entropy` | Entropy / integrity modes (may report UNAVAILABLE) |
+
+### Institutional compatibility family (4)
+
+- `wealth_institutional_stress_index`
+- `wealth_cascade_model`
+- `wealth_governance_capacity`
+- `wealth_external_exploitation_detect`
+
+### Key diagnose modes (examples)
+
+```
+capital_diagnose  mode=petronas_vitals     → PETRONAS·φ distance-to-trip pulse (COMPUTE_ONLY)
+capital_diagnose  mode=stress_index        → institutional stress 0–1
+capital_diagnose  mode=governance_capacity → board/governance capacity
+capital_diagnose  mode=collapse_signature  → collapse corpus scan
+```
+
+Payload may override tripwires/weights for petronas_vitals; defaults are F2-aligned FY2025 IFR.
+
+---
+
+## Boundaries (hard)
+
+- NEVER authorize capital allocation or move money  
+- NEVER claim buy/sell/hold as an order  
+- NEVER fabricate market data — cite source + timestamp or UNKNOWN  
+- NEVER bypass arifOS constitutional governance  
+- NEVER claim ledger write persisted without confirmation  
+- PETRONAS·φ is a **sense organ** — distance-to-trip only, not a trade signal  
+
+## Epistemic Tags
+
+Outputs carry OBSERVED / DERIVED / INTERPRETED / SPECULATED / ASSUMED style tags via WealthEnvelope.
+Composite institutional pulses inherit the **weaker** tag when mix EVIDENCE + INTERPRET.
+
+## Runtime Layout
+
+- `server_federated.py` — HTTP entry on :18082  
+- `wealth_mcp/server.py` — FastMCP + resources + prompts  
+- `wealth_mcp/tools/canonical.py` — capital_* tools  
+- `wealth_core/petronas_vitals.py` — φ VITALS pure compute  
 
 ## Build & Test
-### Python (canonical)
-- Install:  pip install -e ".[dev]"
-- Test:    pytest tests/ -q --tb=short
-- Start:   python internal/monolith.py  (or --transport stdio)
-- Health:  curl http://127.0.0.1:18082/health
-- Deploy:  make forge && systemctl restart wealth-organ
-### Node.js (legacy side)
-- Install:  npm install
-- Test:    npm test
-- Start:   npm run boot
 
-## MCP Tools (20 public + 34 hidden aliases)
-### Capital Intelligence (Ω-WEALTH-00 to Ω-WEALTH-12)
-wealth_omni_wisdom              — Unified capital intelligence (synthesize + deal + hysteresis)
-wealth_conservation_capital     — Ω-01: Capital stock, assets, liabilities, ledger
-wealth_flow_liquidity            — Ω-02: Cashflow, runway, burn, survival
-wealth_gradient_price            — Ω-03: Price spread, mispricing
-wealth_entropy_risk              — Ω-04: EMV, scenarios, tail risk, asymmetry
-wealth_energy_productivity       — Ω-05: Output per input, capital efficiency (PI)
-wealth_time_discount             — Ω-06: NPV, IRR, payback, compounding
-wealth_inertia_leverage          — Ω-07: DSCR, leverage stress, fragility
-wealth_field_macro               — Ω-08: Macro environment (FX, energy, carbon)
-wealth_signal_information        — Ω-09: EVOI, information value, prior/posterior
-wealth_game_coordination         — Ω-10: Multi-agent incentives, PSC games
-wealth_boundary_governance       — Ω-11: Floors, maruah, stewardship
-wealth_governance_verdict        — Final allocation verdict
+```bash
+pip install -e ".[dev]"
+pytest tests/ -q --tb=short
+python server_federated.py
+curl -s http://127.0.0.1:18082/health
+```
 
-### Domain Tools
-wealth_market_data               — Live FX, commodities, macro indicators
-wealth_personal_finance          — Track, summary, EPF, zakat, net worth
-wealth_stock_analysis            — D4 Stock Analysis (12 modes)
-wealth_survival_engine           — Cashflow, runway, burn, liquidity dashboard
-wealth_inequality_kernel         — 5-dimension inequality diagnosis
-wealth_agent_path                — Sovereign Intent Router
-wealth_system_registry_status    — Registry truth diagnostic
+## For Agents
 
-## D4 Stock Analysis (12 modes)
-verify_math | separate_pl | position_size | r_multiple | exposure
-bursa_cost | tamak_check | pre_trade | fundamentals | tac9 | contrast | confluence
+1. Read this file + `/health`  
+2. Connect MCP: `https://wealth.arif-fazil.com/mcp`  
+3. Prefer `capital_*` tools; use `mode=` for diagnose variants  
+4. Route irreversible judgment through arifOS (`arif_judge` / SEAL path)  
+5. Crawl federation map: https://arifos.arif-fazil.com/llms.txt  
 
-## Boundaries (NEVER)
-- NEVER authorize capital allocation (WEALTH is ADVISORY_ONLY)
-- NEVER claim "buy" or "sell" (computes, doesn't recommend)
-- NEVER fabricate market data — cite source or say UNKNOWN
-- NEVER bypass arifOS constitutional floors
-- NEVER skip the Five Seals integrity check
+DITEMPA BUKAN DIBERI — Forged, Not Given.
