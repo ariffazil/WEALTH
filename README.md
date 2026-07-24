@@ -88,6 +88,23 @@ VAULT999 → seals the decision as an immutable record
 
 Every step logged. Every computation attributable. No model decides alone.
 
+```mermaid
+graph TB
+    Q[❓ Question<br/>NPV? Risk? Breakeven?] -->|route| WEALTH
+    subgraph WEALTH [💰 WEALTH — Capital Intelligence :18082]
+        PRIM[capital_primitive<br/>NPV · IRR · EMV · Monte Carlo] 
+        HEALTH[capital_health<br/>Runway · Survival · Breakeven]
+        MARKET[capital_market<br/>FX · Commodities · Stocks]
+        DIAG[capital_diagnose<br/>Stress · Governance · Collapse]
+    end
+    WEALTH -->|compute| RESULT[📊 Result<br/>OBS/DER/INT/SPEC]
+    RESULT -->|evidence| ARIFOS{⚖️ arifOS Judge<br/>F1-F13}
+    ARIFOS -->|SEAL| FORGE[🔥 A-FORGE<br/>Execute if needed]
+    ARIFOS -->|HOLD| HUMAN[⏸️ Arif Reviews]
+    FORGE --> VAULT[(VAULT999<br/>Immutable Record)]
+    HUMAN -->|decide| VAULT
+```
+
 ---
 
 ## 3. Tools (Grouped by Function)
