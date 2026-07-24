@@ -244,7 +244,7 @@ class ArifOSKernel:
 
         1. Build the per-call envelope
         2. Check against local reality contracts (if loaded)
-        3. Send to arif_judge_deliberate (if online)
+        3. Send to arif_judge (if online)
         4. Return JudgeVerdict
 
         Raises GovernanceHold if verdict is HOLD (caller should escalate).
@@ -479,7 +479,7 @@ class ArifOSKernel:
         return order.index(action_class) if action_class in order else -1
 
     def _call_remote_judge(self, envelope: CallEnvelope, args: dict) -> JudgeVerdict:
-        """Send to arif_judge_deliberate at the kernel."""
+        """Send to arif_judge at the kernel."""
         try:
             req = urllib.request.Request(
                 f"{self.kernel_url}/mcp/arif_judge_deliberate",

@@ -1,75 +1,64 @@
 <!-- SOT-MANIFEST
 owner: Arif
-last_verified: 2026-07-18
-valid_from: 2026-06-14
+last_verified: 2026-07-24
+valid_from: 2026-07-24
 valid_until: 2026-08-17
 confidence: high
 scope: /root/WEALTH/BOUNDARY.md
 -->
 
-# BOUNDARY.md — WEALTH Capital Intelligence / Resource Thermodynamics
+# BOUNDARY.md — WEALTH Capital Intelligence
 
-> **DITEMPA BUKAN DIBERI** — Forged, not given.
+> **DITEMPA BUKAN DIBERI** — WEALTH computes. arifOS judges. Arif decides.
 
 ## Owns
 
-- **Capital Stock Reality** — Asset/liability/reserve accounting, conservation capital scoring (Ω-WEALTH-01)
-- **Liquidity Movement** — Cashflow analysis, burn rate, runway, survival scoring (Ω-WEALTH-02)
-- **Price Pressure & Mispricing** — Gradient detection, spread analysis, market asymmetry (Ω-WEALTH-03)
-- **Risk & Uncertainty** — Entropy audit, tail risk, return classification, Monte Carlo simulation (Ω-WEALTH-04)
-- **Productivity & Efficiency** — IRR, NPV, energy productivity, capital efficiency (Ω-WEALTH-05)
-- **Time Value** — Discount rates, payback, compounding, decay (Ω-WEALTH-06)
-- **Leverage & Fragility** — DSCR, inertia stress, debt service coverage (Ω-WEALTH-07)
-- **Macro Field** — Rates, FX, energy, carbon, regime snapshots (Ω-WEALTH-08)
-- **Information Value** — EVOI, signal quality, evidence grading (Ω-WEALTH-09)
-- **Game Theory** — Multi-agent coordination, bargaining, Nash approximation (Ω-WEALTH-10)
-- **Governance & Legitimacy** — Boundary audits, maruah scoring, institutional drift (Ω-WEALTH-11)
-- **Ledger & Memory** — Path dependence, sealed financial memory (Ω-WEALTH-12)
-- **Synthesis** — Cross-dimensional capital intelligence verdict (Ω-WEALTH-00)
-- **Inequality Kernel** — Role scarcity, conversion architecture, asymmetry mapping (Ω-WEALTH-IEQ)
+- Capital math: NPV, IRR, EMV, EVOI, Monte Carlo, Kelly, Markowitz
+- Capital health: conservation, flow, runway, survival, fiscal breakeven
+- Market observation: FX, commodities, macro indicators, equities
+- Institutional diagnostics: stress, governance capacity, cascades, exploitation patterns
+- Advisory wisdom and entropy analysis when evidence/dependencies are available
+- Ledger query and a governed C2/IRREVERSIBLE write path
 
 ## Does Not Own
 
-- **Constitutional Law** — F1–F13 enforcement, verdict engine, seal authority (owned by arifOS)
-- **Earth-Truth Modeling** — Geospatial, subsurface, prospect evaluation (owned by GEOX)
-- **Operator Cockpit** — React dashboard, agent workspace UX (owned by AAA)
-- **Deployment Orchestration** — Docker compose, release assembly, infrastructure (owned by A-FORGE)
-- **MCP Schema Authority** — Canonical tool registry, governance contracts (owned by arifOS)
-- **Web Search / Crawling** — General web search, URL fetch (owned by A-FORGE or sensing layer)
+- Constitutional judgment or SEAL authority — arifOS
+- Final capital allocation or investment authority — Arif
+- Earth-truth modeling — GEOX
+- Human readiness — WELL
+- Deployment execution — A-FORGE
+- Operator cockpit — AAA
 
-## Imports From
+## Public MCP Surface
 
-| Source | What | Interface |
-|--------|------|-----------|
-| **arifOS** | Constitutional constraints, floor enforcement, session tokens | MCP mesh, federation probe |
-| **A-FORGE** | Deploy metadata, container runtime, build pipeline | GHCR image, compose manifests |
-| **GEOX** — *planned* | Prospect volume estimates, resource quality data | MCP mesh (future) |
-| **AAA** | Operator capital allocation intent, portfolio review requests | A2A mesh |
+The canonical runtime is `server_federated.py` → `wealth_mcp/server.py`.
+Authenticated `tools/list` is final truth.
 
-## Exports To
+**8 canonical capital tools:**
 
-| Consumer | What | Interface |
-|----------|------|-----------|
-| **arifOS** | Capital viability verdicts, risk scores, decision memos | MCP tool calls, JSON artifacts |
-| **AAA** | Decision memo viewer, portfolio dashboard data | HTTP API, static artifacts |
-| **A-FORGE** | Docker image, build context | `ghcr.io/ariffazil/wealth:<sha>` |
+`capital_primitive`, `capital_health`, `capital_diagnose`, `capital_wisdom`,
+`capital_market`, `capital_ledger`, `capital_registry`, `capital_entropy`
 
-## Known Boundary Violations (888 HOLD Queue)
+**4 institutional compatibility tools:**
 
-1. **Dual runtime** — Python (`internal/monolith.py`, 26 public tools + 6 hidden aliases = 32 total decorated tools) and JS (`src/`, legacy kernel) both exist. Python is canonical; JS is legacy. JS should be deprecated or removed.
-2. **A-FORGE reimplementation** — `A-FORGE/src/tools/WealthTools.ts` reimplements WEALTH-domain logic (ROI, EMV, portfolio optimize). Should delegate to WEALTH MCP instead.
-3. **License divergence** — RESOLVED. `pyproject.toml` and `package.json` both declare `AGPL-3.0`.
+`wealth_institutional_stress_index`, `wealth_cascade_model`,
+`wealth_governance_capacity`, `wealth_external_exploitation_detect`
 
-## Canonical Tool Surface (Live)
+Total public surface: **12**. No hidden aliases are advertised.
 
-26 public tools exposed on port 18082 (plus 6 hidden aliases; 32 total decorated tools):
+## Mutation Boundary
 
-`wealth_wisdom_evaluate`, `wealth_power_audit`, `wealth_capture_scan`, `wealth_compute_npv`, `wealth_compute_irr`, `wealth_conservation_check`, `wealth_flow_check`, `wealth_runway_check`, `wealth_compute_emv`, `wealth_compute_evoi`, `wealth_monte_carlo_simulate`, `wealth_confluence_check`, `wealth_asymmetry_check`, `wealth_stock_analysis`, `wealth_personal_finance`, `wealth_market_data`, `wealth_omni_wisdom`, `wealth_agent_path`, `wealth_vault_write`, `wealth_vault_query`, `wealth_boundary_governance`, `wealth_survival_engine`, `wealth_registry_status`, `wealth_collapse_signature_scan`, `wealth_beautiful_mouse_scan`, `wealth_judge_handoff`
+- All public tools compute or observe except `capital_ledger(mode="write")`.
+- `capital_ledger` is mapped to C2/IRREVERSIBLE by default.
+- `capital_ledger(mode="query")` is explicitly resolved READONLY.
+- Write requires arifOS `SEAL` plus `ack_irreversible=true`.
+- Persistence must be observed; WEALTH does not invent vault IDs, chain hashes, or receipt success.
 
-> **Verified:** 32 `@mcp.tool` decorated names exposed via `tools/list` on port 18082 — 26 public tools + 6 backward-compat aliases.
+## Preserved Compatibility Files
 
-## Canonical Surfaces
+- `internal/monolith.py`
+- `internal/engines/canonical_tools.py`
+- `internal/engines/five_seals.py`
+- `mcp/server.py`
 
-- **MCP Server:** FastMCP (`python internal/monolith.py`)
-- **Test:** `pytest tests/` (Python) + `node --test tests/*.test.js` (JS legacy)
-- **Docker:** `docker build -t wealth .`
+These files are not the canonical public entrypoint but remain required compatibility or supplemental surfaces.

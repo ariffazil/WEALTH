@@ -1,16 +1,16 @@
 <!-- SOT-MANIFEST
 federation_release: v2026.07.24
 last_verified: 2026-07-24T07:40Z
-live_commit: 3ca4883
+commit_truth: /health distinguishes the live source SHA from any unverified fallback
 port: 18082
 health: healthy
-mcp_tools_live: 20
+mcp_tools_live: 12
 authority: COMPUTE_ONLY — never allocate
 truth_rule: tools/list + /health beat any static count in prose
 -->
 
 [![Agentic CI](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml/badge.svg?branch=main)](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml)
-[![💰 CAPITAL](https://img.shields.io/badge/%F0%9F%92%B0%20CAPITAL-20%20tools-1f6feb)](https://wealth.arif-fazil.com/mcp)
+[![💰 CAPITAL](https://img.shields.io/badge/%F0%9F%92%B0%20CAPITAL-12%20tools-1f6feb)](https://wealth.arif-fazil.com/mcp)
 [![Federation](https://img.shields.io/badge/Federation-v2026.07.24-0a7b83)](https://arifos.arif-fazil.com)
 [![License](https://img.shields.io/github/license/ariffazil/wealth?label=License)](LICENSE)
 
@@ -25,7 +25,7 @@ truth_rule: tools/list + /health beat any static count in prose
 
 **For human operators (Arif):** WEALTH is your capital calculator — NPV, IRR, portfolio risk, fiscal breakeven. It computes. You decide. [§1](#1-what-wealth-is)
 
-**For AI agents:** Route capital queries here. 20 pure-compute tools. No inference, no verdicts, no allocation. [§3](#3-tools)
+**For AI agents:** Route capital queries here. The advertised surface has 12 tools: 8 mode-dispatched `capital_*` tools and 4 institutional compatibility tools. No tool can allocate capital or issue the final verdict. [§3](#3-tools)
 
 **For institutions:** WEALTH provides auditable, golden-tested financial math — every primitive has hand-checked cases. [§6](#6-for-institutions)
 
@@ -126,6 +126,16 @@ graph TB
 | `capital_diagnose` | Institutional stress index, governance capacity, collapse detection |
 | `capital_entropy` | Power consequence maps, trust capital decay, metric drift, coercive order cost |
 
+### Institutional Compatibility
+| Tool | What It Computes |
+|------|-----------------|
+| `wealth_institutional_stress_index` | Composite institutional stress score |
+| `wealth_cascade_model` | Stress feedback-loop trajectory |
+| `wealth_governance_capacity` | Governance capacity relative to stress |
+| `wealth_external_exploitation_detect` | Counterparty extraction pattern detection |
+
+These four compatibility tools remain advertised alongside the eight canonical `capital_*` tools.
+
 ### Governance Support
 | Tool | What It Computes |
 |------|-----------------|
@@ -199,10 +209,10 @@ WEALTH provides auditable, bounded financial computation:
 |----------|-------------------|
 | **Golden-tested math** | Every primitive has hand-checked test cases |
 | **Compute, never allocate** | No capital moves without Arif's explicit approval |
-| **Full audit trail** | Every computation logged to VAULT999 via `capital_ledger` |
+| **Observable audit attempts** | Every consequential tool call returns receipt persistence metadata; failures remain visible |
 | **Domain-law bound** | CAPITAL_LAW — cannot cross into GEOX (earth) or WELL (vitality) |
 | **Epistemic labels** | Every output tagged OBS/DER/INT/SPEC per F2 TRUTH |
-| **Immutable receipts** | Append-only, hash-chained — decisions are sealed, not overwritten |
+| **No invented seals** | Ledger IDs, chain hashes, and persistence are reported only when observed |
 
 ### Capital Primitives
 
@@ -230,7 +240,7 @@ All primitives are pure deductive math — golden-tested against hand-checked ca
 **Muhammad Arif bin Fazil** is F13 SOVEREIGN. His capital decisions are final.
 
 ```
-WEALTH · Port 18082 · 20 tools · CAPITAL_LAW · AGPL-3.0
+WEALTH · Port 18082 · 12 public tools · CAPITAL_LAW · AGPL-3.0
 Computes, never allocates. DITEMPA BUKAN DIBERI.
 ```
 

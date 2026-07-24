@@ -1,10 +1,10 @@
 {
   "schema": "mcp",
-  "version": "2026.06.30",
+  "version": "2026.07.19",
   "protocolVersion": "2025-11-25",
   "name": "WEALTH MCP",
-  "description": "Capital intelligence — 28-tool federation surface. Compute-only capital thermodynamics.",
-  "tools": 28,
+  "description": "Capital intelligence — 12-tool compute-only federation surface.",
+  "tools": 12,
   "endpoint": "https://wealth.arif-fazil.com/mcp",
   "identity": {
     "canonical_name": "WEALTH Capital Intelligence",
@@ -14,6 +14,7 @@
   },
   "governance": {
     "floors": ["F1","F2","F4","F6","F7","F9","F11","F13"],
-    "authority_boundary": "COMPUTE_ONLY"
+    "authority_boundary": "COMPUTE_ONLY",
+    "capital_ledger": "C2_IRREVERSIBLE_WRITE; READONLY_QUERY"
   }
 }

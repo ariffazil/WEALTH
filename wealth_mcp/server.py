@@ -12,83 +12,71 @@ from __future__ import annotations
 
 import json
 import os
-import sys
-
-# Ensure parent directory is in path
-base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if base_dir not in sys.path:
-    sys.path.insert(0, base_dir)
+from pathlib import Path
+from typing import Any
 
 from fastmcp import FastMCP
-
-# MCP primitive imports — resource embedding for prompts (Binding #23-26, 2026-07-10)
-from mcp.types import EmbeddedResource, TextResourceContents
 from fastmcp.prompts.base import Message
+from mcp.types import EmbeddedResource, TextResourceContents
 from pydantic import AnyUrl
 
-# Import contracts
-from wealth_contracts.envelope import wrap_result
-from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality, ClaimState
-
-# Import core engines
-from wealth_core.wisdom import compute_wisdom
-from wealth_core.power import audit_power
-from wealth_core.epistemic import audit_epistemic
-from wealth_core.capital import (
-    compute_conservation,
-    compute_flow,
-    compute_runway,
-    npv,
-    irr,
-)
-from wealth_core.risk import (
-    compute_emv,
-    monte_carlo_simulation,
-    compute_evoi,
-    detect_false_confluence,
-    compute_asymmetry,
-    fiscal_breakeven_oil_price,
-)
-from wealth_core.collapse_signature.scanner import compute_collapse_risk
-from wealth_core.collapse_signature.beautiful_mouse import compute_beautiful_mouse_score
-from wealth_core.counterfactual import run_counterfactual
-from wealth_core.institutional import (
-    compute_stress_index,
-    compute_cascade,
-    compute_governance_capacity,
-    compute_exploitation,
-)
-from wealth_arifos_bridge.judge_handoff import (
-    prepare_judge_handoff,
-    submit_to_arif_judge,
-)
-
-# ── Canonical tool surface (7 tools, mode-dispatched) ──────────────────
+from wealth_mcp import CAPITAL_TOOL_NAMES, PUBLIC_TOOL_NAMES, WEALTH_VERSION
 from wealth_mcp.tools.canonical import register_canonical_tools
 from wealth_mcp.tools.institutional import register_institutional_tools
+
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
 # WEALTH capital compute — OBSERVE by default.
 # ZEN 2026-07-11 FNF-0: NEVER import arifosmcp into this organ (coupling leak).
 _UNBOUND_SESSION_TOKENS = {None, "", "_default", "null", "None", "anonymous"}
-_OBSERVE_SURFACE = frozenset(
-    {
-        "capital_primitive",
-        "capital_health",
-        "capital_diagnose",
-        "capital_wisdom",
-        "capital_market",
-        "capital_ledger",
-        "capital_registry",
-        "capital_entropy",
-        # Legacy wealth_* tools remain callable but NOT advertised.
-        # Each is a mode of capital_diagnose:
-        #   wealth_institutional_stress_index → capital_diagnose(mode=stress_index)
-        #   wealth_cascade_model → capital_diagnose(mode=cascade_model)
-        #   wealth_governance_capacity → capital_diagnose(mode=governance_capacity)
-        #   wealth_external_exploitation_detect → capital_diagnose(mode=exploitation_detect)
-    }
-)
+_OBSERVE_SURFACE = frozenset(PUBLIC_TOOL_NAMES)
+
+
+def _append_existing_jsonl(path: str, payload: dict[str, Any]) -> dict[str, Any]:
+    """Append to a provisioned JSONL target without creating files or directories."""
+    target = Path(path)
+    state: dict[str, Any] = {"persisted": False, "path": str(target)}
+    if not target.is_file():
+        state["error"] = "receipt target is not provisioned; no file was created"
+        return state
+    try:
+        with target.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(payload, default=str) + "\n")
+    except OSError as exc:
+        state["error"] = str(exc)
+        return state
+    state["persisted"] = True
+    return state
+
+
+def _tool_result_status(result: Any) -> str:
+    """Derive receipt status from the actual FastMCP result, not mere return."""
+    if getattr(result, "is_error", False):
+        return "ERROR"
+    payload = getattr(result, "structured_content", None)
+    if not isinstance(payload, dict):
+        return "PASS"
+    candidates = [payload.get("result"), payload]
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+        status = candidate.get("status")
+        if not status:
+            continue
+        normalized = str(status).upper()
+        if normalized in {"OK", "ALIVE", "PASS", "APPENDED", "INSERTED"}:
+            return "PASS"
+        return normalized
+    return "PASS"
+
+
+def _attach_receipt_meta(result: Any, receipt_state: dict[str, Any]) -> Any:
+    """Expose receipt persistence state to MCP callers."""
+    meta = dict(getattr(result, "meta", None) or {})
+    meta["wealth_receipt"] = receipt_state
+    result.meta = meta
+    return result
 
 
 def _validate_session_via_http_bridge(
@@ -198,7 +186,7 @@ def create_mcp_server() -> FastMCP:
 
     mcp = FastMCP(
         "WEALTH Federated Domain",
-        version="v2026.07.17",
+        version=(f"v{WEALTH_VERSION}" if WEALTH_VERSION != "UNAVAILABLE" else WEALTH_VERSION),
         # MCP logging: SEP-2577 deprecated — maintenance only; default min warning.
         client_log_level="warning",
         instructions=(
@@ -221,8 +209,10 @@ def create_mcp_server() -> FastMCP:
         import datetime as _dt
         import uuid as _uuid
 
-        _RECEIPT_PATH = "/root/VAULT999/wealth/receipts.jsonl"
-        _SCHEMA_VERSION = "2026.06.27"
+        _RECEIPT_PATH = os.environ.get(
+            "WEALTH_RECEIPT_PATH", "/root/VAULT999/wealth/receipts.jsonl"
+        )
+        _SCHEMA_VERSION = "2026.07.24"
 
         # ── Preload mechanism REMOVED (2026-07-07) ──────────────────────
         # Resources are now direct @mcp.resource() URIs with no gating.
@@ -240,52 +230,49 @@ def create_mcp_server() -> FastMCP:
             arguments: dict,
             status: str,
             verdict: str = "",
-            actor_id: str = None,
-            session_id: str = None,
-            evidence_quality: str = None,
-            missing_preload: list = None,
-        ):
-            """Emit a receipt for every consequential tool call.
+            actor_id: str | None = None,
+            session_id: str | None = None,
+            evidence_quality: str | None = None,
+            missing_preload: list | None = None,
+        ) -> dict[str, Any]:
+            """Persist an audit receipt and return observable persistence state."""
+            actor_id = actor_id or "wealth-mcp"
+            evidence_quality = evidence_quality or (
+                "OBSERVED" if status == "PASS" else "MISSING"
+            )
+            receipt_id = str(_uuid.uuid4())
+            receipt = {
+                "receipt_id": receipt_id,
+                "timestamp_utc": _now_iso(),
+                "actor_id": actor_id,
+                "tool_name": tool_name,
+                "arguments": {
+                    key: value
+                    for key, value in (arguments or {}).items()
+                    if key not in ("actor_signature", "nonce", "_meta")
+                },
+                "epistemic_state": "DERIVED",
+                "evidence_quality": evidence_quality,
+                "domain": _infer_domain(tool_name),
+                "session_id": session_id,
+                "trace_id": (arguments or {}).get("trace_id"),
+                "call_status": status,
+                "governance_status": verdict or "UNAVAILABLE",
+                "transport": "mcp_call_tool",
+                "schema_version": _SCHEMA_VERSION,
+            }
+            if missing_preload:
+                receipt["non_compliant_preload"] = missing_preload
 
-            Best-effort. Never fails the tool call.
-            Schema: wealth://replay/receipt-schema
-            """
-            try:
-                if actor_id is None:
-                    actor_id = "wealth-mcp"
-                if evidence_quality is None:
-                    evidence_quality = (
-                        "SEALED"
-                        if tool_name == "wealth_vault_write" and status == "PASS"
-                        else "OBSERVED"
-                        if status == "PASS"
-                        else "MISSING"
-                    )
-                receipt = {
-                    "receipt_id": str(_uuid.uuid4()),
-                    "timestamp_utc": _now_iso(),
-                    "actor_id": actor_id,
-                    "tool_name": tool_name,
-                    "arguments": {
-                        k: v
-                        for k, v in (arguments or {}).items()
-                        if k not in ("actor_signature", "nonce", "_meta")
-                    },
-                    "epistemic_state": "DERIVED",
-                    "evidence_quality": evidence_quality,
-                    "domain": _infer_domain(tool_name),
-                    "session_id": session_id,
-                    "governance_status": verdict or status,
-                    "transport": "mcp_call_tool",
-                    "schema_version": _SCHEMA_VERSION,
-                }
-                if missing_preload:
-                    receipt["non_compliant_preload"] = missing_preload
-                os.makedirs(os.path.dirname(_RECEIPT_PATH), exist_ok=True)
-                with open(_RECEIPT_PATH, "a", encoding="utf-8") as f:
-                    f.write(json.dumps(receipt) + "\n")
-            except Exception as e:
-                print(f"[RECEIPT] emit failed for {tool_name}: {e}")
+            state = _append_existing_jsonl(_RECEIPT_PATH, receipt)
+            state["receipt_id"] = receipt_id
+            state["call_status"] = status
+            if not state["persisted"]:
+                print(
+                    f"[RECEIPT] persistence failed for {tool_name} "
+                    f"({receipt_id}): {state.get('error', 'unknown error')}"
+                )
+            return state
 
         def _infer_domain(tool_name: str) -> str:
             t = tool_name.lower()
@@ -527,7 +514,7 @@ def create_mcp_server() -> FastMCP:
                         "floor": "L1-L13",
                     }
                 )
-                _emit_receipt(
+                receipt_state = _emit_receipt(
                     name,
                     arguments,
                     status="BLOCKED",
@@ -564,6 +551,7 @@ def create_mcp_server() -> FastMCP:
                     pass
                 return ToolResult(
                     content=[TextContent(type="text", text=error_text)],
+                    meta={"wealth_receipt": receipt_state},
                     is_error=True,
                 )
 
@@ -583,6 +571,14 @@ def create_mcp_server() -> FastMCP:
                 from wealth_mcp.federation_safety import classify_error
 
                 err_env = classify_error(e, source_tool=name, source_organ="wealth")
+                receipt_state = _emit_receipt(
+                    name,
+                    arguments,
+                    status="ERROR",
+                    verdict=verdict,
+                    actor_id=actor_id,
+                    session_id=session_id,
+                )
                 try:
                     from wealth_mcp.mcp_logging import emit_mcp_log
 
@@ -605,17 +601,20 @@ def create_mcp_server() -> FastMCP:
                     content=[
                         TextContent(type="text", text=json.dumps(err_env, default=str))
                     ],
+                    meta={"wealth_receipt": receipt_state},
                     is_error=True,
                 )
-            _emit_receipt(
+
+            call_status = _tool_result_status(result)
+            receipt_state = _emit_receipt(
                 name,
                 arguments,
-                status="PASS",
-                verdict=verdict or "PASS",
+                status=call_status,
+                verdict=verdict,
                 actor_id=actor_id,
                 session_id=session_id,
             )
-            return result
+            return _attach_receipt_meta(result, receipt_state)
 
         mcp.call_tool = _governance_call_tool
 
@@ -630,22 +629,7 @@ def create_mcp_server() -> FastMCP:
                 result = await call_next(context)
                 if result is None:
                     return result
-                public_names = {
-                    # Canonical capital surface
-                    "capital_primitive",
-                    "capital_health",
-                    "capital_diagnose",
-                    "capital_wisdom",
-                    "capital_market",
-                    "capital_ledger",
-                    "capital_registry",
-                    "capital_entropy",
-                    # Institutional stress detection (wired 2026-07-12)
-                    "wealth_institutional_stress_index",
-                    "wealth_cascade_model",
-                    "wealth_governance_capacity",
-                    "wealth_external_exploitation_detect",
-                }
+                public_names = set(PUBLIC_TOOL_NAMES)
                 filtered = [
                     t for t in result if getattr(t, "name", None) in public_names
                 ]
@@ -657,7 +641,7 @@ def create_mcp_server() -> FastMCP:
         print(f"[GOVERNANCE] WEALTH federated governance wrapper failed to load: {e}")
 
     # ── Register tools ────────────────────────────────────────────────────
-    # DEREGISTERED 2026-07-10: Legacy surface disabled (43 tools → 7 canonical).
+    # DEREGISTERED 2026-07-10: Legacy surface disabled (43 tools → 8 canonical).
     # Code preserved below for backward compat. Re-enable by uncommenting.
     # See: forge_work/2026-07-10/WEALTH-DEREGISTRATION.md
     # _register_wisdom_tools(mcp)
@@ -678,7 +662,7 @@ def create_mcp_server() -> FastMCP:
     _register_resources(mcp)
     _register_prompts(mcp)
 
-    # ── Register canonical tools (7-mode surface, 2026-07-07) ──────────
+    # ── Register canonical tools (8-mode surface, 2026-07-07) ──────────
     register_canonical_tools(mcp)
 
     return mcp
@@ -742,25 +726,27 @@ def _register_resources(mcp: FastMCP) -> None:
         mime_type="application/json",
         tags={"wealth", "schema", "sot", "identity"},
         annotations={"readOnlyHint": True, "idempotentHint": True},
-        meta={"version": "2026.06.27", "authority": "advisory_only"},
+        meta={"version": WEALTH_VERSION, "authority": "advisory_only"},
     )
     def wealth_schema() -> str:
         """WEALTH canonical tool surface and version info."""
         return json.dumps(
             {
                 "organ": "WEALTH",
-                "version": "2026.06.27",
+                "version": WEALTH_VERSION,
                 "role": "Capital Intelligence for arifOS federation",
                 "authority": "WEALTH computes. arifOS judges. Arif decides.",
                 "protocol": "MCP 2025-03-26",
                 "protocol_seps": ["SEP-1613", "SEP-2106", "SEP-2549", "SEP-1330"],
                 "json_schema_dialect": "https://json-schema.org/draft/2020-12/schema",
-                "tool_prefix": "wealth_",
+                "tool_prefixes": ["capital_", "wealth_"],
                 "resource_scheme": "wealth://",
                 "prompt_count": 7,
                 "resource_count": 14,
-                "naming_convention": "wealth_<verb>_<noun>",
-                "canonical_tools": [
+                "naming_convention": "mode-dispatched public tools",
+                "public_tool_count": len(PUBLIC_TOOL_NAMES),
+                "public_tools": list(PUBLIC_TOOL_NAMES),
+                "legacy_tools_reference": [
                     {
                         "name": "wealth_wisdom_evaluate",
                         "apex": "Φ Faithfulness",
@@ -891,13 +877,15 @@ def _register_resources(mcp: FastMCP) -> None:
         mime_type="application/json",
         tags={"wealth", "tools", "registry", "sot"},
         annotations={"readOnlyHint": True, "idempotentHint": True},
-        meta={"version": "2026.06.27", "authority": "advisory_only"},
+        meta={"version": WEALTH_VERSION, "authority": "advisory_only"},
     )
     def wealth_tools_registry() -> str:
         """Full tool registry with classification."""
         return json.dumps(
             {
-                "active": [
+                "public_tool_count": len(PUBLIC_TOOL_NAMES),
+                "public_tools": list(PUBLIC_TOOL_NAMES),
+                "legacy_reference": [
                     {
                         "name": "wealth_wisdom_evaluate",
                         "domain": "wisdom",
@@ -1506,7 +1494,7 @@ def _register_resources(mcp: FastMCP) -> None:
         mime_type="application/json",
         tags={"wealth", "health", "liveness", "dynamic"},
         annotations={"readOnlyHint": True, "idempotentHint": True},
-        meta={"version": "2026.06.27"},
+        meta={"version": WEALTH_VERSION},
     )
     def wealth_health() -> str:
         """WEALTH organ health status (dynamic, timestamped)."""
@@ -1516,11 +1504,15 @@ def _register_resources(mcp: FastMCP) -> None:
         return json.dumps(
             {
                 "status": "ALIVE",
-                "version": "2026.06.27",
+                "version": WEALTH_VERSION,
                 "domain": "WEALTH Federated Domain",
                 "transport": "streamable-http",
                 "read_only_resources": True,
-                "tools_compute_only": True,
+                "default_authority": "compute_only",
+                "mutation_tools": ["capital_ledger"],
+                "canonical_tool_count": len(CAPITAL_TOOL_NAMES),
+                "public_tool_count": len(PUBLIC_TOOL_NAMES),
+                "public_tools": list(PUBLIC_TOOL_NAMES),
                 "prompt_count": 7,
                 "resource_count": 14,
                 "final_authority": "arifOS 888_JUDGE → Arif (F13 SOVEREIGN)",

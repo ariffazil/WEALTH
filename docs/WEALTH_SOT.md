@@ -1,20 +1,18 @@
 # WEALTH Organ — Source of Truth
-**Status:** `ready` — public and local MCP ingress confirmed on 2026-05-11
+**Status:** `source-aligned` — runtime restart/deploy was not part of this change
 
 ## Configuration
-- **Canonical Git Source:** `/root/wealth`
+- **Canonical Git Source:** `/root/WEALTH`
 - **Canonical Branch:** `main`
-- **Repo HEAD at audit:** `cad82c5`
-- **Runtime Entrypoint:** `internal/monolith.py` (mounted into `wealth-organ`)
-- **Backward-Compat Wrapper:** `server.py`
+- **Runtime Entrypoint:** `server_federated.py`
+- **FastMCP Registration:** `wealth_mcp/server.py`
+- **Legacy Implementation Library:** `internal/monolith.py` (not the public entrypoint)
 - **Supplemental Surface:** `mcp/server.py` (demo / non-canonical)
 
 ## Public Surface
-- `/` — Static human landing page
-- `/health` — JSON health endpoint
-- `/ready` — JSON readiness endpoint
-- `/tools` — tool discovery and registry truth view
-- `/mcp` — live MCP streamable-http endpoint
+- `/health` — JSON federation health and identity metadata
+- `/tools` — live public tool names
+- `/mcp` — MCP streamable-http endpoint
 
 ## MCP Runtime Truth
 | Field | Value |
@@ -22,42 +20,37 @@
 | Public URL | `https://wealth.arif-fazil.com/mcp` |
 | Transport | streamable-http |
 | Health | `https://wealth.arif-fazil.com/health` |
-| Ready | `https://wealth.arif-fazil.com/ready` |
-| Schema version | `wealth.physics_economics.v1` |
-| Canonical public tools | `14` |
-| Substrate invariant tools | `12` |
-| Diagnostic tools | `2` |
-| Runtime surface count | `14` |
-| Hidden legacy aliases | `68` |
+| Canonical capital tools | `8` |
+| Institutional compatibility tools | `4` |
+| Public surface count | `12` |
+| Hidden aliases | `0` advertised |
 | Final authority | `ARIF` |
 | Caddy upstream | `127.0.0.1:18082` |
 
-## Canonical Public Tool Surface
-**Diagnostics (2)**
-1. `wealth_health_check` — Universal federation health check
-2. `wealth_system_registry_status` — Registry truth diagnostic
+## Canonical Capital Family (8)
+1. `capital_primitive`
+2. `capital_health`
+3. `capital_diagnose`
+4. `capital_wisdom`
+5. `capital_market`
+6. `capital_ledger`
+7. `capital_registry`
+8. `capital_entropy`
 
-**Substrate Invariants (12)**
-3. `wealth_conservation_capital` — Ω-WEALTH-01: Conservation (capital stock reality)
-4. `wealth_flow_liquidity` — Ω-WEALTH-02: Flow (liquidity movement)
-5. `wealth_gradient_price` — Ω-WEALTH-03: Gradient (price pressure, mispricing)
-6. `wealth_entropy_risk` — Ω-WEALTH-04: Entropy (uncertainty, tail risk)
-7. `wealth_energy_productivity` — Ω-WEALTH-05: Energy (output per input)
-8. `wealth_time_discount` — Ω-WEALTH-06: Time (NPV, IRR, payback)
-9. `wealth_inertia_leverage` — Ω-WEALTH-07: Inertia (leverage stress, fragility)
-10. `wealth_field_macro` — Ω-WEALTH-08: Field (macro environment)
-11. `wealth_signal_information` — Ω-WEALTH-09: Signal (info value, evidence quality)
-12. `wealth_game_coordination` — Ω-WEALTH-10: Game (multi-agent incentives)
-13. `wealth_boundary_governance` — Ω-WEALTH-11: Boundary (floors, stewardship)
-14. `wealth_hysteresis_ledger` — Ω-WEALTH-12: Hysteresis (ledger, path dependence)
+## Institutional Compatibility Family (4)
+9. `wealth_institutional_stress_index`
+10. `wealth_cascade_model`
+11. `wealth_governance_capacity`
+12. `wealth_external_exploitation_detect`
 
-## Hidden Alias Surface
-68 legacy canonical tool names remain callable for backward compatibility but are not advertised in the public MCP surface. They route through the 12 invariant dispatchers internally.
+## Governance
+- `capital_ledger` defaults to C2/IRREVERSIBLE; `mode="query"` is resolved read-only.
+- Ledger writes require both arifOS `SEAL` and `ack_irreversible=true`.
+- Receipt and ledger persistence failures are returned as observable metadata; missing targets are never created implicitly.
+- `capital_entropy` reports a structured `UNAVAILABLE` envelope if its optional dependency is absent from this repository.
 
 ## Operational Doctrine
-- Commit long-term source changes to `/root/wealth`.
-- The live runtime currently comes from the mounted canonical monolith, not only the image tag.
-- Default transport is `streamable-http`; legacy aliases remain callable but are no longer the public truth surface.
-- **Doctrine count:** 12 substrate invariants + 2 diagnostics + 1 Institutional Entropy Scorer = 15 public tools.
-- **Recent Integration (2026-05-19):** `wealth_entropy_audit` now functions as an **Institutional Entropy Scorer**, calculating *Narrative Dissipation Velocity* ($\Xi$) to detect Extractive Sink Behavioral Overlays (Calhoun Effect).
+- Authenticated `tools/list` and `/health` beat every static count.
+- `/health` reports a Git SHA only when it can read the source repository; `.git_commit` is exposed solely as an unverified fallback.
+- WEALTH computes. arifOS judges. Arif decides.
 

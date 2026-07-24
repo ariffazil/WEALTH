@@ -16,16 +16,55 @@ from __future__ import annotations
 
 import json
 import os
-import sys
+import re
+import subprocess
 import uuid
+from pathlib import Path
 
-# Ensure parent directory is in path
-base_dir = os.path.abspath(os.path.dirname(__file__))
-if base_dir not in sys.path:
-    sys.path.insert(0, base_dir)
-
+from wealth_mcp import CAPITAL_TOOL_NAMES, PUBLIC_TOOL_NAMES, WEALTH_VERSION
 from wealth_mcp.server import create_mcp_server
 
+
+def _resolve_source_commit(repo_path: str | Path | None = None) -> dict[str, object]:
+    """Resolve the source SHA while keeping static fallback data unverified."""
+    repo = Path(repo_path) if repo_path is not None else Path(__file__).resolve().parent
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo), "rev-parse", "--short=7", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=3,
+            check=False,
+        )
+        sha = result.stdout.strip()
+        if result.returncode == 0 and re.fullmatch(r"[0-9a-fA-F]{7,40}", sha):
+            return {
+                "git_commit": sha,
+                "git_commit_source": "git",
+                "source_sha_available": True,
+                "git_commit_fallback": None,
+                "git_commit_fallback_trusted": False,
+            }
+    except (OSError, subprocess.SubprocessError):
+        pass
+
+    try:
+        fallback = (repo / ".git_commit").read_text(encoding="utf-8").strip()
+    except OSError:
+        fallback = ""
+    if not re.fullmatch(r"[0-9a-fA-F]{7,40}", fallback):
+        fallback = ""
+
+    return {
+        "git_commit": "UNAVAILABLE",
+        "git_commit_source": "unavailable",
+        "source_sha_available": False,
+        "git_commit_fallback": fallback or None,
+        "git_commit_fallback_trusted": False,
+    }
+
+
+base_dir = os.path.abspath(os.path.dirname(__file__))
 mcp = create_mcp_server()
 
 if __name__ == "__main__":
@@ -41,9 +80,8 @@ if __name__ == "__main__":
         identity_hash = "UNAVAILABLE"
         try:
             import hashlib
-            from pathlib import Path
 
-            id_path = Path("/root/WEALTH/identity.toml")
+            id_path = Path(base_dir) / "identity.toml"
             if id_path.exists():
                 try:
                     import blake3  # type: ignore
@@ -54,42 +92,31 @@ if __name__ == "__main__":
         except Exception:
             identity_hash = "UNAVAILABLE"
 
-        # Tool surface visibility (live async count — fixed 2026-07-24)
-        _public_tools = 12  # sane default (12 canonical tools as of v2026.07.17)
+        # Tool surface visibility: distinguish a live count from declared metadata.
+        public_tools_live = None
+        tool_count_source = "unavailable"
+        tool_count_error = None
         try:
             tools = await mcp.list_tools()
-            _public_tools = len(tools)
-        except Exception:
-            pass
+            public_tools_live = len(tools)
+            tool_count_source = "mcp.list_tools"
+        except Exception as exc:
+            tool_count_error = f"{type(exc).__name__}: {exc}"
 
-        git_commit = "UNAVAILABLE"
-        try:
-            import subprocess
-
-            r = subprocess.run(
-                ["git", "-C", "/root/WEALTH", "rev-parse", "--short=7", "HEAD"],
-                capture_output=True,
-                text=True,
-                timeout=3,
-            )
-            if r.returncode == 0:
-                git_commit = r.stdout.strip()
-        except Exception:
-            pass
-        if git_commit == "UNAVAILABLE":
-            try:
-                git_commit = Path("/root/WEALTH/.git_commit").read_text().strip()
-            except Exception:
-                pass
+        commit_identity = _resolve_source_commit(base_dir)
 
         return JSONResponse(
             {
                 "status": "healthy",
                 "identity": identity_hash,
                 "identity_hash": identity_hash,
-                "git_commit": git_commit,
-                "tools_loaded": _public_tools,
-                "canonical_tools": _public_tools,
+                **commit_identity,
+                "tools_loaded": public_tools_live,
+                "public_tools": public_tools_live,
+                "public_tools_declared": len(PUBLIC_TOOL_NAMES),
+                "canonical_tools": len(CAPITAL_TOOL_NAMES),
+                "tool_count_source": tool_count_source,
+                "tool_count_error": tool_count_error,
                 "apex_scalars": {
                     "G": {"value": None, "status": "UNMEASURED"},
                     "C_dark": {"value": None, "status": "UNMEASURED"},
@@ -105,7 +132,11 @@ if __name__ == "__main__":
                     "note": "geometry owned by arifOS; WEALTH reports local presence only",
                 },
                 "final_authority": "ARIF",
-                "version": "v2026.07.17",
+                "version": (
+                    f"v{WEALTH_VERSION}"
+                    if WEALTH_VERSION != "UNAVAILABLE"
+                    else WEALTH_VERSION
+                ),
                 "federation_schema_version": "2.0.0",
                 "domain": "WEALTH Federated Domain",
                 "transport": "streamable-http",

@@ -1,26 +1,23 @@
 # WEALTH MCP Surfaces
 
-This repo ships **two** MCP servers. They are not interchangeable.
+This repo ships two MCP surfaces. They are not interchangeable.
 
-## 1. Canonical packaged kernel
+## 1. Canonical federated runtime
 
-- **Canonical file:** `internal/monolith.py`
-- **Compat wrapper:** `server.py`
-- **Role:** Primary WEALTH valuation kernel
-- **Used by:** `server.py`, `fastmcp.json`, `mcp.json`, MCP packaging, Docker/host boot paths
-- **Scope:** 13 canonical MCP tools + packaged resources
+- **Entrypoint:** `server_federated.py`
+- **FastMCP registration:** `wealth_mcp/server.py`
+- **Role:** Public WEALTH capital intelligence runtime
+- **Scope:** 12 public tools — 8 `capital_*` tools plus 4 institutional compatibility tools
+- **Truth:** authenticated `tools/list`
 
 Run it with:
 
 ```bash
 cd /root/WEALTH
-python internal/monolith.py
-# or the external compat wrapper:
-python server.py
+python server_federated.py
 ```
 
-`internal/monolith.py` is the source of truth for the packaged WEALTH MCP runtime.
-`server.py` is a thin compatibility wrapper that preserves public entrypoints.
+`internal/monolith.py` remains a legacy implementation library used by compatibility paths and tests. It is not the public entrypoint and must not be deleted.
 
 ## 2. Civilizational demo surface
 
@@ -46,8 +43,4 @@ Current demo tools:
 
 ## Practical rule
 
-If you are wiring WEALTH into another system and need the **real packaged kernel**, target
-**`internal/monolith.py`** conceptually and use **`server.py`** only when an external tool
-expects the historical root entrypoint.
-
-If you are experimenting with domain-specific civilizational demos, use **`mcp/server.py`**.
+Use `server_federated.py` for production WEALTH integrations. Use `mcp/server.py` only for the supplemental demo surface. Never infer the live tool count from `internal/monolith.py`; probe `tools/list`.
