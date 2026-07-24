@@ -113,6 +113,7 @@ def register_canonical_tools(mcp):
         risk_constraint: float | None = None,
         seed: int | None = None,
         session_id: str | None = None,
+        trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
         # Coerce MCP transport string serialization (fallback for non-Annotated params)
@@ -310,6 +311,7 @@ def register_canonical_tools(mcp):
         monthly_expenses_v: float | None = None,
         horizon_months: int = 12,
         session_id: str | None = None,
+        trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
         # Coerce MCP transport string serialization
@@ -444,6 +446,7 @@ def register_canonical_tools(mcp):
         domain_scope: str = "",
         payload: CoercedDict = None,
         session_id: str | None = None,
+        trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
         """Mode-dispatched institutional diagnostics (ZEN 2026-07-11 W3).
@@ -698,6 +701,7 @@ def register_canonical_tools(mcp):
         memory_query: str = "",
         target: str = "",
         session_id: str | None = None,
+        trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
         # Coerce MCP transport string serialization
@@ -785,6 +789,7 @@ def register_canonical_tools(mcp):
         country: str = "MYS",
         stock_payload: CoercedDict = None,
         session_id: str | None = None,
+        trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
         """Market data (ZEN 2026-07-11 W4). Stock fields in stock_payload."""
@@ -900,6 +905,7 @@ def register_canonical_tools(mcp):
         payment_hash: str = "",
         ack_irreversible: bool = False,
         session_id: str | None = None,
+        trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
         m = mode.lower()
@@ -962,6 +968,7 @@ def register_canonical_tools(mcp):
         mode: str = "status",
         tool_name: str | None = None,
         session_id: str | None = None,
+        trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
         m = mode.lower()
@@ -1221,6 +1228,7 @@ def register_canonical_tools(mcp):
         local_efficiency_claims: CoercedDict = None,
         exported_costs: CoercedDictList = None,
         session_id: str | None = None,
+        trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
         """Entropy Integrity Mesh — WEALTH domain witness."""
