@@ -1,6 +1,6 @@
 <!-- SOT-MANIFEST
 federation_release: v2026.07.24
-last_verified: 2026-07-24T07:40Z
+last_verified: 2026-07-24T16:00Z
 commit_truth: /health distinguishes the live source SHA from any unverified fallback
 port: 18082
 health: healthy
@@ -8,6 +8,8 @@ mcp_tools_live: 12
 authority: COMPUTE_ONLY — never allocate
 truth_rule: tools/list + /health beat any static count in prose
 -->
+
+**SOT:** 2026-07-24 | **seal_seq:** `dbbd67c`
 
 [![Agentic CI](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml/badge.svg?branch=main)](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml)
 [![💰 CAPITAL](https://img.shields.io/badge/%F0%9F%92%B0%20CAPITAL-12%20tools-1f6feb)](https://wealth.arif-fazil.com/mcp)
