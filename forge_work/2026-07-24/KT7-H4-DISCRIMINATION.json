@@ -1,0 +1,222 @@
+{
+  "run_id": "KT7-DEPTH-CONVERT-2026-07-24",
+  "tool": "/root/WEALTH/domains/energy/kinabalu_depth_convert.py",
+  "epistemic": "DER",
+  "confidence_cap": 0.6,
+  "data_status": {
+    "kl2_excel": "ABSENT on VPS (only SYNC_WINDOWS_TO_VPS.ps1 under data/kl2)",
+    "velocity_model": "GEOX sabah_basin_strat.yaml layer averages via kinabalu_depth_convert.SABAH_MODEL",
+    "actual_seismic_twt_pick": "NOT SUPPLIED \u2014 conversion framework only until pick TWT from Franke KT-7 or KL2 line"
+  },
+  "kt7_test": {
+    "verdict": "OPHIOLITE SUPPORTED \u2014 Vp consistent with oceanic basement",
+    "confidence": 0.6,
+    "epistemic": "DER",
+    "depth_range_km": [
+      12,
+      21
+    ],
+    "n_depths": 10,
+    "summary_table": [
+      {
+        "depth_km": 12,
+        "twt_avg_s": 6.654,
+        "vp_avg_km_s": 5.75,
+        "discrimination": "OPHIOLITE preferred \u2014 Vp outside granite range"
+      },
+      {
+        "depth_km": 13,
+        "twt_avg_s": 7.002,
+        "vp_avg_km_s": 5.75,
+        "discrimination": "OPHIOLITE preferred \u2014 Vp outside granite range"
+      },
+      {
+        "depth_km": 14,
+        "twt_avg_s": 7.35,
+        "vp_avg_km_s": 5.75,
+        "discrimination": "OPHIOLITE preferred \u2014 Vp outside granite range"
+      },
+      {
+        "depth_km": 15,
+        "twt_avg_s": 7.698,
+        "vp_avg_km_s": 5.75,
+        "discrimination": "OPHIOLITE preferred \u2014 Vp outside granite range"
+      },
+      {
+        "depth_km": 16,
+        "twt_avg_s": 8.046,
+        "vp_avg_km_s": 5.75,
+        "discrimination": "OPHIOLITE preferred \u2014 Vp outside granite range"
+      },
+      {
+        "depth_km": 17,
+        "twt_avg_s": 8.394,
+        "vp_avg_km_s": 5.75,
+        "discrimination": "OPHIOLITE preferred \u2014 Vp outside granite range"
+      },
+      {
+        "depth_km": 18,
+        "twt_avg_s": 8.741,
+        "vp_avg_km_s": 5.75,
+        "discrimination": "OPHIOLITE preferred \u2014 Vp outside granite range"
+      },
+      {
+        "depth_km": 19,
+        "twt_avg_s": 9.089,
+        "vp_avg_km_s": 5.75,
+        "discrimination": "OPHIOLITE preferred \u2014 Vp outside granite range"
+      },
+      {
+        "depth_km": 20,
+        "twt_avg_s": 9.437,
+        "vp_avg_km_s": 5.75,
+        "discrimination": "OPHIOLITE preferred \u2014 Vp outside granite range"
+      },
+      {
+        "depth_km": 21,
+        "twt_avg_s": 9.785,
+        "vp_avg_km_s": 5.75,
+        "discrimination": "OPHIOLITE preferred \u2014 Vp outside granite range"
+      }
+    ]
+  },
+  "h4_discrimination_grid": {
+    "6km": {
+      "depth_km": 6,
+      "twt_s": 4.567,
+      "vp_km_s": 4.0,
+      "layer": "Deep Bongaya / base Tertiary",
+      "h4_flag": "H4_CONSISTENT"
+    },
+    "8km": {
+      "depth_km": 8,
+      "twt_s": 5.263,
+      "vp_km_s": 5.75,
+      "layer": "Ophiolite basement",
+      "h4_flag": "H4_CONSISTENT"
+    },
+    "10km": {
+      "depth_km": 10,
+      "twt_s": 5.959,
+      "vp_km_s": 5.75,
+      "layer": "Ophiolite basement",
+      "h4_flag": "H4_BORDERLINE"
+    },
+    "12km": {
+      "depth_km": 12,
+      "twt_s": 6.654,
+      "vp_km_s": 5.75,
+      "layer": "Ophiolite basement",
+      "h4_flag": "H4_BORDERLINE"
+    },
+    "15km": {
+      "depth_km": 15,
+      "twt_s": 7.698,
+      "vp_km_s": 5.75,
+      "layer": "Ophiolite basement",
+      "h4_flag": "H4_WEAKENED"
+    },
+    "18km": {
+      "depth_km": 18,
+      "twt_s": 8.741,
+      "vp_km_s": 5.75,
+      "layer": "Ophiolite basement",
+      "h4_flag": "H4_KILLED_IF_REFLECTOR_HERE"
+    },
+    "21km": {
+      "depth_km": 21,
+      "twt_s": 9.785,
+      "vp_km_s": 5.75,
+      "layer": "Ophiolite basement",
+      "h4_flag": "H4_KILLED_IF_REFLECTOR_HERE"
+    }
+  },
+  "twt_to_depth_lookup": {
+    "4.0s": {
+      "twt_s": 4.0,
+      "depth_m": 4865,
+      "depth_km": 4.87,
+      "layer": "Deep Bongaya / base Tertiary",
+      "vp_km_s": 4.0,
+      "h4_vs_h1": "supports_H4_shallow"
+    },
+    "5.0s": {
+      "twt_s": 5.0,
+      "depth_m": 7244,
+      "depth_km": 7.24,
+      "layer": "Ophiolite basement",
+      "vp_km_s": 5.75,
+      "h4_vs_h1": "supports_H4_shallow"
+    },
+    "5.5s": {
+      "twt_s": 5.5,
+      "depth_m": 8681,
+      "depth_km": 8.68,
+      "layer": "Ophiolite basement",
+      "vp_km_s": 5.75,
+      "h4_vs_h1": "supports_H4_shallow"
+    },
+    "6.0s": {
+      "twt_s": 6.0,
+      "depth_m": 10119,
+      "depth_km": 10.12,
+      "layer": "Ophiolite basement",
+      "vp_km_s": 5.75,
+      "h4_vs_h1": "intermediate_HOLD"
+    },
+    "6.5s": {
+      "twt_s": 6.5,
+      "depth_m": 11556,
+      "depth_km": 11.56,
+      "layer": "Ophiolite basement",
+      "vp_km_s": 5.75,
+      "h4_vs_h1": "intermediate_HOLD"
+    },
+    "7.0s": {
+      "twt_s": 7.0,
+      "depth_m": 12994,
+      "depth_km": 12.99,
+      "layer": "Ophiolite basement",
+      "vp_km_s": 5.75,
+      "h4_vs_h1": "intermediate_HOLD"
+    },
+    "7.5s": {
+      "twt_s": 7.5,
+      "depth_m": 14431,
+      "depth_km": 14.43,
+      "layer": "Ophiolite basement",
+      "vp_km_s": 5.75,
+      "h4_vs_h1": "intermediate_HOLD"
+    },
+    "8.0s": {
+      "twt_s": 8.0,
+      "depth_m": 15869,
+      "depth_km": 15.87,
+      "layer": "Ophiolite basement",
+      "vp_km_s": 5.75,
+      "h4_vs_h1": "kills_H4_favors_H1_H2"
+    },
+    "9.0s": {
+      "twt_s": 9.0,
+      "depth_m": 18744,
+      "depth_km": 18.74,
+      "layer": "Ophiolite basement",
+      "vp_km_s": 5.75,
+      "h4_vs_h1": "kills_H4_favors_H1_H2"
+    }
+  },
+  "bayesian_update_advisory": {
+    "H1_Oceanic": "SLIGHT_STRENGTHEN \u2014 layer model places 12\u201321 km in ophiolite basement Vp 5.0\u20136.5 (avg 5.75); granite bulk 5.8\u20136.0 not preferred at avg",
+    "H2_Detachment": "NEUTRAL \u2014 KT-8 already resolved as d\u00e9collement; depth convert does not kill H2",
+    "H3_Volcanic": "NEUTRAL \u2014 needs magnetic highs; not tested by depth convert",
+    "H4_Shale": "CONDITIONAL \u2014 if picked reflector depth > 15 km after convert, H4 is killed; if < 10 km, H4 survives. Model predicts ophiolite zone depths map to TWT 6.65\u20139.79 s",
+    "prior_unchanged_until_seismic_pick": true
+  },
+  "next_action": [
+    "Pick TWT of deep KT-7 / deep d\u00e9collement reflector on existing 2D (Franke line or KL2)",
+    "Map TWT through twt_to_depth_lookup (or re-run --twt X)",
+    "If depth_km > 15 \u2192 H4 killed; if depth_km < 10 \u2192 H4 consistent",
+    "Sync TZ KL2.xlsx to /root/GEOX/data/kl2 for Vo-K well-anchored model (proposal path)"
+  ],
+  "source": "GEOX sabah_basin_strat.yaml + Kinabalu proposal 2026-07-24 \u00a705.01"
+}

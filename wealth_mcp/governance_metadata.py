@@ -5,11 +5,18 @@ ZEN 2026-06-30: Every canonical tool now has explicit floor metadata.
 
 from __future__ import annotations
 
-from typing import ClassVar
-
 # Maps tool_name -> list of floors that gate this tool.
 # Derivation: arifOS F1-F13, WEALTH-specific risk profile per tool.
 CANONICAL_FLOORS: dict[str, list[str]] = {
+    # Live public capital surface
+    "capital_primitive": ["F1", "F2", "F7", "F11"],
+    "capital_health": ["F1", "F2", "F4", "F7", "F11", "F13"],
+    "capital_diagnose": ["F1", "F2", "F4", "F6", "F7", "F9", "F11", "F13"],
+    "capital_wisdom": ["F1", "F2", "F4", "F5", "F6", "F7", "F9", "F11", "F13"],
+    "capital_market": ["F1", "F2", "F7", "F11"],
+    "capital_ledger": ["F1", "F2", "F4", "F7", "F11", "F13"],
+    "capital_registry": ["F1", "F2", "F7", "F11"],
+    "capital_entropy": ["F1", "F2", "F4", "F6", "F7", "F9", "F11", "F13"],
     # Core primitives — computational only, low risk
     "wealth_compute_npv": ["F1", "F2", "F7", "F11"],
     "wealth_compute_irr": ["F1", "F2", "F7", "F11"],

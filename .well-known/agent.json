@@ -1,9 +1,9 @@
 {
   "$schema": "https://google.com/genai/a2a/agent-card/v1",
-  "arifos_internal_card": "/.well-known/agent-card.json",
+  "arifos_internal_card": "/.well-known/agent.json",
   "name": "WEALTH",
   "description": "Capital intelligence — NPV, EMV, valuation, risk scoring, portfolio optimization, collapse signatures, sovereign fiscal reasoning, and wisdom evaluation under F1-F13 constitutional floors. Evidence-only on computational primitives; arifOS 888_JUDGE owns the verdict.",
-  "version": "2026.07.11",
+  "version": "2026.07.19",
   "protocolVersion": "1.0.0",
   "url": "https://wealth.arif-fazil.com",
   "provider": {
@@ -39,10 +39,15 @@
     {"id": "capital_diagnose", "name": "Capital Diagnose", "description": "Institutional stress, governance, cascade, collapse signature, power, MWC — mode + payload."},
     {"id": "capital_wisdom", "name": "Capital Wisdom", "description": "Wisdom synthesis, omni path, epistemic audit — advisory only."},
     {"id": "capital_market", "name": "Capital Market", "description": "FX, commodity, indicator, stock (stock_payload)."},
-    {"id": "capital_ledger", "name": "Capital Ledger", "description": "VAULT999 query/write (write requires ack_irreversible)."},
-    {"id": "capital_registry", "name": "Capital Registry", "description": "Status, schema, domains, health for the 7-tool surface."}
+    {"id": "capital_ledger", "name": "Capital Ledger", "description": "VAULT999 query/write; write is C2/IRREVERSIBLE and requires ack_irreversible."},
+    {"id": "capital_registry", "name": "Capital Registry", "description": "Status, schema, domains, and health for the 8-tool capital family and 12-tool public surface."},
+    {"id": "capital_entropy", "name": "Capital Entropy", "description": "Optional entropy-integrity analysis with explicit UNAVAILABLE results when the local dependency is absent."},
+    {"id": "wealth_institutional_stress_index", "name": "Institutional Stress Index", "description": "Composite institutional stress scoring."},
+    {"id": "wealth_cascade_model", "name": "Cascade Model", "description": "Institutional stress feedback-loop trajectories."},
+    {"id": "wealth_governance_capacity", "name": "Governance Capacity", "description": "Governance capacity relative to stress."},
+    {"id": "wealth_external_exploitation_detect", "name": "External Exploitation Detect", "description": "Counterparty extraction pattern detection."}
   ],
-  "owned_mcp_count": 7,
+  "owned_mcp_count": 12,
   "can_do": [
     "Compute NPV/EMV/EVOI/IRR/Monte Carlo capital primitives",
     "Run stock analysis, personal finance, market data lookups",
@@ -61,7 +66,7 @@
   "constitutional_floors": ["F1_AMANAH","F2_TRUTH","F4_CLARITY","F7_HUMILITY","F9_ANTI_HANTU","F11_AUDIT","F13_SOVEREIGN"],
   "lane": "evidence_only",
   "self_judge": false,
-  "judge_authority": "arifOS arif_judge_deliberate",
+  "judge_authority": "arifOS arif_judge",
   "verdict_grammar": "SEAL | SABAR | HOLD | VOID",
   "ledger": "VAULT999",
   "seal_protocol": "arif_seal (irreversible hash chain, anchored)",
@@ -72,7 +77,7 @@
   "a2a_endpoints": {
     "health": "GET /health",
     "mcp": "POST /mcp",
-    "agent_card_internal": "GET /.well-known/agent-card.json"
+    "agent_card_internal": "GET /.well-known/agent.json"
   },
   "metadata": {
     "generated_at": "2026-07-04",

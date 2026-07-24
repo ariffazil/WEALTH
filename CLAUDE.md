@@ -1,32 +1,27 @@
 # CLAUDE.md — WEALTH Agent Instructions
 
-> **Canonical agent instruction file:** `/root/AAA/CLAUDE.md`
+> **Canonical federation instruction file:** `/root/AAA/CLAUDE.md`
 > **WEALTH organ** of the arifOS federation.
-> **Port:** 18082 | **Version:** 2026.07.12 | **Transport:** streamable-http
+> **Port:** 18082 | **Identity version:** 2026.07.19 | **Transport:** streamable-http
 
 ## What WEALTH Is
 
-The **capital intelligence organ** of the arifOS federation. It computes:
+The **capital intelligence organ** of the arifOS federation. It computes financial math, market observations, risk, wisdom, and institutional diagnostics. It never allocates capital or issues the final governance verdict.
 
-- **D1 Personal Finance** — cashflow, net worth, EPF, zakat, runway
-- **D3 Market Data** — FX rates, commodities, macro indicators (delegates to `internal/market_data.py`)
-- **D4 Stock Analysis** — 12-mode capital-risk governance (verify_math, pre_trade, fundamentals, TAC-9, contrast, confluence)
-- **Ω-domain physics** — conservation, flow, gradient, entropy, energy, time, inertia, field, signal, game, boundary, hysteresis
-- **Collapse Signature** — enron corpus + institutional failure forensics
+The public MCP surface has **12 tools**: 8 mode-dispatched `capital_*` tools and 4 institutional compatibility tools. Authenticated `tools/list` is final truth.
 
-**Canonical MCP tools** (verify with `tools/list` at runtime). Internal alias tools for routing only.
-Canonical FastMCP server at `internal/monolith.py`.
+Canonical entrypoint: `server_federated.py` → `wealth_mcp/server.py`.
+`internal/monolith.py` remains a legacy implementation library and must not be deleted.
 
 ## Authority & Autonomy
 
 ### Autonomous
-- Modify Python/JS logic, add tools, refactor
-- Run tests, fix bugs, update schemas
-- Restart service (systemctl restart wealth-organ)
+- Modify Python/JS logic, tools, and schemas within task scope
+- Run tests and fix bugs
 
 ### Requires 888_HOLD
 - Cross-repo API contract changes
-- Adding buy/sell oracle tools (WEALTH computes, Arif decides)
+- Capital execution or allocation authority
 - Production deploy without verified build + test pass
 
 ## Build & Test
@@ -34,10 +29,9 @@ Canonical FastMCP server at `internal/monolith.py`.
 ```bash
 cd /root/WEALTH
 uv sync --frozen
-python internal/monolith.py          # Start canonical server (port 18082)
-pytest tests/ -q --tb=short          # Python tests
-npm test                              # Node.js legacy tests
-npm run boot                          # node cli.js boot
+python server_federated.py             # Start canonical server on :18082
+pytest tests/ -q --tb=short
+npm test                               # Legacy Node.js tests
 ```
 
 ## Health Check
@@ -45,44 +39,37 @@ npm run boot                          # node cli.js boot
 ```bash
 systemctl status wealth-organ
 curl -s http://127.0.0.1:18082/health | python3 -m json.tool
+curl -s http://127.0.0.1:18082/tools | python3 -m json.tool
 ```
 
-## Federation Position (canonical organ map)
+## Federation Position
 
 ```
-Arif (F13 SOVEREIGN)
-    ↓
-AAA / Hermes / OpenClaw (A2A)
-    ↓
-arifOS KERNEL (F1-F13, :8088)
-    ↓
-WEALTH (CAPITAL, :18082)  ← computes, never allocates
-    ↓
-A-FORGE (:7071)  ← executes after SEAL
-    ↓
-VAULT999  ← immutable record
+Arif (F13) → AAA → arifOS (:8088) → WEALTH (:18082) → A-FORGE → VAULT999
 ```
 
-WEALTH provides **evidence-only**. It computes. It never allocates, never executes, never judges.
+WEALTH provides evidence and computation. arifOS judges. Arif decides.
 
-## Key Directories
+## Key Paths
 
 | Path | Purpose |
 |------|---------|
-| `internal/monolith.py` | Canonical kernel — public MCP surface |
-| `internal/stock/` | D4 Stock Analysis — 12 modes |
-| `internal/market_data.py` | D3 FX/commodities/macro |
-| `internal/personal_finance.py` | D1 cashflow/EPF/zakat |
-| `internal/engines/` | Advisory, five seals, canonical tools |
-| `wealth_core/collapse_signature/` | Enron corpus + institutional failure forensics |
-| `src/` | Legacy JS/Node kernel |
-| `capitalx/` | Constitutional capital pricing engine |
+| `server_federated.py` | Canonical HTTP entrypoint and health identity |
+| `wealth_mcp/server.py` | FastMCP registration, governance wrapper, receipts, resources |
+| `wealth_mcp/tools/canonical.py` | 8 canonical `capital_*` tools |
+| `wealth_mcp/tools/institutional.py` | 4 institutional compatibility tools |
+| `internal/monolith.py` | Legacy implementation library; preserve |
+| `internal/engines/` | Advisory, five seals, canonical tools; preserve |
+| `mcp/server.py` | Supplemental demo surface; preserve |
 | `host/` | Modular Python libraries |
+| `tests/` | Python verification |
 
-## Stale SOT Files
+## Safety Truths
 
-- ~~CLAUDE.md~~ — ✅ Updated 2026-07-01
-- ~~RUNBOOK.md~~ — ✅ Updated 2026-07-01
+- `capital_ledger(mode="write")` is C2/IRREVERSIBLE; query is read-only.
+- Receipt and ledger targets must be pre-provisioned; code must not silently create or claim persistence.
+- `capital_entropy` returns structured `UNAVAILABLE` when its local optional dependency is absent.
+- `/health` must not present `.git_commit` fallback data as a live source SHA.
 
 ---
 

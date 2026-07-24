@@ -38,6 +38,9 @@ tools:
   capital_ledger:
     kind: ledger
     modes: [query, write]
+    action_class: IRREVERSIBLE
+    risk_class: C2
+    query_override: READONLY
   capital_registry:
     kind: meta
     modes: [status, schema, domains, health]

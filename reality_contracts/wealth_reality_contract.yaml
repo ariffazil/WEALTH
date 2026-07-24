@@ -295,12 +295,110 @@ gates:
     implementation: wealth_gates.py::gap10_pre_trade_gate
 
 # ════════════════════════════════════════════════════════════════════
-# 5. TOOL CONTRACTS (the 20 public tools + their class/floor bindings)
+# 5. TOOL CONTRACTS (the 12 public tools + their class/floor bindings)
 # ════════════════════════════════════════════════════════════════════
-# Sourced from WEALTH/TOOL_SURFACE.md + PUBLIC_SURFACE_WHITELIST in monolith.py
+# Sourced from contracts/tools.yaml + wealth_mcp/__init__.py.
 
 tools:
-  # ── L0: Kernel Surface ──
+  - name: capital_primitive
+    action_class: COMPUTE
+    risk_class: READONLY
+    floors: [F1, F2, F7, F11]
+    purpose: "Deductive capital primitives"
+    reversal: instant
+    audit: structured_event
+
+  - name: capital_health
+    action_class: COMPUTE
+    risk_class: READONLY
+    floors: [F1, F2, F4, F7, F11, F13]
+    purpose: "Capital conservation, flow, runway, and survival"
+    reversal: instant
+    audit: structured_event
+
+  - name: capital_diagnose
+    action_class: SIMULATE
+    risk_class: C1
+    floors: [F1, F2, F4, F6, F7, F9, F11, F13]
+    purpose: "Institutional diagnostics"
+    reversal: instant
+    audit: structured_event
+
+  - name: capital_wisdom
+    action_class: SUGGEST
+    risk_class: C1
+    floors: [F1, F2, F4, F5, F6, F7, F9, F11, F13]
+    purpose: "Advisory capital wisdom"
+    reversal: instant
+    audit: structured_event
+
+  - name: capital_market
+    action_class: OBSERVE
+    risk_class: READONLY
+    floors: [F1, F2, F7, F11]
+    purpose: "Market observation and derived indicators"
+    reversal: instant
+    audit: structured_event
+
+  - name: capital_ledger
+    action_class: IRREVERSIBLE
+    risk_class: C2
+    query_override: READONLY
+    floors: [F1, F2, F4, F7, F11, F13]
+    purpose: "VAULT999 query/write; write requires arifOS SEAL and human acknowledgment"
+    reversal: none
+    audit: VAULT999_receipt
+
+  - name: capital_registry
+    action_class: OBSERVE
+    risk_class: READONLY
+    floors: [F1, F2, F7, F11]
+    purpose: "Live registry and health introspection"
+    reversal: instant
+    audit: structured_event
+
+  - name: capital_entropy
+    action_class: SIMULATE
+    risk_class: C1
+    floors: [F1, F2, F4, F6, F7, F9, F11, F13]
+    purpose: "Optional entropy-integrity analysis; unavailable when dependency is absent"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_institutional_stress_index
+    action_class: SIMULATE
+    risk_class: C1
+    floors: [F1, F2, F4, F6, F7, F11]
+    purpose: "Institutional stress score"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_cascade_model
+    action_class: SIMULATE
+    risk_class: C1
+    floors: [F1, F2, F4, F6, F7, F11]
+    purpose: "Institutional feedback-loop trajectory"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_governance_capacity
+    action_class: SIMULATE
+    risk_class: C1
+    floors: [F1, F2, F4, F6, F7, F11]
+    purpose: "Governance capacity relative to stress"
+    reversal: instant
+    audit: structured_event
+
+  - name: wealth_external_exploitation_detect
+    action_class: SIMULATE
+    risk_class: C1
+    floors: [F1, F2, F4, F6, F7, F9, F11]
+    purpose: "Counterparty extraction pattern detection"
+    reversal: instant
+    audit: structured_event
+
+legacy_tool_contracts:
+  # Historical monolith mappings retained for audit only.
   - name: wealth_system_registry_status
     action_class: OBSERVE
     floors: [F2, F4, F11]
@@ -503,7 +601,7 @@ cross_organ_allowed:
   - from: WEALTH
     to: arifOS_kernel
     via: MCP
-    allowed_tools: [arif_session_init, arif_judge_deliberate, arif_vault_seal, arif_organ_attest]
+    allowed_tools: [arif_init, arif_judge, arif_seal, arif_organ_attest]
     purpose: "Constitutional supervision, judge deliberation, vault seal"
     constraints: [floor_chain_inherited, audit_structured_event]
 

@@ -21,7 +21,20 @@ ARIFOS_KERNEL_URL = os.environ.get("ARIFOS_KERNEL_URL", "http://127.0.0.1:8088")
 
 # Risk classification for WEALTH tools
 WEALTH_RISK_TIERS = {
-    # C2/IRREVERSIBLE — require arifOS judgment
+    # Live public capital surface
+    "capital_primitive": "readonly",
+    "capital_health": "readonly",
+    "capital_diagnose": "c1",
+    "capital_wisdom": "c1",
+    "capital_market": "readonly",
+    "capital_ledger": "c2",  # write is irreversible; query is resolved read-only below
+    "capital_registry": "readonly",
+    "capital_entropy": "c1",
+    "wealth_institutional_stress_index": "c1",
+    "wealth_cascade_model": "c1",
+    "wealth_governance_capacity": "c1",
+    "wealth_external_exploitation_detect": "c1",
+    # C2/IRREVERSIBLE legacy aliases — require arifOS judgment
     "wealth_vault_write": "c2",  # VAULT999 write, irreversible
     "wealth_ledger_write": "c2",  # VAULT999 write, irreversible
     "wealth_ledger_snapshot": "c2",  # VAULT999 write, irreversible
@@ -54,7 +67,7 @@ def _call_arifOS_judge(
     tool_name: str, arguments: dict, actor_id: str, session_id: Optional[str] = None
 ) -> Tuple[str, Optional[dict]]:
     """
-    Call arifOS kernel arif_judge_deliberate.
+    Call arifOS kernel arif_judge.
     Returns (verdict, error_response).
     error_response is not None if call failed or returned HOLD/VOID.
     """
@@ -75,7 +88,7 @@ def _call_arifOS_judge(
         "id": 1,
         "method": "tools/call",
         "params": {
-            "name": "arif_judge_deliberate",
+            "name": "arif_judge",
             "arguments": {
                 "mode": "judge",
                 "candidate": candidate,
@@ -125,6 +138,8 @@ def check_governance(
       (contains the HOLD/VOID response to return to caller)
     """
     risk = WEALTH_RISK_TIERS.get(tool_name, "c1")
+    if tool_name == "capital_ledger" and str(arguments.get("mode", "")).lower() == "query":
+        risk = "readonly"
 
     # READONLY tools: execute without governance check
     if risk == "readonly":

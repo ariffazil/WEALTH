@@ -10,7 +10,8 @@ test:
 	PYTHONPATH=. $(PYTHON) -m pytest tests/ -q --tb=short || true
 
 lint:
-	$(PYTHON) -m ruff check . || true
+	@files=$$(git diff --name-only --diff-filter=AM HEAD | grep '\.py$$' || true); \
+	if [ -n "$$files" ]; then ruff check $$files; else echo "No Python files changed."; fi
 
 format:
 	$(PYTHON) -m ruff format . || true

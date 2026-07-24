@@ -44,7 +44,7 @@ Contract: https://arifos.arif-fazil.com · `/root/FEDERATION_CONTRACT.md`
 | `/data/wealth/latest.json` | Daily capital market snapshot (public site) |
 | `/data/wealth/petronas_vitals.json` | PETRONAS·φ pulse compute mirror |
 | Human vitals UI | https://arif-fazil.com/vitals/ |
-| Agent card | `/.well-known/agent-card.json` (repo) |
+| Agent card | `/.well-known/agent.json` (consolidated federation card) |
 
 **Truth rule:** live `tools/list` and `/health` beat static prose.
 
