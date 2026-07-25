@@ -96,7 +96,17 @@ const handlers = {
         usmyr: macro.usmyr,
       } : {},
     };
-    const canonical = JSON.stringify(unsigned, Object.keys(unsigned).sort());
+    // Deep-sort for deterministic hash matching Python json.dumps(sort_keys=True)
+    const deepSort = (obj) => {
+      if (Array.isArray(obj)) return obj.map(deepSort);
+      if (obj !== null && typeof obj === 'object') {
+        const s = {};
+        Object.keys(obj).sort().forEach(k => { s[k] = deepSort(obj[k]); });
+        return s;
+      }
+      return obj;
+    };
+    const canonical = JSON.stringify(deepSort(unsigned));
     unsigned.coherence_id = crypto.createHash('sha256').update(canonical).digest('hex');
     setCache('snapshot', unsigned); return unsigned;
   },
