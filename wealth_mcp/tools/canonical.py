@@ -916,6 +916,31 @@ def register_canonical_tools(mcp):
             else:
                 raw = await call_engine(m, engine_op)
 
+            # ── FLAME Enrichment (P2, 2026-07-25) ─────────────────────
+            # For signal/daily modes, enrich raw engine output with FLAME
+            # natural-language interpretation. FLAME is ADVISORY only —
+            # it NEVER generates buy/sell/hold recommendations.
+            flame_signal = None
+            if engine_op in ("signal_v2", "daily_brief"):
+                try:
+                    from tools.flame_client import flame_market_signal
+
+                    raw_str = json.dumps(raw) if isinstance(raw, dict) else str(raw)
+                    flame_signal = flame_market_signal(
+                        raw_str, commodity=m, timeout_s=8
+                    )
+                except Exception:
+                    pass  # FLAME is optional — never block on failure
+
+            result = raw
+            if flame_signal:
+                result = {
+                    "engine_output": raw,
+                    "flame_interpretation": flame_signal,
+                    "_note": "FLAME interpretation is ADVISORY only. "
+                    "Verify with governed cascade before any capital decision.",
+                }
+
             return wrap_result(
                 tool_name="capital_market",
                 domain="capital",
@@ -1024,7 +1049,9 @@ def register_canonical_tools(mcp):
                 result=raw,
                 epistemic_tag=EpistemicTag.OBSERVED,
                 evidence_quality=(
-                    EvidenceQuality.OBSERVED if persisted else EvidenceQuality.SPECULATED
+                    EvidenceQuality.OBSERVED
+                    if persisted
+                    else EvidenceQuality.SPECULATED
                 ),
                 execution_authority=(
                     ExecutionAuthority.OBSERVATION
