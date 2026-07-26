@@ -25,9 +25,10 @@ jobs:
       - name: Validate FEDERATION.md
         run: |
           test -f FEDERATION.md || (echo "❌ Missing FEDERATION.md" && exit 1)
-          grep -q "role: DOMAIN" FEDERATION.md || (echo "❌ Missing role: DOMAIN" && exit 1)
-          grep -q "layer: L3" FEDERATION.md || (echo "❌ Missing layer: L3" && exit 1)
-          echo "✅ WEALTH FEDERATION.md valid — L3 DOMAIN"
+          grep -q "role: CAPITAL" FEDERATION.md || (echo "❌ Missing role: CAPITAL" && exit 1)
+          grep -q "layer: L5" FEDERATION.md || (echo "❌ Missing layer: L5" && exit 1)
+          grep -q "mcp:" FEDERATION.md || (echo "❌ Missing mcp:" && exit 1)
+          echo "✅ WEALTH FEDERATION.md valid — L5 CAPITAL"
 
   protocol-alignment:
     name: 📋 Protocol Alignment
