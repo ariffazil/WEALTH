@@ -64,7 +64,3 @@ dev = [
 [tool.setuptools.packages.find]
 include = ["wealth_*"]
 exclude = ["wealth_valuation_kernel.egg-info"]
-
-[tool.pytest.ini_options]
-norecursedirs = ["node_modules", ".git", "__pycache__", ".venv"]
-addopts = "--ignore=CLAUDE.md --ignore=AGENTS.md --ignore=CONTEXT.md --ignore=RUNBOOK.md"
