@@ -1,0 +1,592 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-07-25T23:05:14+00:00",
+  "generator": "scripts/build_archive_index.py",
+  "organ": "WEALTH",
+  "parity_invariant": "Every entry in this index corresponds to a real file on disk. Dates are extracted from filenames only \u2014 never fabricated.",
+  "advertised_dates": [
+    "2026-02-26",
+    "2026-02-28",
+    "2026-03-01",
+    "2026-05-19",
+    "2026-06-12",
+    "2026-06-27",
+    "2026-07-15"
+  ],
+  "counts_by_kind": {
+    "seals": 2,
+    "contracts_legacy": 1,
+    "docs": 57,
+    "genesis_readme_archive": 3
+  },
+  "total_entries": 63,
+  "entries": [
+    {
+      "kind": "seals",
+      "label": "VAULT999 sealed archive",
+      "path": "999_vault/archive/seals/2026-06-12-bursa-global-forge.md",
+      "absolute_path": "/root/WEALTH/999_vault/archive/seals/2026-06-12-bursa-global-forge.md",
+      "size_bytes": 754,
+      "sha256_short": "2d3ff7afc75a90be",
+      "extracted_date": "2026-06-12"
+    },
+    {
+      "kind": "seals",
+      "label": "VAULT999 sealed archive",
+      "path": "999_vault/archive/seals/2026-06-12-fff-999-engine.md",
+      "absolute_path": "/root/WEALTH/999_vault/archive/seals/2026-06-12-fff-999-engine.md",
+      "size_bytes": 620,
+      "sha256_short": "319cd0375c22c350",
+      "extracted_date": "2026-06-12"
+    },
+    {
+      "kind": "contracts_legacy",
+      "label": "Legacy contract snapshots",
+      "path": "contracts/archive/tools.yaml.monolith-legacy-2026-05-19",
+      "absolute_path": "/root/WEALTH/contracts/archive/tools.yaml.monolith-legacy-2026-05-19",
+      "size_bytes": 11543,
+      "sha256_short": "7e65dfa98f340002",
+      "extracted_date": "2026-05-19"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/01-suara-makcikgpt.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/01-suara-makcikgpt.md",
+      "size_bytes": 2116,
+      "sha256_short": "629838a43bc91c31",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/03-ujian-keselamatan.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/03-ujian-keselamatan.md",
+      "size_bytes": 1953,
+      "sha256_short": "25c4fdebd7fff2f2",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/888-hold-log.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/888-hold-log.md",
+      "size_bytes": 702,
+      "sha256_short": "973f1f75f5da73ab",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/RELEASE_NOTES_2026.05.16.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/RELEASE_NOTES_2026.05.16.md",
+      "size_bytes": 1501,
+      "sha256_short": "92b82ec82649d211",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/RELEASE_NOTES_2026.05.22.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/RELEASE_NOTES_2026.05.22.md",
+      "size_bytes": 1445,
+      "sha256_short": "ff3f96414ee7ae0f",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/REPO_HYGIENE_AUDIT_2026-05-21.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/REPO_HYGIENE_AUDIT_2026-05-21.md",
+      "size_bytes": 1705,
+      "sha256_short": "597489e00a997594",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/SPLIT_PLAN.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/SPLIT_PLAN.md",
+      "size_bytes": 7470,
+      "sha256_short": "16e20bb58df7b41c",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/TODO.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/TODO.md",
+      "size_bytes": 3632,
+      "sha256_short": "65d7c61e37f44b46",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/VAULT999_WEALTH_MCP_FIX.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/VAULT999_WEALTH_MCP_FIX.md",
+      "size_bytes": 3089,
+      "sha256_short": "e7667139a3bcb14b",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/WEALTH_NEXT_HORIZON.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/WEALTH_NEXT_HORIZON.md",
+      "size_bytes": 12242,
+      "sha256_short": "db927ef6bfbf6b37",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/WEALTH_NEXT_HORIZON_BLUEPRINT_FINAL.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/WEALTH_NEXT_HORIZON_BLUEPRINT_FINAL.md",
+      "size_bytes": 2893,
+      "sha256_short": "4c85300a2b8af11c",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/WEALTH_NEXT_HORIZON_BLUEPRINT_v2026.05.07.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/WEALTH_NEXT_HORIZON_BLUEPRINT_v2026.05.07.md",
+      "size_bytes": 36147,
+      "sha256_short": "6d88cb24cb50246e",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/first-loop-checklist.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/first-loop-checklist.md",
+      "size_bytes": 3147,
+      "sha256_short": "8f9af86c1c22ec6d",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/repo-role-boundary.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/repo-role-boundary.md",
+      "size_bytes": 1180,
+      "sha256_short": "12305446d4197b41",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/waw-envelope-spec.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/waw-envelope-spec.md",
+      "size_bytes": 4484,
+      "sha256_short": "a3a146163093a4df",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/entropy-2026-07-15/wealth-basis-spec.md",
+      "absolute_path": "/root/WEALTH/docs/archive/entropy-2026-07-15/wealth-basis-spec.md",
+      "size_bytes": 3052,
+      "sha256_short": "6b9fe921a6a4e74e",
+      "extracted_date": "2026-07-15"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/memory/2026-02-26.md",
+      "absolute_path": "/root/WEALTH/docs/archive/memory/2026-02-26.md",
+      "size_bytes": 1170,
+      "sha256_short": "3e6c4b4de1f28639",
+      "extracted_date": "2026-02-26"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/memory/2026-02-28-archive-agent-main-main.md",
+      "absolute_path": "/root/WEALTH/docs/archive/memory/2026-02-28-archive-agent-main-main.md",
+      "size_bytes": 201,
+      "sha256_short": "c8f5b37c1550f22e",
+      "extracted_date": "2026-02-28"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/memory/2026-02-28-boot-check.md",
+      "absolute_path": "/root/WEALTH/docs/archive/memory/2026-02-28-boot-check.md",
+      "size_bytes": 29850,
+      "sha256_short": "b14aa576e01b39fa",
+      "extracted_date": "2026-02-28"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/memory/2026-02-28.md",
+      "absolute_path": "/root/WEALTH/docs/archive/memory/2026-02-28.md",
+      "size_bytes": 2982,
+      "sha256_short": "1597380a176404a9",
+      "extracted_date": "2026-02-28"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/memory/2026-03-01.md",
+      "absolute_path": "/root/WEALTH/docs/archive/memory/2026-03-01.md",
+      "size_bytes": 512,
+      "sha256_short": "6efdb15f5151725d",
+      "extracted_date": "2026-03-01"
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/raw/ARCHITECTURE.md",
+      "absolute_path": "/root/WEALTH/docs/archive/raw/ARCHITECTURE.md",
+      "size_bytes": 7525,
+      "sha256_short": "5c7e4ee63d78afba",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/raw/CANON.md",
+      "absolute_path": "/root/WEALTH/docs/archive/raw/CANON.md",
+      "size_bytes": 4836,
+      "sha256_short": "50945570b2ed4354",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/raw/CANON_LAW.md",
+      "absolute_path": "/root/WEALTH/docs/archive/raw/CANON_LAW.md",
+      "size_bytes": 4911,
+      "sha256_short": "25f634ae2e3127bd",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/raw/COSMOLOGY.md",
+      "absolute_path": "/root/WEALTH/docs/archive/raw/COSMOLOGY.md",
+      "size_bytes": 5238,
+      "sha256_short": "c4bb5d30faf8d508",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/raw/POST_AGI_ECONOMICS_MANIFESTO.md",
+      "absolute_path": "/root/WEALTH/docs/archive/raw/POST_AGI_ECONOMICS_MANIFESTO.md",
+      "size_bytes": 2643,
+      "sha256_short": "1e2db42c17bea9c2",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/raw/STRATEGY.md",
+      "absolute_path": "/root/WEALTH/docs/archive/raw/STRATEGY.md",
+      "size_bytes": 1467,
+      "sha256_short": "3172f6477421c0b5",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/raw/TRINITY.md",
+      "absolute_path": "/root/WEALTH/docs/archive/raw/TRINITY.md",
+      "size_bytes": 17160,
+      "sha256_short": "1de49baae3167bfe",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/raw/WAW_WEALTH_OVERVIEW.md",
+      "absolute_path": "/root/WEALTH/docs/archive/raw/WAW_WEALTH_OVERVIEW.md",
+      "size_bytes": 5683,
+      "sha256_short": "271f176140ab1ec5",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/capitalx-risk-pricing-engine.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/capitalx-risk-pricing-engine.md",
+      "size_bytes": 2073,
+      "sha256_short": "0bdd1b5d777e69da",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/civilizational-mcp-architecture.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/civilizational-mcp-architecture.md",
+      "size_bytes": 1930,
+      "sha256_short": "0c1cc52de409dc3b",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/concept-12-foundations.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/concept-12-foundations.md",
+      "size_bytes": 1258,
+      "sha256_short": "e13058d4bce6b9fc",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/concept-888-hold.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/concept-888-hold.md",
+      "size_bytes": 1287,
+      "sha256_short": "99075524a2effcee",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/concept-999-seal.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/concept-999-seal.md",
+      "size_bytes": 1115,
+      "sha256_short": "7511333ac27dea3e",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/concept-contextual-vitality.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/concept-contextual-vitality.md",
+      "size_bytes": 1263,
+      "sha256_short": "1c0c7148da4838fa",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/concept-cooling-prosperity.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/concept-cooling-prosperity.md",
+      "size_bytes": 1120,
+      "sha256_short": "59ea2f01a92c7b3b",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/concept-maruah.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/concept-maruah.md",
+      "size_bytes": 1368,
+      "sha256_short": "79bbf9db0d44f0de",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/concept-post-agi-economics.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/concept-post-agi-economics.md",
+      "size_bytes": 1880,
+      "sha256_short": "831194ffb8cb4855",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/concept-proxy-efficiency-test.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/concept-proxy-efficiency-test.md",
+      "size_bytes": 1296,
+      "sha256_short": "dc8e0abb765c6e2a",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/concept-stewardship-shift.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/concept-stewardship-shift.md",
+      "size_bytes": 1077,
+      "sha256_short": "859b0ed5b9e63ac8",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/concept-thermodynamic-ethics.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/concept-thermodynamic-ethics.md",
+      "size_bytes": 1137,
+      "sha256_short": "ca8de7dd098fffde",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/cosmology.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/cosmology.md",
+      "size_bytes": 1373,
+      "sha256_short": "0f48f384451b0379",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/entity-arifos.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/entity-arifos.md",
+      "size_bytes": 2043,
+      "sha256_short": "b593498a72d0790a",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/entity-waw-federation.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/entity-waw-federation.md",
+      "size_bytes": 1364,
+      "sha256_short": "c88921bcfa03a07d",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/entity-wealth.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/entity-wealth.md",
+      "size_bytes": 1930,
+      "sha256_short": "4118ff470eb2fbf4",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/index.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/index.md",
+      "size_bytes": 4861,
+      "sha256_short": "6f381ada1af07060",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/knowledge-spine.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/knowledge-spine.md",
+      "size_bytes": 1994,
+      "sha256_short": "2f8e5fcb8ee963a6",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/layered-architecture.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/layered-architecture.md",
+      "size_bytes": 2304,
+      "sha256_short": "b303b8f834aedd36",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/log.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/log.md",
+      "size_bytes": 5172,
+      "sha256_short": "2ad8142a956812f6",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/mcp-server-packaging.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/mcp-server-packaging.md",
+      "size_bytes": 1711,
+      "sha256_short": "826302f1d6f4129a",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/source-architecture.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/source-architecture.md",
+      "size_bytes": 863,
+      "sha256_short": "c9547365839813e7",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/source-cosmology.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/source-cosmology.md",
+      "size_bytes": 594,
+      "sha256_short": "3be3dbab5ded6b1e",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/source-post-agi-manifesto.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/source-post-agi-manifesto.md",
+      "size_bytes": 936,
+      "sha256_short": "8876e5bd4d7ba3dc",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/source-strategy.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/source-strategy.md",
+      "size_bytes": 757,
+      "sha256_short": "b8df973b55f8dc94",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/source-trinity.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/source-trinity.md",
+      "size_bytes": 761,
+      "sha256_short": "f078c80aa66ea324",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/source-waw-wealth-overview.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/source-waw-wealth-overview.md",
+      "size_bytes": 790,
+      "sha256_short": "c741abb8f059f4c7",
+      "extracted_date": null
+    },
+    {
+      "kind": "docs",
+      "label": "Archived docs / memory / wiki / raw",
+      "path": "docs/archive/wiki/synthesis-foundations-of-wealth.md",
+      "absolute_path": "/root/WEALTH/docs/archive/wiki/synthesis-foundations-of-wealth.md",
+      "size_bytes": 6968,
+      "sha256_short": "055f4d01a83ad44b",
+      "extracted_date": null
+    },
+    {
+      "kind": "genesis_readme_archive",
+      "label": "Genesis README snapshots",
+      "path": "GENESIS/011_WEALTH_MANDATE.md",
+      "absolute_path": "/root/WEALTH/GENESIS/011_WEALTH_MANDATE.md",
+      "size_bytes": 1213,
+      "sha256_short": "08b88002efc716e6",
+      "extracted_date": null
+    },
+    {
+      "kind": "genesis_readme_archive",
+      "label": "Genesis README snapshots",
+      "path": "GENESIS/README-archive-2026-06-27.md",
+      "absolute_path": "/root/WEALTH/GENESIS/README-archive-2026-06-27.md",
+      "size_bytes": 66674,
+      "sha256_short": "a6f7e2ac39107db0",
+      "extracted_date": "2026-06-27"
+    },
+    {
+      "kind": "genesis_readme_archive",
+      "label": "Genesis README snapshots",
+      "path": "GENESIS/README.md",
+      "absolute_path": "/root/WEALTH/GENESIS/README.md",
+      "size_bytes": 1719,
+      "sha256_short": "4ee15d998f12ec5f",
+      "extracted_date": null
+    }
+  ]
+}
