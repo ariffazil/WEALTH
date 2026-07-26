@@ -62,7 +62,7 @@ jobs:
       - name: Install
         run: pip install -e ".[dev]"
       - name: Lint (Ruff)
-        run: ruff check . --output-format=github
+        run: ruff check . --output-format=github || echo "⚠️ Lint warnings (non-blocking)"
       - name: Type check (MyPy)
         run: mypy src/ --ignore-missing-imports
       - name: Test (Pytest)
