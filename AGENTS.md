@@ -1,3 +1,6 @@
+<!-- CANONICAL: /root/AGENTS.md -->
+<!-- Status: DERIVED — organ-specific extension. Authoritative doctrine: /root/AGENTS.md -->
+
 <!-- SOT-MANIFEST
 owner: Arif
 last_verified: 2026-07-24
