@@ -45,8 +45,8 @@ jobs:
             bash AAA/scripts/check_protocol_alignment.sh
           else
             echo "ℹ️ Protocol alignment script not found — running basic checks"
-            grep -q "role: DOMAIN" FEDERATION.md || (echo "❌ Missing role" && exit 1)
-            grep -q "layer: L3" FEDERATION.md || (echo "❌ Missing layer" && exit 1)
+            grep -q "role: CAPITAL" FEDERATION.md || (echo "❌ Missing role" && exit 1)
+            grep -q "layer: L5" FEDERATION.md || (echo "❌ Missing layer" && exit 1)
             echo "✅ Basic protocol alignment passed"
           fi
 
