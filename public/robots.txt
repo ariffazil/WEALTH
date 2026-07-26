@@ -1,5 +1,8 @@
-# MakCikGPT — AI & Web Crawler Guidelines
-# https://makcikgpt.arif-fazil.com
+# WEALTH — Capital Intelligence Organ (arifOS Federation)
+# Public domain: https://wealth.arif-fazil.com
+# Draft personas (e.g. makcikgpt.arif-fazil.com) are NOT part of this surface.
+# See /.well-known/agent.json for the canonical organ card and
+# /llms.txt for the machine-readable agent map.
 
 # ============================================
 # AI-SPECIFIC CRAWLERS (Explicit Allow)
@@ -44,9 +47,6 @@ Crawl-delay: 1
 User-agent: Googlebot
 Allow: /
 
-User-agent: Bingbot
-Allow: /
-
 User-agent: DuckDuckBot
 Allow: /
 
@@ -69,10 +69,10 @@ Disallow: /node_modules/
 # SITEMAPS
 # ============================================
 
-Sitemap: https://makcikgpt.arif-fazil.com/sitemap.xml
+Sitemap: https://wealth.arif-fazil.com/sitemap.xml
 
 # ============================================
-# LLM-FRIENDLY MANIFEST
+# LLM-FRIENDLY MANIFESTS
 # ============================================
-# For LLMs: See https://makcikgpt.arif-fazil.com/llms.txt
-# For MCP: See https://makcikgpt.arif-fazil.com/.well-known/mcp.json
+# For LLMs: See https://wealth.arif-fazil.com/llms.txt
+# For MCP: See https://wealth.arif-fazil.com/.well-known/mcp.json
