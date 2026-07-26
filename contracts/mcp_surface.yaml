@@ -75,6 +75,38 @@ artifact_policy:
   human_readable: required_for_memos
   evidence_refs: required
   assumption_limits: required
+public_discovery_routes:
+  # Routes advertised by public/sitemap.xml and rendered by site/build.py.
+  # Source of truth = site/dist/{...} — every route here MUST have a real file.
+  # The makcikgpt DRAFT_ONLY persona is intentionally excluded.
+  apex:
+    - path: /
+      source: organ home (llms.txt)
+    - path: /llms.txt
+      source: public/llms.txt
+    - path: /.well-known/agent.json
+      source: .well-known/agent.json (organ public agent card)
+    - path: /.well-known/mcp.json
+      source: .well-known/mcp.json (MCP registry manifest)
+    - path: /health
+      source: server_federated.py
+    - path: /mcp
+      source: server_federated.py (FastMCP streamable-http)
+    - path: /data/wealth/latest.json
+      source: federated data layer
+    - path: /data/wealth/petronas_vitals.json
+      source: wealth_core/petronas_vitals.py
+  terminal:
+    - path: /wealth/
+      source: site/dist/wealth/index.html (terminal home)
+    - path: /wealth/llms.txt
+      source: site/dist/wealth/llms.txt
+    - path: /wealth/gold/
+      source: site/dist/gold/index.html (XAUUSD workspace)
+    - path: /wealth/oil/
+      source: site/dist/oil/index.html (Brent crude workspace)
+    - path: /wealth/gas/
+      source: site/dist/gas/index.html (Henry Hub workspace)
 hold_conditions:
   - missing_financial_evidence
   - large_hedge_drag
