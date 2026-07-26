@@ -7,6 +7,12 @@
 # Truth rule: authenticated tools/list beats this file if they disagree.
 #
 # Do NOT count modes as separate tools. Do NOT claim "50 public tools."
+#
+# Public discovery routes (advertised by public/sitemap.xml):
+#   See contracts/mcp_surface.yaml::public_discovery_routes for the canonical list.
+#   The terminal/commodity routes are rendered by site/build.py and live under
+#   site/dist/{gold,oil,gas,wealth}/index.html. They MUST keep parity with
+#   public/sitemap.xml (verified by tests/test_public_discovery.py).
 
 schema_version: "2026.07.15"
 organ: WEALTH
@@ -59,3 +65,22 @@ tools:
   wealth_external_exploitation_detect:
     kind: institutional
     modes: []
+
+# Terminal + commodity routes are not MCP tools — they are public HTTP routes.
+# They live here so that tests and CI can verify sitemap/dist parity.
+public_routes:
+  organ:
+    - {path: "/",                  lastmod: "2026-07-24"}
+    - {path: "/llms.txt",          lastmod: "2026-07-24"}
+    - {path: "/.well-known/agent.json", lastmod: "2026-07-25"}
+    - {path: "/.well-known/mcp.json",   lastmod: "2026-07-24"}
+    - {path: "/health",            lastmod: "2026-07-24"}
+    - {path: "/mcp",               lastmod: "2026-07-24"}
+    - {path: "/data/wealth/latest.json",          lastmod: "2026-07-24"}
+    - {path: "/data/wealth/petronas_vitals.json", lastmod: "2026-07-24"}
+  terminal:
+    - {path: "/wealth/",      lastmod: "2026-07-17", dist: "site/dist/wealth/index.html"}
+    - {path: "/wealth/llms.txt", lastmod: "2026-07-17", dist: "site/dist/wealth/llms.txt"}
+    - {path: "/wealth/gold/", lastmod: "2026-07-17", dist: "site/dist/gold/index.html"}
+    - {path: "/wealth/oil/",  lastmod: "2026-07-17", dist: "site/dist/oil/index.html"}
+    - {path: "/wealth/gas/",  lastmod: "2026-07-17", dist: "site/dist/gas/index.html"}
