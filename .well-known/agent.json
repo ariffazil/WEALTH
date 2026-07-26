@@ -1,5 +1,11 @@
 {
   "$schema": "https://google.com/genai/a2a/agent-card/v1",
+  "card_kind": "organ_public_agent_card",
+  "canonical_path": "/.well-known/agent.json",
+  "do_not_confuse_with": {
+    "makcikgpt_draft_persona": "agent-cards/makcikgpt.json",
+    "note": "makcikgpt.json is a DRAFT_ONLY investigative persona under the WEALTH organ. It is not part of the WEALTH organ public discovery surface and must not be advertised by /llms.txt, sitemap.xml, or /.well-known/. See agent-cards/README.md."
+  },
   "arifos_internal_card": "/.well-known/agent.json",
   "name": "WEALTH",
   "description": "Capital intelligence — NPV, EMV, valuation, risk scoring, portfolio optimization, collapse signatures, sovereign fiscal reasoning, and wisdom evaluation under F1-F13 constitutional floors. Evidence-only on computational primitives; arifOS 888_JUDGE owns the verdict.",
@@ -80,9 +86,16 @@
     "agent_card_internal": "GET /.well-known/agent.json"
   },
   "metadata": {
-    "generated_at": "2026-07-04",
+    "generated_at": "2026-07-25",
     "generator": "arifos-federation-alignment",
     "spec": "github.com/a2aproject/A2A v1.0 + arifOS internal v2.0.0 wrapper",
-    "consolidation_reference": "/root/A-FORGE/forge_work/2026-07-01/federation-alignment.md"
+    "consolidation_reference": "/root/A-FORGE/forge_work/2026-07-01/federation-alignment.md",
+    "discovery_surface": {
+      "sitemap": "public/sitemap.xml",
+      "robots": "public/robots.txt",
+      "manifest_organ": "llms.txt",
+      "mcp_manifest": ".well-known/mcp.json"
+    },
+    "notes": "This card is the organ public agent card. It must remain aligned with contracts/tools.yaml (12 public tools, mode-dispatched) and contracts/mcp_surface.yaml (public_domain = https://wealth.arif-fazil.com)."
   }
 }
