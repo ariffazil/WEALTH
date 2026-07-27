@@ -302,10 +302,12 @@ def main():
     ai = synthesize_with_ai(klci, klci_pct, usd_myr, brent, TODAY)
 
     # 3. Build briefing
+    observed_at = datetime.now(timezone.utc).isoformat()
     briefing = {
         "meta": {
             "date": TODAY,
             "generated_at": NOW.isoformat(),
+            "observed_at": observed_at,
             "source": "arifOS WEALTH — yfinance + FLAME (free-tier LLM)",
             "model_note": "Synth via FLAME free-tier mesh. Market data from yfinance.",
         },

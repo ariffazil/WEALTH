@@ -174,12 +174,18 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
   if (parsed.pathname === '/health' || parsed.pathname === '/api/gold/health') {
+    const now = new Date().toISOString();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       status: 'ok', uptime: (Date.now() - startTime) / 1000,
-      timestamp: new Date().toISOString(),
-      endpoints: Object.keys(handlers).concat(['/health']),
+      timestamp: now,
+      observed_at: now,
+      canonical_endpoints: Object.keys(handlers).sort(),
       cache_size: cache.size,
+      notes: {
+        path_drift: 'Use /api/gold/* paths. /price/XAU is not a valid endpoint — use /api/gold/ticker.',
+        refresh: 'Cache TTL 5min. Force fresh via /api/gold/ticker?refresh=1',
+      },
     }));
     return;
   }
