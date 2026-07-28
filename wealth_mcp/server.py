@@ -164,6 +164,7 @@ def _validate_direct_session_binding(
         # FORGE 2026-07-18: close anonymous read posture.
         # Previously capital_* tools got OBSERVE_UNBOUND pass-through.
         # Now ALL tools require a valid session_id.
+        import datetime as _dt
         return {
             "ok": False,
             "code": "SESSION_REQUIRED",
@@ -174,6 +175,7 @@ def _validate_direct_session_binding(
             "actor_id": actor_id,
             "session_id": session_id,
             "tool_name": tool_name,
+            "_ts": _dt.datetime.now(_dt.timezone.utc).isoformat(),
         }
 
     bridge = _validate_session_via_http_bridge(str(session_id), actor_id)
@@ -522,6 +524,8 @@ def create_mcp_server() -> FastMCP:
             # ── P0-4: Session validation (was defined but never called) ──
             binding = _validate_direct_session_binding(name, actor_id, session_id)
             if not binding.get("ok"):
+                # MUST return schema-conformant response matching WEALTH_OUTPUT_SCHEMA
+                # All 9 required fields included to prevent FastMCP -32602 rejection.
                 return _finalize(
                     ToolResult(
                         content=[
@@ -529,16 +533,32 @@ def create_mcp_server() -> FastMCP:
                                 type="text",
                                 text=json.dumps(
                                     {
-                                        "tool": name,
+                                        "tool_name": name,
+                                        "tool_version": WEALTH_VERSION,
+                                        "domain": "capital",
+                                        "result": {},
+                                        "result_type": "ERROR",
+                                        "epistemic_tag": "MISSING",
+                                        "claim_state": "UNPROVEN",
+                                        "evidence_quality": "MISSING",
+                                        "execution_authorized": False,
+                                        "execution_authority": "OBSERVATION",
+                                        "human_final_authority": "ARIF",
+                                        "requires_888_hold": False,
+                                        "source_attribution": ["wealth-session-gate"],
+                                        "computation_timestamp": binding.get(
+                                            "_ts", ""
+                                        ),
+                                        "session_id": binding.get("session_id"),
+                                        "actor_id": binding.get("actor_id"),
+                                        "errors": [
+                                            binding.get("reason", "L11 AUTH: session_id required")
+                                        ],
                                         "error_code": binding.get(
                                             "code", "SESSION_REQUIRED"
                                         ),
-                                        "reason": binding.get(
-                                            "reason", "L11 AUTH failed"
-                                        ),
-                                        "actor_id": binding.get("actor_id"),
-                                        "session_id": binding.get("session_id"),
-                                    }
+                                    },
+                                    default=str,
                                 ),
                             )
                         ],
