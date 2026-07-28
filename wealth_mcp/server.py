@@ -383,6 +383,18 @@ def create_mcp_server() -> FastMCP:
                 )
                 enriched.setdefault("human_final_authority", "Arif")
 
+                # ── Single Verdict Resolution (W4 Fix) ────────────────
+                # Lowest verdict wins: VOID > HOLD > SABAR > PASS/SEAL
+                apex_v = str((enriched.get("apex") or {}).get("verdict", "")).upper()
+                apex_pass = (enriched.get("apex") or {}).get("authority", {}).get("pass")
+                dom_v = str(enriched.get("domain_verdict") or enriched.get("verdict") or "").upper()
+                if apex_v in ("HOLD", "VOID", "BLOCKED") or apex_pass is False or dom_v in ("HOLD", "VOID", "BLOCKED"):
+                    winning_v = "VOID" if ("VOID" in (apex_v, dom_v) or "BLOCKED" in (apex_v, dom_v)) else "HOLD"
+                    enriched["domain_verdict"] = winning_v
+                    enriched["verdict"] = winning_v
+                    if isinstance(enriched.get("result"), dict):
+                        enriched["result"]["verdict"] = winning_v
+
                 enriched_text = json.dumps(enriched, default=str)
                 wrapped = ToolResult(
                     content=[TextContent(type="text", text=enriched_text)],

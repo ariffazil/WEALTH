@@ -1167,6 +1167,31 @@ def register_canonical_tools(mcp):
         public_tools = list(PUBLIC_TOOL_NAMES)
         architecture = f"federated-{len(canonical_tools)}-canonical"
 
+        # Live Probe of all canonical & public tool modules (Fix W6)
+        probe_failures = []
+        for t_name in public_tools:
+            try:
+                if t_name == "capital_entropy":
+                    from entropy_integrity.mcp.wealth.power_consequence_map import map_power_consequence
+                elif t_name == "capital_wisdom":
+                    from wealth_core.wisdom import compute_wisdom
+                elif t_name == "wealth_institutional_stress_index":
+                    from wealth_core.institutional.stress_index import compute_stress_index
+                elif t_name == "wealth_governance_capacity":
+                    from wealth_core.institutional.governance import compute_governance_capacity
+                elif t_name == "wealth_external_exploitation_detect":
+                    from wealth_core.institutional.exploitation import compute_exploitation
+                elif t_name == "wealth_cascade_model":
+                    from wealth_core.institutional.cascade import compute_cascade
+                elif t_name == "wealth_bid_surface":
+                    from wealth_mcp.tools.bid_surface import compute_bid_surface
+                elif t_name == "wealth_judge_handoff":
+                    from wealth_contracts.envelope import ClaimState
+            except Exception as _p_exc:
+                probe_failures.append(f"{t_name}: {type(_p_exc).__name__} ({_p_exc})")
+
+        reg_truth = "PASS" if not probe_failures else "DEGRADED"
+
         if m == "status":
             return wrap_result(
                 tool_name="capital_registry",
@@ -1175,7 +1200,7 @@ def register_canonical_tools(mcp):
                 trace_id=trace_id,
                 actor_id=actor_id,
                 result={
-                    "status": "OK",
+                    "status": "OK" if not probe_failures else "DEGRADED",
                     "organ": "WEALTH",
                     "version": WEALTH_VERSION,
                     "architecture": architecture,
@@ -1183,7 +1208,8 @@ def register_canonical_tools(mcp):
                     "canonical_tool_count": len(canonical_tools),
                     "public_tools": public_tools,
                     "public_tool_count": len(public_tools),
-                    "registry_truth": "PASS",
+                    "registry_truth": reg_truth,
+                    "probe_failures": probe_failures,
                     "legacy_dispatch": "direct_import",
                     "final_authority": "ARIF",
                     "read_only": True,
@@ -1191,11 +1217,71 @@ def register_canonical_tools(mcp):
             )
 
         if m == "schema":
-            raw = await _call_legacy_tool("wealth_schema", {})
+            tool_schemas = {
+                "capital_primitive": {
+                    "modes": ["npv", "irr", "kelly", "var", "cvar", "monte_carlo", "robust", "emv"],
+                    "description": "Financial mathematics and decision analysis primitives",
+                },
+                "capital_health": {
+                    "modes": ["runway", "burn", "solvency", "survival"],
+                    "survival_submodes": ["personal_finance", "corporate_runway", "sovereign_fiscal"],
+                    "description": "Financial runway, solvency, and sovereign fiscal survival",
+                },
+                "capital_diagnose": {
+                    "modes": ["stress_index", "governance_capacity", "cascade_model", "exploitation_detect", "collapse_signature", "beautiful_mouse", "capture_scan", "power_audit", "bid_surface", "optimize_mwc", "cadence_monitor", "crisis_reflex"],
+                    "description": "Abductive institutional diagnosis and governance capacity",
+                },
+                "capital_wisdom": {
+                    "modes": ["omni", "sovereignty_risk", "resilience", "dignity", "inequality", "ecological", "optionality", "deal", "synthesize", "hysteresis"],
+                    "description": "Multi-dimensional wisdom and sovereignty evaluation",
+                },
+                "capital_market": {
+                    "modes": ["fx", "commodity", "indicator", "stock", "gold", "oil", "gas"],
+                    "description": "Live commodity, FX, and country market indicators",
+                },
+                "capital_ledger": {
+                    "modes": ["query", "write"],
+                    "description": "VAULT999 immutable append-only ledger",
+                },
+                "capital_entropy": {
+                    "modes": ["power_map", "metric_audit", "responsibility", "trust_decay", "coercive_cost", "externality"],
+                    "description": "Thermodynamic power/consequence and metric-purpose drift",
+                },
+                "capital_registry": {
+                    "modes": ["status", "schema", "domains", "health"],
+                    "description": "WEALTH organ self-introspection and registry status",
+                },
+                "wealth_judge_handoff": {
+                    "modes": ["prepare", "submit"],
+                    "description": "Sovereign 888_HOLD judge handoff envelope",
+                },
+                "wealth_bid_surface": {
+                    "modes": ["first_price", "second_price", "scoring", "all_pay"],
+                    "description": "Competitive bid scoring surface topology",
+                },
+                "wealth_institutional_stress_index": {
+                    "description": "Composite 0-1 institutional stress index",
+                },
+                "wealth_governance_capacity": {
+                    "description": "Board governance capacity vs stress level",
+                },
+                "wealth_cascade_model": {
+                    "description": "Institutional stress collapse cascade model",
+                },
+                "wealth_external_exploitation_detect": {
+                    "description": "Detect simulative neutral counterparty extraction",
+                },
+            }
             return wrap_result(
                 tool_name="capital_registry",
                 domain="meta",
-                result=raw,
+                result={
+                    "version": WEALTH_VERSION,
+                    "architecture": architecture,
+                    "tools": tool_schemas,
+                    "canonical_tool_count": len(canonical_tools),
+                    "public_tool_count": len(public_tools),
+                },
                 session_id=session_id,
                 trace_id=trace_id,
                 actor_id=actor_id,
