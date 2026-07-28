@@ -110,7 +110,6 @@ async def validate_session_at_arifos(
                         or "L11 AUTH: arifOS rejected session",
                         "fail_mode": "CLOSED",
                         "actor_id": actor_id,
-                        "session_id": session_id,
                     }
                 standing = parsed.get("standing", {}) if isinstance(parsed.get("standing"), dict) else {}
                 standing_actor = standing.get("actor", {}) if isinstance(standing.get("actor"), dict) else {}
@@ -118,8 +117,11 @@ async def validate_session_at_arifos(
                 session_token_present = bool(parsed.get("session_token"))
                 resp_sid = parsed.get("session_id") or standing.get("session_id")
 
-                # Authoritative: actor verified OR session token present
-                if actor_verified or session_token_present:
+                # Authoritative: actor MUST be verified (actor_verified True) and session token present
+                actor = parsed.get("actor", {}) if isinstance(parsed.get("actor"), dict) else {}
+                real_actor_verified = actor_verified or (actor.get("actor_verified") is True)
+                
+                if real_actor_verified and session_token_present:
                     return {
                         "valid": True,
                         "session": parsed,
@@ -133,11 +135,11 @@ async def validate_session_at_arifos(
                         or "OBSERVE_ONLY",
                         "session_id": resp_sid or session_id,
                     }
-                # arifOS said valid but didn't return verified actor / token.
-                # Conservative: refuse. Better to fail-closed than leak.
+                # arifOS returned unverified actor (actor_verified: false).
+                # Conservative: refuse fabricated or unverified sessions.
                 return {
                     "valid": False,
-                    "reason": "L11 AUTH: session not verified by arifOS (no verified actor, no session_token)",
+                    "reason": "L11 AUTH: session not verified by arifOS (unverified actor)",
                     "fail_mode": "CLOSED",
                     "actor_id": actor_id,
                     "session_id": session_id,
