@@ -1,6 +1,6 @@
 <!-- SOT-MANIFEST
-federation_release: v2026.07.24
-last_verified: 2026-07-24T16:00Z
+federation_release: v2026.07.28
+last_verified: 2026-07-28T18:00Z
 commit_truth: /health distinguishes the live source SHA from any unverified fallback
 port: 18082
 health: healthy
@@ -9,11 +9,11 @@ authority: COMPUTE_ONLY — never allocate
 truth_rule: tools/list + /health beat any static count in prose
 -->
 
-**SOT:** 2026-07-24 | **seal_seq:** `dbbd67c`
+**SOT:** 2026-07-28 | **seal_seq:** `dbbd67c`
 
 [![Agentic CI](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml/badge.svg?branch=main)](https://github.com/ariffazil/wealth/actions/workflows/agentic-ci.yml)
 [![💰 CAPITAL](https://img.shields.io/badge/%F0%9F%92%B0%20CAPITAL-12%20tools-1f6feb)](https://wealth.arif-fazil.com/mcp)
-[![Federation](https://img.shields.io/badge/Federation-v2026.07.24-0a7b83)](https://arifos.arif-fazil.com)
+[![Federation](https://img.shields.io/badge/Federation-v2026.07.28-0a7b83)](https://arifos.arif-fazil.com)
 [![License](https://img.shields.io/github/license/ariffazil/wealth?label=License)](LICENSE)
 
 # 💰 WEALTH — Capital Intelligence Workbench
@@ -249,7 +249,7 @@ All primitives are pure deductive math — golden-tested against hand-checked ca
 | **HERMES** | Multi-modal bridge | [repo](https://github.com/ariffazil/HERMES) | — | — | — |
 
 **Public:** [arif-fazil.com](https://arif-fazil.com) · **Federation root:** [arifos.arif-fazil.com](https://arifos.arif-fazil.com)
-**SOT:** 2026-07-24
+**SOT:** 2026-07-28
 
 ## 7. License & Sovereignty
 

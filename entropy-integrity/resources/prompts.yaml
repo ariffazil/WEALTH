@@ -1,0 +1,82 @@
+version: "1.0.0"
+description: "Prompts library for all organs of the Entropy Integrity Mesh."
+KERNEL:
+  entropy_integrity_review: |
+    Perform a structured entropy integrity review. For the given case:
+    1. Specify the exact observation without moral labeling.
+    2. Provide at least two benign alternative explanations.
+    3. Identify counterevidence or negative indicators.
+    4. Analyze the authority claims and legitimacy bounds.
+    5. Trace the consequence map (upside capture vs downside cost).
+    6. Evaluate the correction response (how the actor responded to challenge).
+    7. Determine the weakest J-plane and assign a score (0.0-1.0).
+    8. STRICT: Output no conclusions regarding hidden niat, evil identity, or psychiatric status.
+  red_team_moral_order: |
+    Analyze the situation and show how apparent peace, safety, growth, or order may conceal information destruction, coercion, option loss, or displaced consequence.
+  void_or_hold: |
+    Examine the current plan or action:
+    Is this proposal uncertain and repairable (escalate to HOLD)? Or is the objective/method intrinsically inadmissible (escalate to VOID)? Detail the criteria for this distinction.
+  niat_without_seizure: |
+    Compare the actor's declared intention (niat), their physical actions, and the material impact. Avoid declaring the actor's true internal motive; instead, report only the gap between intention language and outcome dynamics.
+
+WELL:
+  mirror_without_judgment: |
+    Review the communication data and mirror back only the observed signals, trajectory, benign alternatives, and counterevidence. Do not attach moral traits.
+  hold_intention_and_impact: |
+    Highlight both the stated intention of the speaker and the reported human impact. Frame reflection questions without choosing between them.
+  detect_state_not_trait: |
+    Verify that all logs represent temporary states (e.g. latency, revision rate, volatility) rather than permanent traits (e.g. defensiveness, anger).
+  invite_correction_without_shame: |
+    Formulate a correction challenge that invites the subject to revise, add context, or accept errors without triggering shame or identity collapse.
+  distinguish_real_threat_from_pain_ontology: |
+    Evaluate if the subject's defensive stance is a response to an active verified threat, or a projection of historical trauma/pain-ontology.
+  peace_or_suppression: |
+    Determine if the apparent peace in the relationship is authentic feedback-safety, or a result of witness suppression and employee silence.
+
+WEALTH:
+  follow_the_consequence: |
+    Trace the economic and risk outcomes of the decision: who captures the upside, who bears the tail risk, and what is the distance between decision-maker and cost-bearer?
+  who_benefits_who_pays: |
+    Draft a ledger showing the distribution of upside and downside. Check if those who bear the cost had a voice or exit rights.
+  metric_or_mission: |
+    Audit the KPIs: is the subject fulfilling the declared mission, or gaming a proxy metric at the cost of option value?
+  local_order_global_entropy: |
+    Check if the controlling actor's reports of local efficiency are achieved by exporting disorder, waste, or risk to downstream parties.
+  would_you_accept_this_rule_under_an_opponent: |
+    Evaluate the current authority expansion: would the proposer accept this same rule if it were executed by their worst political opponent?
+  price_the_destroyed_optionality: |
+    Quantify the option value destroyed by this transaction. What future financial/operational paths are closed by this commitment?
+  find_the_laundered_authority: |
+    Identify where final accountability is shifted to algorithms, processes, or committee frameworks to avoid personal consequence.
+
+GEOX:
+  material_reality_check: |
+    Evaluate the physical impact of the proposal against actual sensor/ecological baselines. Do not let rhetorical claims override material facts.
+  what_cannot_be_recovered: |
+    Identify the irreversible physical options closed by this action (e.g., aquifer pollution, habitat fragmentation, land conversion).
+  surface_order_subsurface_damage: |
+    Contrast the neat surface-level engineering reports with the predicted subsurface stress or long-term geological hazards.
+  challenge_the_low_harm_claim: |
+    Construct a physical claim challenge: 'The institution claims low harm, but Earth measurements show irreversible loss of X.'
+  missing_sensor_missing_truth: |
+    Examine the monitoring network: are sensors absent in high-risk zones? Is the truth being excluded through sensor selection?
+  map_the_cascade: |
+    Model the physical propagation path: how does this local intervention propagate to water, land, infrastructure, and communities?
+
+AFORGE:
+  implement_without_moral_inference: |
+    Write code that detects signals (e.g., latency, repetition) without introducing evaluative adjectives or moral vocabulary in variables or comments.
+  generate_benign_counterexamples: |
+    Create a set of benign test cases representing emergency, cultural difference, or non-native phrasing that should NOT trigger high entropy alerts.
+  attack_detector_confirmation_bias: |
+    Attempt to trick the detector into verifying a false moral accusation. Harden the prompt to prevent this confirmation bias.
+  find_cultural_bias: |
+    Examine detector outputs across different dialects or cultural registers. Ensure style does not distort integrity evaluation.
+  test_state_trait_confusion: |
+    Verify that the test suite fails if a mock detector classifies a subject with a permanent negative trait.
+  test_human_ai_symmetry: |
+    Ensure that the same standards of correctability, consequence tracking, and authority legitimacy apply to both human inputs and AI actions.
+  review_authority_boundary: |
+    Verify that the detector output does not trigger code-level writes or block actions without explicit arifOS Kernel routing.
+  produce_reversible_migration: |
+    Design a code or schema migration pathway that can be 100% reversed if the implementation exhibits unexpected drift.

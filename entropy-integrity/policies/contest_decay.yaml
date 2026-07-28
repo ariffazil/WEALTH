@@ -1,0 +1,31 @@
+policy_version: "v1"
+enforced_by: "arifOS Kernel + all organs"
+
+decay:
+  default_ttl_days: 90
+  renewal_requires: "fresh observation with new evidence"
+  decay_function: "linear"
+  grace_period_days: 14
+  expired_action: "observation marked DECAYED, excluded from J-state"
+
+contest:
+  who_can_contest:
+    - "The observed subject (HUMAN)"
+    - "Any organ with counterevidence"
+    - "arifKernel via contradiction detection"
+    - "F13 sovereign override"
+  contest_mechanism:
+    - "Submit contest with counterevidence"
+    - "arif_correction_probe (mode=record_response)"
+    - "J-state reassessment"
+    - "If contest succeeds: observation amended or voided"
+    - "If contest fails: observation upheld with contest record"
+  contest_record:
+    permanent: true
+    attached_to: "original observation"
+
+anti_gaming:
+  - "Cannot contest by attacking the witness (WITNESS_ATTACKED → F9 alert)"
+  - "Cannot contest by expanding authority (AUTHORITY_EXPANDED → HOLD)"
+  - "Rapid repeated contests without new evidence rate-limited (max 3/24h)"
+  - "Contest results logged to VAULT999 regardless of outcome"

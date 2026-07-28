@@ -1,0 +1,179 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "arifos://schemas/entropy-integrity/v1#EntropyObservation",
+  "title": "EntropyObservation",
+  "description": "A structured entropy observation from an authorised organ. Measures information loss, correction failure, consequence displacement — never infers hidden niat or declares evil identity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["observation_id", "organ", "subject_type", "subject_ref", "signal_class", "evidence", "epistemic"],
+  "properties": {
+    "observation_id": {
+      "type": "string",
+      "description": "Unique observation identifier (UUID or organ-prefixed slug)"
+    },
+    "organ": {
+      "type": "string",
+      "enum": ["KERNEL", "WELL", "WEALTH", "GEOX", "AFORGE"],
+      "description": "Originating organ"
+    },
+    "subject_type": {
+      "type": "string",
+      "enum": ["HUMAN", "AGENT", "INSTITUTION", "DECISION", "EARTH_SYSTEM"],
+      "description": "What is being observed"
+    },
+    "subject_ref": {
+      "type": "string",
+      "description": "Reference to the subject (person ID, decision ID, institution ID, etc.)"
+    },
+    "signal_class": {
+      "type": "string",
+      "enum": [
+        "INFORMATION_LOSS",
+        "POSSIBILITY_COLLAPSE",
+        "FEEDBACK_CORRUPTION",
+        "DEFENSIVE_OVERHEAD",
+        "CASCADE_PROPAGATION",
+        "CORRECTION_FAILURE",
+        "BRITTLE_ORDER"
+      ],
+      "description": "Primary entropy signal classification"
+    },
+    "dark_mode": {
+      "type": "string",
+      "enum": [
+        "JUDGMENT_COLLAPSE",
+        "PAIN_ONTOLOGY",
+        "POWER_WITHOUT_CONSEQUENCE",
+        "SELF_CERTIFIED_NIAT",
+        "METRIC_PURPOSE_SUBSTITUTION",
+        "FEAR_IDENTITY",
+        "RESPONSIBILITY_LAUNDERING",
+        "EMPATHY_SCALE_COLLAPSE",
+        "SABAR_LOSS",
+        "CERTAINTY_IMMUNITY"
+      ],
+      "description": "Optional dark-geometry mode if detected"
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["direct_observations", "alternative_explanations"],
+      "properties": {
+        "direct_observations": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Concrete, quotable observations — not interpretations"
+        },
+        "pattern_window": {
+          "type": "object",
+          "properties": {
+            "start": { "type": "string", "format": "date-time" },
+            "end": { "type": "string", "format": "date-time" },
+            "recurrence_count": { "type": "integer", "minimum": 0 },
+            "baseline_delta": { "type": "number", "minimum": 0, "maximum": 1 }
+          },
+          "description": "Temporal pattern context"
+        },
+        "contradictions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Specific contradictions found between claim and evidence"
+        },
+        "counterevidence": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Evidence that weakens or refutes the observation"
+        },
+        "alternative_explanations": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "At least one benign alternative explanation is mandatory"
+        }
+      }
+    },
+    "epistemic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layer", "confidence", "source_independence"],
+      "properties": {
+        "layer": {
+          "type": "string",
+          "enum": ["L2", "L3", "L4"],
+          "description": "L2=session/derived, L3=fuzzy/similarity, L4=structured/verified"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence in the observation itself (not the subject)"
+        },
+        "source_independence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Degree of source independence (0=single, 1=fully independent)"
+        }
+      }
+    },
+    "consequence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "affected_parties": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": { "type": "string" },
+              "role": { "type": "string", "enum": ["DECISION_OWNER", "BENEFICIARY", "COST_BEARER", "WITNESS", "BYPASSER"] },
+              "awareness": { "type": "string", "enum": ["AWARE", "UNAWARE", "PARTIALLY_AWARE", "SUPPRESSED"] }
+            },
+            "required": ["ref", "role"]
+          }
+        },
+        "reversibility": {
+          "type": "string",
+          "enum": ["REVERSIBLE", "COSTLY", "IRREVERSIBLE"]
+        },
+        "option_loss": { "type": "number", "minimum": 0, "maximum": 1 },
+        "feedback_loss": { "type": "number", "minimum": 0, "maximum": 1 },
+        "consequence_distance": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "correction": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "challenge_presented": { "type": "boolean" },
+        "response_class": {
+          "type": "string",
+          "enum": [
+            "REFLECTED", "CONTEXT_ADDED", "ACCEPTED", "PARTIALLY_ACCEPTED",
+            "DISMISSED", "WITNESS_ATTACKED", "AUTHORITY_EXPANDED", "NOT_TESTED"
+          ]
+        },
+        "response_detail": { "type": "string" }
+      }
+    },
+    "prohibited_conclusions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["hidden_niat_inferred", "evil_identity_declared", "psychiatric_diagnosis", "permanent_trust_classification"]
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "observed_at": { "type": "string", "format": "date-time" },
+        "observer_agent": { "type": "string" },
+        "schema_version": { "type": "string", "const": "v1" },
+        "tool_version": { "type": "string" },
+        "prompt_version": { "type": "string" },
+        "detector_version": { "type": "string" }
+      }
+    }
+  }
+}

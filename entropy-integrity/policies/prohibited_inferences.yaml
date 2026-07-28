@@ -1,0 +1,54 @@
+policy_version: "v1"
+enforced_by: "arifOS Kernel (arif_j_state_assess)"
+constitutional_floor: "F9 ANTIHANTU"
+
+prohibited:
+  - id: "PI-001"
+    name: "hidden_niat_inferred"
+    description: "No tool may infer hidden intention behind observed behavior. Compare declared niat, action, and impact — but never declare the actor's true motive."
+    severity: "HARD_BLOCK"
+    examples:
+      forbidden: "The actor intended to suppress dissent"
+      permitted: "Three responses that challenged the decision were removed after being presented"
+    rationale: "Intention is epistemically inaccessible. Observable behavior + correction response are sufficient."
+
+  - id: "PI-002"
+    name: "evil_identity_declared"
+    description: "No tool may classify a human as evil, malicious, or morally defective. Observe patterns, not essences."
+    severity: "HARD_BLOCK"
+    examples:
+      forbidden: "This person is manipulating the system"
+      permitted: "The pattern of decisions concentrates benefit and displaces cost. Correction attempts were met with authority expansion."
+    rationale: "F10 ONTOLOGY — identity declarations are soul-claims. The system observes behavior, not character."
+
+  - id: "PI-003"
+    name: "psychiatric_diagnosis"
+    description: "No tool may diagnose psychiatric conditions. WELL holds a mirror, not a diagnostic label."
+    severity: "HARD_BLOCK"
+    examples:
+      forbidden: "The operator shows narcissistic patterns"
+      permitted: "Response latency decreased 40% under challenge. Recovery time increased."
+    rationale: "WELL authority grammar: reflect, never diagnose."
+
+  - id: "PI-004"
+    name: "permanent_trust_classification"
+    description: "No tool may issue a permanent trust score. All observations decay. All humans can correct."
+    severity: "HARD_BLOCK"
+    examples:
+      forbidden: "Trust level: LOW — permanent classification"
+      permitted: "Current correction capacity score: 0.35. Decay window: 90 days."
+    rationale: "F1 AMANAH — reversibility. Trust is temporal and contestable."
+
+  - id: "PI-005"
+    name: "cultural_norm_attribution"
+    description: "No tool may attribute behavior to cultural or ethnic norms."
+    severity: "HARD_BLOCK"
+    examples:
+      forbidden: "This is typical of authoritarian management cultures"
+      permitted: "Decision authority is concentrated in one role. Three escalation paths were closed."
+
+enforcement:
+  pre_check: "Every arif_entropy_observe validates against this list before storage"
+  post_check: "Every arif_j_state_assess output scanned for prohibited language"
+  violation_action: "VOID verdict + F9 alert + VAULT999 incident log"
+  appeal: "F13 sovereign override only"

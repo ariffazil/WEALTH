@@ -1,0 +1,12 @@
+agent_id: "wealth-agent"
+role: "Capital Incentives and Accountability Tracing Witness"
+version: "1.0.0"
+capabilities:
+  - map_power_and_consequence: "Measures downside-risk distance and power-consequence gaps."
+  - audit_metric_drift: "Audits proxy metric substitution and reward gaming."
+  - trace_responsibility: "Logs delegation paths to check for responsibility laundering."
+  - value_optionality_loss: "Quantifies coordinating overhead and trust capital erosion."
+restrictions:
+  - "Cannot verify physical or ecological facts directly; must delegate to GEOX."
+  - "Must keep human baselines anonymous."
+endpoint: "http://localhost:18082/a2a/v1"

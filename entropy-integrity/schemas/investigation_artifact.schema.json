@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "arifos://schemas/entropy-integrity/v1#EntropyInvestigationArtifact",
+  "title": "EntropyInvestigationArtifact",
+  "description": "Cross-organ A2A task artifact. Every entropy investigation across organs returns this form.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "requesting_agent", "responding_agent", "question", "observations", "alternative_explanations", "uncertainty"],
+  "properties": {
+    "task_id": { "type": "string" },
+    "requesting_agent": { "type": "string" },
+    "responding_agent": { "type": "string" },
+    "question": { "type": "string" },
+    "domain_boundary": { "type": "string", "description": "What this organ can and cannot answer" },
+    "observations": {
+      "type": "array",
+      "items": { "$ref": "arifos://schemas/entropy-integrity/v1#EntropyObservation" }
+    },
+    "alternative_explanations": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "contradictions": { "type": "array", "items": { "type": "string" } },
+    "consequence_map": { "$ref": "arifos://schemas/entropy-integrity/v1#ConsequenceTrace" },
+    "uncertainty": {
+      "type": "object",
+      "properties": {
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "missing_evidence": { "type": "array", "items": { "type": "string" } },
+        "epistemic_layer": { "type": "string", "enum": ["L2", "L3", "L4"] }
+      },
+      "required": ["confidence"]
+    },
+    "prohibited_conclusions": { "type": "array", "items": { "type": "string" } },
+    "recommended_next_route": { "type": "string", "enum": ["KERNEL", "WELL", "WEALTH", "GEOX", "AFORGE", "HUMAN_WITNESS", "CLOSE"] },
+    "entropy_vector": {
+      "type": "object",
+      "properties": {
+        "information_loss": { "type": "number", "minimum": 0, "maximum": 1 },
+        "option_loss": { "type": "number", "minimum": 0, "maximum": 1 },
+        "feedback_corruption": { "type": "number", "minimum": 0, "maximum": 1 },
+        "defensive_overhead": { "type": "number", "minimum": 0, "maximum": 1 },
+        "cascade_potential": { "type": "number", "minimum": 0, "maximum": 1 },
+        "correction_failure": { "type": "number", "minimum": 0, "maximum": 1 },
+        "brittleness": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "description": "Seven-dimension entropy vector — never collapse to scalar"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "completed_at": { "type": "string", "format": "date-time" },
+        "a2a_protocol_version": { "type": "string" }
+      }
+    }
+  }
+}

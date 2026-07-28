@@ -14,6 +14,7 @@ CAPITAL_TOOL_NAMES = (
     "capital_ledger",
     "capital_registry",
     "capital_entropy",
+    "wealth_judge_handoff",
 )
 
 INSTITUTIONAL_TOOL_NAMES = (

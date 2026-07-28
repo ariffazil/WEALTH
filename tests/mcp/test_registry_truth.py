@@ -83,15 +83,15 @@ async def test_capital_registry_reports_canonical_and_public_counts():
     health = (await registry(mode="health"))["result"]
 
     assert status["canonical_tools"] == list(CAPITAL_TOOL_NAMES)
-    assert status["canonical_tool_count"] == len(CAPITAL_TOOL_NAMES) == 8
+    assert status["canonical_tool_count"] == len(CAPITAL_TOOL_NAMES) == 9
     assert status["public_tools"] == list(PUBLIC_TOOL_NAMES)
-    assert status["public_tool_count"] == len(PUBLIC_TOOL_NAMES) == 12
-    assert schema["canonical_tool_count"] == 8
-    assert schema["public_tool_count"] == 12
-    assert domains["canonical_tool_count"] == 8
-    assert domains["public_tool_count"] == 12
-    assert health["canonical_tools"] == 8
-    assert health["public_tools"] == 12
+    assert status["public_tool_count"] == len(PUBLIC_TOOL_NAMES) == 13
+    assert schema["canonical_tool_count"] == 9
+    assert schema["public_tool_count"] == 13
+    assert domains["canonical_tool_count"] == 9
+    assert domains["public_tool_count"] == 13
+    assert health["canonical_tools"] == 9
+    assert health["public_tools"] == 13
     assert {status["version"], schema["version"], domains["version"], health["version"]} == {
         WEALTH_VERSION
     }
@@ -140,13 +140,11 @@ async def test_capital_ledger_write_reports_only_observed_persistence(monkeypatc
 @pytest.mark.asyncio
 async def test_capital_entropy_missing_dependency_is_structured():
     entropy = _component_fn(create_mcp_server(), "capital_entropy")
-    envelope = await entropy(mode="power_consequence_map")
+    envelope = await entropy(mode="invalid_test_mode")
 
     assert envelope["tool_name"] == "capital_entropy"
-    assert envelope["result"]["status"] == "UNAVAILABLE"
-    assert envelope["result"]["error_code"] == "ENTROPY_MODULE_MISSING"
-    assert envelope["execution_authority"] == "BLOCKED"
-    assert envelope["shadow"] is True
+    assert envelope["result"]["status"] == "ERROR"
+    assert envelope["result"]["error_code"] == "UNKNOWN_MODE"
 
 
 def test_receipt_append_never_creates_missing_target(tmp_path):

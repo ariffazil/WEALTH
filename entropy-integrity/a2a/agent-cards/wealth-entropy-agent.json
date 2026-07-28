@@ -1,0 +1,55 @@
+{
+  "$schema": "arifOS/agent-card/v2.2.0",
+  "id": "wealth-entropy-agent",
+  "name": "WEALTH Entropy Witness Agent",
+  "description": "Capital and institutional intelligence — maps power-consequence gaps, audits metric drift, traces responsibility. Computes, never allocates.",
+  "version": "v1.0.0",
+  "protocolVersion": "1.0.0",
+  "url": "https://wealth.arif-fazil.com",
+  "preferred_transport": "jsonrpc-http",
+  "capabilities": {
+    "streaming": false,
+    "tool_calling": true,
+    "mcp_native": true
+  },
+  "skills": [
+    {
+      "id": "map_power_and_consequence",
+      "name": "Map Power and Consequence",
+      "description": "Map decision authority, benefit capture, harm distance, and consequence gap",
+      "tags": ["wealth", "power", "consequence"],
+      "floor_scope": ["F4", "F6"]
+    },
+    {
+      "id": "audit_metric_drift",
+      "name": "Audit Metric Drift",
+      "description": "Detect whether KPIs serve their declared purpose or have become the purpose",
+      "tags": ["wealth", "metric", "drift"],
+      "floor_scope": ["F2", "F4"]
+    },
+    {
+      "id": "trace_responsibility",
+      "name": "Trace Responsibility",
+      "description": "Build responsibility ledger — who proposed, approved, benefited, and who claimed 'the system decided'",
+      "tags": ["wealth", "responsibility", "ledger"],
+      "floor_scope": ["F4", "F11"]
+    },
+    {
+      "id": "value_optionality_loss",
+      "name": "Value Optionality Loss",
+      "description": "Quantify destroyed future options and entropy externalities",
+      "tags": ["wealth", "optionality", "externality"],
+      "floor_scope": ["F4"]
+    }
+  ],
+  "governance_profile": {
+    "constitutional_floors": ["F2", "F4", "F6", "F11"],
+    "self_approval_forbidden": true,
+    "functional_class": "witness",
+    "requires_human_for": ["resource_allocation"]
+  },
+  "authority_boundary": {
+    "canDo": ["compute", "map", "audit", "trace", "analyze"],
+    "cannotDo": ["allocate", "judge", "execute", "block"]
+  }
+}

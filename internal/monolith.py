@@ -5530,12 +5530,22 @@ async def wealth_survival_engine(
         else:
             runway_months = None
 
-        if net_monthly >= 0:
+        is_empty_baseline = (total_income == 0 and total_expenses == 0 and liq_assets == 0)
+
+        if is_empty_baseline:
+            survival_verdict = "INSUFFICIENT_SIGNAL"
+        elif net_monthly >= 0:
             survival_verdict = "SURVIVAL_ADEQUATE"
         elif runway_months and runway_months >= 3:
             survival_verdict = "SURVIVAL_STRESSED"
         else:
             survival_verdict = "SURVIVAL_CRITICAL"
+
+        flags = []
+        if is_empty_baseline:
+            flags.extend(["NO_INPUT_BASELINE", "INSUFFICIENT_SIGNAL"])
+        elif runway_months and runway_months < 3:
+            flags.append("RUNWAY_CRITICAL")
 
         envelope = create_envelope(
             "wealth_survival_engine",
@@ -5552,22 +5562,16 @@ async def wealth_survival_engine(
                 "survival_verdict": survival_verdict,
             },
             {"period_unit": "monthly", "horizon_months": horizon_months},
-            ["RUNWAY_CRITICAL"] if (runway_months and runway_months < 3) else [],
+            flags,
             [],
-            epistemic="OBSERVED",
+            epistemic="ASSUMED" if is_empty_baseline else "OBSERVED",
         )
         dimensional_verdicts = {
-            "conservation": "CRITICAL"
-            if survival_verdict == "SURVIVAL_CRITICAL"
-            else "ADEQUATE",
-            "flow": "DEFICIT" if net_monthly < 0 else "SURPLUS",
-            "time": "CRITICAL"
-            if (runway_months and runway_months < 3)
-            else "SUFFICIENT",
-            "entropy": "LOW",
-            "boundary": "RED"
-            if survival_verdict in ("SURVIVAL_CRITICAL", "SURVIVAL_STRESSED")
-            else "GREEN",
+            "conservation": "UNCERTAIN" if is_empty_baseline else ("CRITICAL" if survival_verdict == "SURVIVAL_CRITICAL" else "ADEQUATE"),
+            "flow": "UNCERTAIN" if is_empty_baseline else ("DEFICIT" if net_monthly < 0 else "SURPLUS"),
+            "time": "UNCERTAIN" if is_empty_baseline else ("CRITICAL" if (runway_months and runway_months < 3) else "SUFFICIENT"),
+            "entropy": "HIGH" if is_empty_baseline else "LOW",
+            "boundary": "YELLOW" if is_empty_baseline else ("RED" if survival_verdict in ("SURVIVAL_CRITICAL", "SURVIVAL_STRESSED") else "GREEN"),
         }
 
     # ── Scar accumulation (F1 AMANAH: backward-compatible, no mutation when None) ──

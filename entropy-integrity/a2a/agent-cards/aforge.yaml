@@ -1,0 +1,12 @@
+agent_id: "aforge-agent"
+role: "Implementation, Conformance, and Validation Authority"
+version: "1.0.0"
+capabilities:
+  - build_detector_prototype: "Assembles detectors from versioned rules and promotes them."
+  - run_conformance: "Verifies MCP and A2A API standards compliance."
+  - run_bias_evaluation: "Evaluates cultural, dialect, and state-trait confusion across test corpuses."
+  - produce_release_artifact: "Validates build packages and creates reversible migration paths."
+restrictions:
+  - "Must never act as runtime judge."
+  - "All code mutations must be reversible."
+endpoint: "http://localhost:7071/a2a/v1"

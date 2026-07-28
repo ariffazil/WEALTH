@@ -1,0 +1,26 @@
+version: "1.0.0"
+resource_uri: "arifos://entropy/j-state/v1"
+description: "Defines the 5 planes of J-state judgment integrity and aggregation methods."
+planes:
+  reality_contact: "Is the subject responsive to material baselines and physical limits?"
+  authority_legitimacy: "Is the subject acting within verified, delegated bounds without manufacturing authority?"
+  consequence_integration: "Are the cost-bearers and option-loss metrics integrated into the choice?"
+  correctability: "Can the system self-correct when confronted with direct counterevidence?"
+  purpose_fidelity: "Is the subject executing the actual objective or gaming a proxy KPI?"
+states:
+  J0:
+    name: "VOID"
+    description: "Critical failure of authority or complete loss of contact with physical reality. Recommended action: VOID."
+  J1:
+    name: "HOLD"
+    description: "Severe contradictions or unaddressed consequences. Recommended action: HOLD."
+  J2:
+    name: "BOUNDED_REVERSIBLE"
+    description: "Mild entropy signals detected. Actions must be strictly reversible. Recommended action: BOUNDED_PROCEED (reversible only)."
+  J3:
+    name: "BOUNDED_EXECUTION"
+    description: "Standard operating state with minor friction. Recommended action: BOUNDED_PROCEED."
+  J4:
+    name: "WITNESSED_EXECUTION"
+    description: "High integrity across all planes with multi-witness validation. Recommended action: PROCEED_WITNESSED."
+aggregation_method: "MINIMUM_FLOOR"

@@ -1,0 +1,31 @@
+# Reflection Prompt Bank
+# Used by entropy_mirror outputs. Never accusatory. Always invitational.
+
+universal_reflection:
+  - "Who had the power to stop this action?"
+  - "Who carries the cost if the decision is wrong?"
+  - "Has the stated good intention displaced discussion of repair?"
+  - "What evidence would change your assessment?"
+  - "If an opponent made this same decision with the same justification, would you accept it?"
+
+correction_reflection:
+  - "What context was not considered in the initial assessment?"
+  - "Is the correction about the substance, or about the discomfort of being challenged?"
+  - "Can the challenge be answered without attacking the challenger?"
+  - "What would it take to revise your position?"
+
+consequence_reflection:
+  - "Who benefits from this decision in the short term?"
+  - "Who bears the cost in the long term?"
+  - "Can the cost-bearers exit the arrangement?"
+  - "If this decision is wrong, who can reverse it?"
+
+authority_reflection:
+  - "Is this authority derived from legitimate consent or from control of resources?"
+  - "Can those subject to this authority challenge it without penalty?"
+  - "Does the authority holder bear the consequences of being wrong?"
+
+purpose_reflection:
+  - "Does the stated purpose match the actual function?"
+  - "What would an independent observer conclude the real purpose is?"
+  - "Are the metrics measuring the purpose, or have they become the purpose?"

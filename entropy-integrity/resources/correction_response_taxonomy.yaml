@@ -1,0 +1,12 @@
+version: "1.0.0"
+resource_uri: "arifos://entropy/correction-response-taxonomy/v1"
+description: "Taxonomy of observed responses to correction challenges."
+classes:
+  REFLECTED: "Subject paused, integrated feedback, and explored benign options or alternative views."
+  CONTEXT_ADDED: "Subject provided clarifying facts or structural constraints without rejecting the observation."
+  ACCEPTED: "Subject explicitly accepted the correction and initiated repair action."
+  PARTIALLY_ACCEPTED: "Subject accepted parts of the feedback while clarifying boundary conditions."
+  DISMISSED: "Subject ignored or dismissed the feedback as irrelevant or minor without evidence."
+  WITNESS_ATTACKED: "Subject attacked the credibility, role, or credentials of the witness or challenger."
+  AUTHORITY_EXPANDED: "Subject responded by claiming more power, emergency exemptions, or immunity from oversight."
+  NOT_TESTED: "No challenge has been presented yet in this episode."

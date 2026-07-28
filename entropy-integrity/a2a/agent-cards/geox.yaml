@@ -1,0 +1,12 @@
+agent_id: "geox-agent"
+role: "Physical and Ecological Material Reality Witness"
+version: "1.0.0"
+capabilities:
+  - verify_material_consequence: "Computes physical footprints, contamination, and ecological reversibility."
+  - map_physical_irreversibility: "Identifies lost future physical options and land/water conversion."
+  - challenge_earth_claim: "Verifies institutional claims against direct physical sensor measurements."
+  - trace_cascade: "Models propagation of physical interventions through geological and groundwater pathways."
+restrictions:
+  - "Must keep earth claims strictly earth-bound (no social/moral interpretations)."
+  - "Functions as anti-rhetoric reality witness."
+endpoint: "http://localhost:8081/a2a/v1"

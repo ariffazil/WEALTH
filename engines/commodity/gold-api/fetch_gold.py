@@ -882,9 +882,38 @@ def cmd_proxies(args):
     _write_cache(cache, result)
     return result
 
+def _node_body(obj):
+    if isinstance(obj, float) and obj.is_integer():
+        return int(obj)
+    if isinstance(obj, dict):
+        return {k: _node_body(v) for k, v in obj.items() if k != "timestamp"}
+    if isinstance(obj, list):
+        return [_node_body(v) for v in obj]
+    return obj
+
+
+def build_snapshot(asset, ticker, levels, macro, observed_at=None):
+    if observed_at is None:
+        observed_at = datetime.now(timezone.utc).isoformat()
+    body = {
+        "schema": "wealth.snapshot.v1",
+        "asset": asset,
+        "observed_at": observed_at,
+        "ticker": _node_body(ticker),
+        "levels": _node_body(levels),
+        "macro": _node_body(macro),
+    }
+    canonical = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
+    body["coherence_id"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    return body
+
+
 def cmd_snapshot(args):
-    """Return raw ticker data — server wraps with schema/asset/coherence_id."""
-    return cmd_ticker(args)
+    """Return wrapped snapshot with schema/asset/coherence_id."""
+    ticker = cmd_ticker(args)
+    levels = cmd_levels(args)
+    macro = cmd_macro(args)
+    return build_snapshot("gold", ticker, levels, macro)
 
 
 # ── Forecast Engine (wealth.forecast.v1) ─────────────────────────

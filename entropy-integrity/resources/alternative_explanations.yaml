@@ -1,0 +1,32 @@
+# Mandatory Alternative Explanations Bank
+# Every entropy observation MUST include at least one benign alternative.
+# This file provides a starter bank. Organs extend with domain-specific alternatives.
+
+universal_alternatives:
+  - "The speaker may be summarising an institutional process, not describing personal intent."
+  - "Individual consequences may be documented elsewhere and not visible in this context."
+  - "The behavior may reflect organizational constraint, not personal choice."
+  - "Language patterns may reflect professional jargon, not attitude."
+  - "The actor may have information not available to the observer."
+  - "Time pressure may explain communication style without implying character."
+  - "Cultural or linguistic differences may affect expression patterns."
+
+well_alternatives:
+  - "Elevated stress signals may reflect external life events, not workplace dynamics."
+  - "Reduced response latency may indicate focus, not aggression."
+  - "Trust narrowing may reflect a specific breach, not general paranoia."
+
+wealth_alternatives:
+  - "Metric gaming may reflect incentive misalignment, not individual corruption."
+  - "Power concentration may be a transitional phase, not permanent capture."
+  - "Responsibility diffusion may reflect genuine complexity, not evasion."
+
+geox_alternatives:
+  - "Data gaps may reflect technical limitations, not suppression."
+  - "Model disagreement may indicate legitimate geological uncertainty."
+  - "Monitoring absence may reflect budget constraint, not deliberate blindness."
+
+kernel_alternatives:
+  - "Correction resistance may reflect information asymmetry, not stubbornness."
+  - "Authority expansion may be a temporary response to crisis, not power grab."
+  - "Contradiction between organs may reflect domain boundaries, not deception."

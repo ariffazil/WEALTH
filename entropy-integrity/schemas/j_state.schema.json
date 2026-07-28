@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "arifos://schemas/entropy-integrity/v1#JudgmentIntegrity",
+  "title": "JudgmentIntegrity",
+  "description": "J-state envelope — fuses organ observations into a judgment-integrity map. Uses minimum-floor aggregation to prevent averaging away a near-zero plane.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["j_state_id", "subject_ref", "planes", "weakest_plane", "state", "recommended_action"],
+  "properties": {
+    "j_state_id": { "type": "string" },
+    "subject_ref": { "type": "string", "description": "Decision, actor, or institution being assessed" },
+    "observation_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "References to contributing EntropyObservation IDs"
+    },
+    "planes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reality_contact", "authority_legitimacy", "consequence_integration", "correctability", "purpose_fidelity"],
+      "properties": {
+        "reality_contact": { "type": "number", "minimum": 0, "maximum": 1, "description": "Model matches material reality (GEOX anchored)" },
+        "authority_legitimacy": { "type": "number", "minimum": 0, "maximum": 1, "description": "Authority legitimately derived and bounded" },
+        "consequence_integration": { "type": "number", "minimum": 0, "maximum": 1, "description": "Consequences borne by decision-makers" },
+        "correctability": { "type": "number", "minimum": 0, "maximum": 1, "description": "System can receive and integrate correction" },
+        "purpose_fidelity": { "type": "number", "minimum": 0, "maximum": 1, "description": "Stated purpose matches actual function" }
+      }
+    },
+    "weakest_plane": {
+      "type": "string",
+      "enum": ["reality_contact", "authority_legitimacy", "consequence_integration", "correctability", "purpose_fidelity"]
+    },
+    "aggregate_score": { "type": "number", "minimum": 0, "maximum": 1, "description": "Minimum floor of all planes (not average)" },
+    "aggregate_method": { "type": "string", "const": "MINIMUM_FLOOR" },
+    "state": { "type": "string", "enum": ["J0", "J1", "J2", "J3", "J4"], "description": "J0=VOID, J1=HOLD, J2=reversible only, J3=bounded exec, J4=witnessed exec" },
+    "recommended_action": { "type": "string", "enum": ["VOID", "HOLD", "BOUNDED_PROCEED", "PROCEED_WITNESSED"] },
+    "missing_evidence": { "type": "array", "items": { "type": "string" } },
+    "contradiction_graph": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "claim_a": { "type": "string" },
+          "claim_b": { "type": "string" },
+          "contradiction_type": { "type": "string" },
+          "severity": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] }
+        },
+        "required": ["claim_a", "claim_b", "contradiction_type"]
+      }
+    },
+    "prohibited_conclusions": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["hidden_niat_inferred", "evil_identity_declared", "psychiatric_diagnosis", "permanent_trust_classification"] }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "assessed_at": { "type": "string", "format": "date-time" },
+        "assessing_agent": { "type": "string" },
+        "schema_version": { "type": "string", "const": "v1" }
+      }
+    }
+  }
+}

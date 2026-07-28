@@ -1,0 +1,64 @@
+# Dark Geometry Modes — 10 patterns of information destruction
+# These are OBSERVABLE patterns, NOT personality diagnoses.
+# Each mode has: signal, benign alternative, measurement approach.
+
+modes:
+  - id: "JUDGMENT_COLLAPSE"
+    signal: "Decision quality degrades under pressure; options narrow"
+    measure: "Option count before/after stress event"
+    organ: "WEALTH + WELL"
+    benign_alternative: "Normal prioritization under resource constraint"
+
+  - id: "PAIN_ONTOLOGY"
+    signal: "Pain or discomfort is treated as proof of importance"
+    measure: "Frequency of suffering-as-validation language"
+    organ: "WELL"
+    benign_alternative: "Cultural expression of hard work; metaphorical language"
+
+  - id: "POWER_WITHOUT_CONSEQUENCE"
+    signal: "Decision authority exceeds consequence exposure"
+    measure: "consequence_gap from wealth_power_consequence_map"
+    organ: "WEALTH"
+    benign_alternative: "Delegated authority with appropriate oversight"
+
+  - id: "SELF_CERTIFIED_NIAT"
+    signal: "Good intention is used as evidence against impact data"
+    measure: "Ratio of intention-language to repair-language after harm"
+    organ: "WELL + KERNEL"
+    benign_alternative: "Contextual explanation before repair discussion"
+
+  - id: "METRIC_PURPOSE_SUBSTITUTION"
+    signal: "KPIs drift from stated purpose; gaming increases"
+    measure: "wealth_metric_purpose_audit proxy drift score"
+    organ: "WEALTH"
+    benign_alternative: "Normal metric evolution as strategy adapts"
+
+  - id: "FEAR_IDENTITY"
+    signal: "Fear of consequences replaces values as decision driver"
+    measure: "Decision rationale analysis: fear-word vs value-word ratio"
+    organ: "WELL"
+    benign_alternative: "Prudent risk assessment"
+
+  - id: "RESPONSIBILITY_LAUNDERING"
+    signal: "Decision-makers distance themselves from outcomes via process/committee/algorithm"
+    measure: "wealth_responsibility_ledger: 'the system decided' frequency"
+    organ: "WEALTH + KERNEL"
+    benign_alternative: "Genuine distributed decision-making with clear accountability"
+
+  - id: "EMPATHY_SCALE_COLLAPSE"
+    signal: "Affected people described numerically rather than individually"
+    measure: "Language analysis: individual vs aggregate reference ratio"
+    organ: "WELL"
+    benign_alternative: "Statistical reporting in appropriate contexts"
+
+  - id: "SABAR_LOSS"
+    signal: "Temporal compression: stimulus → interpretation → response → correction all accelerate"
+    measure: "well_sabar_latency: response latency + revision latency"
+    organ: "WELL"
+    benign_alternative: "Quick decisive response in genuine emergencies"
+
+  - id: "CERTAINTY_IMMUNITY"
+    signal: "Claims resist correction; confidence does not decrease under contradiction"
+    measure: "Confidence delta under counterevidence injection"
+    organ: "KERNEL"
+    benign_alternative: "Well-supported confidence with acknowledged uncertainty"

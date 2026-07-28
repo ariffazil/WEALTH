@@ -1,0 +1,19 @@
+version: "1.0.0"
+resource_uri: "arifos://entropy/organ-routing/v1"
+description: "Cross-organ routing tables for the entropy integrity mesh."
+routing_rules:
+  human_signals:
+    organ: "WELL"
+    keywords: ["stress", "fatigue", "vitality", "regulation", "sabar", "trust", "shame", "threat"]
+  capital_signals:
+    organ: "WEALTH"
+    keywords: ["incentive", "power", "consequence_gap", "metric", "kpi", "externality", "liabilities", "cost"]
+  physical_signals:
+    organ: "GEOX"
+    keywords: ["subsurface", "ecological", "aquifer", "reversibility", "material", "seismic", "contamination"]
+  implementation_signals:
+    organ: "AFORGE"
+    keywords: ["conformance", "confactual", "testing", "injection", "schema", "detector", "bias"]
+  governance_signals:
+    organ: "KERNEL"
+    keywords: ["authority", "admissibility", "j_state", "contradiction", "routing", "reversal"]

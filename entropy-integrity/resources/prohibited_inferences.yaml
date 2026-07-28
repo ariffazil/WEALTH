@@ -1,0 +1,11 @@
+version: "1.0.0"
+resource_uri: "arifos://entropy/prohibited-inferences/v1"
+description: "Reference copy of prohibited inferences policy."
+prohibited_conclusions:
+  - "hidden niat"
+  - "evil identity"
+  - "psychiatric diagnosis"
+  - "permanent trust classification"
+rules:
+  no_hidden_niat: "Do not guess the speaker's hidden intentions or true motives. Report only observed actions, statements, and impacts."
+  no_moral_identity: "Do not declare an actor as intrinsically evil, corrupt, or good. Maintain system-level metric descriptions."

@@ -66,10 +66,10 @@ def _resolve_source_commit(repo_path: str | Path | None = None) -> dict[str, obj
 
     if fallback_sha:
         return {
-            "git_commit": fallback_sha,
+            "git_commit": "UNAVAILABLE",
             "git_commit_source": "fallback_file",
-            "source_sha_available": True,
-            "git_commit_fallback": None,
+            "source_sha_available": False,
+            "git_commit_fallback": fallback_sha,
             "git_commit_fallback_trusted": False,
         }
 
