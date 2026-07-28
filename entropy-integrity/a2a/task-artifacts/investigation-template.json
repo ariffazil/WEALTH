@@ -1,0 +1,47 @@
+{
+  "$schema": "arifos://schemas/entropy-integrity/v1#EntropyInvestigationArtifact",
+  "task_id": "",
+  "requesting_agent": "",
+  "responding_agent": "",
+  "question": "",
+  "domain_boundary": "",
+  "observations": [],
+  "alternative_explanations": [],
+  "contradictions": [],
+  "consequence_map": {
+    "trace_id": "",
+    "decision_ref": "",
+    "decision_owner": {},
+    "benefit_bearers": [],
+    "cost_bearers": [],
+    "distance_score": 0,
+    "reversal_owner": {},
+    "responsibility_gaps": [],
+    "consequence_gap": 0
+  },
+  "uncertainty": {
+    "confidence": 0,
+    "missing_evidence": [],
+    "epistemic_layer": "L3"
+  },
+  "prohibited_conclusions": [
+    "hidden_niat_inferred",
+    "evil_identity_declared",
+    "psychiatric_diagnosis",
+    "permanent_trust_classification"
+  ],
+  "recommended_next_route": "",
+  "entropy_vector": {
+    "information_loss": 0,
+    "option_loss": 0,
+    "feedback_corruption": 0,
+    "defensive_overhead": 0,
+    "cascade_potential": 0,
+    "correction_failure": 0,
+    "brittleness": 0
+  },
+  "metadata": {
+    "completed_at": "",
+    "a2a_protocol_version": "1.0.0"
+  }
+}

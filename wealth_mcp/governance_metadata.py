@@ -17,6 +17,7 @@ CANONICAL_FLOORS: dict[str, list[str]] = {
     "capital_ledger": ["F1", "F2", "F4", "F7", "F11", "F13"],
     "capital_registry": ["F1", "F2", "F7", "F11"],
     "capital_entropy": ["F1", "F2", "F4", "F6", "F7", "F9", "F11", "F13"],
+    "wealth_judge_handoff": ["F1", "F2", "F4", "F7", "F11", "F13"],
     # Core primitives — computational only, low risk
     "wealth_compute_npv": ["F1", "F2", "F7", "F11"],
     "wealth_compute_irr": ["F1", "F2", "F7", "F11"],

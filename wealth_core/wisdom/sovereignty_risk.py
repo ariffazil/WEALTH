@@ -23,6 +23,17 @@ DEPENDENCY_SIGNALS = [
     "captive market",
     "exclusive contract",
     "monopoly",
+    "royalty dispute",
+    "dispute",
+    "court dispute",
+    "feud",
+    "legal uncertainty",
+    "federal court",
+    "concession loss",
+    "sovereignty risk",
+    "extractive",
+    "centralized control",
+    "unilateral decision",
 ]
 
 AUTONOMY_SIGNALS = [
@@ -36,6 +47,18 @@ AUTONOMY_SIGNALS = [
     "negotiating power",
     "alternative provider",
     "self-hosted",
+    "sovereignty",
+    "sovereign",
+    "royalty",
+    "state rights",
+    "pda 1974",
+    "petros",
+    "petronas",
+    "autonomy",
+    "devolution",
+    "settlement",
+    "cooperative framework",
+    "jurisdiction clarity",
 ]
 
 

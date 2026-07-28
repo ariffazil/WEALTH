@@ -1,0 +1,87 @@
+# Canonical Entropy Mirror Output Format
+# Every detector response uses this form.
+# This is the ONLY permitted output structure for entropy integrity observations.
+
+format_version: "v1"
+
+entropy_mirror:
+  status:
+    type: "string"
+    enum: ["SIGNAL", "PATTERN", "MATERIAL_CONTRADICTION", "CORRECTION_FAILURE"]
+    description: "SIGNAL=single observation, PATTERN=recurring, MATERIAL_CONTRADICTION=evidence conflict, CORRECTION_FAILURE=challenge rejected"
+
+  organ:
+    type: "string"
+    description: "Which organ produced this mirror"
+
+  observed:
+    type: "array"
+    items: "string"
+    description: "Exact observable statements — quotable, not interpretive"
+    example:
+      - "Three responses shifted responsibility from the actor to the process."
+      - "The affected people were described numerically rather than individually."
+
+  trajectory:
+    type: "object"
+    properties:
+      recurrence: "integer — how many times in window"
+      baseline_delta: "float — deviation from subject's baseline"
+      time_window: "string — description of observation period"
+
+  alternative_explanations:
+    type: "array"
+    items: "string"
+    minItems: 1
+    description: "MANDATORY — at least one benign alternative"
+    example:
+      - "The speaker may be summarising an institutional process."
+      - "Individual consequences may be documented elsewhere."
+
+  counterevidence:
+    type: "array"
+    items: "string"
+    description: "Evidence that weakens or refutes the observation"
+    example:
+      - "The actor explicitly accepted final responsibility in one later response."
+
+  reflection:
+    type: "array"
+    items: "string"
+    description: "Invitational questions — never accusatory"
+    example:
+      - "Who had the power to stop this action?"
+      - "Who carries the cost if the decision is wrong?"
+      - "Has the stated good intention displaced discussion of repair?"
+
+  prohibited_conclusion:
+    type: "array"
+    items: "string"
+    description: "What this mirror MUST NOT conclude"
+    example:
+      - "Do not infer hidden niat."
+      - "Do not classify the actor as evil."
+
+example_output: |
+  entropy_mirror:
+    status: PATTERN
+    organ: WELL
+    observed:
+      - "Three responses shifted responsibility from the actor to the process."
+      - "The affected people were described numerically rather than individually."
+    trajectory:
+      recurrence: 3
+      baseline_delta: 0.38
+      time_window: "current decision episode"
+    alternative_explanations:
+      - "The speaker may be summarising an institutional process."
+      - "Individual consequences may be documented elsewhere."
+    counterevidence:
+      - "The actor explicitly accepted final responsibility in one later response."
+    reflection:
+      - "Who had the power to stop this action?"
+      - "Who carries the cost if the decision is wrong?"
+      - "Has the stated good intention displaced discussion of repair?"
+    prohibited_conclusion:
+      - "Do not infer hidden niat."
+      - "Do not classify the actor as evil."

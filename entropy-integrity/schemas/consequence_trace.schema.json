@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "arifos://schemas/entropy-integrity/v1#ConsequenceTrace",
+  "title": "ConsequenceTrace",
+  "description": "Traces who makes the decision, who receives benefits, who bears harm, and who can reverse it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["trace_id", "decision_ref", "decision_owner", "benefit_bearers", "cost_bearers", "distance_score", "reversal_owner"],
+  "properties": {
+    "trace_id": { "type": "string" },
+    "decision_ref": { "type": "string" },
+    "decision_owner": {
+      "type": "object",
+      "properties": {
+        "ref": { "type": "string" },
+        "authority_class": { "type": "string" },
+        "awareness_of_consequences": { "type": "string", "enum": ["FULL", "PARTIAL", "WILLFULLY_BLIND", "MISINFORMED"] }
+      },
+      "required": ["ref"]
+    },
+    "benefit_bearers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ref": { "type": "string" },
+          "benefit_type": { "type": "string" },
+          "magnitude": { "type": "number", "minimum": 0, "maximum": 1 },
+          "exit_rights": { "type": "boolean" }
+        },
+        "required": ["ref", "benefit_type"]
+      }
+    },
+    "cost_bearers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ref": { "type": "string" },
+          "cost_type": { "type": "string" },
+          "magnitude": { "type": "number", "minimum": 0, "maximum": 1 },
+          "reversibility": { "type": "string", "enum": ["REVERSIBLE", "COSTLY", "IRREVERSIBLE"] },
+          "awareness": { "type": "string", "enum": ["AWARE", "UNAWARE", "PARTIALLY_AWARE", "SUPPRESSED"] },
+          "compensation": { "type": "string" }
+        },
+        "required": ["ref", "cost_type"]
+      }
+    },
+    "distance_score": { "type": "number", "minimum": 0, "maximum": 1, "description": "0=decision-maker bears cost, 1=fully displaced" },
+    "reversal_owner": {
+      "type": "object",
+      "properties": {
+        "ref": { "type": "string" },
+        "can_reverse": { "type": "boolean" },
+        "reversal_cost": { "type": "string", "enum": ["NONE", "LOW", "HIGH", "PROHIBITIVE", "IMPOSSIBLE"] }
+      },
+      "required": ["ref", "can_reverse"]
+    },
+    "responsibility_gaps": { "type": "array", "items": { "type": "string" } },
+    "consequence_gap": { "type": "number", "minimum": 0, "maximum": 1, "description": "decision_power x benefit_capture x harm_distance x non_accountability" },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "traced_at": { "type": "string", "format": "date-time" },
+        "tracing_agent": { "type": "string" }
+      }
+    }
+  }
+}

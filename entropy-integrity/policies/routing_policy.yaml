@@ -1,0 +1,45 @@
+policy_version: "v1"
+enforced_by: "arifOS Kernel (arif_entropy_route)"
+
+routing_table:
+  INFORMATION_LOSS:
+    primary: "KERNEL"
+    secondary: "GEOX"
+    description: "Missing evidence, suppressed witnesses, sensor loss"
+  POSSIBILITY_COLLAPSE:
+    primary: "WEALTH"
+    secondary: "GEOX"
+    description: "Option value and physical reversibility destruction"
+  FEEDBACK_CORRUPTION:
+    primary: "KERNEL"
+    secondary: "WELL"
+    description: "Correction rejection and witness removal"
+  DEFENSIVE_OVERHEAD:
+    primary: "WELL"
+    secondary: "WEALTH"
+    description: "Trust compression and coordination cost"
+  CASCADE_PROPAGATION:
+    primary: "GEOX"
+    secondary: "WEALTH"
+    description: "Propagation graph and downstream externality"
+  CORRECTION_FAILURE:
+    primary: "KERNEL"
+    secondary: "WELL"
+    description: "Inability to self-correct"
+  BRITTLE_ORDER:
+    primary: "ALL"
+    description: "Maintenance cost, silence, tail fragility"
+
+domain_routing:
+  human_stress_regulation: "WELL"
+  capital_incentive_power: "WEALTH"
+  physical_ecological_irreversibility: "GEOX"
+  implementation_runtime_integrity: "AFORGE"
+  constitutional_admissibility: "KERNEL"
+
+cross_organ_investigation:
+  trigger: "J-state < J2 OR contradiction_graph.length > 0"
+  protocol: "A2A task with EntropyInvestigationArtifact"
+  max_hops: 3
+  timeout_minutes: 30
+  escalation: "If unresolved after 3 hops → HOLD → F13 sovereign decision"

@@ -1,0 +1,42 @@
+policy_version: "v1"
+enforced_by: "All organs"
+constitutional_floors: ["F9 ANTIHANTU", "F10 ONTOLOGY"]
+
+principle: >
+  A human who becomes angry and repairs may have better integrity
+  than one who remains outwardly calm while suppressing feedback.
+  WELL measures recovery after activation, not activation itself.
+
+rules:
+  - id: "ST-001"
+    name: "observe_behavior_not_character"
+    description: "All outputs describe observable behavior patterns, not character traits"
+    enforcement:
+      forbidden_pattern: "is (a|an) (manipulator|liar|narcissist|sociopath|evil|corrupt)"
+      required_pattern: "(observed|measured|detected|recorded) (pattern|signal|behavior|response)"
+
+  - id: "ST-002"
+    name: "temporal_binding_required"
+    description: "Every observation must include a time window"
+    enforcement:
+      required_field: "evidence.pattern_window"
+
+  - id: "ST-003"
+    name: "recovery_as_signal"
+    description: "Post-activation recovery is a stronger integrity signal than activation itself"
+    enforcement:
+      well_tool: "well_regulation_recovery"
+      measures: ["recovery_latency", "repair_attempts", "correction_integration"]
+
+  - id: "ST-004"
+    name: "baseline_comparison_required"
+    description: "Behavioral changes compared to individual baseline, not population norms"
+    enforcement:
+      population_comparison: "PROHIBITED"
+
+  - id: "ST-005"
+    name: "decay_mandatory"
+    description: "All behavioral observations decay without F13 sovereign approval"
+    enforcement:
+      default_decay_days: 90
+      permanent_record: "F13 approval + VAULT999 SEAL only"

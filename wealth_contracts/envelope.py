@@ -501,6 +501,43 @@ def wrap_result(
             "missing": ["human", "earth"],
         }
 
+    # Inspect result and kwargs for evidence quality / unverified estimate signals
+    unverified_found = False
+    unverified_fields = []
+
+    def _scan_unverified(obj, depth=0):
+        nonlocal unverified_found
+        if depth > 4 or not obj:
+            return
+        if isinstance(obj, str):
+            if any(u in obj.upper() for u in ["ESTIMATE_UNVERIFIED", "UNVERIFIED", "GUESSED", "SPECULATED"]):
+                unverified_found = True
+        elif isinstance(obj, dict):
+            for k, v in obj.items():
+                if any(u in str(k).upper() for u in ["EVIDENCE_QUALITY", "QUALITY", "PROVENANCE"]):
+                    if any(u in str(v).upper() for u in ["ESTIMATE", "UNVERIFIED", "GUESSED", "SPECULATED", "WEAK"]):
+                        unverified_found = True
+                        unverified_fields.append(str(k))
+                _scan_unverified(v, depth + 1)
+        elif isinstance(obj, list):
+            for elem in obj:
+                _scan_unverified(elem, depth + 1)
+
+    if isinstance(result, dict):
+        _scan_unverified(result)
+
+    if unverified_found:
+        evidence_quality = EvidenceQuality.WEAK
+        if epistemic_tag in (EpistemicTag.DERIVED, EpistemicTag.OBSERVED):
+            epistemic_tag = EpistemicTag.INTERPRETED
+
+        # Cap confidence in result if present
+        if isinstance(result, dict):
+            if "confidence" in result and isinstance(result["confidence"], (int, float)):
+                result["confidence"] = min(0.60, float(result["confidence"]))
+            result["evidence_quality"] = "WEAK"
+            result["unverified_inputs_detected"] = True
+
     envelope = WealthEnvelope(
         tool_name=tool_name,
         domain=domain,
@@ -517,4 +554,10 @@ def wrap_result(
         forge_laws=forge_laws,
         **kwargs,
     )
-    return envelope.to_dict()
+    d = envelope.to_dict()
+    if unverified_found:
+        meta = d.setdefault("metadata", {})
+        meta["unverified_inputs_detected"] = True
+        if unverified_fields:
+            meta["unverified_fields"] = unverified_fields
+    return d

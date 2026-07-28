@@ -1,0 +1,17 @@
+version: "1.0.0"
+resource_uri: "arifos://entropy/ontology/v1"
+description: "Core ontologies for Entropy Integrity Mesh including signal classes and subject types."
+signal_classes:
+  INFORMATION_LOSS: "Suppression, deletion, or ignoring of baseline signal or witness testimony."
+  POSSIBILITY_COLLAPSE: "Irreversible reduction of future options, physical pathways, or decision freedom."
+  FEEDBACK_CORRUPTION: "Attacking or dismissing correction feedback to maintain a false equilibrium."
+  DEFENSIVE_OVERHEAD: "Time, energy, or capital spent on compliance theatre, policing, or surveillance rather than purpose."
+  CASCADE_PROPAGATION: "Export of locally ordered entropy to downstream systems or communities."
+  CORRECTION_FAILURE: "Failure to adapt, repair, or revise when confronted with direct counterevidence."
+  BRITTLE_ORDER: "High apparent stability masking catastrophic tail risk or silence."
+subject_types:
+  HUMAN: "Individual human beings, subject to physical, metabolic, and emotional constraints."
+  AGENT: "Autonomous or semi-autonomous software nodes acting within the federation."
+  INSTITUTION: "Organizations, companies, or rule-based entities with concentrated resources."
+  DECISION: "A specific policy, transaction, commitment, or design choice with consequences."
+  EARTH_SYSTEM: "Material baselines, ecosystems, aquifers, geology, or physical resources."

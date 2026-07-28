@@ -1,0 +1,59 @@
+{
+  "obs_4b01d5d1": {
+    "organ": "WELL",
+    "subject_type": "DECISION",
+    "subject_ref": "mine_closure_plan_v2",
+    "signal_class": [
+      "INFORMATION_LOSS",
+      "CORRECTION_FAILURE"
+    ],
+    "dark_mode": [
+      "RESPONSIBILITY_LAUNDERING",
+      "JUDGMENT_COLLAPSE"
+    ],
+    "evidence": {
+      "direct_observations": [
+        "Three responses shifted responsibility to the automated closure SOP."
+      ],
+      "pattern_window": {
+        "time_window": "eval_1",
+        "baseline_delta": 0.4,
+        "recurrence": 2
+      },
+      "contradictions": [
+        "Claimed zero risk but turned off downstream monitoring sensor."
+      ],
+      "counterevidence": [
+        "Company funded basic 1-year bond."
+      ],
+      "alternative_explanations": [
+        "SOP mandates formal step completion."
+      ]
+    },
+    "epistemic": {
+      "layer": "L3",
+      "confidence": 0.8,
+      "source_independence": 0.75
+    },
+    "consequence": {
+      "affected_parties": [
+        "Farmers Cooperative B"
+      ],
+      "reversibility": "IRREVERSIBLE",
+      "option_loss": 0.7,
+      "feedback_loss": 0.8,
+      "consequence_distance": 0.9
+    },
+    "correction": {
+      "challenge_presented": true,
+      "response_class": [
+        "DISMISSED",
+        "AUTHORITY_EXPANDED"
+      ]
+    },
+    "prohibited_conclusions": [
+      "hidden niat"
+    ],
+    "observation_id": "obs_4b01d5d1"
+  }
+}

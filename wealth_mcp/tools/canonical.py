@@ -15,7 +15,7 @@ from typing import Annotated, Any
 from pydantic import BeforeValidator
 from wealth_contracts.authority import ExecutionAuthority
 from wealth_contracts.envelope import WEALTH_OUTPUT_SCHEMA, wrap_result
-from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality
+from wealth_contracts.epistemic import ClaimState, EpistemicTag, EvidenceQuality
 from wealth_mcp import (
     CAPITAL_TOOL_NAMES,
     INSTITUTIONAL_TOOL_NAMES,
@@ -385,8 +385,40 @@ def register_canonical_tools(mcp):
             )
 
         if m == "survival":
+            if survival_submode == "sovereign_fiscal" or (
+                total_govt_expenditure is not None
+                and petronas_dividend_base_rm is not None
+            ):
+                if any(
+                    v is None
+                    for v in [
+                        total_govt_expenditure,
+                        non_oil_revenue,
+                        petronas_dividend_base_rm,
+                        oil_price_assumption_usd,
+                    ]
+                ):
+                    raise ValueError(
+                        "sovereign_fiscal survival mode requires total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd"
+                    )
+                return wrap_result(
+                    tool_name="capital_health",
+                    domain="risk",
+                    result=fiscal_breakeven_oil_price(
+                        total_govt_expenditure,
+                        non_oil_revenue,
+                        petronas_dividend_base_rm,
+                        oil_price_assumption_usd,
+                    ),
+                    epistemic_tag=EpistemicTag.DERIVED,
+                    evidence_quality=EvidenceQuality.MODERATE,
+                    source_attribution=["fiscal_breakeven_model"],
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
+
             # Survival engine — delegates to the server-side implementation
-            return await _call_legacy_tool(
+            raw = await _call_legacy_tool(
                 "wealth_survival_engine",
                 {
                     "mode": survival_submode,
@@ -396,6 +428,27 @@ def register_canonical_tools(mcp):
                     "horizon_months": horizon_months,
                 },
             )
+            # If empty inputs / insufficient signal, enforce DRAFT / MISSING
+            is_empty = (
+                (monthly_income_v is None or monthly_income_v == 0)
+                and (monthly_expenses_v is None or monthly_expenses_v == 0)
+                and (liquid_assets is None or liquid_assets == 0)
+            )
+            if is_empty and isinstance(raw, dict):
+                return wrap_result(
+                    tool_name="capital_health",
+                    domain="capital",
+                    result=raw,
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    claim_state=ClaimState.DRAFT,
+                    execution_authorized=False,
+                    requires_888_hold=True,
+                    source_attribution=["survival_engine_unverified"],
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
+            return raw
 
         if m == "fiscal_breakeven":
             if any(
@@ -770,62 +823,85 @@ def register_canonical_tools(mcp):
         trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
-        # Coerce MCP transport string serialization
+        try:
+            m = mode.lower().strip()
 
-        m = mode.lower()
+            if m == "wisdom":
+                from wealth_core.wisdom import compute_wisdom
 
-        if m == "wisdom":
-            from wealth_core.wisdom import compute_wisdom
+                return wrap_result(
+                    tool_name="capital_wisdom",
+                    domain="wisdom",
+                    result=compute_wisdom(
+                        proposal, capital_type=capital_type, context=context
+                    ),
+                    epistemic_tag=EpistemicTag.INTERPRETED,
+                    evidence_quality=EvidenceQuality.WEAK,
+                    source_attribution=["proposal_text_analysis"],
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
 
+            if m == "omni":
+                # Omni wisdom delegates to the server-side tool.
+                # MUST wrap in WealthEnvelope — output_schema requires tool_name.
+                raw = await _call_legacy_tool(
+                    "wealth_omni_wisdom",
+                    {
+                        "mode": "synthesize",
+                        "memory_query": memory_query,
+                    },
+                )
+                return wrap_result(
+                    tool_name="capital_wisdom",
+                    domain="wisdom",
+                    result=raw if isinstance(raw, dict) else {"result": raw},
+                    epistemic_tag=EpistemicTag.INTERPRETED,
+                    evidence_quality=EvidenceQuality.WEAK,
+                    source_attribution=["omni_wisdom_synthesis"],
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
+
+            if m == "epistemic":
+                from wealth_core.epistemic import audit_epistemic
+
+                return wrap_result(
+                    tool_name="capital_wisdom",
+                    domain="wisdom",
+                    result=audit_epistemic(target),
+                    epistemic_tag=EpistemicTag.INTERPRETED,
+                    evidence_quality=EvidenceQuality.MODERATE,
+                    source_attribution=["epistemic_audit"],
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
+
+            err_msg = f"Unknown mode '{mode}'. Valid: wisdom, omni, epistemic"
             return wrap_result(
                 tool_name="capital_wisdom",
                 domain="wisdom",
-                result=compute_wisdom(
-                    proposal, capital_type=capital_type, context=context
-                ),
-                epistemic_tag=EpistemicTag.INTERPRETED,
-                evidence_quality=EvidenceQuality.WEAK,
-                source_attribution=["proposal_text_analysis"],
+                result={"status": "ERROR", "error_code": "UNKNOWN_MODE", "message": err_msg},
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                claim_state=ClaimState.VOID,
+                errors=[err_msg],
                 session_id=session_id,
                 actor_id=actor_id,
             )
-
-        if m == "omni":
-            # Omni wisdom delegates to the server-side tool.
-            # MUST wrap in WealthEnvelope — output_schema requires tool_name.
-            raw = await _call_legacy_tool(
-                "wealth_omni_wisdom",
-                {
-                    "mode": "synthesize",
-                    "memory_query": memory_query,
-                },
-            )
+        except Exception as exc:
+            err_msg = f"{type(exc).__name__}: {exc}"
             return wrap_result(
                 tool_name="capital_wisdom",
                 domain="wisdom",
-                result=raw if isinstance(raw, dict) else {"result": raw},
-                epistemic_tag=EpistemicTag.INTERPRETED,
-                evidence_quality=EvidenceQuality.WEAK,
-                source_attribution=["omni_wisdom_synthesis"],
+                result={"status": "ERROR", "error_code": "COMPUTE_ERROR", "message": str(exc)},
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                claim_state=ClaimState.VOID,
+                errors=[err_msg],
                 session_id=session_id,
                 actor_id=actor_id,
             )
-
-        if m == "epistemic":
-            from wealth_core.epistemic import audit_epistemic
-
-            return wrap_result(
-                tool_name="capital_wisdom",
-                domain="wisdom",
-                result=audit_epistemic(target),
-                epistemic_tag=EpistemicTag.INTERPRETED,
-                evidence_quality=EvidenceQuality.MODERATE,
-                source_attribution=["epistemic_audit"],
-                session_id=session_id,
-                actor_id=actor_id,
-            )
-
-        raise ValueError(f"Unknown mode '{mode}'. Valid: wisdom, omni, epistemic")
 
     # ═══════════════════════════════════════════════════════════════════
     # 5. capital_market — Market data and stock analysis
@@ -1538,6 +1614,125 @@ def register_canonical_tools(mcp):
                 hold=True,
             )
 
+    # ═══════════════════════════════════════════════════════════════════
+    # 9. wealth_judge_handoff — Handoff envelope validation and submission
+    # ═══════════════════════════════════════════════════════════════════
+
+    @mcp.tool(
+        name="wealth_judge_handoff",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
+        description="Build or validate structured handoff envelope for arifOS governance review and 888_HOLD judgment.",
+        tags={"domain": "meta", "kind": "governance", "canonical": "v1"},
+    )
+    async def wealth_judge_handoff(
+        mode: str = "prepare",
+        intent: str = "",
+        reversibility: str = "REVERSIBLE",
+        blast_radius: str = "low",
+        actor_id: str | None = None,
+        actor_cryptographically_verified: bool = False,
+        payload: CoercedDict = None,
+        session_id: str | None = None,
+        trace_id: str | None = None,
+    ) -> dict:
+        """Validate and prepare handoff envelope for arifOS governance."""
+        m = mode.lower().strip()
+        p = payload or {}
+
+        # 1. Intent validation: reject vague/unbounded intents
+        intent_clean = (intent or p.get("intent", "")).strip()
+        vague_intents = ["aku nak tau semua truth", "everything", "all truth", "tau semua", "test"]
+        is_unbounded = (
+            not intent_clean
+            or any(v in intent_clean.lower() for v in vague_intents)
+            or len(intent_clean) < 5
+        )
+
+        # 2. Reversibility validation: enforce standard enum
+        rev_raw = (reversibility or p.get("reversibility", "REVERSIBLE")).strip().upper()
+        valid_reversibility = {"REVERSIBLE", "IRREVERSIBLE", "SEALED_GATE", "READ_ONLY"}
+        is_invalid_reversibility = rev_raw not in valid_reversibility
+
+        # 3. Blast radius & authentication check
+        blast = (blast_radius or p.get("blast_radius", "low")).lower().strip()
+        is_critical = (blast == "critical")
+        auth_verified = bool(
+            actor_cryptographically_verified or p.get("actor_cryptographically_verified")
+        )
+
+        # Rule: blast_radius=critical without cryptographic actor verification requires 888_HOLD
+        requires_888 = is_critical and not auth_verified
+
+        errors = []
+        warnings = []
+        if is_unbounded:
+            errors.append(
+                f"INADMISSIBLE_INTENT: Intent '{intent_clean}' is unbounded/vague. Provide bounded, specific intent."
+            )
+        if is_invalid_reversibility:
+            errors.append(
+                f"INVALID_REVERSIBILITY: '{reversibility}' is not a valid reversibility level. Must be one of {sorted(list(valid_reversibility))}."
+            )
+        if requires_888:
+            warnings.append(
+                "888_HOLD_REQUIRED: Critical blast radius requires 888_HOLD or cryptographic actor verification."
+            )
+
+        if m == "submit" and (errors or requires_888):
+            # Submission forbidden if validation errors exist or 888_HOLD required
+            result = {
+                "status": "REJECTED_BY_GOVERNANCE",
+                "mode": "submit",
+                "submitted": False,
+                "hold_reason": "888_HOLD_REQUIRED" if requires_888 else "VALIDATION_FAILED",
+                "action": "PREPARE_ONLY",
+                "validation_errors": errors,
+                "warnings": warnings,
+            }
+            return wrap_result(
+                tool_name="wealth_judge_handoff",
+                domain="meta",
+                result=result,
+                epistemic_tag=EpistemicTag.INTERPRETED,
+                evidence_quality=EvidenceQuality.SPECULATED,
+                claim_state=ClaimState.VOID if errors else ClaimState.DRAFT,
+                execution_authorized=False,
+                requires_888_hold=True,
+                errors=errors,
+                warnings=warnings,
+                session_id=session_id,
+                actor_id=actor_id,
+            )
+
+        status = "PREPARED" if m == "prepare" else "SUBMITTED"
+        result = {
+            "status": status,
+            "mode": m,
+            "submitted": (status == "SUBMITTED"),
+            "intent": intent_clean,
+            "reversibility": rev_raw if not is_invalid_reversibility else "UNKNOWN",
+            "blast_radius": blast,
+            "actor_id": actor_id or "unverified",
+            "actor_cryptographically_verified": auth_verified,
+            "requires_888_hold": requires_888,
+            "validation_errors": errors,
+            "warnings": warnings,
+        }
+        return wrap_result(
+            tool_name="wealth_judge_handoff",
+            domain="meta",
+            result=result,
+            epistemic_tag=EpistemicTag.DERIVED if not errors else EpistemicTag.SPECULATED,
+            evidence_quality=EvidenceQuality.MODERATE if not errors else EvidenceQuality.WEAK,
+            claim_state=ClaimState.DRAFT if m == "prepare" else ClaimState.QC_VERIFIED,
+            execution_authorized=(status == "SUBMITTED" and not requires_888),
+            requires_888_hold=requires_888,
+            errors=errors,
+            warnings=warnings,
+            session_id=session_id,
+            actor_id=actor_id,
+        )
+
     return {
         "capital_primitive": capital_primitive,
         "capital_health": capital_health,
@@ -1547,4 +1742,5 @@ def register_canonical_tools(mcp):
         "capital_ledger": capital_ledger,
         "capital_registry": capital_registry,
         "capital_entropy": capital_entropy,
+        "wealth_judge_handoff": wealth_judge_handoff,
     }

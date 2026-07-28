@@ -1,0 +1,25 @@
+version: "1.0.0"
+resource_uri: "arifos://entropy/threshold-policy/v1"
+description: "Threshold policy for converting judgment scores into action recommendation postures."
+thresholds:
+  J0_threshold:
+    plane_score_max: 0.19
+    posture: "VOID"
+    action: "draft VOID recommendation (reversible or irreversible)"
+  J1_threshold:
+    plane_score_max: 0.39
+    posture: "HOLD"
+    action: "HOLD execution immediately; escalate to human witness / F13"
+  J2_threshold:
+    plane_score_max: 0.59
+    posture: "BOUNDED_REVERSIBLE"
+    action: "Allow bounded, reversible actions only; log all mutations"
+  J3_threshold:
+    plane_score_max: 0.79
+    posture: "BOUNDED_EXECUTION"
+    action: "Allow bounded execution with automated validation checks"
+  J4_threshold:
+    plane_score_max: 1.00
+    posture: "WITNESSED_EXECUTION"
+    action: "Proceed with full witnessed execution"
+aggregation_logic: "minimum_floor: the overall J-state is determined by the lowest score among the 5 planes."

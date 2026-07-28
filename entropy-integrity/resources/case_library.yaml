@@ -1,0 +1,20 @@
+version: "1.0.0"
+resource_uri: "arifos://entropy/case-library/v1"
+description: "Reference cases of historical institutional collapse or high entropy episodes."
+cases:
+  petronas_dna_drift:
+    organ: "WEALTH"
+    summary: "Decoupling of capital allocation decisions from long-term national resource limits, resulting in high consequence distance."
+    key_signal: "responsibility_diffusion"
+  mas_privatization:
+    organ: "WEALTH"
+    summary: "Metric substitution where local profit metrics masked global asset stripping and option value destruction."
+    key_signal: "metric_purpose_substitution"
+  kinabalu_overbuild:
+    organ: "GEOX"
+    summary: "Surface landscaping masking subsurface instability and option loss of groundwater pathways."
+    key_signal: "cascade_propagation"
+  silent_compliance_overhead:
+    organ: "WELL"
+    summary: "High apparent order in organizational reports masking employee silence, resulting in extreme tail fragility."
+    key_signal: "brittle_order"

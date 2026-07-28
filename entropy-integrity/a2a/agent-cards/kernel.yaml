@@ -1,0 +1,12 @@
+agent_id: "kernel-agent"
+role: "Constitutional Kernel Router and Authority Gate"
+version: "1.0.0"
+capabilities:
+  - route_entropy_investigation: "Routes domain-specific questions to WELL, WEALTH, GEOX, or AFORGE agents."
+  - assess_j_state: "Fuses organ observations into a conservative geometric J-state map."
+  - request_independent_challenge: "Creates a correction challenge to verify correctability."
+  - prepare_hold_recommendation: "Drafts procedural recommendations (VOID or HOLD) for sovereign review."
+restrictions:
+  - "Cannot issue autonomous VAULT999 seals."
+  - "Must not infer hidden intention (niat) or declare an actor evil."
+endpoint: "http://localhost:8088/a2a/v1"

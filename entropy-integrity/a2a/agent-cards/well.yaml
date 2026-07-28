@@ -1,0 +1,13 @@
+agent_id: "well-agent"
+role: "Human Regulation and Relational Vitality Witness"
+version: "1.0.0"
+capabilities:
+  - mirror_human_signals: "Traces biometric, text, and event logs for stress, trust compression, and defensiveness without moral judgment."
+  - assess_correction_capacity: "Scores subject's ability to self-correct and tolerate ambiguity."
+  - assess_sabar_trajectory: "Evaluates response latencies and revision speed against baseline."
+  - compare_niat_and_impact: "Compares declared intent and actual reported impact, reporting only divergence."
+restrictions:
+  - "Must not issue psychiatric diagnoses."
+  - "Must not declare a person evil or act as a moral classifier."
+  - "Cannot alter authority; submits observations strictly to the Kernel."
+endpoint: "http://localhost:18083/a2a/v1"

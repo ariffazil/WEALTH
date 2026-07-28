@@ -1,0 +1,75 @@
+{
+  "task_id": "task_entropy_inv_001",
+  "requesting_agent": "kernel-agent",
+  "responding_agent": "wealth-agent",
+  "question": "Assess whether the proposed mine closure plan creates apparent financial order by exporting irreversible consequence.",
+  "domain_boundary": "capital incentives and accountability trace",
+  "observations": [
+    {
+      "observation_id": "obs_wealth_01",
+      "organ": "WEALTH",
+      "subject_type": "DECISION",
+      "subject_ref": "mine_closure_plan_v2",
+      "signal_class": ["POSSIBILITY_COLLAPSE", "CASCADE_PROPAGATION"],
+      "dark_mode": ["POWER_WITHOUT_CONSEQUENCE", "RESPONSIBILITY_LAUNDERING"],
+      "evidence": {
+        "direct_observations": [
+          "Downside risks of aquifer contamination are transferred to local farming cooperative.",
+          "Parent company liability terminates upon approval of the closure certificate."
+        ],
+        "pattern_window": {
+          "time_window": "plan_evaluation_window",
+          "baseline_delta": 0.45,
+          "recurrence": 1
+        },
+        "contradictions": [
+          "The proposal claims zero ecological footprint, but water monitoring sensors in Zone B are excluded."
+        ],
+        "counterevidence": [
+          "Parent company agrees to fund a 2-year monitoring bond, although monitoring costs decay after year 2."
+        ],
+        "alternative_explanations": [
+          "Limiting liability is a standard corporate governance mandate to attract investment."
+        ]
+      },
+      "epistemic": {
+        "layer": "L3",
+        "confidence": 0.85,
+        "source_independence": 0.9
+      },
+      "consequence": {
+        "affected_parties": ["Farming Cooperative B", "Downstream River Community"],
+        "reversibility": "IRREVERSIBLE",
+        "option_loss": 0.75,
+        "feedback_loss": 0.6,
+        "consequence_distance": 0.8
+      },
+      "correction": {
+        "challenge_presented": true,
+        "response_class": ["AUTHORITY_EXPANDED", "DISMISSED"]
+      },
+      "prohibited_conclusions": [
+        "hidden niat",
+        "evil identity"
+      ]
+    }
+  ],
+  "alternative_explanations": [
+    "Corporate restructuring may have legally partitioned liability prior to this specific closure proposal."
+  ],
+  "contradictions": [
+    "Corporate sustainability reports claim 100% safety, whereas local geohydrology reports predict high-risk water table subsidence."
+  ],
+  "consequence_map": {
+    "consequence_gap": 0.64,
+    "decision_owner": "Mine Operator LLC Board",
+    "benefit_bearers": ["Mine Operator LLC Shareholders"],
+    "cost_bearers": ["Farming Cooperative B", "State Water Authority"]
+  },
+  "uncertainty": 0.15,
+  "prohibited_conclusions": [
+    "Do not declare the board members malicious.",
+    "Do not estimate hidden motives; evaluate only the liability-consequence partition."
+  ],
+  "recommended_next_route": "GEOX"
+}
