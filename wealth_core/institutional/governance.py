@@ -43,15 +43,33 @@ def _score_board_composition(
             "secretaries_as_directors": 0,
         }
 
+    exec_types = {"executive", "executive_director", "exec"}
+    ind_types = {"independent", "independent_ned", "independent_director", "ined", "independent_non_executive"}
+    sec_types = {"secretary", "company_secretary", "sec"}
+
+    def is_ind(m):
+        if not isinstance(m, dict):
+            return False
+        t = str(m.get("type", m.get("role", m.get("category", "")))).lower().strip()
+        return t in ind_types or m.get("independent") is True or "independent" in t
+
+    def is_exec(m):
+        if not isinstance(m, dict):
+            return False
+        t = str(m.get("type", m.get("role", m.get("category", "")))).lower().strip()
+        return (t in exec_types or m.get("executive") is True or "executive" in t) and not is_ind(m)
+
+    def is_sec(m):
+        if not isinstance(m, dict):
+            return False
+        t = str(m.get("type", m.get("role", m.get("category", "")))).lower().strip()
+        return t in sec_types or "secretary" in t
+
     total = len(board_members)
-    executives = sum(1 for m in board_members if m.get("type") == "executive")
-    independent_neds = sum(
-        1 for m in board_members if m.get("type") == "independent_ned"
-    )
-    non_independent_neds = sum(
-        1 for m in board_members if m.get("type") == "non_independent_ned"
-    )
-    secretaries = sum(1 for m in board_members if m.get("type") == "secretary")
+    executives = sum(1 for m in board_members if is_exec(m))
+    independent_neds = sum(1 for m in board_members if is_ind(m))
+    non_independent_neds = max(0, total - independent_neds - executives)
+    secretaries = sum(1 for m in board_members if is_sec(m))
 
     # Size score: optimal 7-11 members
     if 7 <= total <= 11:

@@ -238,3 +238,42 @@ def register_institutional_tools(mcp: FastMCP) -> None:
                 "institutional_state_DER",
             ],
         )
+
+    # ── 5. wealth_bid_surface ────────────────────────────────────────────
+    @mcp.tool(
+        name="wealth_bid_surface",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
+        annotations={
+            "readOnlyHint": True,
+            "idempotentHint": True,
+            "apex_primitive": "EMV Bid Surface",
+        },
+    )
+    async def wealth_bid_surface(
+        bids: list = None,
+        reserve_price: float = 0.0,
+        mode: str = "first_price",
+        scoring_weights: dict | None = None,
+        session_id: str | None = None,
+        actor_id: str | None = None,
+    ) -> dict:
+        """Score a competitive bid surface for resource allocation."""
+        from wealth_mcp.tools.bid_surface import compute_bid_surface
+
+        result = compute_bid_surface(
+            bids=bids or [],
+            reserve_price=reserve_price,
+            mode=mode,
+            scoring_weights=scoring_weights,
+        )
+
+        return wrap_result(
+            tool_name="wealth_bid_surface",
+            domain="risk",
+            result=result,
+            epistemic_tag=EpistemicTag.DERIVED,
+            evidence_quality=EvidenceQuality.MODERATE,
+            source_attribution=["bid_surface_model"],
+            session_id=session_id,
+            actor_id=actor_id,
+        )

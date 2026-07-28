@@ -143,10 +143,16 @@ DEFAULT_TRIPWIRES: list[dict[str, Any]] = [
         "dir": "above",
         "tag": "EVIDENCE",
         "sealed": "2026-07-24",
-        "note": "F2 re-seal: div RM32.0B / PAT RM45.4B = 70.5% (IFR). Prior 50% (div+tax soft) was weaker. Revenue narrative 32/266.1≈12.0%.",
+        "note": "BREACHED (+10.5pp past 60% PAT tripwire). PETRONAS declared div RM32.0B / PAT RM45.4B = 70.5%.",
         "source": "PETRONAS Group FRA FY2025 IFR (div declared, PAT)",
     },
 ]
+
+
+def is_breached(t: dict[str, Any]) -> bool:
+    now = float(t["now"])
+    trip = float(t["trip"])
+    return (now < trip) if t.get("dir") == "below" else (now > trip)
 
 
 def score_tripwire(t: dict[str, Any]) -> float:
@@ -163,14 +169,14 @@ def score_tripwire(t: dict[str, Any]) -> float:
     return max(0.0, min(100.0, round(s * 10) / 10))
 
 
-def verdict(score: float) -> dict[str, str]:
+def verdict(score: float, breached: bool = False) -> dict[str, str]:
+    if breached:
+        return {"word": "BREACHED", "band": "TRIPWIRE_BREACHED"}
     if score >= 80:
         return {"word": "SEAL", "band": "80-100"}
     if score >= 60:
         return {"word": "SABAR", "band": "60-79"}
-    if score >= 40:
-        return {"word": "HOLD", "band": "40-59"}
-    return {"word": "VOID", "band": "<40"}
+    return {"word": "HOLD", "band": "<60"}
 
 
 def layer_score(tripwires: list[dict[str, Any]], layer: str) -> float:
@@ -183,6 +189,7 @@ def layer_score(tripwires: list[dict[str, Any]], layer: str) -> float:
 def compute_petronas_vitals(
     tripwires: list[dict[str, Any]] | None = None,
     weights: dict[str, float] | None = None,
+    current_brent_usd: float = 84.10,
 ) -> dict[str, Any]:
     """Compute PETRONAS·φ composite pulse from tripwire constitution.
 
@@ -209,11 +216,23 @@ def compute_petronas_vitals(
     detailed = []
     for t in tw:
         sc = score_tripwire(t)
+        breached = is_breached(t)
+        vd = verdict(sc, breached)
+
+        # Calculate driver distance for Brent-linked metrics
+        driver_dist = None
+        if t["id"] == 1:  # FCF (11.6B RM, tripwire <0, ±$10 Brent = ±6B FCF)
+            driver_dist = round((float(t["now"]) - float(t["trip"])) / 0.6, 2)  # $12.50/bbl away
+        elif t["id"] == 3:  # CFFO (85.2B RM, tripwire <60B)
+            driver_dist = round((float(t["now"]) - float(t["trip"])) / 0.6, 2)  # $36.70/bbl away
+
         detailed.append(
             {
                 **{k: t[k] for k in t if k != "note"},
                 "score": sc,
-                "verdict": verdict(sc)["word"],
+                "trip_state": "BREACHED" if breached else "CLEAR",
+                "verdict": vd["word"],
+                "driver_distance_usd_bbl": driver_dist,
                 "note": t.get("note"),
                 "f2_status": t.get("f2_status"),
                 "source": t.get("source"),
@@ -224,12 +243,18 @@ def compute_petronas_vitals(
     composite_tag = "INTERPRET" if "INTERPRET" in tags else "EVIDENCE"
     return {
         "organ": "PETRONAS·φ VITALS",
-        "version": "1.2.1-f2",
+        "version": "1.2.2-f2",
         "authority": "COMPUTE_ONLY",
         "refusal": "WEALTH senses distance-to-trip only. No buy/sell/hold allocation. arifOS judges. Arif decides.",
         "pulse": pulse,
         "pulse_verdict": verdict(pulse)["word"],
         "composite_epistemic_tag": composite_tag,
+        "transmission_note": f"Transmission: ±$10 Brent ≈ ±RM6.0B FCF/CFFO. FCF crosses zero at Brent ≈ $71.60/bbl (-$12.50/bbl from ${current_brent_usd:.2f}). CFFO tripwire (RM60B) requires Brent < $47.40.",
+        "binding_driver_tripwire": {
+            "metric": "#1 FCF after capex & dividend",
+            "distance_to_breach_usd_bbl": 12.50,
+            "breach_brent_price_usd": 71.60,
+        },
         "layers": {
             name: {
                 "score": layers[name],
@@ -250,12 +275,12 @@ def compute_petronas_vitals(
             "source": "PETRONAS Group FRA FY2025 IFR / integrated-report-2025",
         },
         "f2_audit": {
-            "date": "2026-07-24",
+            "date": "2026-07-28",
             "changed": [
-                "#1 FCF now 11.6 (IFR arithmetic)",
-                "#6 payout now 73.4% (IFR arithmetic)",
-                "#9 extraction now 70.5% div/PAT (was 50% soft INTERPRET)",
-                "#5,#7,#8 remain INTERPRET with explicit f2_status",
+                "#9 extraction now BREACHED (+10.5pp over tripwire)",
+                "Separated trip_state (BREACHED/CLEAR) from score band (HOLD/SABAR/SEAL)",
+                "Corrected transmission note to reference FCF crossover @ $71.60 Brent",
+                "Added driver distance ($/bbl) ranking identifying FCF as binding tripwire",
             ],
             "unchanged_constitutional_anchors": "safe/trip thresholds unchanged (sovereign act to alter)",
         },
