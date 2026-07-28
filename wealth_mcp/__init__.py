@@ -22,6 +22,7 @@ INSTITUTIONAL_TOOL_NAMES = (
     "wealth_cascade_model",
     "wealth_governance_capacity",
     "wealth_external_exploitation_detect",
+    "wealth_bid_surface",
 )
 
 PUBLIC_TOOL_NAMES = CAPITAL_TOOL_NAMES + INSTITUTIONAL_TOOL_NAMES

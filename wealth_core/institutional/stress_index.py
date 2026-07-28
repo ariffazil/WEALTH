@@ -30,54 +30,76 @@ def _clamp(v: float, lo: float = 0.0, hi: float = 1.0) -> float:
 
 
 def _financial_stress(sig: Dict[str, Any]) -> float:
-    """Score financial stress 0-1 from signals."""
+    """Score financial stress 0-1 from signals with alias support."""
     score = 0.0
 
     # Profit change: -50% or worse → 1.0, 0% → 0.0
-    profit_chg = sig.get("profit_change_pct", 0.0)
+    profit_chg = sig.get("profit_change_pct", sig.get("profit_decline_pct", sig.get("profit_change", 0.0)))
     if profit_chg < 0:
-        score += _clamp(abs(profit_chg) / 50.0) * 0.45
+        score += _clamp(abs(profit_chg) / 50.0) * 0.40
 
     # Revenue change: -30% or worse → 1.0, 0% → 0.0
-    rev_chg = sig.get("revenue_change_pct", 0.0)
+    rev_chg = sig.get("revenue_change_pct", sig.get("revenue_change", 0.0))
     if rev_chg < 0:
-        score += _clamp(abs(rev_chg) / 30.0) * 0.35
+        score += _clamp(abs(rev_chg) / 30.0) * 0.30
 
     # Cost cutting announced → binary flag
-    if sig.get("cost_cutting_announced", False):
-        score += 0.20
+    if sig.get("cost_cutting_announced", sig.get("cost_cutting", False)):
+        score += 0.15
+
+    # Sovereign extraction stress (>60% of PAT is tripwire)
+    sov_ext = sig.get("sovereign_extraction", sig.get("sovereign_extraction_pct", sig.get("sovereign_extraction_gauge", 0.0)))
+    if isinstance(sov_ext, (int, float)) and sov_ext > 60.0:
+        score += _clamp((sov_ext - 60.0) / 40.0) * 0.30
+
+    # CFFO stress (<60B RM tripwire)
+    cffo = sig.get("cffo", sig.get("cffo_rm_b", None))
+    if isinstance(cffo, (int, float)) and cffo < 60.0:
+        score += _clamp((60.0 - cffo) / 30.0) * 0.25
+
+    # FCF stress (<0 RM tripwire)
+    fcf = sig.get("fcf", sig.get("fcf_rm_b", None))
+    if isinstance(fcf, (int, float)) and fcf < 0.0:
+        score += 0.25
+
+    # Gearing stress (>40% tripwire)
+    gearing = sig.get("gearing", sig.get("gearing_ratio_pct", None))
+    if isinstance(gearing, (int, float)) and gearing > 40.0:
+        score += _clamp((gearing - 40.0) / 40.0) * 0.20
 
     return _clamp(score)
 
 
 def _governance_stress(sig: Dict[str, Any]) -> float:
-    """Score governance erosion 0-1 from signals."""
+    """Score governance erosion 0-1 from signals with alias support."""
     score = 0.0
 
     # Board resignations in 12m relative to board size
-    resignations = sig.get("board_resignations_12m", 0)
+    resignations = sig.get("board_resignations_12m", sig.get("resignations", 0))
     board_size = sig.get("board_size", 7)
     if board_size > 0:
         resign_ratio = resignations / board_size
-        # 30%+ resignations → 1.0
         score += _clamp(resign_ratio / 0.30) * 0.35
 
+    # Governance separation index (< 0 is tripwire)
+    gov_sep = sig.get("governance_separation_index", sig.get("governance_separation", None))
+    if isinstance(gov_sep, (int, float)) and gov_sep <= 0:
+        score += 0.25
+
     # Company secretaries serving as directors (governance weakness)
-    if sig.get("company_secretaries_as_directors", False):
+    if sig.get("company_secretaries_as_directors", sig.get("secretary_as_director", False)):
         score += 0.20
 
     # Low average tenure (instability) — below 3 years is concerning
-    tenure = sig.get("avg_tenure_years", 5.0)
+    tenure = sig.get("avg_tenure_years", sig.get("avg_tenure", 5.0))
     if tenure < 5.0:
         score += _clamp((5.0 - tenure) / 5.0) * 0.20
 
-    # Board size too small (below 5) or too large (above 15) is a signal
     if board_size < 5:
         score += 0.15
     elif board_size < 7:
         score += 0.10
 
-    # High resignation count absolute
     if resignations >= 3:
         score += 0.10
 
@@ -85,11 +107,7 @@ def _governance_stress(sig: Dict[str, Any]) -> float:
 
 
 def _normalize_departures(raw: Any) -> tuple[int, list[str]]:
-    """Type-safe key_personnel_departures → (count, names).
-
-    Accepts: int, list[str], comma-separated str. Never raises.
-    P0 fix 2026-07-12 (#35 crash / #34 silent drop).
-    """
+    """Type-safe key_personnel_departures → (count, names). Accepts int, list, str."""
     if raw is None:
         return 0, []
     if isinstance(raw, int):
@@ -102,16 +120,15 @@ def _normalize_departures(raw: Any) -> tuple[int, list[str]]:
     if isinstance(raw, (list, tuple, set)):
         names = [str(x) for x in raw]
         return len(names), names
-    # Unknown type — treat as absent, caller records warning
     return 0, []
 
 
 def _workforce_stress(sig: Dict[str, Any]) -> float:
-    """Score workforce destabilization 0-1."""
+    """Score workforce destabilization 0-1 with alias support."""
     score = 0.0
 
-    # Rightsizing percentage: 15%+ → 1.0
-    rightsizing = sig.get("rightsizing_pct", 0.0)
+    # Rightsizing / workforce reduction percentage: 15%+ → 1.0
+    rightsizing = sig.get("rightsizing_pct", sig.get("rightsizing", sig.get("workforce_reduction_pct", sig.get("enabler_ratio", 0.0))))
     try:
         rightsizing = float(rightsizing or 0.0)
     except (TypeError, ValueError):
@@ -119,7 +136,7 @@ def _workforce_stress(sig: Dict[str, Any]) -> float:
     score += _clamp(rightsizing / 15.0) * 0.35
 
     # Voluntary exits: 10%+ → 1.0
-    exits = sig.get("voluntary_exits_pct", 0.0)
+    exits = sig.get("voluntary_exits_pct", sig.get("voluntary_exits", 0.0))
     try:
         exits = float(exits or 0.0)
     except (TypeError, ValueError):
@@ -127,28 +144,24 @@ def _workforce_stress(sig: Dict[str, Any]) -> float:
     score += _clamp(exits / 10.0) * 0.30
 
     # Key personnel departures — each one adds stress
-    dep_count, _names = _normalize_departures(sig.get("key_personnel_departures"))
+    dep_count, _names = _normalize_departures(sig.get("key_personnel_departures", sig.get("departures")))
     if dep_count:
-        # 5+ key departures → max
         score += _clamp(dep_count / 5.0) * 0.35
 
     return _clamp(score)
 
 
 def _legal_stress(sig: Dict[str, Any]) -> float:
-    """Score legal exposure 0-1."""
+    """Score legal exposure 0-1 with alias support."""
     score = 0.0
 
-    # Active litigation count: 5+ → 1.0
-    lit_count = sig.get("active_litigation_count", 0)
+    lit_count = sig.get("active_litigation_count", sig.get("litigation_count", sig.get("disputes", 0)))
     score += _clamp(lit_count / 5.0) * 0.30
 
-    # Injunction value: $500M+ → 1.0
-    inj_value = sig.get("injunction_value_musd", 0.0)
+    inj_value = sig.get("injunction_value_musd", sig.get("injunction_value", 0.0))
     score += _clamp(inj_value / 500.0) * 0.35
 
-    # Regulatory uncertainty: direct 0-1
-    reg_unc = sig.get("regulatory_uncertainty_score", 0.0)
+    reg_unc = sig.get("regulatory_uncertainty_score", sig.get("regulatory_uncertainty", sig.get("pda_dispute", 0.0)))
     score += _clamp(reg_unc) * 0.35
 
     return _clamp(score)

@@ -335,7 +335,7 @@ def classify_error(
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "source_tool": source_tool,
         "source_organ": source_organ,
-        "original_error": traceback.format_exc() if error.__traceback__ else None,
+        "original_error": f"{type(error).__name__}: {msg[:200]}",
     }
 
 

@@ -85,13 +85,13 @@ async def test_capital_registry_reports_canonical_and_public_counts():
     assert status["canonical_tools"] == list(CAPITAL_TOOL_NAMES)
     assert status["canonical_tool_count"] == len(CAPITAL_TOOL_NAMES) == 9
     assert status["public_tools"] == list(PUBLIC_TOOL_NAMES)
-    assert status["public_tool_count"] == len(PUBLIC_TOOL_NAMES) == 13
+    assert status["public_tool_count"] == len(PUBLIC_TOOL_NAMES) == 14
     assert schema["canonical_tool_count"] == 9
-    assert schema["public_tool_count"] == 13
+    assert schema["public_tool_count"] == 14
     assert domains["canonical_tool_count"] == 9
-    assert domains["public_tool_count"] == 13
+    assert domains["public_tool_count"] == 14
     assert health["canonical_tools"] == 9
-    assert health["public_tools"] == 13
+    assert health["public_tools"] == 14
     assert {status["version"], schema["version"], domains["version"], health["version"]} == {
         WEALTH_VERSION
     }
