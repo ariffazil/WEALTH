@@ -26,8 +26,16 @@ from wealth_mcp.server import create_mcp_server
 
 
 def _resolve_source_commit(repo_path: str | Path | None = None) -> dict[str, object]:
-    """Resolve the source SHA while keeping static fallback data unverified."""
+    """Resolve the source SHA while keeping static fallback data unverified.
+
+    Priority:
+      1. git rev-parse HEAD (live git repo)
+      2. .git_commit file (deployment artifact)
+      3. UNAVAILABLE
+    """
     repo = Path(repo_path) if repo_path is not None else Path(__file__).resolve().parent
+
+    # Try live git first
     try:
         result = subprocess.run(
             ["git", "-C", str(repo), "rev-parse", "--short=7", "HEAD"],
@@ -48,18 +56,28 @@ def _resolve_source_commit(repo_path: str | Path | None = None) -> dict[str, obj
     except (OSError, subprocess.SubprocessError):
         pass
 
+    # Fallback: read .git_commit file
     try:
-        fallback = (repo / ".git_commit").read_text(encoding="utf-8").strip()
+        fallback_sha = (repo / ".git_commit").read_text(encoding="utf-8").strip()
     except OSError:
-        fallback = ""
-    if not re.fullmatch(r"[0-9a-fA-F]{7,40}", fallback):
-        fallback = ""
+        fallback_sha = ""
+    if not re.fullmatch(r"[0-9a-fA-F]{7,40}", fallback_sha):
+        fallback_sha = ""
+
+    if fallback_sha:
+        return {
+            "git_commit": fallback_sha,
+            "git_commit_source": "fallback_file",
+            "source_sha_available": True,
+            "git_commit_fallback": None,
+            "git_commit_fallback_trusted": False,
+        }
 
     return {
         "git_commit": "UNAVAILABLE",
         "git_commit_source": "unavailable",
         "source_sha_available": False,
-        "git_commit_fallback": fallback or None,
+        "git_commit_fallback": None,
         "git_commit_fallback_trusted": False,
     }
 
