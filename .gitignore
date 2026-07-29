@@ -19,6 +19,10 @@ Thumbs.db
 *.log
 logs/
 
+# Runtime forecast logs (regenerated on each cycle; tracked source = data/forecast/)
+data/forecast_log.jsonl
+data/forecast_log.jsonl.*
+
 # Node modules (if any)
 node_modules/
 

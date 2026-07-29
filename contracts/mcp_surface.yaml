@@ -2,17 +2,17 @@ schema_version: 3
 kind: arifos.mcp_surface
 owner_repo: WEALTH
 status: contract
-last_verified: "2026-07-24"
+last_verified: "2026-07-30"
 implementation_status:
-  phase: "Federated 12-tool mode-dispatched surface"
+  phase: "Federated 14-tool mode-dispatched surface (loop 2 reconciled)"
 runtime_surface:
   primary_transport: streamable_http
   primary_port: 18082
   public_domain: https://wealth.arif-fazil.com
   entrypoint: server_federated.py
-  public_surface_count: 12
-  canonical_capital_count: 8
-  institutional_compatibility_count: 4
+  public_surface_count: 14
+  canonical_capital_count: 9
+  institutional_compatibility_count: 5
   hidden_alias_count: 0
   registry_truth: PASS
 authority:
@@ -55,11 +55,13 @@ public_tools:
     - capital_ledger
     - capital_registry
     - capital_entropy
+    - wealth_judge_handoff
   institutional_compatibility:
     - wealth_institutional_stress_index
     - wealth_cascade_model
     - wealth_governance_capacity
     - wealth_external_exploitation_detect
+    - wealth_bid_surface
 governance:
   capital_ledger:
     default_action_class: IRREVERSIBLE

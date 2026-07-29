@@ -1,12 +1,17 @@
 # WEALTH Public MCP Tool Registry — LIVE SOT (ZEN 2026-07-15)
 # ─────────────────────────────────────────────────────────────
-# Public tools/list count: 12 (mode-dispatched)
+# Public tools/list count: 14 (mode-dispatched; 9 canonical + 5 institutional)
 # Canonical runtime: wealth_mcp/server.py ← server_federated.py
 # LEGACY monolith catalog: contracts/archive/tools.yaml.monolith-legacy-2026-05-19
 # Capability map (modes): docs/TOOL_MODE_MAP.md
 # Truth rule: authenticated tools/list beats this file if they disagree.
 #
 # Do NOT count modes as separate tools. Do NOT claim "50 public tools."
+#
+# Loop 2 (2026-07-30) entropy-lower: reconciled to 14 (was 12) — added
+# wealth_judge_handoff (canonical, live in canonical.py:1708) and
+# wealth_bid_surface (institutional, live in institutional.py:248).
+# Test test_registry_truth.py:88 already asserts 9+5=14.
 #
 # Public discovery routes (advertised by public/sitemap.xml):
 #   See contracts/mcp_surface.yaml::public_discovery_routes for the canonical list.
@@ -21,7 +26,9 @@ authority: compute_only_advisory
 mcp_transport: streamable-http
 mcp_endpoint: http://127.0.0.1:18082/mcp
 health_endpoint: http://127.0.0.1:18082/health
-public_tool_count: 12
+public_tool_count: 14
+canonical_capital_count: 9
+institutional_compatibility_count: 5
 entry: server_federated.py
 license: AGPL-3.0
 
@@ -53,6 +60,11 @@ tools:
   capital_entropy:
     kind: abductive
     modes: [power_consequence_map, metric_purpose_audit, responsibility_ledger, trust_capital_decay, coercive_order_cost, entropy_externality]
+  wealth_judge_handoff:
+    kind: handoff
+    modes: [prepare, validate]
+    action_class: HANDSHAKE
+    risk_class: C1
   wealth_institutional_stress_index:
     kind: institutional
     modes: []
@@ -65,6 +77,9 @@ tools:
   wealth_external_exploitation_detect:
     kind: institutional
     modes: []
+  wealth_bid_surface:
+    kind: institutional
+    modes: [first_price, second_price, scoring, all_pay]
 
 # Terminal + commodity routes are not MCP tools — they are public HTTP routes.
 # They live here so that tests and CI can verify sitemap/dist parity.
