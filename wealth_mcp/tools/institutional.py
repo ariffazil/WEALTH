@@ -42,6 +42,7 @@ def register_institutional_tools(mcp: FastMCP) -> None:
     # ── 1. wealth_institutional_stress_index ────────────────────────────
     @mcp.tool(
         name="wealth_institutional_stress_index",
+        description='Composite institutional stress index (0-1). Connects financial, governance, workforce, legal, and external exploitation signals into a single stress score. Detects feedback loops (the "institutional collapse spiral"). WEALTH computes. arifOS judges. Arif decides.',
         output_schema=WEALTH_OUTPUT_SCHEMA,
         annotations={
             "readOnlyHint": True,
@@ -103,6 +104,7 @@ def register_institutional_tools(mcp: FastMCP) -> None:
     # ── 2. wealth_cascade_model ─────────────────────────────────────────
     @mcp.tool(
         name="wealth_cascade_model",
+        description="Model feedback loops between institutional stress dimensions. Detects spiral vs linear decline vs recovery. Projects trajectory and optionally simulates intervention impact. WEALTH computes. arifOS judges. Arif decides.",
         output_schema=WEALTH_OUTPUT_SCHEMA,
         annotations={
             "readOnlyHint": True,
@@ -146,6 +148,7 @@ def register_institutional_tools(mcp: FastMCP) -> None:
     # ── 3. wealth_governance_capacity ───────────────────────────────────
     @mcp.tool(
         name="wealth_governance_capacity",
+        description="Monitor board governance capacity relative to stress level. Analyzes board composition, committee structure, and identifies governance gaps that could enable institutional collapse. WEALTH computes. arifOS judges. Arif decides.",
         output_schema=WEALTH_OUTPUT_SCHEMA,
         annotations={
             "readOnlyHint": True,
@@ -195,6 +198,7 @@ def register_institutional_tools(mcp: FastMCP) -> None:
     # ── 4. wealth_external_exploitation_detect ──────────────────────────
     @mcp.tool(
         name="wealth_external_exploitation_detect",
+        description='Detect "simulative neutral" counterparty behavior. Identifies rational exploitation of institutional weakness — where each action is individually defensible but the aggregate pattern reveals systematic extraction. WEALTH computes. arifOS judges. Arif decides.',
         output_schema=WEALTH_OUTPUT_SCHEMA,
         annotations={
             "readOnlyHint": True,
@@ -242,6 +246,7 @@ def register_institutional_tools(mcp: FastMCP) -> None:
     # ── 5. wealth_bid_surface ────────────────────────────────────────────
     @mcp.tool(
         name="wealth_bid_surface",
+        description="Score a competitive bid surface for resource allocation. Computes bid ranking, bidder surplus, competitive intensity, and surface topology. Supports first_price, second_price, scoring, and all_pay auction formats. WEALTH computes. arifOS judges. Arif decides.",
         output_schema=WEALTH_OUTPUT_SCHEMA,
         annotations={
             "readOnlyHint": True,
