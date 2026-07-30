@@ -38,7 +38,7 @@ def _resolve_source_commit(repo_path: str | Path | None = None) -> dict[str, obj
     # Try live git first
     try:
         result = subprocess.run(
-            ["git", "-C", str(repo), "rev-parse", "--short=7", "HEAD"],
+            ["/usr/bin/git", "-C", str(repo), "rev-parse", "--short=7", "HEAD"],
             capture_output=True,
             text=True,
             timeout=3,
