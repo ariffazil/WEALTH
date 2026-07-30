@@ -881,7 +881,11 @@ def register_canonical_tools(mcp):
             return wrap_result(
                 tool_name="capital_wisdom",
                 domain="wisdom",
-                result={"status": "ERROR", "error_code": "UNKNOWN_MODE", "message": err_msg},
+                result={
+                    "status": "ERROR",
+                    "error_code": "UNKNOWN_MODE",
+                    "message": err_msg,
+                },
                 epistemic_tag=EpistemicTag.ASSUMED,
                 evidence_quality=EvidenceQuality.MISSING,
                 claim_state=ClaimState.VOID,
@@ -894,7 +898,11 @@ def register_canonical_tools(mcp):
             return wrap_result(
                 tool_name="capital_wisdom",
                 domain="wisdom",
-                result={"status": "ERROR", "error_code": "COMPUTE_ERROR", "message": str(exc)},
+                result={
+                    "status": "ERROR",
+                    "error_code": "COMPUTE_ERROR",
+                    "message": str(exc),
+                },
                 epistemic_tag=EpistemicTag.ASSUMED,
                 evidence_quality=EvidenceQuality.MISSING,
                 claim_state=ClaimState.VOID,
@@ -1172,15 +1180,23 @@ def register_canonical_tools(mcp):
         for t_name in public_tools:
             try:
                 if t_name == "capital_entropy":
-                    from entropy_integrity.mcp.wealth.power_consequence_map import map_power_consequence
+                    from entropy_integrity.mcp.wealth.power_consequence_map import (
+                        wealth_power_consequence_map as map_power_consequence,
+                    )
                 elif t_name == "capital_wisdom":
                     from wealth_core.wisdom import compute_wisdom
                 elif t_name == "wealth_institutional_stress_index":
-                    from wealth_core.institutional.stress_index import compute_stress_index
+                    from wealth_core.institutional.stress_index import (
+                        compute_stress_index,
+                    )
                 elif t_name == "wealth_governance_capacity":
-                    from wealth_core.institutional.governance import compute_governance_capacity
+                    from wealth_core.institutional.governance import (
+                        compute_governance_capacity,
+                    )
                 elif t_name == "wealth_external_exploitation_detect":
-                    from wealth_core.institutional.exploitation import compute_exploitation
+                    from wealth_core.institutional.exploitation import (
+                        compute_exploitation,
+                    )
                 elif t_name == "wealth_cascade_model":
                     from wealth_core.institutional.cascade import compute_cascade
                 elif t_name == "wealth_bid_surface":
@@ -1219,24 +1235,69 @@ def register_canonical_tools(mcp):
         if m == "schema":
             tool_schemas = {
                 "capital_primitive": {
-                    "modes": ["npv", "irr", "kelly", "var", "cvar", "monte_carlo", "robust", "emv"],
+                    "modes": [
+                        "npv",
+                        "irr",
+                        "kelly",
+                        "var",
+                        "cvar",
+                        "monte_carlo",
+                        "robust",
+                        "emv",
+                    ],
                     "description": "Financial mathematics and decision analysis primitives",
                 },
                 "capital_health": {
                     "modes": ["runway", "burn", "solvency", "survival"],
-                    "survival_submodes": ["personal_finance", "corporate_runway", "sovereign_fiscal"],
+                    "survival_submodes": [
+                        "personal_finance",
+                        "corporate_runway",
+                        "sovereign_fiscal",
+                    ],
                     "description": "Financial runway, solvency, and sovereign fiscal survival",
                 },
                 "capital_diagnose": {
-                    "modes": ["stress_index", "governance_capacity", "cascade_model", "exploitation_detect", "collapse_signature", "beautiful_mouse", "capture_scan", "power_audit", "bid_surface", "optimize_mwc", "cadence_monitor", "crisis_reflex"],
+                    "modes": [
+                        "stress_index",
+                        "governance_capacity",
+                        "cascade_model",
+                        "exploitation_detect",
+                        "collapse_signature",
+                        "beautiful_mouse",
+                        "capture_scan",
+                        "power_audit",
+                        "bid_surface",
+                        "optimize_mwc",
+                        "cadence_monitor",
+                        "crisis_reflex",
+                    ],
                     "description": "Abductive institutional diagnosis and governance capacity",
                 },
                 "capital_wisdom": {
-                    "modes": ["omni", "sovereignty_risk", "resilience", "dignity", "inequality", "ecological", "optionality", "deal", "synthesize", "hysteresis"],
+                    "modes": [
+                        "omni",
+                        "sovereignty_risk",
+                        "resilience",
+                        "dignity",
+                        "inequality",
+                        "ecological",
+                        "optionality",
+                        "deal",
+                        "synthesize",
+                        "hysteresis",
+                    ],
                     "description": "Multi-dimensional wisdom and sovereignty evaluation",
                 },
                 "capital_market": {
-                    "modes": ["fx", "commodity", "indicator", "stock", "gold", "oil", "gas"],
+                    "modes": [
+                        "fx",
+                        "commodity",
+                        "indicator",
+                        "stock",
+                        "gold",
+                        "oil",
+                        "gas",
+                    ],
                     "description": "Live commodity, FX, and country market indicators",
                 },
                 "capital_ledger": {
@@ -1244,7 +1305,14 @@ def register_canonical_tools(mcp):
                     "description": "VAULT999 immutable append-only ledger",
                 },
                 "capital_entropy": {
-                    "modes": ["power_map", "metric_audit", "responsibility", "trust_decay", "coercive_cost", "externality"],
+                    "modes": [
+                        "power_map",
+                        "metric_audit",
+                        "responsibility",
+                        "trust_decay",
+                        "coercive_cost",
+                        "externality",
+                    ],
                     "description": "Thermodynamic power/consequence and metric-purpose drift",
                 },
                 "capital_registry": {
@@ -1727,7 +1795,13 @@ def register_canonical_tools(mcp):
 
         # 1. Intent validation: reject vague/unbounded intents
         intent_clean = (intent or p.get("intent", "")).strip()
-        vague_intents = ["aku nak tau semua truth", "everything", "all truth", "tau semua", "test"]
+        vague_intents = [
+            "aku nak tau semua truth",
+            "everything",
+            "all truth",
+            "tau semua",
+            "test",
+        ]
         is_unbounded = (
             not intent_clean
             or any(v in intent_clean.lower() for v in vague_intents)
@@ -1735,15 +1809,18 @@ def register_canonical_tools(mcp):
         )
 
         # 2. Reversibility validation: enforce standard enum
-        rev_raw = (reversibility or p.get("reversibility", "REVERSIBLE")).strip().upper()
+        rev_raw = (
+            (reversibility or p.get("reversibility", "REVERSIBLE")).strip().upper()
+        )
         valid_reversibility = {"REVERSIBLE", "IRREVERSIBLE", "SEALED_GATE", "READ_ONLY"}
         is_invalid_reversibility = rev_raw not in valid_reversibility
 
         # 3. Blast radius & authentication check
         blast = (blast_radius or p.get("blast_radius", "low")).lower().strip()
-        is_critical = (blast == "critical")
+        is_critical = blast == "critical"
         auth_verified = bool(
-            actor_cryptographically_verified or p.get("actor_cryptographically_verified")
+            actor_cryptographically_verified
+            or p.get("actor_cryptographically_verified")
         )
 
         # Rule: blast_radius=critical without cryptographic actor verification requires 888_HOLD
@@ -1770,7 +1847,9 @@ def register_canonical_tools(mcp):
                 "status": "REJECTED_BY_GOVERNANCE",
                 "mode": "submit",
                 "submitted": False,
-                "hold_reason": "888_HOLD_REQUIRED" if requires_888 else "VALIDATION_FAILED",
+                "hold_reason": "888_HOLD_REQUIRED"
+                if requires_888
+                else "VALIDATION_FAILED",
                 "action": "PREPARE_ONLY",
                 "validation_errors": errors,
                 "warnings": warnings,
@@ -1808,8 +1887,12 @@ def register_canonical_tools(mcp):
             tool_name="wealth_judge_handoff",
             domain="meta",
             result=result,
-            epistemic_tag=EpistemicTag.DERIVED if not errors else EpistemicTag.SPECULATED,
-            evidence_quality=EvidenceQuality.MODERATE if not errors else EvidenceQuality.WEAK,
+            epistemic_tag=EpistemicTag.DERIVED
+            if not errors
+            else EpistemicTag.SPECULATED,
+            evidence_quality=EvidenceQuality.MODERATE
+            if not errors
+            else EvidenceQuality.WEAK,
             claim_state=ClaimState.DRAFT if m == "prepare" else ClaimState.QC_VERIFIED,
             execution_authorized=(status == "SUBMITTED" and not requires_888),
             requires_888_hold=requires_888,
