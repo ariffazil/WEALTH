@@ -1,6 +1,6 @@
 <!-- SOT-MANIFEST
-federation_release: v2026.07.29
-last_verified: 2026-07-29T18:00Z
+federation_release: v2026.07.31
+last_verified: 2026-07-31T03:31:00Z
 commit_truth: /health distinguishes the live source SHA from any unverified fallback
 port: 18082
 health: healthy
