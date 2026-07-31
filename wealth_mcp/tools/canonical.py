@@ -1321,23 +1321,23 @@ def register_canonical_tools(mcp):
                 },
                 "wealth_judge_handoff": {
                     "modes": ["prepare", "submit"],
-                    "description": "Sovereign 888_HOLD judge handoff envelope",
+                    "description": "Sovereign 888_HOLD judge handoff envelope [alias: capital_judge_handoff]",
                 },
                 "wealth_bid_surface": {
                     "modes": ["first_price", "second_price", "scoring", "all_pay"],
-                    "description": "Competitive bid scoring surface topology",
+                    "description": "Competitive bid scoring surface topology [alias: capital_bid_surface]",
                 },
                 "wealth_institutional_stress_index": {
-                    "description": "Composite 0-1 institutional stress index",
+                    "description": "Composite 0-1 institutional stress index [alias: capital_institutional_stress_index]",
                 },
                 "wealth_governance_capacity": {
-                    "description": "Board governance capacity vs stress level",
+                    "description": "Board governance capacity vs stress level [alias: capital_governance_capacity]",
                 },
                 "wealth_cascade_model": {
-                    "description": "Institutional stress collapse cascade model",
+                    "description": "Institutional stress collapse cascade model [alias: capital_cascade_model]",
                 },
                 "wealth_external_exploitation_detect": {
-                    "description": "Detect simulative neutral counterparty extraction",
+                    "description": "Detect simulative neutral counterparty extraction [alias: capital_external_exploitation_detect]",
                 },
             }
             return wrap_result(
