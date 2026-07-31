@@ -259,6 +259,6 @@ def test_public_pages_have_no_stale_snapshot_markers():
     for page_path in PUBLIC_PAGE_PATHS:
         html = page_path.read_text(encoding="utf-8")
         assert all(marker not in html for marker in forbidden), page_path
-        assert "apiFetch('/snapshot')" in html
+        assert "wealth-reality-packet" in html
         assert "wealth.snapshot.v1" in html
         assert "coherence_id" in html
