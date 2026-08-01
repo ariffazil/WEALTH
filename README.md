@@ -1,8 +1,8 @@
 <!-- SOT-MANIFEST
 owner: Muhammad Arif bin Fazil (F13 SOVEREIGN)
-last_verified: 2026-07-31T12:50:00Z
-federation_release: v2026.07.31
-live_commit: e6f108b
+last_verified: 2026-08-01T00:45:00Z
+federation_release: v2026.08.01
+live_commit: 68f7e09
 live_port: 18082 (healthy)
 tools_loaded: 14
 public_tools: 14
@@ -13,7 +13,7 @@ owner_summary: GREEN (identity_present, service_healthy)
 
 # 💰 WEALTH — Capital Intelligence & Downside Computation
 
-[![Federation](https://img.shields.io/badge/Federation-v2026.07.31-0a7b83)](https://arifos.arif-fazil.com)
+[![Federation](https://img.shields.io/badge/Federation-v2026.08.01-0a7b83)](https://arifos.arif-fazil.com)
 [![💰 WEALTH](https://img.shields.io/badge/%F0%9F%92%B0%20WEALTH-14%20Tools-gold)](https://wealth.arif-fazil.com/mcp)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](./LICENSE)
 
@@ -54,6 +54,23 @@ WEALTH runs as a federated MCP server on port 18082. It bridges to arifOS for co
 /health  → live status, tool registry, deployment provenance
 /tools/list → 14 governed MCP tools
 ```
+
+---
+
+## 🔗 Federation Navigation
+
+WEALTH operates as a Capital Intelligence organ within the **arifOS Federation**:
+
+| Organ | Domain Role | Port | Repo | Live MCP | Health |
+|:---|:---|:---:|:---|:---|:---|
+| **arifOS** | Constitutional Kernel & Judge | 8088 | [repo](https://github.com/ariffazil/arifos) | [mcp](https://mcp.arif-fazil.com/mcp) | [health](https://arifos.arif-fazil.com/health) |
+| **A-FORGE** | Governed Execution Engine | 7071 / 7072 | [repo](https://github.com/ariffazil/A-FORGE) | [mcp](https://forge.arif-fazil.com/mcp) | [health](https://forge.arif-fazil.com/health) |
+| **AAA** | Institution, Control Plane & A2A | 3001 | [repo](https://github.com/ariffazil/AAA) | — | [health](https://aaa.arif-fazil.com/health) |
+| **GEOX** | Earth Intelligence (Subsurface) | 8081 | [repo](https://github.com/ariffazil/GEOX) | [mcp](https://geox.arif-fazil.com/mcp) | [health](https://geox.arif-fazil.com/health) |
+| **WEALTH** | Capital Intelligence (Compute) | 18082 | [repo](https://github.com/ariffazil/WEALTH) | [mcp](https://wealth.arif-fazil.com/mcp) | [health](https://wealth.arif-fazil.com/health) |
+| **WELL** | Vitality & Readiness Guard | 18083 | [repo](https://github.com/ariffazil/WELL) | [mcp](https://well.arif-fazil.com/mcp) | [health](https://well.arif-fazil.com/health) |
+
+**Public Domain:** [arif-fazil.com](https://arif-fazil.com) · **Federation Root:** [arifos.arif-fazil.com](https://arifos.arif-fazil.com)
 
 ---
 
