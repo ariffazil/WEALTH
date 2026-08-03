@@ -11,7 +11,7 @@
     "capital-intelligence",
     "arifos"
   ],
-  "description": "WEALTH is the compute-only capital intelligence organ in the arifOS federation. Canonical runtime: server_federated.py → wealth_mcp/server.py. The 12-tool public surface is discoverable via tools/list.",
+  "description": "WEALTH is the compute-only capital intelligence organ in the arifOS federation. Canonical runtime: server_federated.py → wealth_mcp/server.py. The 8-tool public surface is discoverable via tools/list.",
   "display_name": "WEALTH — Capital Intelligence",
   "homepage": "https://github.com/ariffazil/wealth",
   "language": ["en"],
@@ -21,14 +21,14 @@
     "fastmcp_registration": "wealth_mcp/server.py",
     "legacy_library": "internal/monolith.py",
     "civilizational_entrypoint": "mcp/server.py",
-    "last_updated": "2026-07-24",
-    "public_tool_count": 12,
+    "last_updated": "2026-08-03",
+    "public_tool_count": 8,
     "canonical_capital_count": 8,
-    "institutional_compatibility_count": 4,
+    "institutional_compatibility_count": 0,
     "organism_role": "Capital intelligence lane",
     "runtime_surfaces": {
       "canonical_federated": {
-        "tools": 12,
+        "tools": 8,
         "entrypoint": "server_federated.py"
       },
       "civilizational_demo": {

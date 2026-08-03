@@ -1,10 +1,9 @@
 """
-Tests for WEALTH MCP — Registry Truth.
+Tests for WEALTH MCP registry truth.
 
-Every tool in the MCP surface must be callable.
-No phantom tools. No ghost aliases.
+The declarations, internal FastMCP components, and discoverable tools/list
+surface must describe the same callable tools. No phantom tools or ghost aliases.
 
-ZEN migration 2026-07-24: 8 canonical capital tools + 4 institutional tools.
 DITEMPA BUKAN DIBERI.
 """
 
@@ -20,39 +19,52 @@ from wealth_mcp.server import (
 )
 
 
-EXPECTED_TOOLS = list(PUBLIC_TOOL_NAMES)
+EXPECTED_TOOLS = tuple(PUBLIC_TOOL_NAMES)
 
 
-def _tool_names(mcp) -> list[str]:
-    tool_names: list[str] = []
-    for key in mcp._local_provider._components:
-        if key.startswith("tool:"):
-            tool_names.append(key[5:].rstrip("@"))
-    return tool_names
+def _component_tool_names(mcp) -> tuple[str, ...]:
+    """Return the internal FastMCP tool components in registration order."""
+    return tuple(
+        key.removeprefix("tool:").split("@", 1)[0]
+        for key in mcp._local_provider._components
+        if key.startswith("tool:")
+    )
+
+
+async def _live_tool_names(mcp) -> tuple[str, ...]:
+    """Use tools/list as the public runtime contract."""
+    return tuple(tool.name for tool in await mcp.list_tools())
 
 
 class TestRegistryTruth:
-    """All expected tools must be registered."""
+    """All declared tools must be registered and publicly discoverable."""
 
     def test_server_creates(self):
         """Server must create without error."""
         mcp = create_mcp_server()
         assert mcp is not None
 
-    def test_expected_tool_count(self):
-        """Must expose the current registered surface without omissions."""
+    @pytest.mark.asyncio
+    async def test_expected_tool_count(self):
+        """Counts come from declarations, never a stale numeric constant."""
         mcp = create_mcp_server()
-        tool_names = _tool_names(mcp)
-        for expected in EXPECTED_TOOLS:
-            assert expected in tool_names, f"Missing tool: {expected}"
-        assert len(tool_names) == len(EXPECTED_TOOLS)
+        internal_names = _component_tool_names(mcp)
+        live_names = await _live_tool_names(mcp)
 
-    def test_no_phantom_tools(self):
-        """Registered public tools must match the declared runtime set."""
+        assert internal_names == EXPECTED_TOOLS
+        assert live_names == EXPECTED_TOOLS
+        assert tuple(CAPITAL_TOOL_NAMES) == EXPECTED_TOOLS
+        assert len(live_names) == len(PUBLIC_TOOL_NAMES)
+
+    @pytest.mark.asyncio
+    async def test_no_phantom_tools(self):
+        """Internal registration cannot hide tools behind list middleware."""
         mcp = create_mcp_server()
-        tool_names = _tool_names(mcp)
-        for name in tool_names:
-            assert name in EXPECTED_TOOLS, f"Phantom tool: {name}"
+        internal_names = set(_component_tool_names(mcp))
+        live_names = set(await _live_tool_names(mcp))
+        declared_names = set(PUBLIC_TOOL_NAMES)
+
+        assert internal_names == live_names == declared_names
 
     @pytest.mark.asyncio
     async def test_every_public_schema_can_carry_session_envelope(self):
@@ -82,16 +94,28 @@ async def test_capital_registry_reports_canonical_and_public_counts():
     domains = (await registry(mode="domains"))["result"]
     health = (await registry(mode="health"))["result"]
 
+    canonical_count = len(CAPITAL_TOOL_NAMES)
+    public_count = len(PUBLIC_TOOL_NAMES)
+    declared_names = set(PUBLIC_TOOL_NAMES)
+    schema_names = set(schema["tools"])
+    domain_names = {
+        tool_name
+        for domain in domains["domains"]
+        for tool_name in domain["tools"]
+    }
+
     assert status["canonical_tools"] == list(CAPITAL_TOOL_NAMES)
-    assert status["canonical_tool_count"] == len(CAPITAL_TOOL_NAMES) == 9
+    assert status["canonical_tool_count"] == canonical_count
     assert status["public_tools"] == list(PUBLIC_TOOL_NAMES)
-    assert status["public_tool_count"] == len(PUBLIC_TOOL_NAMES) == 14
-    assert schema["canonical_tool_count"] == 9
-    assert schema["public_tool_count"] == 14
-    assert domains["canonical_tool_count"] == 9
-    assert domains["public_tool_count"] == 14
-    assert health["canonical_tools"] == 9
-    assert health["public_tools"] == 14
+    assert status["public_tool_count"] == public_count
+    assert schema["canonical_tool_count"] == canonical_count
+    assert schema["public_tool_count"] == public_count
+    assert schema_names == declared_names
+    assert domains["canonical_tool_count"] == canonical_count
+    assert domains["public_tool_count"] == public_count
+    assert domain_names == declared_names
+    assert health["canonical_tools"] == canonical_count
+    assert health["public_tools"] == public_count
     assert {status["version"], schema["version"], domains["version"], health["version"]} == {
         WEALTH_VERSION
     }

@@ -2,17 +2,17 @@ schema_version: 3
 kind: arifos.mcp_surface
 owner_repo: WEALTH
 status: contract
-last_verified: "2026-07-30"
+last_verified: "2026-08-03"
 implementation_status:
-  phase: "Federated 14-tool mode-dispatched surface (loop 2 reconciled)"
+  phase: "Federated 8-tool mode-dispatched surface (capital_wisdom and shadow institutional registrations removed)"
 runtime_surface:
   primary_transport: streamable_http
   primary_port: 18082
   public_domain: https://wealth.arif-fazil.com
   entrypoint: server_federated.py
-  public_surface_count: 14
-  canonical_capital_count: 9
-  institutional_compatibility_count: 5
+  public_surface_count: 8
+  canonical_capital_count: 8
+  institutional_compatibility_count: 0
   hidden_alias_count: 0
   registry_truth: PASS
 authority:
@@ -50,18 +50,15 @@ public_tools:
     - capital_primitive
     - capital_health
     - capital_diagnose
-    - capital_wisdom
     - capital_market
     - capital_ledger
     - capital_registry
     - capital_entropy
     - wealth_judge_handoff
-  institutional_compatibility:
-    - wealth_institutional_stress_index
-    - wealth_cascade_model
-    - wealth_governance_capacity
-    - wealth_external_exploitation_detect
-    - wealth_bid_surface
+  institutional_compatibility: []
+# Legacy engines/aliases are internal direct-import compatibility paths only.
+# They are not part of tools/list or the public counts.
+legacy_in_process_aliases: internal_only
 governance:
   capital_ledger:
     default_action_class: IRREVERSIBLE

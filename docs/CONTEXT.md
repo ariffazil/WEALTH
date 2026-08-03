@@ -1,31 +1,49 @@
-# WEALTH — Session Context
+# WEALTH — Capital Intelligence Organ
 
-## What WEALTH is
-Capital intelligence organ of arifOS. Computes NPV, IRR, EMV, Kelly, Markowitz, Robust,
-Chance-Constrained, Two-Stage optimization. Witnesses institutional power geometry.
-Does not move money. Does not self-seal.
+WEALTH is the **compute-only** capital intelligence organ. It models and quantifies capital flows. It **never** allocates, invests, or authorizes expenditure alone. Constitutional judgment stays in arifOS.
 
-## Tools SOT
-12 public tools (mode-dispatched). See docs/TOOL_MODE_MAP.md.
-Runtime tools/list outranks this file.
+## Repo identity
 
-## Active port
-:18082 · https://wealth.arif-fazil.com/mcp
+- **Path:** `/root/WEALTH`
+- **Port:** 18082 | **Domain:** `wealth.arif-fazil.com/mcp`
+- **Systemd:** `wealth-organ.service`
+- **Language:** Python 3.12 + Node.js 22 (legacy side)
+- **Tool surface:** 8 canonical public MCP tools
 
-## License
-AGPL-3.0
+## Build, test, run
 
-## Federation
-ARIF (F13) → arifOS KERNEL → WEALTH → A-FORGE (after SEAL only)
-Receives: GEOX prospect POS via wealth_bridge / feed adapters
-Sends: judge envelopes to wealth_arifos_bridge/judge_handoff.py
-WELL readiness check: well-to-wealth livelihood handoff
+```bash
+pip install -e ".[dev]"
+pytest tests/ -q --tb=short
+python server_federated.py             # FastMCP server on :18082
 
-## Epistemic labels in use
-CLAIM · PLAUSIBLE · HYPOTHESIS · ESTIMATE · HOLD
+# Node.js side (legacy)
+npm install && npm test
+npm run boot
+```
 
-## Kinabalu (2026-07-15 F13)
-domain_docs_only under domains/energy/ — no MCP tool registration.
-Physics depth conversion → GEOX next horizon (not this organ).
+Do not restart or deploy without a verified test pass.
 
-DITEMPA BUKAN DIBERI — 999 SEAL ALIVE
+## Key directories
+
+| Path | Role |
+|------|------|
+| `server_federated.py` | Canonical HTTP entrypoint |
+| `wealth_mcp/server.py` | FastMCP registration, governance, receipts, resources |
+| `wealth_mcp/tools/canonical.py` | 8 canonical public tools plus internal engines |
+| `wealth_mcp/tools/institutional.py` | Internal institutional engines; no public registrations |
+| `internal/monolith.py` | Legacy implementation library; keep for compatibility |
+| `internal/stock/` | D4 Stock Analysis |
+| `internal/engines/` | canonical_tools.py, five_seals.py, advisory.py |
+| `tests/` | Python pytest + Node test suite |
+
+## Conventions
+
+- `tools/list` and `/health` beat static prose.
+- `capital_ledger(mode="write")` is C2/IRREVERSIBLE; query is read-only.
+- `capital_entropy` must report UNAVAILABLE when its in-repo optional dependency is absent.
+- `capital_wisdom` and former institutional names are internal/historical only,
+  not public `tools/list` entries.
+- AGPL-3.0 license (code and packaging).
+- Tags: `vYYYY.MM.DD` only — never semver counters.
+- WEALTH computes → arifOS adjudicates → Arif decides.

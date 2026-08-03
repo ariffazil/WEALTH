@@ -1,9 +1,9 @@
 # WEALTH MCP — Architecture Refactor Blueprint
 
 > ⚰️ **HISTORICAL DESIGN DOC — NOT LIVE SOT (sealed 2026-07-15 F13)**  
-> **Live surface now:** **12** public tools, mode-dispatched (`server_federated.py` → `wealth_mcp/`).  
-> **See:** `../contracts/tools.yaml` · `TOOL_MODE_MAP.md` · `../ENTRYPOINTS.md` · README identity table.  
-> Do **not** cite 20/34/50/65 tool counts from this file as runtime truth.  
+> **Live surface now:** **8** public tools, mode-dispatched (`server_federated.py` → `wealth_mcp/`).
+> **See:** `../contracts/tools.yaml` · `TOOL_MODE_MAP.md` · `../ENTRYPOINTS.md` · README identity table.
+> Do **not** cite 20/34/50/65 tool counts from this file as runtime truth. The older 12-tool declaration is also superseded.
 > Monolith path is deprecated. Port **18082**. License **AGPL-3.0**.
 
 **Status:** ARCHIVE REFERENCE (aspiration history)  
@@ -16,7 +16,7 @@
 ## 1. Problem Statement (historical)
 
 ~~WEALTH MCP currently exposes 20 public tools + 34 hidden aliases…~~  
-**Superseded.** Live 2026-07-15: **12** MCP tools × modes (see `TOOL_MODE_MAP.md`).
+**Superseded.** The historical 12-tool declaration was replaced by the live 8-tool surface on 2026-08-03 (see `TOOL_MODE_MAP.md`).
 
 - **Category impurity:** tools, orchestration wrappers, and prompts all dumped as `@mcp.tool()`
 - **Naming noise:** `wealth_reason_npv`, `wealth_survival_cashflow`, `wealth_mind_evoi` — mixed semantic layers
@@ -76,7 +76,7 @@ wealth_<dimension>_<operation>
 
 ---
 
-## 3. Current Tool Inventory (20 public tools + 34 hidden aliases)
+## 3. Historical Tool Inventory (20 public tools + 34 hidden aliases)
 
 ### 3.1 Registered via `@mcp.tool()` decorators (16 direct)
 
@@ -385,13 +385,13 @@ The 12 demotions:
 
 Resources are registered alongside existing `@mcp.resource()` decorators (already 7 exist at lines 3121–3233).
 
-### Phase 4: Verify + Deploy
+### Phase 4: Historical verification plan (not live instructions)
 
 1. Copy updated `monolith.py` to container
 2. Restart `wealth-organ`
-3. `curl http://127.0.0.1:18082/mcp` → `tools/list` should show 20 public tools
-4. `curl http://127.0.0.1:18082/mcp` → `prompts/list` should show ~8 prompts
-5. `curl http://127.0.0.1:18082/mcp` → `resources/list` should show ~20 resources
+3. The historical blueprint target was 20 tools; the current `tools/list` contract must show 8 public tools.
+4. `prompts/list` should show ~8 prompts
+5. `resources/list` should show ~20 resources
 6. Run `openclaw doctor --non-interactive` → WEALTH handshake should still pass
 7. Git commit with message: `WEALTH MCP: physics-inspired naming + tools/prompts/resources restructure`
 

@@ -13,10 +13,10 @@
     "mcp.wealth.capital_entropy"
   ],
   "optional_tools": [
-    "mcp.wealth.capital_wisdom",
     "mcp.wealth.capital_ledger",
     "mcp.wealth.capital_market",
-    "mcp.wealth.capital_registry"
+    "mcp.wealth.capital_registry",
+    "mcp.wealth.wealth_judge_handoff"
   ],
   "cross_organ_dependencies": {
     "geox_contradiction_scan": {

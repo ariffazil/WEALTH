@@ -43,22 +43,18 @@
     {"id": "capital_primitive", "name": "Capital Primitive", "description": "Deductive math: NPV, IRR, EMV, EVOI, MC, Kelly, Markowitz, robust, chance-constrained, two-stage."},
     {"id": "capital_health", "name": "Capital Health", "description": "Conservation, flow, runway, survival, fiscal breakeven, confluence, asymmetry."},
     {"id": "capital_diagnose", "name": "Capital Diagnose", "description": "Institutional stress, governance, cascade, collapse signature, power, MWC — mode + payload."},
-    {"id": "capital_wisdom", "name": "Capital Wisdom", "description": "Wisdom synthesis, omni path, epistemic audit — advisory only."},
     {"id": "capital_market", "name": "Capital Market", "description": "FX, commodity, indicator, stock (stock_payload)."},
     {"id": "capital_ledger", "name": "Capital Ledger", "description": "VAULT999 query/write; write is C2/IRREVERSIBLE and requires ack_irreversible."},
-    {"id": "capital_registry", "name": "Capital Registry", "description": "Status, schema, domains, and health for the 8-tool capital family and 12-tool public surface."},
+    {"id": "capital_registry", "name": "Capital Registry", "description": "Status, schema, domains, and health for the 8-tool public surface."},
     {"id": "capital_entropy", "name": "Capital Entropy", "description": "Optional entropy-integrity analysis with explicit UNAVAILABLE results when the local dependency is absent."},
-    {"id": "wealth_institutional_stress_index", "name": "Institutional Stress Index", "description": "Composite institutional stress scoring."},
-    {"id": "wealth_cascade_model", "name": "Cascade Model", "description": "Institutional stress feedback-loop trajectories."},
-    {"id": "wealth_governance_capacity", "name": "Governance Capacity", "description": "Governance capacity relative to stress."},
-    {"id": "wealth_external_exploitation_detect", "name": "External Exploitation Detect", "description": "Counterparty extraction pattern detection."}
+    {"id": "wealth_judge_handoff", "name": "WEALTH Judge Handoff", "description": "Prepare or submit a structured arifOS governance handoff envelope."}
   ],
-  "owned_mcp_count": 12,
+  "owned_mcp_count": 8,
   "can_do": [
     "Compute NPV/EMV/EVOI/IRR/Monte Carlo capital primitives",
     "Run stock analysis, personal finance, market data lookups",
     "Scan institutional narratives for collapse signatures + Phase C patterns",
-    "Score capital allocations across 6 wisdom dimensions (dignity, sovereignty, resilience, inequality, ecology, optionality)",
+    "Prepare evidence for capital choices without authorizing allocation",
     "Reason about Malaysian fiscal sustainability and Petronas dividend economics"
   ],
   "cannot_do": [
@@ -96,6 +92,6 @@
       "manifest_organ": "llms.txt",
       "mcp_manifest": ".well-known/mcp.json"
     },
-    "notes": "This card is the organ public agent card. It must remain aligned with contracts/tools.yaml (12 public tools, mode-dispatched) and contracts/mcp_surface.yaml (public_domain = https://wealth.arif-fazil.com)."
+    "notes": "This card is the organ public agent card. It must remain aligned with contracts/tools.yaml (8 public tools, mode-dispatched) and contracts/mcp_surface.yaml (public_domain = https://wealth.arif-fazil.com)."
   }
 }

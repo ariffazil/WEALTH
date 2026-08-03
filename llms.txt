@@ -1,11 +1,11 @@
 # WEALTH — Capital Intelligence (arifOS Federation)
 ## Machine & Agent Interface Specification
 
-**Version:** 2026.07.24  
+**Version:** 2026.08.03
 **URL:** https://wealth.arif-fazil.com  
 **MCP:** https://wealth.arif-fazil.com/mcp  
 **Source:** https://github.com/ariffazil/WEALTH  
-**Port (local):** 18082 · **Tools:** 12 public · **License:** AGPL-3.0  
+**Port (local):** 18082 · **Tools:** 8 public · **License:** AGPL-3.0
 
 > **WEALTH computes. arifOS judges. Arif decides.**  
 > Authority ceiling: **COMPUTE_ONLY** — never allocates capital, never issues SEAL/VOID.
@@ -15,7 +15,7 @@
 ## What WEALTH Is
 
 Capital intelligence organ of the arifOS federation. Deductive math (NPV/IRR/EMV),
-institutional stress diagnostics, market signals, and sovereign pulse compute
+institutional diagnostics, market signals, and sovereign pulse compute
 (PETRONAS·φ VITALS). Outputs are envelopes with epistemic tags — not trade tickets.
 
 ## Federation Organs
@@ -50,27 +50,21 @@ Contract: https://arifos.arif-fazil.com · `/root/FEDERATION_CONTRACT.md`
 
 ---
 
-## Public MCP Tools (12)
-
-### Canonical capital family (8) — mode-dispatched
+## Public MCP Tools (8)
 
 | Tool | Purpose |
 |------|---------|
 | `capital_primitive` | NPV, IRR, EMV, EVOI, Monte Carlo, Kelly, Markowitz, robust / chance-constrained |
 | `capital_health` | Conservation, flow, runway, survival, fiscal breakeven |
 | `capital_diagnose` | Institutional stress, governance, cascade, collapse, power, **petronas_vitals** |
-| `capital_wisdom` | Advisory wisdom / epistemic synthesis |
 | `capital_market` | FX, commodities, indicators, stocks |
 | `capital_ledger` | Query; write is C2/IRREVERSIBLE (human ack) |
 | `capital_registry` | Live status, schema, domains, health |
 | `capital_entropy` | Entropy / integrity modes (may report UNAVAILABLE) |
+| `wealth_judge_handoff` | Prepare or submit a structured arifOS governance handoff |
 
-### Institutional compatibility family (4)
-
-- `wealth_institutional_stress_index`
-- `wealth_cascade_model`
-- `wealth_governance_capacity`
-- `wealth_external_exploitation_detect`
+`capital_wisdom` and former institutional compatibility names are internal or
+historical references only; they are absent from public `tools/list`.
 
 ### Key diagnose modes (examples)
 
@@ -87,40 +81,14 @@ Payload may override tripwires/weights for petronas_vitals; defaults are F2-alig
 
 ## Boundaries (hard)
 
-- NEVER authorize capital allocation or move money  
-- NEVER claim buy/sell/hold as an order  
-- NEVER fabricate market data — cite source + timestamp or UNKNOWN  
-- NEVER bypass arifOS constitutional governance  
-- NEVER claim ledger write persisted without confirmation  
-- PETRONAS·φ is a **sense organ** — distance-to-trip only, not a trade signal  
+- NEVER authorize capital allocation or move money
+- NEVER claim buy/sell/hold as an order
+- NEVER fabricate market data — cite source + timestamp or UNKNOWN
+- NEVER bypass arifOS constitutional governance
+- NEVER claim ledger write persisted without confirmation
+- PETRONAS·φ is a **sense organ** — distance-to-trip only, not a trade signal
 
 ## Epistemic Tags
 
 Outputs carry OBSERVED / DERIVED / INTERPRETED / SPECULATED / ASSUMED style tags via WealthEnvelope.
 Composite institutional pulses inherit the **weaker** tag when mix EVIDENCE + INTERPRET.
-
-## Runtime Layout
-
-- `server_federated.py` — HTTP entry on :18082  
-- `wealth_mcp/server.py` — FastMCP + resources + prompts  
-- `wealth_mcp/tools/canonical.py` — capital_* tools  
-- `wealth_core/petronas_vitals.py` — φ VITALS pure compute  
-
-## Build & Test
-
-```bash
-pip install -e ".[dev]"
-pytest tests/ -q --tb=short
-python server_federated.py
-curl -s http://127.0.0.1:18082/health
-```
-
-## For Agents
-
-1. Read this file + `/health`  
-2. Connect MCP: `https://wealth.arif-fazil.com/mcp`  
-3. Prefer `capital_*` tools; use `mode=` for diagnose variants  
-4. Route irreversible judgment through arifOS (`arif_judge` / SEAL path)  
-5. Crawl federation map: https://arifos.arif-fazil.com/llms.txt  
-
-DITEMPA BUKAN DIBERI — Forged, Not Given.

@@ -30,5 +30,6 @@
 ## Integration path
 
 These modules are WEALTH primitives — market intelligence IS capital intelligence.
-To activate, wire the governance gate to `wealth_capital_wisdom` and restore the
-WEALTH MCP bridge in `cron/hourly_scan.py`.
+This migration note is historical/non-live. If reactivated, route market evidence
+through `capital_market` and governance handoff through `wealth_judge_handoff`; do
+not add a `capital_wisdom` public registration.

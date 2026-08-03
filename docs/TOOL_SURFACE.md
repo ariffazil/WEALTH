@@ -2,7 +2,7 @@
 > **Canonical Source:** `ariffazil/wealth`
 > **Authority:** WEALTH organ, governed by `ariffazil/arifOS`
 > **Purpose:** Classify every `@mcp.tool` decorator in `internal/monolith.py`
-> **Status:** OPERATIONAL — 26 public tools + 6 hidden aliases = 32 total exposed (verified 2026-07-01)
+> **Status:** HISTORICAL MONOLITH INVENTORY — NOT LIVE SOT. The canonical federated runtime exposes 8 public tools; the counts below describe an older internal decorator audit only.
 
 ---
 

@@ -7,7 +7,7 @@ This repo ships two MCP surfaces. They are not interchangeable.
 - **Entrypoint:** `server_federated.py`
 - **FastMCP registration:** `wealth_mcp/server.py`
 - **Role:** Public WEALTH capital intelligence runtime
-- **Scope:** 12 public tools — 8 `capital_*` tools plus 4 institutional compatibility tools
+- **Scope:** 8 canonical public tools
 - **Truth:** authenticated `tools/list`
 
 Run it with:
@@ -17,7 +17,9 @@ cd /root/WEALTH
 python server_federated.py
 ```
 
-`internal/monolith.py` remains a legacy implementation library used by compatibility paths and tests. It is not the public entrypoint and must not be deleted.
+`internal/monolith.py` remains a legacy implementation library used by
+compatibility paths and tests. It is not the public entrypoint and must not be
+deleted.
 
 ## 2. Civilizational demo surface
 

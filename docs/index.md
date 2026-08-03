@@ -1,13 +1,13 @@
 # WEALTH docs index — single entry
 
-> **Max canonical set:** ≤20 · Archive: `archive/` · **Tools SOT:** live `tools/list` (**12**)  
+> **Max canonical set:** ≤20 · Archive: `archive/` · **Tools SOT:** live `tools/list` (**8**)
 > **Entry:** `../server_federated.py` · see `../ENTRYPOINTS.md`
 
 ## Canonical
 
 | Doc | Purpose |
 |-----|---------|
-| [TOOL_MODE_MAP.md](./TOOL_MODE_MAP.md) | 12 tools × modes (HOLD-02 SOT) |
+| [TOOL_MODE_MAP.md](./TOOL_MODE_MAP.md) | 8 tools × modes (live SOT) |
 | [WEALTH_MCP_ARCHITECTURE.md](./WEALTH_MCP_ARCHITECTURE.md) | MCP architecture |
 | [WEALTH_UNIFIED_ARCHITECTURE.md](./WEALTH_UNIFIED_ARCHITECTURE.md) | Unified arch |
 | [WEALTH_SOT.md](./WEALTH_SOT.md) | Source of truth |
