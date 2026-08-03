@@ -20,28 +20,26 @@
 | Public URL | `https://wealth.arif-fazil.com/mcp` |
 | Transport | streamable-http |
 | Health | `https://wealth.arif-fazil.com/health` |
-| Canonical capital tools | `8` |
-| Institutional compatibility tools | `4` |
-| Public surface count | `12` |
+| Canonical public tools | `8` |
+| Institutional compatibility tools | `0` |
+| Public surface count | `8` |
 | Hidden aliases | `0` advertised |
 | Final authority | `ARIF` |
 | Caddy upstream | `127.0.0.1:18082` |
 
-## Canonical Capital Family (8)
+## Canonical Public Family (8)
 1. `capital_primitive`
 2. `capital_health`
 3. `capital_diagnose`
-4. `capital_wisdom`
-5. `capital_market`
-6. `capital_ledger`
-7. `capital_registry`
-8. `capital_entropy`
+4. `capital_market`
+5. `capital_ledger`
+6. `capital_registry`
+7. `capital_entropy`
+8. `wealth_judge_handoff`
 
-## Institutional Compatibility Family (4)
-9. `wealth_institutional_stress_index`
-10. `wealth_cascade_model`
-11. `wealth_governance_capacity`
-12. `wealth_external_exploitation_detect`
+`capital_wisdom` and the former institutional names are not public MCP tools.
+Where compatibility code still calls an engine by a legacy name, that path is
+internal direct-import behavior and is not part of `tools/list`.
 
 ## Governance
 - `capital_ledger` defaults to C2/IRREVERSIBLE; `mode="query"` is resolved read-only.

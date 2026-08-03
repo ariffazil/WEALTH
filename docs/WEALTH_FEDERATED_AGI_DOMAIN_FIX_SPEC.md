@@ -4,7 +4,7 @@
 > **AUTHORITY:** FORGE (000Ω) — autonomous engineering artifact  
 > **SOVEREIGN:** Muhammad Arif bin Fazil (F13, 888)  
 > **DATE:** 2026-06-15  
-> **STATUS:** ARTIFACT READY — no repo mutated  
+> **STATUS:** HISTORICAL DESIGN ARTIFACT — NOT LIVE SOT; retained for provenance only
 > **DOCTRINE:** DITEMPA BUKAN DIBERI
 
 ---
@@ -19,7 +19,7 @@ WEALTH is a 17,313-line single-file MCP server (`internal/monolith.py`) with 86 
 
 ---
 
-## 1. CURRENT STATE — LIVE RECON (2026-06-15)
+## 1. HISTORICAL STATE — NON-LIVE RECON (2026-06-15)
 
 ### 1.1 WEALTH Tool Surface
 

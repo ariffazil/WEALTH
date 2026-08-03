@@ -24,6 +24,7 @@ from internal.monolith import (  # noqa: E402
 )
 from host.ingest.health import HealthTracker  # noqa: E402
 from host.ingest.registry import _cache_age_hours  # noqa: E402
+from wealth_mcp import CAPITAL_TOOL_NAMES  # noqa: E402
 
 
 def test_g_score_engine_imports_and_runs():
@@ -41,21 +42,8 @@ def test_g_score_engine_imports_and_runs():
 
 def test_mcp_tool_surface_matches_public_registry():
     tool_names = {tool.name for tool in asyncio.run(mcp.list_tools())}
-    # L3 PHOENIX-73F tools (screen_opportunity, compute_viability, score_risk,
-    # compare_scenarios, emit_investment_memo) are declared in WEALTH_PUBLIC_TOOL_ORDER
-    # but not yet registered — runtime surface is a subset of _PUBLIC_TOOLS by design.
-    # 2026-07-24: 8 canonical tools (capital_*) are allowed additions.
-    CANONICAL_ADDITIONS = {
-        "capital_primitive",
-        "capital_health",
-        "capital_diagnose",
-        "capital_wisdom",
-        "capital_market",
-        "capital_ledger",
-        "capital_registry",
-        "capital_entropy",
-    }
-    allowed = _PUBLIC_TOOLS | CANONICAL_ADDITIONS
+    # The canonical federated additions are declared once in wealth_mcp.
+    allowed = _PUBLIC_TOOLS | set(CAPITAL_TOOL_NAMES)
     assert tool_names <= allowed, (
         f"Runtime has unregistered tools not in allowed set: {tool_names - allowed}"
     )

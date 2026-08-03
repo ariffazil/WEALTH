@@ -18,7 +18,6 @@ from wealth_contracts.envelope import WEALTH_OUTPUT_SCHEMA, wrap_result
 from wealth_contracts.epistemic import ClaimState, EpistemicTag, EvidenceQuality
 from wealth_mcp import (
     CAPITAL_TOOL_NAMES,
-    INSTITUTIONAL_TOOL_NAMES,
     PUBLIC_TOOL_NAMES,
     WEALTH_VERSION,
 )
@@ -833,12 +832,9 @@ def register_canonical_tools(mcp):
     # 4. capital_wisdom — Synthesis and meta-analysis
     # ═══════════════════════════════════════════════════════════════════
 
-    @mcp.tool(
-        name="capital_wisdom",
-        output_schema=WEALTH_OUTPUT_SCHEMA,
-        description="Capital wisdom synthesis — evaluates proposals across dignity, sovereignty, resilience, inequality, ecological cost, and optionality. Advisory only.",
-        tags={"domain": "wisdom", "kind": "abductive", "canonical": "v1"},
-    )
+    # This synthesis engine remains callable by in-process compatibility paths,
+    # but it is intentionally not a FastMCP tool. Normative framing belongs to
+    # arifOS; registering it here would create a phantom public component.
     async def capital_wisdom(
         mode: str,
         proposal: str = "",
@@ -1089,7 +1085,7 @@ def register_canonical_tools(mcp):
             return wrap_result(
                 tool_name="capital_market",
                 domain="capital",
-                result=raw,
+                result=result,
                 epistemic_tag=EpistemicTag.OBSERVED
                 if engine_op == "snapshot"
                 else EpistemicTag.INTERPRETED,
@@ -1262,24 +1258,6 @@ def register_canonical_tools(mcp):
                         raise ImportError(
                             f"entropy-integrity module absent: {_ent_file}"
                         )
-                elif t_name == "capital_wisdom":
-                    from wealth_core.wisdom import compute_wisdom
-                elif t_name == "wealth_institutional_stress_index":
-                    from wealth_core.institutional.stress_index import (
-                        compute_stress_index,
-                    )
-                elif t_name == "wealth_governance_capacity":
-                    from wealth_core.institutional.governance import (
-                        compute_governance_capacity,
-                    )
-                elif t_name == "wealth_external_exploitation_detect":
-                    from wealth_core.institutional.exploitation import (
-                        compute_exploitation,
-                    )
-                elif t_name == "wealth_cascade_model":
-                    from wealth_core.institutional.cascade import compute_cascade
-                elif t_name == "wealth_bid_surface":
-                    from wealth_mcp.tools.bid_surface import compute_bid_surface
                 elif t_name == "wealth_judge_handoff":
                     from wealth_contracts.envelope import ClaimState
             except Exception as _p_exc:
@@ -1312,28 +1290,41 @@ def register_canonical_tools(mcp):
             )
 
         if m == "schema":
+            # This mapping is deliberately limited to PUBLIC_TOOL_NAMES.  Legacy
+            # engines remain callable through internal dispatch, but they are not
+            # public MCP tools and must not appear in the registry schema.
             tool_schemas = {
                 "capital_primitive": {
                     "modes": [
                         "npv",
                         "irr",
-                        "kelly",
-                        "var",
-                        "cvar",
-                        "monte_carlo",
-                        "robust",
                         "emv",
+                        "evoi",
+                        "mc",
+                        "kelly",
+                        "markowitz",
+                        "robust",
+                        "chance_constrained",
+                        "two_stage",
                     ],
                     "description": "Financial mathematics and decision analysis primitives",
                 },
                 "capital_health": {
-                    "modes": ["runway", "burn", "solvency", "survival"],
+                    "modes": [
+                        "conservation",
+                        "flow",
+                        "runway",
+                        "survival",
+                        "fiscal_breakeven",
+                        "confluence",
+                        "asymmetry",
+                    ],
                     "survival_submodes": [
                         "personal_finance",
                         "corporate_runway",
                         "sovereign_fiscal",
                     ],
-                    "description": "Financial runway, solvency, and sovereign fiscal survival",
+                    "description": "Financial health, runway, and survival computation",
                 },
                 "capital_diagnose": {
                     "modes": [
@@ -1352,21 +1343,6 @@ def register_canonical_tools(mcp):
                     ],
                     "description": "Abductive institutional diagnosis and governance capacity",
                 },
-                "capital_wisdom": {
-                    "modes": [
-                        "omni",
-                        "sovereignty_risk",
-                        "resilience",
-                        "dignity",
-                        "inequality",
-                        "ecological",
-                        "optionality",
-                        "deal",
-                        "synthesize",
-                        "hysteresis",
-                    ],
-                    "description": "Multi-dimensional wisdom and sovereignty evaluation",
-                },
                 "capital_market": {
                     "modes": [
                         "fx",
@@ -1383,40 +1359,24 @@ def register_canonical_tools(mcp):
                     "modes": ["query", "write"],
                     "description": "VAULT999 immutable append-only ledger",
                 },
-                "capital_entropy": {
-                    "modes": [
-                        "power_map",
-                        "metric_audit",
-                        "responsibility",
-                        "trust_decay",
-                        "coercive_cost",
-                        "externality",
-                    ],
-                    "description": "Thermodynamic power/consequence and metric-purpose drift",
-                },
                 "capital_registry": {
                     "modes": ["status", "schema", "domains", "health"],
                     "description": "WEALTH organ self-introspection and registry status",
                 },
+                "capital_entropy": {
+                    "modes": [
+                        "power_consequence_map",
+                        "metric_purpose_audit",
+                        "responsibility_ledger",
+                        "trust_capital_decay",
+                        "coercive_order_cost",
+                        "entropy_externality",
+                    ],
+                    "description": "Thermodynamic power/consequence and metric-purpose drift",
+                },
                 "wealth_judge_handoff": {
                     "modes": ["prepare", "submit"],
-                    "description": "Sovereign 888_HOLD judge handoff envelope [alias: capital_judge_handoff]",
-                },
-                "wealth_bid_surface": {
-                    "modes": ["first_price", "second_price", "scoring", "all_pay"],
-                    "description": "Competitive bid scoring surface topology [alias: capital_bid_surface]",
-                },
-                "wealth_institutional_stress_index": {
-                    "description": "Composite 0-1 institutional stress index [alias: capital_institutional_stress_index]",
-                },
-                "wealth_governance_capacity": {
-                    "description": "Board governance capacity vs stress level [alias: capital_governance_capacity]",
-                },
-                "wealth_cascade_model": {
-                    "description": "Institutional stress collapse cascade model [alias: capital_cascade_model]",
-                },
-                "wealth_external_exploitation_detect": {
-                    "description": "Detect simulative neutral counterparty extraction [alias: capital_external_exploitation_detect]",
+                    "description": "Sovereign 888_HOLD judge handoff envelope",
                 },
             }
             return wrap_result(
@@ -1452,16 +1412,7 @@ def register_canonical_tools(mcp):
                         {
                             "name": "institutional",
                             "kind": "abductive",
-                            "tools": [
-                                "capital_diagnose",
-                                "capital_entropy",
-                                *INSTITUTIONAL_TOOL_NAMES,
-                            ],
-                        },
-                        {
-                            "name": "wisdom",
-                            "kind": "abductive",
-                            "tools": ["capital_wisdom"],
+                            "tools": ["capital_diagnose", "capital_entropy"],
                         },
                         {
                             "name": "market",
@@ -1474,6 +1425,11 @@ def register_canonical_tools(mcp):
                             "tools": ["capital_ledger"],
                         },
                         {
+                            "name": "governance",
+                            "kind": "advisory",
+                            "tools": ["wealth_judge_handoff"],
+                        },
+                        {
                             "name": "meta",
                             "kind": "observational",
                             "tools": ["capital_registry"],
@@ -1481,7 +1437,7 @@ def register_canonical_tools(mcp):
                     ],
                     "canonical_tool_count": len(canonical_tools),
                     "public_tool_count": len(public_tools),
-                    "legacy_tools": "direct_import_engines",
+                    "legacy_tools": "internal_only_direct_import",
                     "preload_mechanism": "REMOVED_2026-07-07",
                 },
             )

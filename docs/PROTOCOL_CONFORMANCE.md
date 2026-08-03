@@ -5,15 +5,15 @@
 organ: WEALTH
 layer: L3 DOMAIN
 mcp_port: 18082
-last_verified: 2026-07-24
-public_tool_count: 12
+last_verified: 2026-08-03
+public_tool_count: 8
 ```
 
 ## Protocol Status
 
 | Protocol | Status | Notes |
 |----------|--------|-------|
-| **MCP** | ✅ CONFORMANT | 12 public tools via FastMCP |
+| **MCP** | ✅ CONFORMANT | 8 public tools via FastMCP |
 | **FastMCP** | ✅ CONFORMANT | `server_federated.py` → `wealth_mcp/server.py` |
 | **JSON-RPC 2.0** | ✅ CONFORMANT | Enforced by FastMCP |
 | **Streamable HTTP** | ✅ CONFORMANT | `/mcp` POST endpoint |
@@ -25,13 +25,14 @@ public_tool_count: 12
 ## MCP Tool Surface
 
 ```
-capital_primitive, capital_health, capital_diagnose, capital_wisdom,
-capital_market, capital_ledger, capital_registry, capital_entropy,
-wealth_institutional_stress_index, wealth_cascade_model,
-wealth_governance_capacity, wealth_external_exploitation_detect
+capital_primitive, capital_health, capital_diagnose, capital_market,
+capital_ledger, capital_registry, capital_entropy, wealth_judge_handoff
 ```
 
 `capital_ledger(mode="write")` is C2/IRREVERSIBLE and requires arifOS SEAL plus `ack_irreversible=true`; query mode is read-only.
+
+`capital_wisdom` and removed institutional compatibility names are internal or
+historical references only, not public `tools/list` entries.
 
 ## Gaps to Close
 

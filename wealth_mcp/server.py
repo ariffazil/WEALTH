@@ -32,6 +32,28 @@ base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 _UNBOUND_SESSION_TOKENS = {None, "", "_default", "null", "None", "anonymous"}
 _OBSERVE_SURFACE = frozenset(PUBLIC_TOOL_NAMES)
 
+# These names are resolved only by canonical.py's direct-import compatibility
+# dispatcher. They are deliberately not FastMCP registrations or public SOT.
+_INTERNAL_LEGACY_ALIASES = {
+    "wealth_market_data": "capital_market",
+    "market_data": "capital_market",
+    "wealth_stock_analysis": "capital_market",
+    "stock_analysis": "capital_market",
+    "wealth_vault_query": "capital_ledger",
+    "vault_query": "capital_ledger",
+    "wealth_vault_write": "capital_ledger",
+    "vault_write": "capital_ledger",
+    "wealth_registry_status": "capital_registry",
+    "wealth_system_registry_status": "capital_registry",
+    "registry_status": "capital_registry",
+    "wealth_schema": "capital_registry",
+    "schema": "capital_registry",
+    "wealth_survival_engine": "capital_health",
+    "survival_engine": "capital_health",
+    "wealth_omni_wisdom": "internal_wisdom_engine",
+    "omni_wisdom": "internal_wisdom_engine",
+}
+
 
 def _append_existing_jsonl(path: str, payload: dict[str, Any]) -> dict[str, Any]:
     """Append to a provisioned JSONL target without creating files or directories."""
@@ -864,122 +886,11 @@ def _register_resources(mcp: FastMCP) -> None:
                 "public_tools": list(PUBLIC_TOOL_NAMES),
                 "legacy_tools_reference": [
                     {
-                        "name": "wealth_wisdom_evaluate",
-                        "apex": "Φ Faithfulness",
-                        "domain": "wisdom",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_power_audit",
-                        "apex": "Ω Humility",
-                        "domain": "power",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_capture_scan",
-                        "apex": "Ω Humility",
-                        "domain": "capture",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_compute_npv",
-                        "apex": "P Precision",
-                        "domain": "capital",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_compute_irr",
-                        "apex": "P Precision",
-                        "domain": "capital",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_compute_emv",
-                        "apex": "E Evidence",
-                        "domain": "capital",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_compute_evoi",
-                        "apex": "X Execution",
-                        "domain": "information",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_monte_carlo_simulate",
-                        "apex": "E Evidence",
-                        "domain": "simulation",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_conservation_check",
-                        "apex": "Φ Faithfulness",
-                        "domain": "conservation",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_flow_check",
-                        "apex": "A Adaptation",
-                        "domain": "flow",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_runway_check",
-                        "apex": "A Adaptation",
-                        "domain": "survival",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_confluence_check",
-                        "apex": "Ω Humility",
-                        "domain": "signal",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_asymmetry_check",
-                        "apex": "Ω Humility",
-                        "domain": "risk",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_stock_analysis",
-                        "apex": "P Precision",
-                        "domain": "stock",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_personal_finance",
-                        "apex": "A Adaptation",
-                        "domain": "personal",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_market_data",
-                        "apex": "E Evidence",
-                        "domain": "market",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_omni_wisdom",
-                        "apex": "Φ Faithfulness",
-                        "domain": "synthesis",
-                        "readOnly": True,
-                    },
-                    {
-                        "name": "wealth_agent_path",
-                        "apex": "A Adaptation",
-                        "domain": "routing",
-                        "readOnly": True,
-                    },
-                    "wealth_vault_write",
-                    "wealth_vault_query",
-                    "wealth_registry_status",
-                    "wealth_collapse_signature_scan",
-                    "wealth_beautiful_mouse_scan",
-                    "wealth_judge_handoff",
-                    "wealth_fiscal_breakeven",
-                    "wealth_bid_surface",
-                    "wealth_optimize_mwc",
+                        "name": name,
+                        "canonical": canonical,
+                        "visibility": "internal_only",
+                    }
+                    for name, canonical in _INTERNAL_LEGACY_ALIASES.items()
                 ],
             },
             indent=2,
@@ -1003,177 +914,14 @@ def _register_resources(mcp: FastMCP) -> None:
                 "public_tools": list(PUBLIC_TOOL_NAMES),
                 "legacy_reference": [
                     {
-                        "name": "wealth_wisdom_evaluate",
-                        "domain": "wisdom",
-                        "verb": "evaluate",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_power_audit",
-                        "domain": "power",
-                        "verb": "audit",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_capture_scan",
-                        "domain": "power",
-                        "verb": "scan",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_compute_npv",
-                        "domain": "capital",
-                        "verb": "compute",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_compute_irr",
-                        "domain": "capital",
-                        "verb": "compute",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_compute_emv",
-                        "domain": "risk",
-                        "verb": "compute",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_compute_evoi",
-                        "domain": "risk",
-                        "verb": "compute",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_monte_carlo_simulate",
-                        "domain": "risk",
-                        "verb": "simulate",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_conservation_check",
-                        "domain": "capital",
-                        "verb": "check",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_flow_check",
-                        "domain": "capital",
-                        "verb": "check",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_runway_check",
-                        "domain": "capital",
-                        "verb": "check",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_confluence_check",
-                        "domain": "risk",
-                        "verb": "check",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_asymmetry_check",
-                        "domain": "risk",
-                        "verb": "check",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_stock_analysis",
-                        "domain": "stock",
-                        "verb": "analysis",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_personal_finance",
-                        "domain": "personal",
-                        "verb": "finance",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_market_data",
-                        "domain": "macro",
-                        "verb": "data",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_omni_wisdom",
-                        "domain": "synthesis",
-                        "verb": "wisdom",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_agent_path",
-                        "domain": "meta",
-                        "verb": "path",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_vault_write",
-                        "domain": "governance",
-                        "verb": "write",
-                        "mutation": True,
-                        "irreversible": True,
-                    },
-                    {
-                        "name": "wealth_vault_query",
-                        "domain": "governance",
-                        "verb": "query",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_registry_status",
-                        "domain": "meta",
-                        "verb": "status",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_collapse_signature_scan",
-                        "domain": "collapse",
-                        "verb": "scan",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_beautiful_mouse_scan",
-                        "domain": "collapse",
-                        "verb": "scan",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_judge_handoff",
-                        "domain": "governance",
-                        "verb": "handoff",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_fiscal_breakeven",
-                        "domain": "macro",
-                        "verb": "compute",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_bid_surface",
-                        "domain": "auction",
-                        "verb": "analyze",
-                        "mutation": False,
-                    },
-                    {
-                        "name": "wealth_optimize_mwc",
-                        "domain": "coalition",
-                        "verb": "optimize",
-                        "mutation": False,
-                    },
+                        "name": name,
+                        "canonical": canonical,
+                        "visibility": "internal_only",
+                    }
+                    for name, canonical in _INTERNAL_LEGACY_ALIASES.items()
                 ],
                 "deprecated": [],
-                "aliases": {
-                    "wealth_emv_compute": "wealth_compute_emv",
-                    "wealth_evoi_compute": "wealth_compute_evoi",
-                    "wealth_monte_carlo": "wealth_monte_carlo_simulate",
-                    "wealth_system_registry_status": "wealth_registry_status",
-                    "wealth_reason_agent": "wealth_agent_path",
-                },
+                "aliases": dict(_INTERNAL_LEGACY_ALIASES),
             },
             indent=2,
         )
@@ -1297,23 +1045,12 @@ def _register_resources(mcp: FastMCP) -> None:
             {
                 "domains": {
                     "personal_finance": {
-                        "tools": [
-                            "wealth_personal_finance",
-                            "wealth_conservation_check",
-                            "wealth_flow_check",
-                            "wealth_runway_check",
-                        ],
+                        "tools": ["capital_health", "capital_primitive"],
                         "prompt": "wealth_capital_diagnosis_loop",
                         "examples": ["cashflow", "runway", "net_worth", "epf", "zakat"],
                     },
                     "capital_valuation": {
-                        "tools": [
-                            "wealth_compute_npv",
-                            "wealth_compute_irr",
-                            "wealth_compute_emv",
-                            "wealth_compute_evoi",
-                            "wealth_fiscal_breakeven",
-                        ],
+                        "tools": ["capital_primitive", "capital_health"],
                         "prompt": "wealth_capital_diagnosis_loop",
                         "examples": [
                             "npv",
@@ -1325,7 +1062,7 @@ def _register_resources(mcp: FastMCP) -> None:
                         ],
                     },
                     "market_macro": {
-                        "tools": ["wealth_market_data", "wealth_fiscal_breakeven"],
+                        "tools": ["capital_market", "capital_health"],
                         "prompt": "wealth_market_reality_loop",
                         "examples": [
                             "fx",
@@ -1337,10 +1074,9 @@ def _register_resources(mcp: FastMCP) -> None:
                     },
                     "stock_safety": {
                         "tools": [
-                            "wealth_stock_analysis",
-                            "wealth_compute_emv",
-                            "wealth_asymmetry_check",
-                            "wealth_confluence_check",
+                            "capital_market",
+                            "capital_primitive",
+                            "capital_diagnose",
                         ],
                         "prompts": [
                             "wealth_risk_downside_loop",
@@ -1356,13 +1092,7 @@ def _register_resources(mcp: FastMCP) -> None:
                         ],
                     },
                     "risk_downside": {
-                        "tools": [
-                            "wealth_asymmetry_check",
-                            "wealth_monte_carlo_simulate",
-                            "wealth_confluence_check",
-                            "wealth_compute_emv",
-                            "wealth_compute_evoi",
-                        ],
+                        "tools": ["capital_primitive", "capital_diagnose"],
                         "prompt": "wealth_risk_downside_loop",
                         "examples": [
                             "asymmetry",
@@ -1372,12 +1102,7 @@ def _register_resources(mcp: FastMCP) -> None:
                         ],
                     },
                     "institutional_power": {
-                        "tools": [
-                            "wealth_power_audit",
-                            "wealth_capture_scan",
-                            "wealth_beautiful_mouse_scan",
-                            "wealth_collapse_signature_scan",
-                        ],
+                        "tools": ["capital_diagnose"],
                         "prompt": "wealth_institutional_power_loop",
                         "examples": [
                             "capture",
@@ -1387,31 +1112,14 @@ def _register_resources(mcp: FastMCP) -> None:
                         ],
                     },
                     "governance": {
-                        "tools": [
-                            "wealth_judge_handoff",
-                            "wealth_vault_write",
-                            "wealth_vault_query",
-                        ],
+                        "tools": ["wealth_judge_handoff", "capital_ledger"],
                         "prompt": "wealth_arifos_handoff_loop",
                         "examples": ["handoff", "vault", "authority", "888_hold"],
                     },
-                    "synthesis": {
-                        "tools": [
-                            "wealth_omni_wisdom",
-                            "wealth_wisdom_evaluate",
-                            "wealth_agent_path",
-                            "wealth_registry_status",
-                        ],
-                        "prompts": [
-                            "wealth_capital_diagnosis_loop",
-                            "wealth_allocation_judgment_loop",
-                        ],
-                        "examples": [
-                            "13-primitive synthesis",
-                            "6-dim wisdom",
-                            "path routing",
-                            "registry status",
-                        ],
+                    "meta": {
+                        "tools": ["capital_registry"],
+                        "prompt": "wealth_reality_intake_loop",
+                        "examples": ["registry status", "schema", "domains", "health"],
                     },
                 },
             },
@@ -1438,32 +1146,26 @@ def _register_resources(mcp: FastMCP) -> None:
                     "Agents that skip policy are non-compliant."
                 ),
                 "required_preload": {
-                    "wealth_compute_emv": [
-                        "wealth://reality/context",
-                        "wealth://bid/surface",
-                    ],
-                    "wealth_bid_surface": ["wealth://reality/context"],
-                    "wealth_compute_evoi": [
+                    "capital_primitive": [
                         "wealth://reality/context",
                         "wealth://risk/thresholds",
                     ],
-                    "wealth_monte_carlo_simulate": ["wealth://reality/context"],
+                    "capital_health": ["wealth://reality/context"],
+                    "capital_market": ["wealth://market/sources"],
+                    "capital_diagnose": [
+                        "wealth://risk/thresholds",
+                        "wealth://federation/contract",
+                    ],
                     "wealth_judge_handoff": [
                         "wealth://handoff/arifos-schema",
                         "wealth://risk/thresholds",
                         "wealth://affordance/contracts",
                     ],
-                    "wealth_vault_write": [
+                    "capital_ledger": [
                         "wealth://handoff/arifos-schema",
                         "wealth://replay/receipt-schema",
                     ],
-                    "wealth_collapse_signature_scan": [
-                        "wealth://risk/thresholds",
-                        "wealth://federation/contract",
-                    ],
-                    "wealth_power_audit": ["wealth://federation/contract"],
-                    "wealth_stock_analysis": ["wealth://market/sources"],
-                    "wealth_market_data": ["wealth://market/sources"],
+                    "capital_entropy": ["wealth://reality/context"],
                 },
                 "freshness_ttl_seconds": {
                     "wealth://health": 60,
@@ -1659,7 +1361,7 @@ def _register_resources(mcp: FastMCP) -> None:
                 "as_of_utc": now.isoformat(),
                 "timezone_primary": "Asia/Kuala_Lumpur",
                 "actor_default": "ARIF",
-                "market_data_policy": "current-sensitive claims require wealth_market_data with timestamp",
+                "market_data_policy": "current-sensitive claims require capital_market with timestamp",
                 "financial_advice_policy": "advisory only — no buy/sell/move-money instruction from WEALTH",
                 "epistemic_default": "DERIVED unless evidence is observed",
                 "stale_data_warning_threshold_hours": 24,
@@ -1673,11 +1375,11 @@ def _register_resources(mcp: FastMCP) -> None:
                 ],
                 "authority_chain": "WEALTH computes → arifOS judges → Arif decides",
                 "session_id_required_for": [
-                    "wealth_vault_write",
+                    "capital_ledger(mode='write')",
                     "wealth_judge_handoff",
                 ],
                 "actor_verification_required_for": [
-                    "wealth_vault_write",
+                    "capital_ledger(mode='write')",
                     "wealth_judge_handoff(mode='submit')",
                 ],
                 "prompt_layer_count": 7,
@@ -1713,14 +1415,14 @@ def _register_resources(mcp: FastMCP) -> None:
                 },
                 "sources": {
                     "fx": {
-                        "tool": "wealth_market_data",
+                        "tool": "capital_market",
                         "mode": "fx",
                         "freshness_required": True,
                         "acceptable_lag_minutes": 15,
                         "common_pairs": ["USD/MYR", "USD/SGD", "GBP/MYR", "EUR/MYR"],
                     },
                     "commodity": {
-                        "tool": "wealth_market_data",
+                        "tool": "capital_market",
                         "mode": "commodity",
                         "freshness_required": True,
                         "acceptable_lag_minutes": 60,
@@ -1733,8 +1435,8 @@ def _register_resources(mcp: FastMCP) -> None:
                         ],
                     },
                     "macro": {
-                        "tool": "wealth_market_data",
-                        "mode": "macro",
+                        "tool": "capital_market",
+                        "mode": "indicator",
                         "freshness_required": False,
                         "lag_expected": True,
                         "typical_lag_days": 30,
@@ -1746,8 +1448,8 @@ def _register_resources(mcp: FastMCP) -> None:
                         ],
                     },
                     "bursa": {
-                        "tool": "wealth_stock_analysis",
-                        "modes": ["bursa_snapshot", "bursa_evidence"],
+                        "tool": "capital_market",
+                        "mode": "stock",
                         "freshness_required": True,
                         "execution_grade": False,
                         "note": "Bursa data is informational, not execution-grade",
@@ -1755,7 +1457,7 @@ def _register_resources(mcp: FastMCP) -> None:
                 },
                 "freshness_law": (
                     "If a claim is current-sensitive, the WEALTH output must cite "
-                    "the wealth_market_data call that produced it, with timestamp. "
+                    "the capital_market call that produced it, with timestamp. "
                     "Stale data → stale answer → 888_HOLD recommended."
                 ),
             },
@@ -1820,92 +1522,28 @@ def _register_resources(mcp: FastMCP) -> None:
         return json.dumps(
             {
                 "contracts": {
-                    "wealth_compute_npv": {
-                        "action_class": "ANALYZE",
+                    "capital_primitive": {
+                        "action_class": "COMPUTE",
                         "mutation": False,
                         "irreversible": False,
                         "requires_888_hold": False,
                         "side_effects": "none",
                     },
-                    "wealth_compute_irr": {
-                        "action_class": "ANALYZE",
+                    "capital_health": {
+                        "action_class": "COMPUTE",
                         "mutation": False,
                         "irreversible": False,
                         "requires_888_hold": False,
                         "side_effects": "none",
                     },
-                    "wealth_compute_emv": {
-                        "action_class": "ANALYZE",
+                    "capital_diagnose": {
+                        "action_class": "SIMULATE",
                         "mutation": False,
                         "irreversible": False,
                         "requires_888_hold": False,
                         "side_effects": "none",
                     },
-                    "wealth_compute_evoi": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_monte_carlo_simulate": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_conservation_check": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_flow_check": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_runway_check": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_asymmetry_check": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_confluence_check": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_stock_analysis": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                        "execution_grade": False,
-                    },
-                    "wealth_personal_finance": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_market_data": {
+                    "capital_market": {
                         "action_class": "OBSERVE",
                         "mutation": False,
                         "irreversible": False,
@@ -1913,84 +1551,27 @@ def _register_resources(mcp: FastMCP) -> None:
                         "side_effects": "none",
                         "freshness_required": True,
                     },
-                    "wealth_fiscal_breakeven": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_power_audit": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_capture_scan": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_collapse_signature_scan": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": True,
-                        "side_effects": "HIGH/CRITICAL claim requires handoff",
-                    },
-                    "wealth_beautiful_mouse_scan": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "diagnostic only, never accusatory",
-                    },
-                    "wealth_wisdom_evaluate": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_omni_wisdom": {
-                        "action_class": "SYNTHESIZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "cold-start returns HOLD/0.5 by design",
-                    },
-                    "wealth_agent_path": {
-                        "action_class": "META",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_registry_status": {
-                        "action_class": "META",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_vault_query": {
-                        "action_class": "READ",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_vault_write": {
-                        "action_class": "WRITE",
+                    "capital_ledger": {
+                        "action_class": "IRREVERSIBLE",
                         "mutation": True,
                         "irreversible": True,
+                        "query_override": "READONLY",
                         "requires_888_hold": True,
-                        "side_effects": "writes to VAULT999 ledger; cannot be undone",
-                        "actor_verification_required": True,
-                        "session_id_required": True,
+                        "side_effects": "query is read-only; write requires arifOS SEAL and human acknowledgment",
+                    },
+                    "capital_registry": {
+                        "action_class": "OBSERVE",
+                        "mutation": False,
+                        "irreversible": False,
+                        "requires_888_hold": False,
+                        "side_effects": "none",
+                    },
+                    "capital_entropy": {
+                        "action_class": "SIMULATE",
+                        "mutation": False,
+                        "irreversible": False,
+                        "requires_888_hold": False,
+                        "side_effects": "optional local dependency; unavailable is reported explicitly",
                     },
                     "wealth_judge_handoff": {
                         "action_class": "HANDOFF",
@@ -1999,20 +1580,6 @@ def _register_resources(mcp: FastMCP) -> None:
                         "mode_default": "prepare",
                         "submit_requires_authority": True,
                         "side_effects": "prepare builds envelope; submit delegates verdict to arifOS",
-                    },
-                    "wealth_bid_surface": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
-                    },
-                    "wealth_optimize_mwc": {
-                        "action_class": "ANALYZE",
-                        "mutation": False,
-                        "irreversible": False,
-                        "requires_888_hold": False,
-                        "side_effects": "none",
                     },
                 },
                 "law": (

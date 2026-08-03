@@ -4,7 +4,7 @@
 
 ## What You'll Have
 
-A FastMCP server on `http://localhost:18082` advertising 12 tools: 8 mode-dispatched `capital_*` tools plus 4 institutional compatibility tools.
+A FastMCP server on `http://localhost:18082` advertising 8 canonical tools.
 
 ## Prerequisites
 
@@ -27,27 +27,21 @@ curl -s http://127.0.0.1:18082/health | python3 -m json.tool
 curl -s http://127.0.0.1:18082/tools | python3 -m json.tool
 ```
 
-`/tools` is the runtime source of truth and should list 12 names.
+`/tools` is the runtime source of truth and should list 8 names.
 
 ## Public Tools
-
-### Canonical capital family
 
 - `capital_primitive` — NPV, IRR, EMV, EVOI, Monte Carlo, portfolio optimization
 - `capital_health` — conservation, flow, runway, survival, fiscal breakeven
 - `capital_diagnose` — institutional stress, governance, cascade, collapse, power
-- `capital_wisdom` — advisory wisdom and epistemic synthesis
 - `capital_market` — FX, commodities, indicators, stocks
 - `capital_ledger` — query; C2/IRREVERSIBLE write requires arifOS SEAL and acknowledgment
 - `capital_registry` — status, schema, domains, health
 - `capital_entropy` — optional entropy-integrity analysis; structured UNAVAILABLE if dependency is absent
+- `wealth_judge_handoff` — prepare or submit an arifOS governance handoff envelope
 
-### Institutional compatibility family
-
-- `wealth_institutional_stress_index`
-- `wealth_cascade_model`
-- `wealth_governance_capacity`
-- `wealth_external_exploitation_detect`
+`capital_wisdom` and former institutional compatibility names are internal or
+historical references, not public MCP tools.
 
 ## Local Test
 

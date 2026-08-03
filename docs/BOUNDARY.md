@@ -17,7 +17,7 @@ scope: /root/WEALTH/BOUNDARY.md
 - Capital health: conservation, flow, runway, survival, fiscal breakeven
 - Market observation: FX, commodities, macro indicators, equities
 - Institutional diagnostics: stress, governance capacity, cascades, exploitation patterns
-- Advisory wisdom and entropy analysis when evidence/dependencies are available
+- Entropy analysis when evidence/dependencies are available
 - Ledger query and a governed C2/IRREVERSIBLE write path
 
 ## Does Not Own
@@ -34,17 +34,17 @@ scope: /root/WEALTH/BOUNDARY.md
 The canonical runtime is `server_federated.py` → `wealth_mcp/server.py`.
 Authenticated `tools/list` is final truth.
 
-**8 canonical capital tools:**
+**8 canonical public tools:**
 
-`capital_primitive`, `capital_health`, `capital_diagnose`, `capital_wisdom`,
-`capital_market`, `capital_ledger`, `capital_registry`, `capital_entropy`
+`capital_primitive`, `capital_health`, `capital_diagnose`, `capital_market`,
+`capital_ledger`, `capital_registry`, `capital_entropy`,
+`wealth_judge_handoff`
 
-**4 institutional compatibility tools:**
+There are **0 public institutional compatibility tools**. `capital_wisdom` and
+former institutional names remain only in internal or historical compatibility
+contexts; they are not registered or discoverable public MCP tools.
 
-`wealth_institutional_stress_index`, `wealth_cascade_model`,
-`wealth_governance_capacity`, `wealth_external_exploitation_detect`
-
-Total public surface: **12**. No hidden aliases are advertised.
+Total public surface: **8**. No hidden aliases are advertised.
 
 ## Mutation Boundary
 

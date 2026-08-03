@@ -295,7 +295,7 @@ gates:
     implementation: wealth_gates.py::gap10_pre_trade_gate
 
 # ════════════════════════════════════════════════════════════════════
-# 5. TOOL CONTRACTS (the 12 public tools + their class/floor bindings)
+# 5. TOOL CONTRACTS (the 8 public tools + their class/floor bindings)
 # ════════════════════════════════════════════════════════════════════
 # Sourced from contracts/tools.yaml + wealth_mcp/__init__.py.
 
@@ -321,14 +321,6 @@ tools:
     risk_class: C1
     floors: [F1, F2, F4, F6, F7, F9, F11, F13]
     purpose: "Institutional diagnostics"
-    reversal: instant
-    audit: structured_event
-
-  - name: capital_wisdom
-    action_class: SUGGEST
-    risk_class: C1
-    floors: [F1, F2, F4, F5, F6, F7, F9, F11, F13]
-    purpose: "Advisory capital wisdom"
     reversal: instant
     audit: structured_event
 
@@ -365,40 +357,17 @@ tools:
     reversal: instant
     audit: structured_event
 
-  - name: wealth_institutional_stress_index
-    action_class: SIMULATE
+  - name: wealth_judge_handoff
+    action_class: HANDSHAKE
     risk_class: C1
-    floors: [F1, F2, F4, F6, F7, F11]
-    purpose: "Institutional stress score"
-    reversal: instant
-    audit: structured_event
-
-  - name: wealth_cascade_model
-    action_class: SIMULATE
-    risk_class: C1
-    floors: [F1, F2, F4, F6, F7, F11]
-    purpose: "Institutional feedback-loop trajectory"
-    reversal: instant
-    audit: structured_event
-
-  - name: wealth_governance_capacity
-    action_class: SIMULATE
-    risk_class: C1
-    floors: [F1, F2, F4, F6, F7, F11]
-    purpose: "Governance capacity relative to stress"
-    reversal: instant
-    audit: structured_event
-
-  - name: wealth_external_exploitation_detect
-    action_class: SIMULATE
-    risk_class: C1
-    floors: [F1, F2, F4, F6, F7, F9, F11]
-    purpose: "Counterparty extraction pattern detection"
+    floors: [F1, F2, F4, F7, F11, F13]
+    purpose: "Prepare or submit a structured arifOS governance handoff envelope"
     reversal: instant
     audit: structured_event
 
 legacy_tool_contracts:
-  # Historical monolith mappings retained for audit only.
+  # Historical monolith mappings retained for audit only; these are not public
+  # tools/list entries and must not be counted in the public surface.
   - name: wealth_system_registry_status
     action_class: OBSERVE
     floors: [F2, F4, F11]

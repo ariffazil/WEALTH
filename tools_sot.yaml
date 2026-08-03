@@ -1,5 +1,5 @@
 organ: WEALTH
-version: 2026.07.18
+version: 2026.08.03
 sot_source: wealth_mcp/tools/canonical.py
 live_port: 18082
 tools:
@@ -56,23 +56,6 @@ tools:
       cadence monitoring, or crisis reflex analysis.
     tags:
       domain: institutional
-      kind: abductive
-      canonical: v1
-
-  - name: capital_wisdom
-    access: public
-    description: >
-      Capital wisdom synthesis — evaluates proposals across dignity, sovereignty,
-      resilience, inequality, ecological cost, and optionality. Advisory only.
-      Does NOT emit GO/HOLD/SEAL verdicts — those are arifOS's domain.
-
-      Modes: wisdom | omni | epistemic
-
-      Use when: the user wants a wisdom-weighted evaluation of a capital
-      proposal, deal framing, hysteresis-aware path analysis, or counterfactual
-      reasoning across 13 capital primitives.
-    tags:
-      domain: wisdom
       kind: abductive
       canonical: v1
 
@@ -150,3 +133,15 @@ tools:
       kind: abductive
       canonical: v1
       entropy: mesh
+
+  - name: wealth_judge_handoff
+    access: public
+    description: >
+      Build or validate a structured handoff envelope for arifOS governance
+      review. Preparation is advisory; submission remains authority-gated.
+
+      Modes: prepare | submit
+    tags:
+      domain: governance
+      kind: handoff
+      canonical: v1

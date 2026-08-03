@@ -2,7 +2,7 @@
 >
 > **Source:** `https://github.com/paperswithbacktest/awesome-systematic-trading`  
 > **Ingested:** 2026-07-28 | **Agent:** OpenCode (333-AGI) | **Sovereign:** Arif (F13)  
-> **Classification:** OBS + DER — signals distilled from published peer-reviewed strategies + 97 libraries  
+> **Runtime note:** This research map is non-live domain context. Tool names below are conceptual/legacy references and do not define the public MCP surface; use `tools/list` and `contracts/tools.yaml` for runtime truth.
 > **DITEMPA BUKAN DIBERI** — Forged, Not Given
 >
 > ---

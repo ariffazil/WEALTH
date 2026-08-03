@@ -3,8 +3,8 @@
   "version": "2026.07.19",
   "protocolVersion": "2025-11-25",
   "name": "WEALTH MCP",
-  "description": "Capital intelligence — 12-tool compute-only federation surface.",
-  "tools": 12,
+  "description": "Capital intelligence — 8-tool compute-only federation surface.",
+  "tools": 8,
   "endpoint": "https://wealth.arif-fazil.com/mcp",
   "identity": {
     "canonical_name": "WEALTH Capital Intelligence",

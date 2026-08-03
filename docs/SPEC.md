@@ -205,7 +205,7 @@ After rebuild (target, not current):
 - `/prompts/list` returns exactly 12 prompts
 - `/resources/list` returns exactly 21 resources
 
-Current canonical surface (2026-07-01): 26 public tools + 6 hidden aliases = 32 total exposed.
+Current canonical federated surface (2026-08-03): 8 public tools; older monolith counts above are historical and not runtime truth.
 - No umbrella tool remains on the primary surface
 - V2 aliases removed (backward compatibility via redirect)
 - HTTP transport exposes all three primitives correctly
