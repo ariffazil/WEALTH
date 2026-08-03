@@ -165,6 +165,7 @@ def _validate_direct_session_binding(
         # Previously capital_* tools got OBSERVE_UNBOUND pass-through.
         # Now ALL tools require a valid session_id.
         import datetime as _dt
+
         return {
             "ok": False,
             "code": "SESSION_REQUIRED",
@@ -386,10 +387,22 @@ def create_mcp_server() -> FastMCP:
                 # ── Single Verdict Resolution (W4 Fix) ────────────────
                 # Lowest verdict wins: VOID > HOLD > SABAR > PASS/SEAL
                 apex_v = str((enriched.get("apex") or {}).get("verdict", "")).upper()
-                apex_pass = (enriched.get("apex") or {}).get("authority", {}).get("pass")
-                dom_v = str(enriched.get("domain_verdict") or enriched.get("verdict") or "").upper()
-                if apex_v in ("HOLD", "VOID", "BLOCKED") or apex_pass is False or dom_v in ("HOLD", "VOID", "BLOCKED"):
-                    winning_v = "VOID" if ("VOID" in (apex_v, dom_v) or "BLOCKED" in (apex_v, dom_v)) else "HOLD"
+                apex_pass = (
+                    (enriched.get("apex") or {}).get("authority", {}).get("pass")
+                )
+                dom_v = str(
+                    enriched.get("domain_verdict") or enriched.get("verdict") or ""
+                ).upper()
+                if (
+                    apex_v in ("HOLD", "VOID", "BLOCKED")
+                    or apex_pass is False
+                    or dom_v in ("HOLD", "VOID", "BLOCKED")
+                ):
+                    winning_v = (
+                        "VOID"
+                        if ("VOID" in (apex_v, dom_v) or "BLOCKED" in (apex_v, dom_v))
+                        else "HOLD"
+                    )
                     enriched["domain_verdict"] = winning_v
                     enriched["verdict"] = winning_v
                     if isinstance(enriched.get("result"), dict):
@@ -558,13 +571,14 @@ def create_mcp_server() -> FastMCP:
                                         "human_final_authority": "ARIF",
                                         "requires_888_hold": False,
                                         "source_attribution": ["wealth-session-gate"],
-                                        "computation_timestamp": binding.get(
-                                            "_ts", ""
-                                        ),
+                                        "computation_timestamp": binding.get("_ts", ""),
                                         "session_id": binding.get("session_id"),
                                         "actor_id": binding.get("actor_id"),
                                         "errors": [
-                                            binding.get("reason", "L11 AUTH: session_id required")
+                                            binding.get(
+                                                "reason",
+                                                "L11 AUTH: session_id required",
+                                            )
                                         ],
                                         "error_code": binding.get(
                                             "code", "SESSION_REQUIRED"
@@ -2132,6 +2146,228 @@ def _register_resources(mcp: FastMCP) -> None:
                     "secondary": "WEALTH local JSONL log at /root/VAULT999/wealth/receipts.jsonl",
                 },
                 "law": "No receipt, no authority. Receipts are the audit trail.",
+            },
+            indent=2,
+        )
+
+    # ── Zen Phase 5: New resources ──────────────────────────────────
+    # 3 of 7 directive-specified resources. The remaining 4
+    # (vitals/sealed, vitals/history, amendments/registry, methods/sensitivity)
+    # require sealed PETRONAS data — gated on sovereign release.
+
+    # 15. wealth://schema/field-dictionary
+    @mcp.resource(
+        uri="wealth://schema/field-dictionary",
+        name="Field Dictionary",
+        description="Per-mode required and optional fields for capital_diagnose and capital_health, with types, units, and aliases.",
+        mime_type="application/json",
+        tags={"wealth", "schema", "fields", "reference"},
+        annotations={"readOnlyHint": True, "idempotentHint": True},
+        meta={"version": WEALTH_VERSION, "authority": "advisory_only"},
+    )
+    def wealth_field_dictionary() -> str:
+        """Field dictionary for capital_diagnose and capital_health modes."""
+        return json.dumps(
+            {
+                "_description": "Field dictionary for WEALTH diagnostic tools. Each mode lists expected fields with aliases.",
+                "capital_health": {
+                    "survival": {
+                        "submodes": {
+                            "personal_finance": {
+                                "monthly_income_v": "float USD",
+                                "monthly_expenses_v": "float USD",
+                                "liquid_assets": "float USD",
+                                "horizon_months": "int",
+                            },
+                            "corporate_runway": {
+                                "liquid_assets": "float RM",
+                                "monthly_burn": "float RM",
+                            },
+                            "sovereign_fiscal": {
+                                "total_govt_expenditure": "float RM",
+                                "non_oil_revenue": "float RM",
+                                "petronas_dividend_base_rm": "float RM",
+                                "oil_price_assumption_usd": "float USD",
+                            },
+                        },
+                        "note": "Unknown submode returns structured UNKNOWN_SUBMODE error. No silent default.",
+                    },
+                },
+                "capital_diagnose": {
+                    "stress_index": {
+                        "required_fields": 16,
+                        "fields": {
+                            "financial": [
+                                "profit_change_pct",
+                                "revenue_change_pct",
+                                "cost_cutting_announced",
+                                "sovereign_extraction",
+                                "cffo",
+                                "fcf",
+                                "gearing",
+                            ],
+                            "governance": [
+                                "board_size",
+                                "board_resignations_12m",
+                                "company_secretaries_as_directors",
+                                "avg_tenure_years",
+                                "governance_separation_index",
+                            ],
+                            "workforce": [
+                                "rightsizing_pct",
+                                "voluntary_exits_pct",
+                                "key_personnel_departures",
+                            ],
+                            "legal": [
+                                "active_litigation_count",
+                                "injunction_value_musd",
+                                "regulatory_uncertainty_score",
+                            ],
+                            "exploitation": [
+                                "counterparty_payment_freeze",
+                                "interpleader_filed",
+                                "competing_claims",
+                            ],
+                        },
+                        "aliases": {
+                            "financial.sovereign_extraction": [
+                                "sovereign_extraction_pct",
+                                "sovereign_extraction_gauge",
+                            ],
+                            "financial.cffo": ["cffo_rm_b"],
+                            "financial.fcf": ["fcf_rm_b"],
+                            "financial.gearing": ["gearing_ratio_pct"],
+                            "governance.governance_separation_index": [
+                                "governance_separation"
+                            ],
+                        },
+                        "coverage_gate": "coverage < 15% → risk_level downgraded to INSUFFICIENT_DATA",
+                        "confidence_cap": "0.90 per F7 HUMILITY",
+                    },
+                    "governance_capacity": {
+                        "fields": [
+                            "board_members (list of {name, independent})",
+                            "committees (list of {name, members, independent_chair})",
+                            "stress_level (float 0-1)",
+                        ],
+                    },
+                },
+                "common_rules": {
+                    "sessions": "session_id required for all WEALTH tools",
+                    "epistemic_tags": "OBS=observed, DER=derived, INT=interpreted, SPEC=speculated",
+                    "confidence_cap": "0.90 per F7 HUMILITY",
+                    "unknown_enum": "All tools return structured error for unknown modes/submodes, never MCP -32602",
+                },
+            },
+            indent=2,
+        )
+
+    # 16. wealth://epistemic/tag-definitions
+    @mcp.resource(
+        uri="wealth://epistemic/tag-definitions",
+        name="Epistemic Tag Definitions",
+        description="OBS/DER/INT/SPEC definitions and the rules for assigning each in WEALTH responses.",
+        mime_type="application/json",
+        tags={"wealth", "epistemic", "governance", "reference"},
+        annotations={"readOnlyHint": True, "idempotentHint": True},
+        meta={"version": WEALTH_VERSION, "authority": "binding"},
+    )
+    def wealth_epistemic_tags() -> str:
+        """Epistemic tag definitions and assignment rules."""
+        return json.dumps(
+            {
+                "tags": {
+                    "OBS": {
+                        "label": "Observed",
+                        "rule": "Direct measurement from live feed, sealed document, or audit trail. Source must be cited.",
+                        "examples": [
+                            "Brent price from live commodity engine",
+                            "PAT from audited annual report",
+                        ],
+                    },
+                    "DER": {
+                        "label": "Derived",
+                        "rule": "Computed from OBS inputs through a declared formula. Formula must be cited.",
+                        "examples": [
+                            "NPV from cash_flows × discount_rate",
+                            "Stress index from 5 component scores",
+                        ],
+                    },
+                    "INT": {
+                        "label": "Interpreted",
+                        "rule": "Pattern recognized from DER evidence. Must cite the pattern logic and confidence.",
+                        "examples": [
+                            "Cascade detection from temporal stress patterns",
+                            "Governance capacity gap from board composition",
+                        ],
+                    },
+                    "SPEC": {
+                        "label": "Speculated",
+                        "rule": "Extrapolation or analogy without verifiable evidence. Must NOT carry evidence_quality >= MODERATE.",
+                        "examples": [
+                            "Keyword-overlap alignment scores",
+                            "Scenario projections without held-out validation",
+                        ],
+                    },
+                },
+                "assignment_rules": {
+                    "SPEC may never carry evidence_quality >= MODERATE": "Enforced at wrap_result level",
+                    "DER and INT require source_attribution": "Non-empty list",
+                    "Confidence capped at 0.90": "Per F7 HUMILITY, enforced at engine level",
+                    "metric_purpose_audit is SPEC/MISSING": "Keyword overlap is not semantic analysis (Phase 3, 2026-08-03)",
+                },
+            },
+            indent=2,
+        )
+
+    # 17. wealth://provenance/feeds
+    @mcp.resource(
+        uri="wealth://provenance/feeds",
+        name="Market Feed Provenance",
+        description="Every market feed: source, update cadence, licence, known lag, and routing.",
+        mime_type="application/json",
+        tags={"wealth", "market", "provenance", "reference"},
+        annotations={"readOnlyHint": True, "idempotentHint": True},
+        meta={"version": WEALTH_VERSION, "authority": "advisory_only"},
+    )
+    def wealth_feed_provenance() -> str:
+        """Market feed provenance and routing."""
+        return json.dumps(
+            {
+                "routing": {
+                    "commodity_engine_live": "Used for: brent_crude, wti_crude, natural_gas, lng_asia, gold. Source: wealth_core.commodity_engines.get_snapshot(). Latency: <60s from exchange. Feed type: LIVE.",
+                    "legacy_market_data": "Used for: FX, indicators, stocks, unmapped commodities. Source: wealth_market_data engine. Feed type: CACHED/ESTIMATE — check staleness_class.",
+                },
+                "feed_types": {
+                    "LIVE": {"max_age": 300, "can_carry": "MODERATE or better"},
+                    "AGING": {"max_age": 3600, "can_carry": "MODERATE"},
+                    "STALE": {"max_age": 86400, "can_carry": "WEAK only"},
+                    "EXPIRED": {
+                        "min_age": 86400,
+                        "action": "ERROR — no value returned",
+                    },
+                    "ESTIMATE": {
+                        "action": "May never carry evidence_quality >= MODERATE"
+                    },
+                },
+                "commodity_sources": {
+                    "brent_crude": {
+                        "symbol": "XBRENT",
+                        "source": "ICE via commodity engine (live)",
+                        "as_of": "streaming",
+                    },
+                    "gold": {
+                        "symbol": "XAUUSD",
+                        "source": "COMEX via commodity engine (live)",
+                        "as_of": "streaming",
+                    },
+                    "natural_gas": {
+                        "symbol": "XNATGAS",
+                        "source": "NYMEX via commodity engine (live)",
+                        "as_of": "streaming",
+                    },
+                },
+                "cross_witness_rule": "One feed is not a witness. Two independent sources with delta > 3% → WITNESS_DIVERGENCE warning.",
             },
             indent=2,
         )

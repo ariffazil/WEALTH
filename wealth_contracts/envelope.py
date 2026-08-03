@@ -501,6 +501,19 @@ def wrap_result(
             "missing": ["human", "earth"],
         }
 
+    # Zen C8: governance fields are advisory telemetry, not gating floors.
+    # kappa_r < 0.95 does NOT block execution. witness incomplete does NOT block.
+    # These are observed quantities — they describe, they do not enforce.
+    # Per APEX Audit Directive C8: rename pending coordinated migration.
+    governance_advisory = {
+        "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. "
+        "A sub-floor reading does NOT block execution. "
+        "These fields describe constitutional alignment; they do not enforce it. "
+        "Per APEX Audit Directive 2026-08-04 C8.",
+        "kappa_r_is_observed": True,
+        "witness_is_observed": True,
+    }
+
     # Inspect result and kwargs for evidence quality / unverified estimate signals
     unverified_found = False
     unverified_fields = []
@@ -510,12 +523,27 @@ def wrap_result(
         if depth > 4 or not obj:
             return
         if isinstance(obj, str):
-            if any(u in obj.upper() for u in ["ESTIMATE_UNVERIFIED", "UNVERIFIED", "GUESSED", "SPECULATED"]):
+            if any(
+                u in obj.upper()
+                for u in ["ESTIMATE_UNVERIFIED", "UNVERIFIED", "GUESSED", "SPECULATED"]
+            ):
                 unverified_found = True
         elif isinstance(obj, dict):
             for k, v in obj.items():
-                if any(u in str(k).upper() for u in ["EVIDENCE_QUALITY", "QUALITY", "PROVENANCE"]):
-                    if any(u in str(v).upper() for u in ["ESTIMATE", "UNVERIFIED", "GUESSED", "SPECULATED", "WEAK"]):
+                if any(
+                    u in str(k).upper()
+                    for u in ["EVIDENCE_QUALITY", "QUALITY", "PROVENANCE"]
+                ):
+                    if any(
+                        u in str(v).upper()
+                        for u in [
+                            "ESTIMATE",
+                            "UNVERIFIED",
+                            "GUESSED",
+                            "SPECULATED",
+                            "WEAK",
+                        ]
+                    ):
                         unverified_found = True
                         unverified_fields.append(str(k))
                 _scan_unverified(v, depth + 1)
@@ -533,10 +561,16 @@ def wrap_result(
 
         # Cap confidence in result if present
         if isinstance(result, dict):
-            if "confidence" in result and isinstance(result["confidence"], (int, float)):
+            if "confidence" in result and isinstance(
+                result["confidence"], (int, float)
+            ):
                 result["confidence"] = min(0.60, float(result["confidence"]))
             result["evidence_quality"] = "WEAK"
             result["unverified_inputs_detected"] = True
+
+    # Inject governance advisory into result metadata so it appears in every response
+    if isinstance(result, dict):
+        result.setdefault("_governance_advisory", governance_advisory)
 
     envelope = WealthEnvelope(
         tool_name=tool_name,

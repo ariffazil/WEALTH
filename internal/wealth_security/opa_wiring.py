@@ -34,8 +34,10 @@ def evaluate_opa_policy(
     Phase 2 stub: synchronously HTTP POST to OPA. Phase 3: async + cache.
     """
     import json
+
     try:
         import httpx
+        import httpx2  # FastMCP 4 migration
     except ImportError:
         return {
             "recommendation": "DENY" if action_class in ("MUTATE", "SEAL") else "SABAR",
@@ -56,7 +58,10 @@ def evaluate_opa_policy(
         "reversible": reversible,
         "organ": "WEALTH",
     }
-    input_hash = "sha256:" + hashlib.sha256(json.dumps(input_data, sort_keys=True).encode()).hexdigest()
+    input_hash = (
+        "sha256:"
+        + hashlib.sha256(json.dumps(input_data, sort_keys=True).encode()).hexdigest()
+    )
 
     try:
         with httpx.Client(timeout=5.0) as client:
@@ -69,14 +74,22 @@ def evaluate_opa_policy(
             result = data.get("result", {})
 
             return {
-                "recommendation": "ALLOW" if result.get("allow", False) else ("DENY" if result.get("deny", False) else "SABAR"),
+                "recommendation": "ALLOW"
+                if result.get("allow", False)
+                else ("DENY" if result.get("deny", False) else "SABAR"),
                 "override": result.get("override", True),
                 "confidence": min(0.90, float(result.get("confidence", 0.85))),
                 "evidence": result,
                 "input_hash": input_hash,
                 "fail_closed": False,
             }
-    except (httpx.HTTPError, httpx.RequestError, Exception) as e:
+    except (
+        httpx.HTTPError,
+        httpx2.HTTPError,
+        httpx.RequestError,
+        httpx2.RequestError,
+        Exception,
+    ) as e:
         # F1 AMANAH: fail-closed for mutations
         return {
             "recommendation": "DENY" if action_class in ("MUTATE", "SEAL") else "SABAR",

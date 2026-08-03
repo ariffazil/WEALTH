@@ -385,7 +385,32 @@ def register_canonical_tools(mcp):
             )
 
         if m == "survival":
-            if survival_submode == "sovereign_fiscal" or (
+            # Zen Phase 2.2: validate submode before delegating — never silently fall through
+            _VALID_SURVIVAL_SUBMODES = {
+                "personal_finance",
+                "corporate_runway",
+                "sovereign_fiscal",
+            }
+            _sm = (survival_submode or "").strip().lower()
+            if _sm and _sm not in _VALID_SURVIVAL_SUBMODES:
+                return wrap_result(
+                    tool_name="capital_health",
+                    domain="capital",
+                    result={
+                        "status": "ERROR",
+                        "error_code": "UNKNOWN_SUBMODE",
+                        "message": f"Unknown survival_submode '{survival_submode}'. Valid: {', '.join(sorted(_VALID_SURVIVAL_SUBMODES))}",
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    errors=[
+                        f"Unknown survival_submode '{survival_submode}'. Valid: {', '.join(sorted(_VALID_SURVIVAL_SUBMODES))}"
+                    ],
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
+
+            if _sm == "sovereign_fiscal" or (
                 total_govt_expenditure is not None
                 and petronas_dividend_base_rm is not None
             ):
@@ -421,7 +446,7 @@ def register_canonical_tools(mcp):
             raw = await _call_legacy_tool(
                 "wealth_survival_engine",
                 {
-                    "mode": survival_submode,
+                    "mode": _sm or "personal_finance",
                     "monthly_income": monthly_income_v,
                     "monthly_expenses": monthly_expenses_v,
                     "liquid_assets": liquid_assets,
@@ -435,19 +460,21 @@ def register_canonical_tools(mcp):
                 and (liquid_assets is None or liquid_assets == 0)
             )
             if is_empty and isinstance(raw, dict):
-                return wrap_result(
-                    tool_name="capital_health",
-                    domain="capital",
-                    result=raw,
-                    epistemic_tag=EpistemicTag.ASSUMED,
-                    evidence_quality=EvidenceQuality.MISSING,
-                    claim_state=ClaimState.DRAFT,
-                    execution_authorized=False,
-                    requires_888_hold=True,
-                    source_attribution=["survival_engine_unverified"],
-                    session_id=session_id,
-                    actor_id=actor_id,
-                )
+                raw.setdefault("input_empty", True)
+
+            return wrap_result(
+                tool_name="capital_market",
+                domain="capital",
+                result=raw,
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                claim_state=ClaimState.DRAFT,
+                execution_authorized=False,
+                requires_888_hold=True,
+                source_attribution=["survival_engine_unverified"],
+                session_id=session_id,
+                actor_id=actor_id,
+            )
             return raw
 
         if m == "fiscal_breakeven":
@@ -946,10 +973,44 @@ def register_canonical_tools(mcp):
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         if m == "commodity":
-            raw = await _call_legacy_tool(
-                "wealth_market_data", {"mode": "commodity", "commodity": commodity}
+            # Zen Phase 4: route through internal get_snapshot engine
+            # instead of stale wealth_market_data legacy path.
+            _COMMODITY_MAP = {
+                "brent_crude": "oil",
+                "wti_crude": "oil",
+                "natural_gas_henry": "gas",
+                "natural_gas_jkm": "gas",
+                "lng_asia": "gas",
+                "gold": "gold",
+            }
+            engine_name = _COMMODITY_MAP.get(commodity.lower().replace(" ", "_"), None)
+            if engine_name:
+                from wealth_core.commodity_engines import get_snapshot
+
+                raw = await get_snapshot(engine_name)
+            else:
+                raw = await _call_legacy_tool(
+                    "wealth_market_data", {"mode": "commodity", "commodity": commodity}
+                )
+            # Zen C9: cross-witness metadata
+            if isinstance(raw, dict):
+                raw["_cross_witness"] = {
+                    "primary_source": "wealth_core.commodity_engines",
+                    "feed_type": "LIVE" if engine_name else "CACHED",
+                    "witness_status": "SINGLE_SOURCE",
+                    "note": "Cross-witness requires second independent source. Delta > 3% would raise WITNESS_DIVERGENCE.",
+                }
+            return wrap_result(
+                tool_name="capital_market",
+                domain="capital",
+                result=raw,
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=["commodity_engine_live"],
+                session_id=session_id,
+                trace_id=trace_id,
+                actor_id=actor_id,
             )
-            return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         if m == "indicator":
             raw = await _call_legacy_tool(
@@ -1180,9 +1241,27 @@ def register_canonical_tools(mcp):
         for t_name in public_tools:
             try:
                 if t_name == "capital_entropy":
-                    from entropy_integrity.mcp.wealth.power_consequence_map import (
-                        wealth_power_consequence_map as map_power_consequence,
+                    # Zen Phase 3.2: use the same importlib path as capital_entropy tool,
+                    # not the broken 'from entropy_integrity.mcp.wealth' import
+                    import importlib.util as _iu
+                    from pathlib import Path as _P
+
+                    _ent_base = (
+                        _P(__file__).resolve().parents[2]
+                        / "entropy-integrity"
+                        / "mcp"
+                        / "wealth"
                     )
+                    _ent_file = _ent_base / "power_consequence_map.py"
+                    if _ent_file.is_file():
+                        _ent_spec = _iu.spec_from_file_location("pcm_probe", _ent_file)
+                        if _ent_spec and _ent_spec.loader:
+                            _ent_mod = _iu.module_from_spec(_ent_spec)
+                            _ent_spec.loader.exec_module(_ent_mod)
+                    else:
+                        raise ImportError(
+                            f"entropy-integrity module absent: {_ent_file}"
+                        )
                 elif t_name == "capital_wisdom":
                     from wealth_core.wisdom import compute_wisdom
                 elif t_name == "wealth_institutional_stress_index":
@@ -1425,8 +1504,21 @@ def register_canonical_tools(mcp):
                 },
             )
 
-        raise ValueError(
-            f"Unknown mode '{mode}'. Valid: status, schema, domains, health"
+        # Zen Phase 2: unknown mode → structured error, never MCP -32602
+        return wrap_result(
+            tool_name="capital_registry",
+            domain="meta",
+            result={
+                "status": "ERROR",
+                "error_code": "UNKNOWN_MODE",
+                "message": f"Unknown mode '{mode}'. Valid: status, schema, domains, health",
+            },
+            epistemic_tag=EpistemicTag.ASSUMED,
+            evidence_quality=EvidenceQuality.MISSING,
+            claim_state=ClaimState.VOID,
+            errors=[f"Unknown mode '{mode}'. Valid: status, schema, domains, health"],
+            session_id=session_id,
+            actor_id=actor_id,
         )
 
     # ── Helper: resolve legacy engines by direct import (ZEN 2026-07-11 W5) ──
@@ -1694,14 +1786,33 @@ def register_canonical_tools(mcp):
                 )
 
             if m == "metric_purpose_audit":
+                # Zen Phase 3: keyword overlap is not semantic analysis.
+                # This tool computes token-set Jaccard similarity only.
+                # Output tagged SPECULATED/MISSING to prevent false precision.
                 module = _safe_load_module("mpa", "metric_purpose_audit.py")
-                return _wrap_entropy(
-                    module.wealth_metric_purpose_audit(
-                        declared_purpose=declared_purpose or "",
-                        current_kpis=current_kpis or [],
-                        actual_behaviors=actual_behaviors or [],
-                        excluded_outcomes=excluded_outcomes,
-                    )
+                raw_result = module.wealth_metric_purpose_audit(
+                    declared_purpose=declared_purpose or "",
+                    current_kpis=current_kpis or [],
+                    actual_behaviors=actual_behaviors or [],
+                    excluded_outcomes=excluded_outcomes,
+                )
+                # Strip the machine-generated interpretation verdict
+                raw_result.pop("interpretation", None)
+                raw_result["_zen_note"] = (
+                    "Interpretation removed per Phase 3. "
+                    "Keyword-overlap alignment scores are token-set Jaccard similarity — "
+                    "NOT semantic analysis. Use the reflection questions, not the numbers."
+                )
+                return wrap_result(
+                    tool_name="capital_entropy",
+                    domain="institutional",
+                    result=raw_result,
+                    epistemic_tag=EpistemicTag.SPECULATED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    source_attribution=["entropy_integrity_local_dependency"],
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
                 )
 
             if m == "responsibility_ledger":
@@ -1906,10 +2017,12 @@ def register_canonical_tools(mcp):
         "capital_primitive": capital_primitive,
         "capital_health": capital_health,
         "capital_diagnose": capital_diagnose,
-        "capital_wisdom": capital_wisdom,
         "capital_market": capital_market,
         "capital_ledger": capital_ledger,
         "capital_registry": capital_registry,
         "capital_entropy": capital_entropy,
         "wealth_judge_handoff": wealth_judge_handoff,
+        # Zen Phase 1.3: capital_wisdom unregistered — normative synthesis
+        # violates 'WEALTH computes, arifOS frames'.
+        "_capital_wisdom_engine": capital_wisdom,
     }
