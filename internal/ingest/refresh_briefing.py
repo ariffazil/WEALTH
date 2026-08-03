@@ -13,7 +13,7 @@ NOW = datetime.now(MYT)
 TODAY = NOW.strftime("%Y-%m-%d")
 TARGET = Path("/var/www/html/arif/data/wealth/latest.json")
 SOURCE_REPO = Path(
-    "/root/arif-sites/sites/arif-fazil.com/public/data/wealth/latest.json"
+    "/root/arif-fazil.com/sites/arif-fazil.com/public/data/wealth/latest.json"
 )
 
 FLAME_BIN = "/usr/local/bin/flame"
