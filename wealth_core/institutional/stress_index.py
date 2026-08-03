@@ -34,7 +34,10 @@ def _financial_stress(sig: Dict[str, Any]) -> float:
     score = 0.0
 
     # Profit change: -50% or worse → 1.0, 0% → 0.0
-    profit_chg = sig.get("profit_change_pct", sig.get("profit_decline_pct", sig.get("profit_change", 0.0)))
+    profit_chg = sig.get(
+        "profit_change_pct",
+        sig.get("profit_decline_pct", sig.get("profit_change", 0.0)),
+    )
     if profit_chg < 0:
         score += _clamp(abs(profit_chg) / 50.0) * 0.40
 
@@ -48,7 +51,10 @@ def _financial_stress(sig: Dict[str, Any]) -> float:
         score += 0.15
 
     # Sovereign extraction stress (>60% of PAT is tripwire)
-    sov_ext = sig.get("sovereign_extraction", sig.get("sovereign_extraction_pct", sig.get("sovereign_extraction_gauge", 0.0)))
+    sov_ext = sig.get(
+        "sovereign_extraction",
+        sig.get("sovereign_extraction_pct", sig.get("sovereign_extraction_gauge", 0.0)),
+    )
     if isinstance(sov_ext, (int, float)) and sov_ext > 60.0:
         score += _clamp((sov_ext - 60.0) / 40.0) * 0.30
 
@@ -82,12 +88,16 @@ def _governance_stress(sig: Dict[str, Any]) -> float:
         score += _clamp(resign_ratio / 0.30) * 0.35
 
     # Governance separation index (< 0 is tripwire)
-    gov_sep = sig.get("governance_separation_index", sig.get("governance_separation", None))
+    gov_sep = sig.get(
+        "governance_separation_index", sig.get("governance_separation", None)
+    )
     if isinstance(gov_sep, (int, float)) and gov_sep <= 0:
         score += 0.25
 
     # Company secretaries serving as directors (governance weakness)
-    if sig.get("company_secretaries_as_directors", sig.get("secretary_as_director", False)):
+    if sig.get(
+        "company_secretaries_as_directors", sig.get("secretary_as_director", False)
+    ):
         score += 0.20
 
     # Low average tenure (instability) — below 3 years is concerning
@@ -128,7 +138,13 @@ def _workforce_stress(sig: Dict[str, Any]) -> float:
     score = 0.0
 
     # Rightsizing / workforce reduction percentage: 15%+ → 1.0
-    rightsizing = sig.get("rightsizing_pct", sig.get("rightsizing", sig.get("workforce_reduction_pct", sig.get("enabler_ratio", 0.0))))
+    rightsizing = sig.get(
+        "rightsizing_pct",
+        sig.get(
+            "rightsizing",
+            sig.get("workforce_reduction_pct", sig.get("enabler_ratio", 0.0)),
+        ),
+    )
     try:
         rightsizing = float(rightsizing or 0.0)
     except (TypeError, ValueError):
@@ -144,7 +160,9 @@ def _workforce_stress(sig: Dict[str, Any]) -> float:
     score += _clamp(exits / 10.0) * 0.30
 
     # Key personnel departures — each one adds stress
-    dep_count, _names = _normalize_departures(sig.get("key_personnel_departures", sig.get("departures")))
+    dep_count, _names = _normalize_departures(
+        sig.get("key_personnel_departures", sig.get("departures"))
+    )
     if dep_count:
         score += _clamp(dep_count / 5.0) * 0.35
 
@@ -155,13 +173,18 @@ def _legal_stress(sig: Dict[str, Any]) -> float:
     """Score legal exposure 0-1 with alias support."""
     score = 0.0
 
-    lit_count = sig.get("active_litigation_count", sig.get("litigation_count", sig.get("disputes", 0)))
+    lit_count = sig.get(
+        "active_litigation_count", sig.get("litigation_count", sig.get("disputes", 0))
+    )
     score += _clamp(lit_count / 5.0) * 0.30
 
     inj_value = sig.get("injunction_value_musd", sig.get("injunction_value", 0.0))
     score += _clamp(inj_value / 500.0) * 0.35
 
-    reg_unc = sig.get("regulatory_uncertainty_score", sig.get("regulatory_uncertainty", sig.get("pda_dispute", 0.0)))
+    reg_unc = sig.get(
+        "regulatory_uncertainty_score",
+        sig.get("regulatory_uncertainty", sig.get("pda_dispute", 0.0)),
+    )
     score += _clamp(reg_unc) * 0.35
 
     return _clamp(score)
@@ -279,12 +302,17 @@ _EXPECTED_FIELDS: Dict[str, tuple[str, ...]] = {
         "profit_change_pct",
         "revenue_change_pct",
         "cost_cutting_announced",
+        "sovereign_extraction",
+        "cffo",
+        "fcf",
+        "gearing",
     ),
     "governance": (
         "board_size",
         "board_resignations_12m",
         "company_secretaries_as_directors",
         "avg_tenure_years",
+        "governance_separation_index",
     ),
     "workforce": (
         "rightsizing_pct",
@@ -303,6 +331,40 @@ _EXPECTED_FIELDS: Dict[str, tuple[str, ...]] = {
     ),
 }
 
+# Zen Phase 2.1: alias map — fields accepted by scoring functions under different names.
+# _audit_signal_fields reports these as present when they match an alias.
+_FIELD_ALIASES: Dict[str, Dict[str, tuple[str, ...]]] = {
+    "financial": {
+        "profit_change_pct": ("profit_decline_pct", "profit_change"),
+        "revenue_change_pct": ("revenue_change",),
+        "cost_cutting_announced": ("cost_cutting",),
+        "sovereign_extraction": (
+            "sovereign_extraction_pct",
+            "sovereign_extraction_gauge",
+        ),
+        "cffo": ("cffo_rm_b",),
+        "fcf": ("fcf_rm_b",),
+        "gearing": ("gearing_ratio_pct",),
+    },
+    "governance": {
+        "board_resignations_12m": ("resignations",),
+        "company_secretaries_as_directors": ("secretary_as_director",),
+        "avg_tenure_years": ("avg_tenure",),
+        "governance_separation_index": ("governance_separation",),
+    },
+    "workforce": {
+        "rightsizing_pct": ("rightsizing", "workforce_reduction_pct", "enabler_ratio"),
+        "voluntary_exits_pct": ("voluntary_exits",),
+        "key_personnel_departures": ("departures",),
+    },
+    "legal": {
+        "active_litigation_count": ("litigation_count", "disputes"),
+        "injunction_value_musd": ("injunction_value",),
+        "regulatory_uncertainty_score": ("regulatory_uncertainty", "pda_dispute"),
+    },
+    "exploitation": {},
+}
+
 
 def _audit_signal_fields(
     name: str, sig: Dict[str, Any] | None
@@ -310,6 +372,8 @@ def _audit_signal_fields(
     """Return (present, missing, type_warnings) for expected fields.
 
     P0 #34: silent field-drop must be visible — empty/missing keys are reported.
+    Zen Phase 2.1: alias-aware — fields passed under alias names are recognized
+    as present (the scoring functions already use them; the audit must match).
     """
     sig = sig or {}
     if not isinstance(sig, dict):
@@ -319,7 +383,18 @@ def _audit_signal_fields(
             [f"{name}: expected dict, got {type(sig).__name__}"],
         )
     expected = _EXPECTED_FIELDS.get(name, ())
-    present = [k for k in expected if k in sig and sig[k] is not None and sig[k] != ""]
+    aliases = _FIELD_ALIASES.get(name, {})
+
+    def _field_is_present(key: str) -> bool:
+        """Check if key or any of its aliases exist in sig with a non-empty value."""
+        if key in sig and sig[key] is not None and sig[key] != "":
+            return True
+        for alias in aliases.get(key, ()):
+            if alias in sig and sig[alias] is not None and sig[alias] != "":
+                return True
+        return False
+
+    present = [k for k in expected if _field_is_present(k)]
     missing = [k for k in expected if k not in present]
     type_warnings: list[str] = []
     if "key_personnel_departures" in sig:

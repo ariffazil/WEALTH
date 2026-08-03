@@ -14,6 +14,7 @@ from pathlib import Path as _Path
 from typing import Any, Dict, Optional
 
 import httpx
+import httpx2  # FastMCP 4 migration
 
 # --------------------------------------------------------------------------- #
 # FastMCP server instance from monolith.py
@@ -84,7 +85,7 @@ if mcp:
                 "recommendation_only": True,
                 "final_authority": "Arif",
             }
-        except httpx.HTTPError as e:
+        except (httpx.HTTPError, httpx2.HTTPError) as e:
             return {
                 "mcp": "WEALTH",
                 "tool": "wealth_fx_rate",

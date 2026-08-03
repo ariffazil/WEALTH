@@ -9,7 +9,6 @@ CAPITAL_TOOL_NAMES = (
     "capital_primitive",
     "capital_health",
     "capital_diagnose",
-    "capital_wisdom",
     "capital_market",
     "capital_ledger",
     "capital_registry",
@@ -17,13 +16,10 @@ CAPITAL_TOOL_NAMES = (
     "wealth_judge_handoff",
 )
 
-INSTITUTIONAL_TOOL_NAMES = (
-    "wealth_institutional_stress_index",
-    "wealth_cascade_model",
-    "wealth_governance_capacity",
-    "wealth_external_exploitation_detect",
-    "wealth_bid_surface",
-)
+# Zen Phase 1a: shadow tools removed from MCP surface.
+# All institutional access is via capital_diagnose(mode=...).
+# Engines preserved; only duplicate MCP registrations removed.
+INSTITUTIONAL_TOOL_NAMES: tuple[str, ...] = ()
 
 PUBLIC_TOOL_NAMES = CAPITAL_TOOL_NAMES + INSTITUTIONAL_TOOL_NAMES
 

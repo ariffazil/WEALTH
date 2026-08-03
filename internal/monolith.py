@@ -1533,7 +1533,7 @@ def wealth_fx_rate(
             "recommendation_only": True,
             "final_authority": "Arif",
         }
-    except httpx.HTTPError as e:
+    except (httpx.HTTPError, httpx2.HTTPError) as e:
         return {
             "mcp": "WEALTH",
             "tool": "wealth_fx_rate",
@@ -13203,7 +13203,8 @@ def wealth_boundary_governance(
           wealth_boundary_governance(mode='federation_readiness')
         """
         try:
-            import httpx
+import httpx
+import httpx2  # FastMCP 4 migration
         except Exception:
             return {
                 "error": "httpx unavailable",
