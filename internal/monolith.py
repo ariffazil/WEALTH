@@ -13203,8 +13203,7 @@ def wealth_boundary_governance(
           wealth_boundary_governance(mode='federation_readiness')
         """
         try:
-import httpx
-import httpx2  # FastMCP 4 migration
+            import httpx
         except Exception:
             return {
                 "error": "httpx unavailable",
