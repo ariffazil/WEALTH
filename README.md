@@ -2,7 +2,7 @@
 owner: Muhammad Arif bin Fazil (F13 SOVEREIGN)
 last_verified: 2026-08-04T20:23:33Z
 federation_release: v2026.08.04
-live_commit: pending
+live_commit: 34e5b3f (IndentationError fix in monolith.py — 11 tests unblocked)
 tools_loaded: 8
 public_tools: 8
 canonical_tools: 8
@@ -82,7 +82,21 @@ curl -s http://127.0.0.1:18082/health | jq .
 
 ---
 
-## 📜 Sovereignty & License
+## 📡 MCP Registries
+
+WEALTH is registered as an MCP server on the federation registries. Discovery metadata is exposed at each endpoint.
+
+| Registry | Server | Manifest |
+|----------|--------|----------|
+| **Glama** | [glama.ai/mcp/servers/ariffazil/wealth](https://glama.ai/mcp/servers/ariffazil/wealth) | `https://wealth.arif-fazil.com/.well-known/glama.json` |
+| **Smithery** | [smithery.ai/server/wealth](https://smithery.ai/server/wealth) | `https://wealth.arif-fazil.com/.well-known/smithery.yaml` |
+| **mcp.so** | [mcp.so/server/ariffazil/wealth](https://mcp.so/server/ariffazil/wealth) | `https://wealth.arif-fazil.com/.well-known/mcp-so.json` |
+
+Discovery endpoint: `GET https://wealth.arif-fazil.com/.well-known/mcp/server.json`
+
+---
+
+## � Sovereignty & License
 
 - **License:** GNU Affero General Public License v3.0 (**AGPL-3.0**)
 - **Sovereign:** **Muhammad Arif bin Fazil** (F13 SOVEREIGN)
