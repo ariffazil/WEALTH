@@ -1,0 +1,54 @@
+{
+  "task": "W-007",
+  "subtask": "petronas_noc_base_rate",
+  "session": "SEAL-b3bbf8e9e1844adc",
+  "timestamp": "2026-08-06T08:00:21.751566+00:00",
+  "panel": "petronas_noc_peers_2025",
+  "rank_order": {
+    "ecopetrol": {
+      "stress_index": 0.6501,
+      "risk_level": "RED",
+      "extraction_pct": 65,
+      "governance_sep": 1
+    },
+    "petronas": {
+      "stress_index": 0.3392,
+      "risk_level": "GREEN",
+      "extraction_pct": 70.5,
+      "governance_sep": 1
+    },
+    "equinor": {
+      "stress_index": 0.2915,
+      "risk_level": "GREEN",
+      "extraction_pct": 35,
+      "governance_sep": 3
+    },
+    "aramco": {
+      "stress_index": 0.1338,
+      "risk_level": "GREEN",
+      "extraction_pct": 62,
+      "governance_sep": 2
+    }
+  },
+  "base_rate_findings": {
+    "extraction_ratio": {
+      "petronas_pct": 70.5,
+      "noc_range": "35% (Equinor) \u2014 70.5% (PETRONAS)",
+      "noc_median_est": "~60%",
+      "finding": "PETRONAS is the HIGHEST extraction ratio NOC in the panel. 70.5% is 10.5pp above the next-highest (Ecopetrol 65%). This IS an outlier, not the NOC median.",
+      "note": "FY2026: RM20B against unpublished PAT moves extraction toward ~50% \u2014 UNMEASURED pending results."
+    },
+    "governance_separation": {
+      "petronas_score": 1.0,
+      "noc_range": "0 (Pertamina) \u2014 3 (Equinor)",
+      "finding": "PETRONAS at 1.0/3 sits in the lower half. Ecopetrol also at 1.0. Equinor at 3.0 is the model. The binding constraint has shifted from financial to governance \u2014 and the stress_index governance component is DEAD (0.0 for ALL NOCs)."
+    },
+    "gearing": {
+      "petronas_pct": 20.7,
+      "noc_range": "3.6% (Aramco) \u2014 48% (Pertamina)",
+      "finding": "PETRONAS sits in the lower-middle. PRefChem consolidation may step to ~25-27%. Below the NOC median (~32%)."
+    }
+  },
+  "defect_discovered": "stress_index governance component returns 0.0 for ALL NOCs regardless of governance_separation_index (0-3). Same defect class as pre-fix power_consequence_map: field present but inert.",
+  "verdict": "BASE RATE ESTABLISHED \u2014 PETRONAS extraction ratio (70.5%) is the NOC ceiling, not the NOC median. Governance separation (1.0/3) is lower-half. Gearing (20.7%) is lower-middle. The dashboard now carries a control set. W-007 applied to the dashboard itself."
+}
