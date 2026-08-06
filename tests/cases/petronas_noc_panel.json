@@ -1,0 +1,350 @@
+{
+  "panel": "petronas_noc_peers_2025",
+  "description": "NOC control set for PETRONAS Vitals calibration. Extraction ratio, governance separation, and gearing metrics need a base rate — a verdict without a distribution is a verdict without meaning. W-007 applied to the dashboard itself.",
+  "source_note": "Public filings and sovereign fund reports, FY2024-2025 where available. Figures flagged INTERPRET or ESTIMATE where derived rather than directly observed.",
+  "cases": [
+    {
+      "id": "petronas",
+      "name": "PETRONAS",
+      "country": "Malaysia",
+      "truth": "EVALUATED — BREACHED on extraction, HOLD on governance",
+      "metrics": {
+        "extraction_ratio_pct": 70.5,
+        "extraction_note": "FY2025: RM32B dividend / RM45.4B PAT. FY2026: RM20B declared against unpublished PAT — UNMEASURED pending results.",
+        "governance_separation_index": 1.0,
+        "governance_note": "Dual-chair (PETRONAS + Gentari). Board composition unchanged. Score INTERPRET — not an IFR line item.",
+        "gearing_pct": 20.7,
+        "gearing_note": "IFR audited. PRefChem consolidation may step to ~25-27% (one-time).",
+        "revenue_rm_b": 266.1,
+        "pat_rm_b": 45.4,
+        "cffo_rm_b": 85.2,
+        "capex_rm_b": 41.6,
+        "fcf_after_div_rm_b": 11.6
+      },
+      "stress_index_input": {
+        "financial_signals": {
+          "profit_change_pct": -18.0,
+          "revenue_change_pct": -17.0,
+          "cost_cutting_announced": false,
+          "sovereign_extraction": 70.5,
+          "cffo": 85.2,
+          "fcf": 11.6,
+          "gearing": 20.7
+        },
+        "governance_signals": {
+          "board_size": 12,
+          "board_resignations_12m": 0,
+          "company_secretaries_as_directors": 0,
+          "avg_tenure_years": 5.0,
+          "governance_separation_index": 1
+        },
+        "workforce_signals": {
+          "rightsizing_pct": 5.0,
+          "voluntary_exits_pct": 3.0,
+          "key_personnel_departures": 0
+        },
+        "legal_signals": {
+          "active_litigation_count": 5,
+          "injunction_value_musd": 2000.0,
+          "regulatory_uncertainty_score": 6.0
+        },
+        "exploitation_signals": {
+          "counterparty_payment_freeze": false,
+          "interpleader_filed": false,
+          "competing_claims": 2
+        }
+      }
+    },
+    {
+      "id": "aramco",
+      "name": "Saudi Aramco",
+      "country": "Saudi Arabia",
+      "truth": "TRUE_NEGATIVE — extraction high but governance capacity high",
+      "metrics": {
+        "extraction_ratio_pct": 62.0,
+        "extraction_note": "ESTIMATE: FY2024 total dividend ~$124B against PAT ~$200B (includes performance-linked dividend). Base dividend ~$82B → ~41% of PAT. Total dividend ~62%. Sources: Aramco FY2024 results, sovereign fund reports.",
+        "governance_separation_index": 2.0,
+        "governance_note": "Separate Chair/CEO since 2020. Independent directors majority. PIF sovereign fund has separate governance.",
+        "gearing_pct": 3.6,
+        "gearing_note": "FY2024: net debt/equity. Extremely low — cash-rich post-IPO.",
+        "revenue_usd_b": 490.0,
+        "pat_usd_b": 198.0
+      },
+      "stress_index_input": {
+        "financial_signals": {
+          "profit_change_pct": -5.0,
+          "revenue_change_pct": -5.0,
+          "cost_cutting_announced": false,
+          "sovereign_extraction": 62.0,
+          "cffo": 198.0,
+          "fcf": 85.0,
+          "gearing": 3.6
+        },
+        "governance_signals": {
+          "board_size": 11,
+          "board_resignations_12m": 0,
+          "company_secretaries_as_directors": 0,
+          "avg_tenure_years": 6.0,
+          "governance_separation_index": 2
+        },
+        "workforce_signals": {
+          "rightsizing_pct": 2.0,
+          "voluntary_exits_pct": 2.0,
+          "key_personnel_departures": 0
+        },
+        "legal_signals": {
+          "active_litigation_count": 2,
+          "injunction_value_musd": 100.0,
+          "regulatory_uncertainty_score": 1.0
+        },
+        "exploitation_signals": {
+          "counterparty_payment_freeze": false,
+          "interpleader_filed": false,
+          "competing_claims": 0
+        }
+      }
+    },
+    {
+      "id": "equinor",
+      "name": "Equinor ASA",
+      "country": "Norway",
+      "truth": "TRUE_NEGATIVE — low extraction, high governance, model institution",
+      "metrics": {
+        "extraction_ratio_pct": 35.0,
+        "extraction_note": "ESTIMATE: FY2024 dividend ~$8.5B against PAT ~$24B. Norwegian state holds 67% via Ministry of Trade. Governance arm's-length from operations. Source: Equinor FY2024 annual report.",
+        "governance_separation_index": 3.0,
+        "governance_note": "Oslo-listed, full IFRS. Separate Chair/CEO. Independent board majority. State ownership exercised through AGM, not direct intervention.",
+        "gearing_pct": 12.0,
+        "gearing_note": "FY2024: adjusted net debt ratio. Conservative balance sheet."
+      },
+      "stress_index_input": {
+        "financial_signals": {
+          "profit_change_pct": -15.0,
+          "revenue_change_pct": -12.0,
+          "cost_cutting_announced": false,
+          "sovereign_extraction": 35.0,
+          "cffo": 24.0,
+          "fcf": 8.0,
+          "gearing": 12.0
+        },
+        "governance_signals": {
+          "board_size": 10,
+          "board_resignations_12m": 0,
+          "company_secretaries_as_directors": 0,
+          "avg_tenure_years": 5.5,
+          "governance_separation_index": 3
+        },
+        "workforce_signals": {
+          "rightsizing_pct": 3.0,
+          "voluntary_exits_pct": 5.0,
+          "key_personnel_departures": 0
+        },
+        "legal_signals": {
+          "active_litigation_count": 3,
+          "injunction_value_musd": 200.0,
+          "regulatory_uncertainty_score": 1.0
+        },
+        "exploitation_signals": {
+          "counterparty_payment_freeze": false,
+          "interpleader_filed": false,
+          "competing_claims": 0
+        }
+      }
+    },
+    {
+      "id": "ecopetrol",
+      "name": "Ecopetrol SA",
+      "country": "Colombia",
+      "truth": "NEAR_MISS — high extraction, governance under pressure",
+      "metrics": {
+        "extraction_ratio_pct": 65.0,
+        "extraction_note": "ESTIMATE: Colombian state holds 88.5%. Dividend policy tied to government fiscal needs. FY2024 dividend ~$4.5B against PAT ~$7B. Source: Ecopetrol FY2024 results, Colombian fiscal reports.",
+        "governance_separation_index": 1.0,
+        "governance_note": "NYSE-listed but state-controlled. Board includes government ministers. CEO appointment subject to political influence.",
+        "gearing_pct": 35.0,
+        "gearing_note": "ESTIMATE: net debt/EBITDA ~1.5x."
+      },
+      "stress_index_input": {
+        "financial_signals": {
+          "profit_change_pct": -25.0,
+          "revenue_change_pct": -18.0,
+          "cost_cutting_announced": true,
+          "sovereign_extraction": 65.0,
+          "cffo": 7.0,
+          "fcf": -1.0,
+          "gearing": 35.0
+        },
+        "governance_signals": {
+          "board_size": 9,
+          "board_resignations_12m": 1,
+          "company_secretaries_as_directors": 0,
+          "avg_tenure_years": 3.5,
+          "governance_separation_index": 1
+        },
+        "workforce_signals": {
+          "rightsizing_pct": 10.0,
+          "voluntary_exits_pct": 8.0,
+          "key_personnel_departures": 2
+        },
+        "legal_signals": {
+          "active_litigation_count": 7,
+          "injunction_value_musd": 800.0,
+          "regulatory_uncertainty_score": 5.5
+        },
+        "exploitation_signals": {
+          "counterparty_payment_freeze": false,
+          "interpleader_filed": false,
+          "competing_claims": 2
+        }
+      }
+    },
+    {
+      "id": "pertamina",
+      "name": "Pertamina",
+      "country": "Indonesia",
+      "truth": "NEAR_MISS — high extraction, low governance separation, financial opacity",
+      "metrics": {
+        "extraction_ratio_pct": 55.0,
+        "extraction_note": "ESTIMATE: Pertamina is state-owned, not listed. Dividend and subsidy obligations opaque. Estimated ~55% of earnings extracted through combination of dividend + fuel subsidy burden. Source: Indonesian Ministry of Finance reports, Pertamina annual report (limited disclosure).",
+        "governance_separation_index": 0.0,
+        "governance_note": "Wholly state-owned. Commissioners and directors appointed by Minister of SOEs. No independent governance separation.",
+        "gearing_pct": 48.0,
+        "gearing_note": "ESTIMATE: significant debt from refinery investments and fuel subsidy receivables."
+      },
+      "stress_index_input": {
+        "financial_signals": {
+          "profit_change_pct": -30.0,
+          "revenue_change_pct": -20.0,
+          "cost_cutting_announced": true,
+          "sovereign_extraction": 55.0,
+          "cffo": 3.0,
+          "fcf": -5.0,
+          "gearing": 48.0
+        },
+        "governance_signals": {
+          "board_size": 8,
+          "board_resignations_12m": 1,
+          "company_secretaries_as_directors": 1,
+          "avg_tenure_years": 3.0,
+          "governance_separation_index": 0
+        },
+        "workforce_signals": {
+          "rightsizing_pct": 15.0,
+          "voluntary_exits_pct": 12.0,
+          "key_personnel_departures": 3
+        },
+        "legal_signals": {
+          "active_litigation_count": 8,
+          "injunction_value_musd": 600.0,
+          "regulatory_uncertainty_score": 6.0
+        },
+        "exploitation_signals": {
+          "counterparty_payment_freeze": false,
+          "interpleader_filed": false,
+          "competing_claims": 3
+        }
+      }
+    },
+    {
+      "id": "adnoc",
+      "name": "ADNOC",
+      "country": "UAE",
+      "truth": "TRUE_NEGATIVE — high extraction but low debt, strong governance reforms",
+      "metrics": {
+        "extraction_ratio_pct": 60.0,
+        "extraction_note": "ESTIMATE: Abu Dhabi sovereign entity. Dividends not publicly disclosed in detail. Estimated ~60% based on sovereign fund inflows. Source: ADIA annual review, ADNOC limited disclosures.",
+        "governance_separation_index": 2.0,
+        "governance_note": "Supreme Petroleum Council governance. Recent reforms: listed ADNOC Gas, ADNOC Drilling, ADNOC Distribution. International JV partnerships create governance anchors.",
+        "gearing_pct": 15.0,
+        "gearing_note": "ESTIMATE: conservatively leveraged. Strong sovereign backing."
+      },
+      "stress_index_input": {
+        "financial_signals": {
+          "profit_change_pct": -8.0,
+          "revenue_change_pct": -10.0,
+          "cost_cutting_announced": false,
+          "sovereign_extraction": 60.0,
+          "cffo": 80.0,
+          "fcf": 20.0,
+          "gearing": 15.0
+        },
+        "governance_signals": {
+          "board_size": 12,
+          "board_resignations_12m": 0,
+          "company_secretaries_as_directors": 0,
+          "avg_tenure_years": 5.0,
+          "governance_separation_index": 2
+        },
+        "workforce_signals": {
+          "rightsizing_pct": 3.0,
+          "voluntary_exits_pct": 4.0,
+          "key_personnel_departures": 0
+        },
+        "legal_signals": {
+          "active_litigation_count": 1,
+          "injunction_value_musd": 50.0,
+          "regulatory_uncertainty_score": 1.5
+        },
+        "exploitation_signals": {
+          "counterparty_payment_freeze": false,
+          "interpleader_filed": false,
+          "competing_claims": 0
+        }
+      }
+    },
+    {
+      "id": "ptt",
+      "name": "PTT Public Company Limited",
+      "country": "Thailand",
+      "truth": "NEAR_MISS — moderate extraction, listed but state-influenced, debt pressure",
+      "metrics": {
+        "extraction_ratio_pct": 45.0,
+        "extraction_note": "ESTIMATE: SET-listed, but Thai government holds 51.1% via Ministry of Finance. FY2024 dividend ~THB 70B against PAT ~THB 155B (~45%). Source: PTT FY2024 annual report.",
+        "governance_separation_index": 2.0,
+        "governance_note": "SET-listed with independent directors. But strategic decisions (energy security, fuel pricing) directed by Ministry of Energy. Partial separation.",
+        "gearing_pct": 32.0,
+        "gearing_note": "ESTIMATE: net debt/equity. Significant capex pipeline (LNG, renewables)."
+      },
+      "stress_index_input": {
+        "financial_signals": {
+          "profit_change_pct": -20.0,
+          "revenue_change_pct": -15.0,
+          "cost_cutting_announced": true,
+          "sovereign_extraction": 45.0,
+          "cffo": 4.0,
+          "fcf": -1.5,
+          "gearing": 32.0
+        },
+        "governance_signals": {
+          "board_size": 14,
+          "board_resignations_12m": 0,
+          "company_secretaries_as_directors": 0,
+          "avg_tenure_years": 4.5,
+          "governance_separation_index": 2
+        },
+        "workforce_signals": {
+          "rightsizing_pct": 5.0,
+          "voluntary_exits_pct": 6.0,
+          "key_personnel_departures": 1
+        },
+        "legal_signals": {
+          "active_litigation_count": 4,
+          "injunction_value_musd": 300.0,
+          "regulatory_uncertainty_score": 4.0
+        },
+        "exploitation_signals": {
+          "counterparty_payment_freeze": false,
+          "interpleader_filed": false,
+          "competing_claims": 1
+        }
+      }
+    }
+  ],
+  "acceptance_criteria": {
+    "required": "Base rate for each metric. Where does PETRONAS sit on the NOC distribution?",
+    "extraction_ratio": "PETRONAS 70.5% → rank among 7 NOCs. Is it an outlier or NOC median?",
+    "governance_separation": "PETRONAS 1.00/3 → where on the 0-3 NOC distribution?",
+    "gearing": "PETRONAS 20.7% → rank among NOC peers?",
+    "note": "A metric without a base rate is a verdict without meaning. This panel makes the PETRONAS dashboard externally calibratable."
+  }
+}
