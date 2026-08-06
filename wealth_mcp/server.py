@@ -777,19 +777,29 @@ def create_mcp_server() -> FastMCP:
 
                     w0_gate = "PASS"
                     w0_warnings: list = []
+                    material_count = len(material)
+                    material_empty = material_count == 0
 
-                    if coverage < MIN_COVERAGE_THRESHOLD and material:
+                    # D1 fix (2026-08-06): zero material args → UNMEASURED, gate FAIL
+                    if coverage < 0.0:
+                        # -1.0 sentinel from coverage_ratio / _estimate_coverage
+                        w0_gate = "FAIL"
+                        w0_warnings.append(
+                            "UNMEASURED: zero material arguments — coverage cannot be computed. "
+                            "No verdict is valid on empty input."
+                        )
+                    elif coverage < MIN_COVERAGE_THRESHOLD and material:
                         w0_gate = "CAUTION"
                         if coverage == 0.0:
                             w0_warnings.append(
-                                f"INSUFFICIENT_EVIDENCE: {len(material)} material fields "
+                                f"INSUFFICIENT_EVIDENCE: {material_count} material fields "
                                 f"({sorted(material.keys())}) provided but ZERO reflected in result. "
                                 "Interpretation prose blocked."
                             )
                         else:
                             w0_warnings.append(
                                 f"LOW_COVERAGE: {coverage:.0%} < {MIN_COVERAGE_THRESHOLD:.0%} threshold. "
-                                f"{len(material)} material fields "
+                                f"{material_count} material fields "
                                 f"({sorted(material.keys())}) not reflected in result"
                             )
                     if conflicts:
@@ -804,29 +814,38 @@ def create_mcp_server() -> FastMCP:
                         )
 
                     sc["_w0_evidence_gate"] = {
-                        "coverage": coverage,
-                        "material_args_count": len(material),
-                        "material_args": sorted(material.keys()),
+                        "coverage": coverage if coverage >= 0.0 else "UNMEASURED",
+                        "material_args_count": material_count,
+                        "material_args": sorted(material.keys()) if material else [],
                         "gate": w0_gate,
                         "warnings": w0_warnings,
                     }
-                    if w0_gate == "CAUTION" and w0_warnings:
+                    if w0_gate in ("CAUTION", "FAIL") and w0_warnings:
                         existing = sc.get("warnings", [])
                         if isinstance(existing, list):
                             sc["warnings"] = existing + [
                                 f"[W0] {w}" for w in w0_warnings
                             ]
                     # ── W-005: Inject verdict + coverage into envelope ─
-                    if coverage == 0.0 and material:
+                    if w0_gate == "FAIL":
+                        # No verdict — coverage was UNMEASURED
+                        sc.pop("verdict", None)
+                    elif coverage == 0.0 and material:
                         sc["verdict"] = "INSUFFICIENT_EVIDENCE"
                     elif w0_gate == "CAUTION":
                         sc["verdict"] = "HOLD"
                     else:
                         sc["verdict"] = "PARTIAL"
+                    # D4 fix (2026-08-06): derive known from estimated coverage match count
+                    _known_estimate = (
+                        max(0, round(coverage * material_count))
+                        if coverage >= 0.0 and material_count > 0
+                        else 0
+                    )
                     sc["coverage"] = {
-                        "known": 0,
-                        "total": len(material),
-                        "ratio": coverage,
+                        "known": _known_estimate,
+                        "total": material_count,
+                        "ratio": coverage if coverage >= 0.0 else "UNMEASURED",
                     }
                     sc.setdefault(
                         "epistemic",

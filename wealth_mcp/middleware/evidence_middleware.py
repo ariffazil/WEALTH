@@ -187,7 +187,7 @@ def _estimate_coverage(material: dict[str, Any], result: Any) -> float:
 
     # Heuristic fallback
     if not material:
-        return 1.0
+        return -1.0  # UNMEASURED sentinel — nothing to measure against
     if result is None:
         return 0.0
     if not isinstance(result, dict):

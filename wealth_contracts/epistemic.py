@@ -297,9 +297,9 @@ def geometric_mean_known(values: list[float | _Unmeasured]) -> float | _Unmeasur
 
 
 def coverage_ratio(known: int, total: int) -> float:
-    """Coverage ratio: known / total. Returns 0.0 if total is 0."""
+    """Coverage ratio: known / total. Returns -1.0 (UNMEASURED) if total <= 0."""
     if total <= 0:
-        return 1.0
+        return -1.0  # UNMEASURED sentinel — cannot divide by zero
     return round(known / total, 2)
 
 

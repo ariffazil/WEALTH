@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 
 def _hash_str(s: str) -> float:
     """Deterministic 0–1 hash of a string. Used to turn qualitative fields into numeric scores."""
-    h = hashlib.sha256(s.encode("utf-8")).hexdigest()
+    h = hashlib.sha256(str(s).encode("utf-8")).hexdigest()
     # Take first 8 hex chars → 32 bits → [0, 1)
     return int(h[:8], 16) / (2**32)
 
@@ -26,9 +26,11 @@ def _name_entropy(names: list[str]) -> float:
         return 0.5  # single actor → baseline
     hashes = [_hash_str(n) for n in names]
     # Mean absolute pairwise difference
-    total = sum(abs(hashes[i] - hashes[j])
-                for i in range(len(hashes))
-                for j in range(i + 1, len(hashes)))
+    total = sum(
+        abs(hashes[i] - hashes[j])
+        for i in range(len(hashes))
+        for j in range(i + 1, len(hashes))
+    )
     pairs = len(hashes) * (len(hashes) - 1) / 2
     return total / pairs
 
@@ -71,7 +73,7 @@ def wealth_power_consequence_map(
         # Diversity: more actors with distinct roles = lower concentration
         roles = [d.get("role", "unknown") for d in decision_makers]
         role_diversity = len(set(roles)) / max(len(roles), 1)
-        power_concentration *= (0.5 + 0.5 * role_diversity)
+        power_concentration *= 0.5 + 0.5 * role_diversity
     else:
         power_concentration = 0.0
         dm_count = 0
@@ -102,9 +104,24 @@ def wealth_power_consequence_map(
     # A cost_bearer with named loss AND no compensation absorbs high risk.
     # Irreversibility signal: explicit reversibility field OR destructive loss terms.
     DESTRUCTIVE_TERMS = (
-        "collapse", "pension", "destroy", "death", "murder", "extermination",
-        "irreversible", "permanent", "lost", "eviction", "seizure", "loss",
-        "bankruptcy", "default", "fraud", "harm", "killed", "deport",
+        "collapse",
+        "pension",
+        "destroy",
+        "death",
+        "murder",
+        "extermination",
+        "irreversible",
+        "permanent",
+        "lost",
+        "eviction",
+        "seizure",
+        "loss",
+        "bankruptcy",
+        "default",
+        "fraud",
+        "harm",
+        "killed",
+        "deport",
     )
     NEGLIGIBLE_TERMS = ("none", "no loss", "no harm", "not applicable", "n/a", "")
     if cost_bearers:
@@ -134,7 +151,14 @@ def wealth_power_consequence_map(
             # Compensation gap
             comp = c.get("compensation", "")
             comp_norm = str(comp).strip().lower()
-            if not comp_norm or comp_norm in ("none", "no", "zero", "nothing", "n/a", "-"):
+            if not comp_norm or comp_norm in (
+                "none",
+                "no",
+                "zero",
+                "nothing",
+                "n/a",
+                "-",
+            ):
                 uncompensated += 1
 
         n = len(cost_bearers)
@@ -144,15 +168,15 @@ def wealth_power_consequence_map(
         harm_distance = min(1.0, harm_distance + 0.2 * irreversible_frac)
         compensation_gap = uncompensated / n
     else:
-        harm_distance = 0.0
-        compensation_gap = 0.0
+        harm_distance = -1.0  # UNMEASURED — no cost_bearers provided
+        compensation_gap = -1.0  # UNMEASURED — no cost_bearers provided
 
     # ── Exit rights ─────────────────────────────────────────────────────
     if beneficiaries:
         exits = sum(1 for b in beneficiaries if b.get("exit_rights", False))
         exit_ratio = exits / len(beneficiaries)
     else:
-        exit_ratio = 1.0
+        exit_ratio = -1.0  # UNMEASURED — no beneficiaries provided
 
     # ── Veto concentration ──────────────────────────────────────────────
     veto_concentration = 0.0
@@ -163,31 +187,62 @@ def wealth_power_consequence_map(
         veto_concentration = 0.0  # no veto holders = no veto concentration
 
     # ── Consequence gap composite ───────────────────────────────────────
-    consequence_gap = min(1.0, max(0.0, (
-        power_concentration * 0.3 +
-        benefit_concentration * 0.25 +
-        harm_distance * 0.25 +
-        compensation_gap * 0.2
-    )))
+    # D5 fix (2026-08-06): include veto_concentration; handle UNMEASURED sentinels (-1.0)
+    _h = harm_distance if harm_distance >= 0.0 else 0.0
+    _c = compensation_gap if compensation_gap >= 0.0 else 0.0
+    consequence_gap = min(
+        1.0,
+        max(
+            0.0,
+            (
+                power_concentration * 0.25
+                + benefit_concentration * 0.20
+                + _h * 0.25
+                + _c * 0.15
+                + veto_concentration * 0.15
+            ),
+        ),
+    )
+
+    # Track which sub-scores are UNMEASURED (negative sentinel)
+    unmeasured = []
+    if harm_distance < 0.0:
+        unmeasured.append("harm_distance")
+    if compensation_gap < 0.0:
+        unmeasured.append("compensation_gap")
+    if exit_ratio < 0.0:
+        unmeasured.append("exit_ratio")
 
     # ── Content-derived interpretation ──────────────────────────────────
-    # Interpretation must vary with inputs, not be static string thresholds alone
-    dominant_factor = max(power_concentration, benefit_concentration, harm_distance, compensation_gap)
-    if consequence_gap > 0.7:
+    # D5 fix: use dominant_factor to drive headline; veto_concentration included
+    dominant_factor = max(
+        power_concentration,
+        benefit_concentration,
+        _h,
+        _c,
+        veto_concentration,
+    )
+    if unmeasured:
+        interp = "UNMEASURED — insufficient input data"
+        interp += f" ({', '.join(unmeasured)} not computable)"
+    elif consequence_gap > 0.7:
         interp = "HIGH consequence gap"
     elif consequence_gap > 0.4:
         interp = "MODERATE consequence gap"
     else:
         interp = "LOW consequence gap"
 
-    if harm_distance > 0.5:
-        interp += " — irreversible harm to cost bearers is significant"
-    elif benefit_concentration > 0.5:
-        interp += " — benefits concentrated in few actors"
-    elif power_concentration > 0.5:
-        interp += " — decision power concentrated"
-    else:
-        interp += " — consequences relatively well-integrated"
+    if not unmeasured:
+        if harm_distance > 0.5:
+            interp += " — irreversible harm to cost bearers is significant"
+        elif benefit_concentration > 0.5:
+            interp += " — benefits concentrated in few actors"
+        elif power_concentration > 0.5:
+            interp += " — decision power concentrated"
+        elif veto_concentration > 0.7:
+            interp += " — veto power highly concentrated with low accountability"
+        else:
+            interp += " — consequences relatively well-integrated"
 
     return {
         "map_id": f"pcm-{uuid.uuid4().hex[:12]}",
