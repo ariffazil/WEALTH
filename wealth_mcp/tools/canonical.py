@@ -390,7 +390,7 @@ def register_canonical_tools(mcp):
                 "corporate_runway",
                 "sovereign_fiscal",
             }
-            _sm = (survival_submode or "").strip().lower()
+            _sm = str(survival_submode or "").strip().lower()
             if _sm and _sm not in _VALID_SURVIVAL_SUBMODES:
                 return wrap_result(
                     tool_name="capital_health",
@@ -644,7 +644,7 @@ def register_canonical_tools(mcp):
         """
         # Coerce MCP transport string serialization
 
-        m = mode.lower()
+        m = str(mode).lower()
         p: dict[str, Any] = dict(payload or {})
 
         if m == "stress_index":
@@ -1707,7 +1707,7 @@ def register_canonical_tools(mcp):
                 errors=[message],
             )
 
-        m = mode.lower().strip()
+        m = str(mode).lower().strip()
         try:
             import importlib.util
             from pathlib import Path
@@ -1870,7 +1870,7 @@ def register_canonical_tools(mcp):
         trace_id: str | None = None,
     ) -> dict:
         """Validate and prepare handoff envelope for arifOS governance."""
-        m = mode.lower().strip()
+        m = str(mode).lower().strip()
         p = payload or {}
 
         # 0. Unknown mode gate — never silently accept invalid modes (loop 10 fix)
@@ -1892,7 +1892,7 @@ def register_canonical_tools(mcp):
             )
 
         # 1. Intent validation: reject vague/unbounded intents
-        intent_clean = (intent or p.get("intent", "")).strip()
+        intent_clean = str(intent or p.get("intent", "")).strip()
         vague_intents = [
             "aku nak tau semua truth",
             "everything",
@@ -1908,13 +1908,13 @@ def register_canonical_tools(mcp):
 
         # 2. Reversibility validation: enforce standard enum
         rev_raw = (
-            (reversibility or p.get("reversibility", "REVERSIBLE")).strip().upper()
+            str(reversibility or p.get("reversibility", "REVERSIBLE")).strip().upper()
         )
         valid_reversibility = {"REVERSIBLE", "IRREVERSIBLE", "SEALED_GATE", "READ_ONLY"}
         is_invalid_reversibility = rev_raw not in valid_reversibility
 
         # 3. Blast radius & authentication check
-        blast = (blast_radius or p.get("blast_radius", "low")).lower().strip()
+        blast = str(blast_radius or p.get("blast_radius", "low")).lower().strip()
         is_critical = blast == "critical"
         auth_verified = bool(
             actor_cryptographically_verified
