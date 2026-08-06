@@ -754,11 +754,18 @@ def create_mcp_server() -> FastMCP:
 
                     if coverage < MIN_COVERAGE_THRESHOLD and material:
                         w0_gate = "CAUTION"
-                        w0_warnings.append(
-                            f"LOW_COVERAGE: {coverage:.0%} < {MIN_COVERAGE_THRESHOLD:.0%} threshold. "
-                            f"{len(material)} material fields "
-                            f"({sorted(material.keys())}) not reflected in result"
-                        )
+                        if coverage == 0.0:
+                            w0_warnings.append(
+                                f"INSUFFICIENT_EVIDENCE: {len(material)} material fields "
+                                f"({sorted(material.keys())}) provided but ZERO reflected in result. "
+                                "Interpretation prose blocked."
+                            )
+                        else:
+                            w0_warnings.append(
+                                f"LOW_COVERAGE: {coverage:.0%} < {MIN_COVERAGE_THRESHOLD:.0%} threshold. "
+                                f"{len(material)} material fields "
+                                f"({sorted(material.keys())}) not reflected in result"
+                            )
                     if conflicts:
                         if w0_gate == "PASS":
                             w0_gate = "CAUTION"
@@ -784,7 +791,12 @@ def create_mcp_server() -> FastMCP:
                                 f"[W0] {w}" for w in w0_warnings
                             ]
                     # ── W-005: Inject verdict + coverage into envelope ─
-                    sc["verdict"] = "HOLD" if w0_gate == "CAUTION" else "PARTIAL"
+                    if coverage == 0.0 and material:
+                        sc["verdict"] = "INSUFFICIENT_EVIDENCE"
+                    elif w0_gate == "CAUTION":
+                        sc["verdict"] = "HOLD"
+                    else:
+                        sc["verdict"] = "PARTIAL"
                     sc["coverage"] = {
                         "known": 0,
                         "total": len(material),
