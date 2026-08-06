@@ -1,0 +1,68 @@
+{
+  "task": "W-001",
+  "session": "SEAL-b3bbf8e9e1844adc",
+  "timestamp": "2026-08-06T07:51:50.031007+00:00",
+  "differential_results": {
+    "capital_primitive__npv": {
+      "status": "GREEN",
+      "payload_a": {
+        "npv": 388.77,
+        "cash_flows": [
+          -1000,
+          300,
+          400,
+          500,
+          600
+        ]
+      },
+      "payload_b": {
+        "npv": -841.51,
+        "cash_flows": [
+          -1000,
+          50,
+          50,
+          50,
+          50
+        ]
+      },
+      "delta": "Material \u2014 positive vs negative NPV. Function computes correctly."
+    },
+    "capital_health__survival__personal_finance": {
+      "status": "GREEN",
+      "payload_a": {
+        "survival_verdict": "SURVIVAL_ADEQUATE",
+        "net_monthly": 12000,
+        "domain_verdict": "SEAL"
+      },
+      "payload_b": {
+        "survival_verdict": "SURVIVAL_CRITICAL",
+        "net_monthly": -2000,
+        "domain_verdict": "VOID",
+        "shadow": true
+      },
+      "delta": "Material \u2014 ADEQUATE vs CRITICAL. Harness SURVIVAL SNAPPED on deficit. Function responds correctly."
+    },
+    "capital_entropy__power_consequence_map": {
+      "status": "GREEN (was KNOWN-RED)",
+      "payload_a": {
+        "power_concentration": 0.722,
+        "benefit_concentration": 1.0,
+        "consequence_gap": 0.4666,
+        "interpretation": "MODERATE \u2014 benefits concentrated"
+      },
+      "payload_b": {
+        "power_concentration": 0.2708,
+        "benefit_concentration": 0.3981,
+        "consequence_gap": 0.1807,
+        "interpretation": "LOW \u2014 well-integrated"
+      },
+      "delta": "Material \u2014 concentrated vs distributed governance produces different scores. KNOWN-RED defect FIXED.",
+      "note": "Decision makers, beneficiaries, cost_bearers fields now consumed. Scores derived from content, not list length."
+    }
+  },
+  "known_red_fixed": 1,
+  "known_red_remaining": 2,
+  "verdict": "MIXED \u2014 3 GREEN, 2 KNOWN-RED unfixed, 2 not yet probed live",
+  "green": 3,
+  "red": 0
+}
