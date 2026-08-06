@@ -219,6 +219,8 @@ def _validate_direct_session_binding(
 def create_mcp_server() -> FastMCP:
     """Create and configure the WEALTH MCP server."""
 
+    from wealth_mcp.middleware import WealthEvidenceMiddleware
+
     mcp = FastMCP(
         "WEALTH Federated Domain",
         version=(
@@ -231,6 +233,10 @@ def create_mcp_server() -> FastMCP:
             "Computes capital, risk, wisdom, and power metrics. "
             "Does NOT authorize execution. WEALTH computes. arifOS judges. Arif decides."
         ),
+        # W0 2026-08-06: Evidence middleware — enforces verification integrity
+        # on every tool call. Detects silent input dropping, verdict conflicts,
+        # and byte-identical outputs on different inputs.
+        middleware=[WealthEvidenceMiddleware()],
     )
 
     # Completions CANCELLED 2026-07-09 — agent surface uses full tool JSON.
@@ -789,6 +795,13 @@ def create_mcp_server() -> FastMCP:
                 return filtered
 
         mcp.add_middleware(WealthSurfaceFilterMiddleware())
+
+        # ── W0 Evidence Middleware (2026-08-06) ─────────────────────────
+        from wealth_mcp.middleware.evidence_middleware import (
+            WealthEvidenceMiddleware,
+        )
+
+        mcp.add_middleware(WealthEvidenceMiddleware())
 
     except Exception as e:
         print(f"[GOVERNANCE] WEALTH federated governance wrapper failed to load: {e}")
