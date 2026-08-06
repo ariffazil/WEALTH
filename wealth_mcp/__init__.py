@@ -24,6 +24,41 @@ INSTITUTIONAL_TOOL_NAMES: tuple[str, ...] = ()
 PUBLIC_TOOL_NAMES = CAPITAL_TOOL_NAMES + INSTITUTIONAL_TOOL_NAMES
 
 
+# Live MCP surface metadata (SOT — synced 2026-08-06 by C1 fix).
+# Source of truth for counts advertised in wealth://schema and wealth://health.
+# NOTE: keep in sync with @mcp.resource(uri=...) decorators in server.py.
+WEALTH_RESOURCE_URIS: tuple[str, ...] = (
+    "wealth://schema",
+    "wealth://tools/registry",
+    "wealth://prompts/index",
+    "wealth://domains/index",
+    "wealth://runtime/policy",
+    "wealth://canon/002-human-law",
+    "wealth://glossary",
+    "wealth://federation/contract",
+    "wealth://health",
+    "wealth://reality/context",
+    "wealth://market/sources",
+    "wealth://risk/thresholds",
+    "wealth://affordance/contracts",
+    "wealth://handoff/arifos-schema",
+    "wealth://replay/receipt-schema",
+    "wealth://schema/field-dictionary",
+    "wealth://epistemic/tag-definitions",
+    "wealth://provenance/feeds",
+)
+
+WEALTH_PROMPT_NAMES: tuple[str, ...] = (
+    "wealth_reality_intake_loop",
+    "wealth_capital_diagnosis_loop",
+    "wealth_risk_downside_loop",
+    "wealth_market_reality_loop",
+    "wealth_allocation_judgment_loop",
+    "wealth_institutional_power_loop",
+    "wealth_arifos_handoff_loop",
+)
+
+
 def _load_identity_version() -> str:
     """Read the declared organ version without inventing a stale fallback."""
     identity_path = Path(__file__).resolve().parents[1] / "identity.toml"
