@@ -493,6 +493,14 @@ def wrap_result(
     if qdf is None:
         qdf = get_qdf_version()
     if witness is None:
+        # C11 2026-08-06: Witness activation path. is_complete defaults to false
+        # because WEALTH has no middleware that independently confirms witness
+        # sources. The activation path is:
+        #   1. Orchestrator (Path A) counts independent evidence sources
+        #   2. When human + ai + earth all confirmed → is_complete=true
+        #   3. Three witnesses = F3 TRI-WITNESS satisfied
+        # Until orchestrator exists, this field is observed telemetry only.
+        # Per APEX C8: does NOT gate execution. Describes, does not enforce.
         witness = {
             "human": False,
             "ai": True,
