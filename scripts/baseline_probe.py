@@ -29,8 +29,55 @@ from pathlib import Path
 WEALTH_ROOT = Path(__file__).resolve().parent.parent
 BASELINE_DIR = WEALTH_ROOT / "tests" / "fixtures" / "baseline"
 WEALTH_URL = "http://localhost:18082/mcp"
-SESSION_ID = os.environ.get("ARIF_SESSION_ID", "SEAL-b3bbf8e9e1844adc")
 ACTOR_ID = "ARIF"
+
+# ── MCP Session management ──────────────────────────────────────────────
+_mcp_session_id: str | None = None
+PROBE_SESSION_ID = "SEAL-38c1e44946c84c49"  # Current active session for probe auth
+
+
+def _init_mcp_session() -> str:
+    """Initialize MCP session and return session ID. Cached per run."""
+    global _mcp_session_id
+    if _mcp_session_id:
+        return _mcp_session_id
+
+    init_payload = json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "id": 0,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-11-25",
+                "capabilities": {},
+                "clientInfo": {"name": "w000-baseline-probe", "version": "1.0"},
+            },
+        }
+    ).encode("utf-8")
+    req = urllib.request.Request(
+        WEALTH_URL,
+        data=init_payload,
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            sid = resp.headers.get("Mcp-Session-Id") or resp.headers.get(
+                "mcp-session-id"
+            )
+            resp.read()  # consume body
+            if not sid:
+                print("WARN: No Mcp-Session-Id in init response headers")
+                return ""
+            _mcp_session_id = sid
+            return sid
+    except Exception as e:
+        print(f"WARN: MCP session init failed: {e}")
+        return ""
+
 
 # ── TOOL × MODE MATRIX (from MODE_INVENTORY.md + live schema) ─────────────
 
@@ -51,7 +98,7 @@ TOOL_MATRIX = {
         "invalid_mode": "garbage_mode_test",
         "representative_payload": {
             "mode": None,
-            "session_id": SESSION_ID,
+            "session_id": PROBE_SESSION_ID,
             "actor_id": ACTOR_ID,
             "cash_flows": [100, 100, 100, 100, 100],
             "discount_rate": 0.10,
@@ -73,7 +120,7 @@ TOOL_MATRIX = {
         "invalid_mode": "garbage_mode_test",
         "representative_payload": {
             "mode": None,
-            "session_id": SESSION_ID,
+            "session_id": PROBE_SESSION_ID,
             "actor_id": ACTOR_ID,
         },
     },
@@ -98,7 +145,7 @@ TOOL_MATRIX = {
         "invalid_mode": "garbage_mode_test",
         "representative_payload": {
             "mode": None,
-            "session_id": SESSION_ID,
+            "session_id": PROBE_SESSION_ID,
             "actor_id": ACTOR_ID,
             "domain_scope": "enron_2000",
         },
@@ -108,7 +155,7 @@ TOOL_MATRIX = {
         "invalid_mode": "garbage_mode_test",
         "representative_payload": {
             "mode": None,
-            "session_id": SESSION_ID,
+            "session_id": PROBE_SESSION_ID,
             "actor_id": ACTOR_ID,
         },
     },
@@ -117,7 +164,7 @@ TOOL_MATRIX = {
         "invalid_mode": "garbage_mode_test",
         "representative_payload": {
             "mode": None,
-            "session_id": SESSION_ID,
+            "session_id": PROBE_SESSION_ID,
             "actor_id": ACTOR_ID,
             "query": "test",
         },
@@ -127,7 +174,7 @@ TOOL_MATRIX = {
         "invalid_mode": "garbage_mode_test",
         "representative_payload": {
             "mode": None,
-            "session_id": SESSION_ID,
+            "session_id": PROBE_SESSION_ID,
             "actor_id": ACTOR_ID,
         },
     },
@@ -143,7 +190,7 @@ TOOL_MATRIX = {
         "invalid_mode": "garbage_mode_test",
         "representative_payload": {
             "mode": None,
-            "session_id": SESSION_ID,
+            "session_id": PROBE_SESSION_ID,
             "actor_id": ACTOR_ID,
         },
     },
@@ -152,7 +199,7 @@ TOOL_MATRIX = {
         "invalid_mode": "garbage_mode_test",
         "representative_payload": {
             "mode": None,
-            "session_id": SESSION_ID,
+            "session_id": PROBE_SESSION_ID,
             "actor_id": ACTOR_ID,
         },
     },
@@ -160,7 +207,11 @@ TOOL_MATRIX = {
 
 
 def mcp_call(tool_name: str, arguments: dict) -> tuple[dict | None, str]:
-    """Make a JSON-RPC 2.0 call to the WEALTH MCP server."""
+    """Make a JSON-RPC 2.0 call to the WEALTH MCP server with proper session auth."""
+    sid = _init_mcp_session()
+    if not sid:
+        return None, "MCP_SESSION_INIT_FAILED"
+
     payload = {
         "jsonrpc": "2.0",
         "id": 1,
@@ -174,7 +225,11 @@ def mcp_call(tool_name: str, arguments: dict) -> tuple[dict | None, str]:
     req = urllib.request.Request(
         WEALTH_URL,
         data=data,
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Mcp-Session-Id": sid,
+        },
         method="POST",
     )
     try:
@@ -201,7 +256,7 @@ def save_fixture(tool_name: str, mode: str, result: dict | None, error_class: st
         "mode": mode,
         "error_class": error_class,
         "probed_at": datetime.now(timezone.utc).isoformat(),
-        "session_id": SESSION_ID,
+        "session_id": PROBE_SESSION_ID,
         "raw_response": result,
         "sha256": hashlib.sha256(
             json.dumps(result, sort_keys=True, default=str).encode()
@@ -272,7 +327,7 @@ def probe_all(limit: int | None = None):
     print(
         f"W-000 BASELINE PROBE: {total} canonical modes across {len(TOOL_MATRIX)} tools"
     )
-    print(f"Session: {SESSION_ID}\n")
+    print(f"Session: {PROBE_SESSION_ID}\n")
 
     count = 0
     results = {"probed": 0, "errors": 0, "fixtures": 0}
