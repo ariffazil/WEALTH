@@ -25,7 +25,7 @@ WEALTH_RISK_TIERS = {
     "capital_primitive": "readonly",
     "capital_health": "readonly",
     "capital_diagnose": "c1",
-    "capital_wisdom": "c1",
+    # capital_wisdom DELETED 2026-08-06 — M0 audit
     "capital_market": "readonly",
     "capital_ledger": "c2",  # write is irreversible; query is resolved read-only below
     "capital_registry": "readonly",
@@ -138,7 +138,10 @@ def check_governance(
       (contains the HOLD/VOID response to return to caller)
     """
     risk = WEALTH_RISK_TIERS.get(tool_name, "c1")
-    if tool_name == "capital_ledger" and str(arguments.get("mode", "")).lower() == "query":
+    if (
+        tool_name == "capital_ledger"
+        and str(arguments.get("mode", "")).lower() == "query"
+    ):
         risk = "readonly"
 
     # READONLY tools: execute without governance check

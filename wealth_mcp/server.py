@@ -27,8 +27,9 @@ from wealth_mcp import (
     WEALTH_RESOURCE_URIS,
     WEALTH_PROMPT_NAMES,
 )
+
+# register_institutional_tools DELETED 2026-08-06 — C6: INSTITUTIONAL_TOOL_NAMES empty tuple since Phase 1a. Dead import.
 from wealth_mcp.tools.canonical import register_canonical_tools
-from wealth_mcp.tools.institutional import register_institutional_tools
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -56,8 +57,11 @@ _INTERNAL_LEGACY_ALIASES = {
     "schema": "capital_registry",
     "wealth_survival_engine": "capital_health",
     "survival_engine": "capital_health",
-    "wealth_omni_wisdom": "internal_wisdom_engine",
-    "omni_wisdom": "internal_wisdom_engine",
+    # C8 2026-08-06: omni_wisdom aliases unresolved. capital_wisdom deleted
+    # (F13 directive). Legacy dispatch still resolves via _call_legacy_tool
+    # if needed internally, but no public path reaches it.
+    # "wealth_omni_wisdom": "internal_wisdom_engine",
+    # "omni_wisdom": "internal_wisdom_engine",
 }
 
 
@@ -575,6 +579,11 @@ def create_mcp_server() -> FastMCP:
                     )
 
             # ── P0-4: Session validation (was defined but never called) ──
+            # C3 2026-08-06: Tool schemas declare session_id as Optional but
+            # this gate enforces it. Gap: schema says optional, runtime says
+            # mandatory. Until resolved, clients MUST send session_id or accept
+            # SESSION_REQUIRED block. Fix: either add session_id to required[]
+            # in every tool schema, or make this gate optional for OBSERVE-class.
             binding = _validate_direct_session_binding(name, actor_id, session_id)
             if not binding.get("ok"):
                 # MUST return schema-conformant response matching WEALTH_OUTPUT_SCHEMA
@@ -800,9 +809,9 @@ def create_mcp_server() -> FastMCP:
     # _register_auction_tools(
     #     mcp
     # )  # Auction surfaces + coalition games (forged 2026-07-07)
-    register_institutional_tools(
-        mcp
-    )  # Institutional stress detection (forged 2026-07-08, wired 2026-07-12)
+    # register_institutional_tools DELETED 2026-08-06 — C6: INSTITUTIONAL_TOOL_NAMES
+    # is empty tuple since Phase 1a. Function is a no-op. All institutional access
+    # is now via capital_diagnose(mode=...).
     _register_resources(mcp)
     _register_prompts(mcp)
 

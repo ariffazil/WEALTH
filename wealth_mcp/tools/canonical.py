@@ -461,8 +461,10 @@ def register_canonical_tools(mcp):
             if is_empty and isinstance(raw, dict):
                 raw.setdefault("input_empty", True)
 
+            # C4 FIX 2026-08-06: tool_name was "capital_market" — wrong attribution.
+            # This is capital_health survival mode. Audit trail must preserve origin.
             return wrap_result(
-                tool_name="capital_market",
+                tool_name="capital_health",
                 domain="capital",
                 result=raw,
                 epistemic_tag=EpistemicTag.ASSUMED,
@@ -474,7 +476,6 @@ def register_canonical_tools(mcp):
                 session_id=session_id,
                 actor_id=actor_id,
             )
-            return raw
 
         if m == "fiscal_breakeven":
             if any(
@@ -828,111 +829,9 @@ def register_canonical_tools(mcp):
             f"Unknown mode '{mode}'. Valid: stress_index, governance_capacity, cascade_model, exploitation_detect, collapse_signature, beautiful_mouse, capture_scan, power_audit, bid_surface, optimize_mwc, cadence_monitor, crisis_reflex"
         )
 
-    # ═══════════════════════════════════════════════════════════════════
-    # 4. capital_wisdom — Synthesis and meta-analysis
-    # ═══════════════════════════════════════════════════════════════════
-
-    # This synthesis engine remains callable by in-process compatibility paths,
-    # but it is intentionally not a FastMCP tool. Normative framing belongs to
-    # arifOS; registering it here would create a phantom public component.
-    async def capital_wisdom(
-        mode: str,
-        proposal: str = "",
-        capital_type: str = "financial",
-        context: CoercedDict = None,
-        memory_query: str = "",
-        target: str = "",
-        session_id: str | None = None,
-        trace_id: str | None = None,
-        actor_id: str | None = None,
-    ) -> dict:
-        try:
-            m = mode.lower().strip()
-
-            if m == "wisdom":
-                from wealth_core.wisdom import compute_wisdom
-
-                return wrap_result(
-                    tool_name="capital_wisdom",
-                    domain="wisdom",
-                    result=compute_wisdom(
-                        proposal, capital_type=capital_type, context=context
-                    ),
-                    epistemic_tag=EpistemicTag.INTERPRETED,
-                    evidence_quality=EvidenceQuality.WEAK,
-                    source_attribution=["proposal_text_analysis"],
-                    session_id=session_id,
-                    actor_id=actor_id,
-                )
-
-            if m == "omni":
-                # Omni wisdom delegates to the server-side tool.
-                # MUST wrap in WealthEnvelope — output_schema requires tool_name.
-                raw = await _call_legacy_tool(
-                    "wealth_omni_wisdom",
-                    {
-                        "mode": "synthesize",
-                        "memory_query": memory_query,
-                    },
-                )
-                return wrap_result(
-                    tool_name="capital_wisdom",
-                    domain="wisdom",
-                    result=raw if isinstance(raw, dict) else {"result": raw},
-                    epistemic_tag=EpistemicTag.INTERPRETED,
-                    evidence_quality=EvidenceQuality.WEAK,
-                    source_attribution=["omni_wisdom_synthesis"],
-                    session_id=session_id,
-                    actor_id=actor_id,
-                )
-
-            if m == "epistemic":
-                from wealth_core.epistemic import audit_epistemic
-
-                return wrap_result(
-                    tool_name="capital_wisdom",
-                    domain="wisdom",
-                    result=audit_epistemic(target),
-                    epistemic_tag=EpistemicTag.INTERPRETED,
-                    evidence_quality=EvidenceQuality.MODERATE,
-                    source_attribution=["epistemic_audit"],
-                    session_id=session_id,
-                    actor_id=actor_id,
-                )
-
-            err_msg = f"Unknown mode '{mode}'. Valid: wisdom, omni, epistemic"
-            return wrap_result(
-                tool_name="capital_wisdom",
-                domain="wisdom",
-                result={
-                    "status": "ERROR",
-                    "error_code": "UNKNOWN_MODE",
-                    "message": err_msg,
-                },
-                epistemic_tag=EpistemicTag.ASSUMED,
-                evidence_quality=EvidenceQuality.MISSING,
-                claim_state=ClaimState.VOID,
-                errors=[err_msg],
-                session_id=session_id,
-                actor_id=actor_id,
-            )
-        except Exception as exc:
-            err_msg = f"{type(exc).__name__}: {exc}"
-            return wrap_result(
-                tool_name="capital_wisdom",
-                domain="wisdom",
-                result={
-                    "status": "ERROR",
-                    "error_code": "COMPUTE_ERROR",
-                    "message": str(exc),
-                },
-                epistemic_tag=EpistemicTag.ASSUMED,
-                evidence_quality=EvidenceQuality.MISSING,
-                claim_state=ClaimState.VOID,
-                errors=[err_msg],
-                session_id=session_id,
-                actor_id=actor_id,
-            )
+    # capital_wisdom DELETED 2026-08-06 — M0 audit. Normative synthesis
+    # violates 'WEALTH computes, arifOS frames'. F13 directive: DELETE.
+    # 120 lines removed. arifOS owns framing; WEALTH owns computation.
 
     # ═══════════════════════════════════════════════════════════════════
     # 5. capital_market — Market data and stock analysis
@@ -1437,8 +1336,7 @@ def register_canonical_tools(mcp):
                     ],
                     "canonical_tool_count": len(canonical_tools),
                     "public_tool_count": len(public_tools),
-                    "legacy_tools": "internal_only_direct_import",
-                    "preload_mechanism": "REMOVED_2026-07-07",
+                    "legacy_dispatch": "direct_import",
                 },
             )
 
@@ -1456,7 +1354,6 @@ def register_canonical_tools(mcp):
                     "architecture": architecture,
                     "canonical_tools": len(canonical_tools),
                     "public_tools": len(public_tools),
-                    "preload_mechanism": "REMOVED_2026-07-07",
                 },
             )
 
@@ -1851,6 +1748,11 @@ def register_canonical_tools(mcp):
         reversibility: str = "REVERSIBLE",
         blast_radius: str = "low",
         actor_id: str | None = None,
+        # C10 2026-08-06: This flag is CALLER-DECLARED. WEALTH has no independent
+        # cryptographic verification of actor identity. Gate policy (blast_radius=
+        # critical → 888_HOLD) is enforceable only when this flag is externally
+        # verified (e.g., via SCT token validation in the governance wrapper).
+        # Until C10 hardening, do not treat this as a security boundary.
         actor_cryptographically_verified: bool = False,
         payload: CoercedDict = None,
         session_id: str | None = None,
@@ -1978,7 +1880,7 @@ def register_canonical_tools(mcp):
         "capital_registry": capital_registry,
         "capital_entropy": capital_entropy,
         "wealth_judge_handoff": wealth_judge_handoff,
-        # Zen Phase 1.3: capital_wisdom unregistered — normative synthesis
-        # violates 'WEALTH computes, arifOS frames'.
-        "_capital_wisdom_engine": capital_wisdom,
+        # Zen Phase 2: capital_wisdom DELETED 2026-08-06 — normative synthesis
+        # violates 'WEALTH computes, arifOS frames'. M0 audit confirmed.
+        # F13 directive: DELETE, not REGISTER. arifOS owns framing.
     }

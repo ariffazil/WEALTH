@@ -12,7 +12,7 @@ CANONICAL_FLOORS: dict[str, list[str]] = {
     "capital_primitive": ["F1", "F2", "F7", "F11"],
     "capital_health": ["F1", "F2", "F4", "F7", "F11", "F13"],
     "capital_diagnose": ["F1", "F2", "F4", "F6", "F7", "F9", "F11", "F13"],
-    "capital_wisdom": ["F1", "F2", "F4", "F5", "F6", "F7", "F9", "F11", "F13"],
+    # capital_wisdom DELETED 2026-08-06 — M0 audit, F13 directive
     "capital_market": ["F1", "F2", "F7", "F11"],
     "capital_ledger": ["F1", "F2", "F4", "F7", "F11", "F13"],
     "capital_registry": ["F1", "F2", "F7", "F11"],
@@ -56,7 +56,7 @@ CANONICAL_FLOORS: dict[str, list[str]] = {
     "wealth_market_data": ["F1", "F2", "F7", "F11"],
     "wealth_survival_engine": ["F1", "F2", "F4", "F6", "F7", "F11", "F13"],
     # Synthesis and governance — high risk, requires sovereignty
-    "wealth_omni_wisdom": ["F1", "F2", "F4", "F5", "F6", "F7", "F9", "F11", "F13"],
+    # C8 2026-08-06: wealth_omni_wisdom — legacy alias, capital_wisdom deleted
     "wealth_boundary_governance": ["F1", "F2", "F4", "F6", "F7", "F9", "F11", "F13"],
     "wealth_arifos_judge_handoff": ["F1", "F2", "F4", "F7", "F11", "F13"],
     "wealth_vault_write": ["F1", "F2", "F4", "F7", "F11", "F13"],
@@ -86,7 +86,7 @@ WEALTH_ALIAS_MAP: dict[str, str] = {
     "wealth_governance_capacity": "capital_governance_capacity",
     "wealth_cascade_model": "capital_cascade_model",
     "wealth_external_exploitation_detect": "capital_external_exploitation_detect",
-    "wealth_omni_wisdom": "capital_omni_wisdom",
+    # C8 2026-08-06: wealth_omni_wisdom alias — capital_wisdom deleted
     "wealth_boundary_governance": "capital_boundary_governance",
     "wealth_stock_analysis": "capital_stock_analysis",
     "wealth_personal_finance": "capital_personal_finance",
@@ -97,7 +97,7 @@ WEALTH_ALIAS_MAP: dict[str, str] = {
     "wealth_power_audit": "capital_power_audit",
     "wealth_epistemic_audit": "capital_epistemic_audit",
     "wealth_capture_scan": "capital_capture_scan",
-    "wealth_wisdom_evaluate": "capital_wisdom_evaluate",
+    # "wealth_wisdom_evaluate" DELETED 2026-08-06 — capital_wisdom removed
     "wealth_fiscal_breakeven": "capital_fiscal_breakeven",
     "wealth_asymmetry_check": "capital_asymmetry_check",
     "wealth_confluence_check": "capital_confluence_check",

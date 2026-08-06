@@ -3,6 +3,7 @@ Tests for internal/organ_governance.py
 Covers: WEALTH_RISK_TIERS lookups, check_governance all branches,
 _call_arifOS_judge network paths (SEAL/HOLD/error).
 """
+
 import json
 from unittest.mock import MagicMock, patch
 
@@ -37,7 +38,7 @@ def test_risk_tier_c2_tools():
 def test_risk_tier_c1_tools():
     c1_tools = [
         "capital_diagnose",
-        "capital_wisdom",
+        # "capital_wisdom" DELETED 2026-08-06 — M0 audit
         "capital_entropy",
         "wealth_institutional_stress_index",
         "wealth_cascade_model",
@@ -60,6 +61,7 @@ def test_all_canonical_tools_have_explicit_floor_mappings():
 
 # ── check_governance: READONLY branch ─────────────────────────────────────
 
+
 def test_check_governance_readonly():
     """READONLY tool returns READONLY verdict immediately, no judge call."""
     verdict, err = og.check_governance("wealth_health_check", {})
@@ -77,14 +79,11 @@ def test_capital_ledger_query_is_readonly():
 
 # ── _call_arifOS_judge ─────────────────────────────────────────────────────
 
+
 def _mock_httpx(verdict_text: str, status_code: int = 200):
     """Helper to mock httpx.Client.post returning a given verdict."""
     content_text = json.dumps({"verdict": verdict_text})
-    resp_data = {
-        "result": {
-            "content": [{"text": content_text}]
-        }
-    }
+    resp_data = {"result": {"content": [{"text": content_text}]}}
     mock_response = MagicMock()
     mock_response.json.return_value = resp_data
     mock_response.status_code = status_code
@@ -145,6 +144,7 @@ def test_call_arifOS_judge_network_exception():
 
 # ── check_governance: C1 branch ───────────────────────────────────────────
 
+
 def test_check_governance_c1_always_proceeds():
     """C1 tools proceed regardless of arifOS verdict."""
     with _mock_httpx("HOLD"):
@@ -160,6 +160,7 @@ def test_check_governance_c1_seal():
 
 
 # ── check_governance: C2 branch ───────────────────────────────────────────
+
 
 def test_check_governance_c2_seal_allows():
     with _mock_httpx("SEAL"):
@@ -191,6 +192,7 @@ def test_check_governance_c2_void_blocks():
 
 
 # ── Unknown tool → defaults to C1 (advisory, non-blocking) ───────────────
+
 
 def test_check_governance_unknown_tool():
     with _mock_httpx("SEAL"):
