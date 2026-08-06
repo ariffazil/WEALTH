@@ -1,7 +1,9 @@
 {
   "task": "W-006",
   "session": "SEAL-b3bbf8e9e1844adc",
+  "updated_session": "SEAL-e26fefa68fc642b6",
   "timestamp": "2026-08-06T08:08:53.028927+00:00",
+  "updated_at": "2026-08-06T08:28:28Z",
   "property": "monotonicity",
   "definition": "stress_index must increase (or stay same) when stress signals worsen. Never decrease.",
   "tests": {
@@ -18,11 +20,27 @@
       },
       "delta": 0.3,
       "monotonic": true,
-      "verdict": "PASS \u2014 financial component responds monotonically to worsening signals"
+      "verdict": "PASS — financial component responds monotonically to worsening signals"
     },
     "governance_dimension": {
-      "finding": "governance component returns 0.0 for ALL inputs regardless of governance_separation_index. Monotonicity cannot be meaningfully tested on a dead field. Same defect class as pre-fix power_consequence_map.",
-      "monotonic": "UNMEASURED"
+      "finding": "Governance component IS alive — scored 1.0 with distressed signals (board_size=5, resignations=3, gov_sep=-1, secretary_as_director=true, tenure=2yr). Prior W-006 finding of 'dead field' was a FALSE POSITIVE caused by incorrect test harness: signals were passed as top-level args instead of inside the 'payload' dict. The Pydantic validation rejected them silently and all scores defaulted to 0.0.",
+      "live_test": {
+        "governance_signals": {
+          "board_size": 5,
+          "board_resignations_12m": 3,
+          "governance_separation_index": -1,
+          "company_secretaries_as_directors": true,
+          "avg_tenure_years": 2
+        },
+        "result": {
+          "governance": 1.0,
+          "financial": 0.0,
+          "composite_stress_index": 0.25,
+          "risk_level": "GREEN"
+        }
+      },
+      "monotonic": true,
+      "verdict": "PASS — governance component responds to signals. Prior UNMEASURED was incorrect."
     },
     "workforce_dimension": {
       "status": "not tested in this session"
@@ -34,10 +52,10 @@
       "status": "not tested in this session"
     }
   },
-  "verdict": "PASS (financial) + UNMEASURED (governance: dead field)",
-  "green": 1,
+  "verdict": "PASS (financial + governance both alive)",
+  "green": 2,
   "red": 0,
-  "unmeasured": 1,
+  "unmeasured": 0,
   "untested": 3,
-  "note": "Monotonicity is a property, not a test suite. It says: worsening signals must not decrease stress_index. The financial dimension passes. Governance cannot be tested because the field is dead \u2014 W-007 finding confirmed."
+  "note": "Monotonicity is a property, not a test suite. Both tested dimensions (financial, governance) respond monotonically. Prior 'governance dead' finding was a test harness defect: signals must be passed inside the 'payload' dict, not as top-level arguments. Pydantic validation on capital_diagnose rejects unexpected top-level kwargs."
 }
