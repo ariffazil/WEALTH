@@ -1,0 +1,43 @@
+{
+  "task": "W-006",
+  "session": "SEAL-b3bbf8e9e1844adc",
+  "timestamp": "2026-08-06T08:08:53.028927+00:00",
+  "property": "monotonicity",
+  "definition": "stress_index must increase (or stay same) when stress signals worsen. Never decrease.",
+  "tests": {
+    "financial_dimension": {
+      "baseline": {
+        "stress_index": 0.0,
+        "financial": 0.0,
+        "scenario": "healthy: profit 0%, cffo +100, gearing 20%"
+      },
+      "worse": {
+        "stress_index": 0.3,
+        "financial": 1.0,
+        "scenario": "distressed: profit -50%, cffo -100, gearing 80%"
+      },
+      "delta": 0.3,
+      "monotonic": true,
+      "verdict": "PASS \u2014 financial component responds monotonically to worsening signals"
+    },
+    "governance_dimension": {
+      "finding": "governance component returns 0.0 for ALL inputs regardless of governance_separation_index. Monotonicity cannot be meaningfully tested on a dead field. Same defect class as pre-fix power_consequence_map.",
+      "monotonic": "UNMEASURED"
+    },
+    "workforce_dimension": {
+      "status": "not tested in this session"
+    },
+    "legal_dimension": {
+      "status": "not tested in this session"
+    },
+    "exploitation_dimension": {
+      "status": "not tested in this session"
+    }
+  },
+  "verdict": "PASS (financial) + UNMEASURED (governance: dead field)",
+  "green": 1,
+  "red": 0,
+  "unmeasured": 1,
+  "untested": 3,
+  "note": "Monotonicity is a property, not a test suite. It says: worsening signals must not decrease stress_index. The financial dimension passes. Governance cannot be tested because the field is dead \u2014 W-007 finding confirmed."
+}
