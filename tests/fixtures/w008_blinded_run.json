@@ -1,0 +1,35 @@
+{
+  "task": "W-008",
+  "session": "SEAL-b3bbf8e9e1844adc",
+  "timestamp": "2026-08-06T08:10:41.665921+00:00",
+  "blinded_results": {
+    "FIRM_A": {
+      "stress_index": 0.7072,
+      "risk": "RED",
+      "feedback_loop": true
+    },
+    "FIRM_B": {
+      "stress_index": 0.4496,
+      "risk": "YELLOW",
+      "feedback_loop": false
+    },
+    "FIRM_C": {
+      "stress_index": 0.1211,
+      "risk": "GREEN",
+      "feedback_loop": false
+    }
+  },
+  "rank_order_blind": "FIRM_A(0.7072) > FIRM_B(0.4496) > FIRM_C(0.1211)",
+  "unblinding": {
+    "FIRM_A": "Enron Corp",
+    "FIRM_B": "Dynegy Inc",
+    "FIRM_C": "Duke Energy Regulated"
+  },
+  "named_scores": {
+    "enron": 0.7072,
+    "dynegy": 0.4496,
+    "duke": 0.1211
+  },
+  "match": true,
+  "verdict": "PASS \u2014 blinded scores match named scores exactly. Detector works on signal, not labels. Rank order preserved under blinding."
+}
