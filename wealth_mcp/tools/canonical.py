@@ -729,7 +729,9 @@ def register_canonical_tools(mcp):
             return wrap_result(
                 tool_name="capital_diagnose",
                 domain="collapse",
-                result=compute_collapse_risk(p.get("scenario") or ""),
+                result=compute_collapse_risk(
+                    p.get("scenario") or p.get("domain_scope") or ""
+                ),
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom"],
