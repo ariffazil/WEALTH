@@ -1,0 +1,143 @@
+{
+  "tool": "capital_diagnose",
+  "mode": "stress_index",
+  "error_class": "ok",
+  "probed_at": "2026-08-06T08:35:09.660526+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "wealth_receipt": {
+          "persisted": true,
+          "path": "/root/VAULT999/wealth/receipts.jsonl",
+          "receipt_id": "37519050-baf8-4d16-bf40-03126f8af492",
+          "call_status": "PASS"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"tool_name\": \"capital_diagnose\", \"tool_version\": \"2026.07.12\", \"domain\": \"institutional\", \"result\": {\"org_name\": \"\", \"stress_index\": 0.0, \"component_scores\": {\"financial\": 0.0, \"governance\": 0.0, \"workforce\": 0.0, \"legal\": 0.0, \"exploitation\": 0.0}, \"risk_level\": \"INSUFFICIENT_DATA\", \"feedback_loop_detected\": false, \"recommendations\": [], \"confidence\": 0.0, \"confidence_note\": \"Capped at 0.90 per F7 HUMILITY; scales with field coverage\", \"fields_present\": [], \"fields_missing\": [\"financial.profit_change_pct\", \"financial.revenue_change_pct\", \"financial.cost_cutting_announced\", \"financial.sovereign_extraction\", \"financial.cffo\", \"financial.fcf\", \"financial.gearing\", \"governance.board_size\", \"governance.board_resignations_12m\", \"governance.company_secretaries_as_directors\", \"governance.avg_tenure_years\", \"governance.governance_separation_index\", \"workforce.rightsizing_pct\", \"workforce.voluntary_exits_pct\", \"workforce.key_personnel_departures\", \"legal.active_litigation_count\", \"legal.injunction_value_musd\", \"legal.regulatory_uncertainty_score\", \"exploitation.counterparty_payment_freeze\", \"exploitation.interpleader_filed\", \"exploitation.competing_claims\"], \"warnings\": [\"SILENT_DEFAULT_RISK: 21 expected fields absent \\u2014 treated as zero/false; do not treat GREEN as 'no stress observed'\", \"RISK_LEVEL_OVERRIDE: coverage=0% < 15% threshold. risk_level downgraded from 'GREEN' to 'INSUFFICIENT_DATA'. Provide at least 3 of 21 expected fields across any dimension for a meaningful stress assessment.\"], \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"financial_signals\", \"governance_signals\", \"workforce_signals\"], \"computation_timestamp\": \"2026-08-06T08:35:09.658035+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.93, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"material_args_count\": 1, \"material_args\": [\"domain_scope\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"trace_id\": \"\"}"
+        }
+      ],
+      "structuredContent": {
+        "tool_name": "capital_diagnose",
+        "tool_version": "2026.07.12",
+        "domain": "institutional",
+        "result": {
+          "org_name": "",
+          "stress_index": 0.0,
+          "component_scores": {
+            "financial": 0.0,
+            "governance": 0.0,
+            "workforce": 0.0,
+            "legal": 0.0,
+            "exploitation": 0.0
+          },
+          "risk_level": "INSUFFICIENT_DATA",
+          "feedback_loop_detected": false,
+          "recommendations": [],
+          "confidence": 0.0,
+          "confidence_note": "Capped at 0.90 per F7 HUMILITY; scales with field coverage",
+          "fields_present": [],
+          "fields_missing": [
+            "financial.profit_change_pct",
+            "financial.revenue_change_pct",
+            "financial.cost_cutting_announced",
+            "financial.sovereign_extraction",
+            "financial.cffo",
+            "financial.fcf",
+            "financial.gearing",
+            "governance.board_size",
+            "governance.board_resignations_12m",
+            "governance.company_secretaries_as_directors",
+            "governance.avg_tenure_years",
+            "governance.governance_separation_index",
+            "workforce.rightsizing_pct",
+            "workforce.voluntary_exits_pct",
+            "workforce.key_personnel_departures",
+            "legal.active_litigation_count",
+            "legal.injunction_value_musd",
+            "legal.regulatory_uncertainty_score",
+            "exploitation.counterparty_payment_freeze",
+            "exploitation.interpleader_filed",
+            "exploitation.competing_claims"
+          ],
+          "warnings": [
+            "SILENT_DEFAULT_RISK: 21 expected fields absent \u2014 treated as zero/false; do not treat GREEN as 'no stress observed'",
+            "RISK_LEVEL_OVERRIDE: coverage=0% < 15% threshold. risk_level downgraded from 'GREEN' to 'INSUFFICIENT_DATA'. Provide at least 3 of 21 expected fields across any dimension for a meaningful stress assessment."
+          ],
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "DERIVED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "MODERATE",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "financial_signals",
+          "governance_signals",
+          "workforce_signals"
+        ],
+        "computation_timestamp": "2026-08-06T08:35:09.658035+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.",
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+        ],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.93,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "verdict": "INSUFFICIENT_EVIDENCE",
+        "coverage": {
+          "known": 0,
+          "total": 1,
+          "ratio": 0.0
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 0.0,
+          "material_args_count": 1,
+          "material_args": [
+            "domain_scope"
+          ],
+          "gate": "CAUTION",
+          "warnings": [
+            "INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+          ]
+        },
+        "trace_id": ""
+      },
+      "isError": false
+    }
+  },
+  "sha256": "9e9d411043d8cbbfb10784b1ffeab824417f7d21a9f9d99e33c0ddf6fa6431e7"
+}

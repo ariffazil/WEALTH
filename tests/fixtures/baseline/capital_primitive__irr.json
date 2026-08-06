@@ -1,0 +1,103 @@
+{
+  "tool": "capital_primitive",
+  "mode": "irr",
+  "error_class": "ok",
+  "probed_at": "2026-08-06T08:35:05.275361+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "wealth_receipt": {
+          "persisted": true,
+          "path": "/root/VAULT999/wealth/receipts.jsonl",
+          "receipt_id": "67134d75-96d1-45c2-b7c4-e31c71f4087f",
+          "call_status": "PASS"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"tool_name\": \"capital_primitive\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"irr\": null, \"cash_flows\": [100.0, 100.0, 100.0, 100.0, 100.0], \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"OBSERVED\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"user_provided_inputs\"], \"computation_timestamp\": \"2026-08-06T08:35:05.272604+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.93, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 0, \"total\": 2, \"ratio\": 0.5}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"OBSERVED\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.5, \"material_args_count\": 2, \"material_args\": [\"cash_flows\", \"discount_rate\"], \"gate\": \"PASS\", \"warnings\": []}, \"trace_id\": \"\"}"
+        }
+      ],
+      "structuredContent": {
+        "tool_name": "capital_primitive",
+        "tool_version": "2026.07.12",
+        "domain": "capital",
+        "result": {
+          "irr": null,
+          "cash_flows": [
+            100.0,
+            100.0,
+            100.0,
+            100.0,
+            100.0
+          ],
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "DERIVED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "OBSERVED",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "user_provided_inputs"
+        ],
+        "computation_timestamp": "2026-08-06T08:35:05.272604+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.93,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "verdict": "PARTIAL",
+        "coverage": {
+          "known": 0,
+          "total": 2,
+          "ratio": 0.5
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "OBSERVED",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 0.5,
+          "material_args_count": 2,
+          "material_args": [
+            "cash_flows",
+            "discount_rate"
+          ],
+          "gate": "PASS",
+          "warnings": []
+        },
+        "trace_id": ""
+      },
+      "isError": false
+    }
+  },
+  "sha256": "9d903c75f69c197b184584abd59ba6806e7ddffa4edc96d2f7a6a35528450434"
+}

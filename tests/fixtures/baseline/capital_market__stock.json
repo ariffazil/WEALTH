@@ -1,0 +1,105 @@
+{
+  "tool": "capital_market",
+  "mode": "stock",
+  "error_class": "ok",
+  "probed_at": "2026-08-06T08:35:19.769006+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "wealth_receipt": {
+          "persisted": true,
+          "path": "/root/VAULT999/wealth/receipts.jsonl",
+          "receipt_id": "da6207df-857d-4286-b2c6-f1e8c0912e77",
+          "call_status": "NEEDS_DATA"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"tool_name\": \"capital_market\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"status\": \"NEEDS_DATA\", \"verdict\": \"NEEDS_DATA\", \"missing_data\": [\"ticker\", \"entry_price\", \"position_size\", \"current_price\"], \"warnings\": [\"Cannot compute P/L without complete inputs.\"], \"recommendation_only\": true, \"final_authority\": \"Arif\", \"tool\": \"wealth_stock_analysis\", \"mode\": \"verify_math\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [], \"computation_timestamp\": \"2026-08-06T08:35:19.764436+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [], \"errors\": [], \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.93, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": 1.0}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 1.0, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"PASS\", \"warnings\": []}, \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"trace_id\": \"\"}"
+        }
+      ],
+      "structuredContent": {
+        "tool_name": "capital_market",
+        "tool_version": "2026.07.12",
+        "domain": "capital",
+        "result": {
+          "status": "NEEDS_DATA",
+          "verdict": "NEEDS_DATA",
+          "missing_data": [
+            "ticker",
+            "entry_price",
+            "position_size",
+            "current_price"
+          ],
+          "warnings": [
+            "Cannot compute P/L without complete inputs."
+          ],
+          "recommendation_only": true,
+          "final_authority": "Arif",
+          "tool": "wealth_stock_analysis",
+          "mode": "verify_math",
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "DERIVED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "MODERATE",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [],
+        "computation_timestamp": "2026-08-06T08:35:19.764436+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [],
+        "errors": [],
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.93,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "verdict": "PARTIAL",
+        "coverage": {
+          "known": 0,
+          "total": 0,
+          "ratio": 1.0
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 1.0,
+          "material_args_count": 0,
+          "material_args": [],
+          "gate": "PASS",
+          "warnings": []
+        },
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "trace_id": ""
+      },
+      "isError": false
+    }
+  },
+  "sha256": "f541ad0918820d7bf7047e2b76a6bc0df9375f4f0b5768c5addd54fae7b8d73e"
+}

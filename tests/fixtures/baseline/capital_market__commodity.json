@@ -1,0 +1,208 @@
+{
+  "tool": "capital_market",
+  "mode": "commodity",
+  "error_class": "ok",
+  "probed_at": "2026-08-06T08:35:19.424057+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "wealth_receipt": {
+          "persisted": true,
+          "path": "/root/VAULT999/wealth/receipts.jsonl",
+          "receipt_id": "58f1f82d-9821-4416-8212-d30d114e9a7d",
+          "call_status": "PASS"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"tool_name\": \"capital_market\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"asset\": \"oil\", \"source\": \"wealth://commodity\", \"snapshot\": {\"ticker\": {\"symbol\": \"XBRENT\", \"price\": 80.13, \"change\": 0.31, \"changePct\": 0.39, \"rsi\": 63.6, \"rsiState\": \"NEUTRAL\", \"skewness_20d\": -0.434, \"signal\": \"NEUTRAL\", \"confidence\": 0.3, \"ema20\": 79.63, \"ema50\": 80.33, \"ema200\": 82.25, \"emaTrend\": \"BEARISH\", \"support\": [80.02, 79.81, 79.5], \"resistance\": [80.32, 80.33, 80.54], \"pivot\": 80.02, \"timestamp\": \"2026-08-06T16:30:17.794490+08:00\"}, \"signal\": {\"signal\": {\"direction\": \"FLAT\", \"strength\": \"WEAK\", \"confidence\": 0.027, \"entry_price\": 80.06, \"stop_loss\": 80.06, \"take_profit_1\": 80.06, \"take_profit_2\": 80.06, \"rr_ratio\": 0, \"confluence_score\": 0.027, \"suggested_lot\": 0.01, \"risk_amount\": 0, \"verdict\": \"SABAR\", \"judge_reason\": \"RR ratio 0.0 < 1.5 \\u2014 insufficient reward; No clear direction \\u2014 SABAR (wait); Confluence score 0.027 too low\"}, \"regime\": {\"regime\": \"DOWNTREND\", \"confidence\": 0.95, \"price\": 80.06, \"ema_20\": 79.63, \"ema_50\": 80.67, \"ema_200\": 84.96, \"rsi\": 53.2}, \"zones\": {\"buy_zone\": {\"price\": 78.22, \"strength\": 2}, \"sell_zone\": {\"price\": 80.32, \"strength\": 1}}, \"confluence_factors\": [{\"name\": \"APEX.A=0.55\", \"direction\": \"FLAT\", \"weight\": 0.2, \"confidence\": 0.5473476679785395}, {\"name\": \"APEX.P=0.48\", \"direction\": \"FLAT\", \"weight\": 0.2, \"confidence\": 0.4791409627063995}, {\"name\": \"APEX.E=0.24\", \"direction\": \"FLAT\", \"weight\": 0.2, \"confidence\": 0.23524834422984026}, {\"name\": \"APEX.X=0.95\", \"direction\": \"FLAT\", \"weight\": 0.2, \"confidence\": 0.9524444700075967}, {\"name\": \"APEX.\\u03a6=0.46\", \"direction\": \"FLAT\", \"weight\": 0.2, \"confidence\": 0.4555177315911469}], \"timestamp\": \"2026-08-06T16:35:19.202862+08:00\"}, \"macro\": {\"timestamp\": \"2026-08-06T16:30:17.481550+08:00\", \"dxy\": 99.75, \"vix\": 15.92, \"us10y\": 4.617, \"silver\": 62.13, \"usmyr\": 4.09}}, \"errors\": null, \"partial\": false, \"_cross_witness\": {\"primary_source\": \"wealth_core.commodity_engines\", \"feed_type\": \"LIVE\", \"witness_status\": \"SINGLE_SOURCE\", \"note\": \"Cross-witness requires second independent source. Delta > 3% would raise WITNESS_DIVERGENCE.\"}, \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"commodity_engine_live\"], \"computation_timestamp\": \"2026-08-06T08:35:19.418657+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.93, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": 1.0}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 1.0, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"PASS\", \"warnings\": []}, \"trace_id\": \"\"}"
+        }
+      ],
+      "structuredContent": {
+        "tool_name": "capital_market",
+        "tool_version": "2026.07.12",
+        "domain": "capital",
+        "result": {
+          "asset": "oil",
+          "source": "wealth://commodity",
+          "snapshot": {
+            "ticker": {
+              "symbol": "XBRENT",
+              "price": 80.13,
+              "change": 0.31,
+              "changePct": 0.39,
+              "rsi": 63.6,
+              "rsiState": "NEUTRAL",
+              "skewness_20d": -0.434,
+              "signal": "NEUTRAL",
+              "confidence": 0.3,
+              "ema20": 79.63,
+              "ema50": 80.33,
+              "ema200": 82.25,
+              "emaTrend": "BEARISH",
+              "support": [
+                80.02,
+                79.81,
+                79.5
+              ],
+              "resistance": [
+                80.32,
+                80.33,
+                80.54
+              ],
+              "pivot": 80.02,
+              "timestamp": "2026-08-06T16:30:17.794490+08:00"
+            },
+            "signal": {
+              "signal": {
+                "direction": "FLAT",
+                "strength": "WEAK",
+                "confidence": 0.027,
+                "entry_price": 80.06,
+                "stop_loss": 80.06,
+                "take_profit_1": 80.06,
+                "take_profit_2": 80.06,
+                "rr_ratio": 0,
+                "confluence_score": 0.027,
+                "suggested_lot": 0.01,
+                "risk_amount": 0,
+                "verdict": "SABAR",
+                "judge_reason": "RR ratio 0.0 < 1.5 \u2014 insufficient reward; No clear direction \u2014 SABAR (wait); Confluence score 0.027 too low"
+              },
+              "regime": {
+                "regime": "DOWNTREND",
+                "confidence": 0.95,
+                "price": 80.06,
+                "ema_20": 79.63,
+                "ema_50": 80.67,
+                "ema_200": 84.96,
+                "rsi": 53.2
+              },
+              "zones": {
+                "buy_zone": {
+                  "price": 78.22,
+                  "strength": 2
+                },
+                "sell_zone": {
+                  "price": 80.32,
+                  "strength": 1
+                }
+              },
+              "confluence_factors": [
+                {
+                  "name": "APEX.A=0.55",
+                  "direction": "FLAT",
+                  "weight": 0.2,
+                  "confidence": 0.5473476679785395
+                },
+                {
+                  "name": "APEX.P=0.48",
+                  "direction": "FLAT",
+                  "weight": 0.2,
+                  "confidence": 0.4791409627063995
+                },
+                {
+                  "name": "APEX.E=0.24",
+                  "direction": "FLAT",
+                  "weight": 0.2,
+                  "confidence": 0.23524834422984026
+                },
+                {
+                  "name": "APEX.X=0.95",
+                  "direction": "FLAT",
+                  "weight": 0.2,
+                  "confidence": 0.9524444700075967
+                },
+                {
+                  "name": "APEX.\u03a6=0.46",
+                  "direction": "FLAT",
+                  "weight": 0.2,
+                  "confidence": 0.4555177315911469
+                }
+              ],
+              "timestamp": "2026-08-06T16:35:19.202862+08:00"
+            },
+            "macro": {
+              "timestamp": "2026-08-06T16:30:17.481550+08:00",
+              "dxy": 99.75,
+              "vix": 15.92,
+              "us10y": 4.617,
+              "silver": 62.13,
+              "usmyr": 4.09
+            }
+          },
+          "errors": null,
+          "partial": false,
+          "_cross_witness": {
+            "primary_source": "wealth_core.commodity_engines",
+            "feed_type": "LIVE",
+            "witness_status": "SINGLE_SOURCE",
+            "note": "Cross-witness requires second independent source. Delta > 3% would raise WITNESS_DIVERGENCE."
+          },
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "DERIVED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "MODERATE",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "commodity_engine_live"
+        ],
+        "computation_timestamp": "2026-08-06T08:35:19.418657+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.93,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "verdict": "PARTIAL",
+        "coverage": {
+          "known": 0,
+          "total": 0,
+          "ratio": 1.0
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 1.0,
+          "material_args_count": 0,
+          "material_args": [],
+          "gate": "PASS",
+          "warnings": []
+        },
+        "trace_id": ""
+      },
+      "isError": false
+    }
+  },
+  "sha256": "e759c0a021d75e4abff750002cd2fca111f434dc9d5e00fc8018e4fcd3ba7c61"
+}

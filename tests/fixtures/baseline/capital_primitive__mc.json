@@ -1,0 +1,74 @@
+{
+  "tool": "capital_primitive",
+  "mode": "mc",
+  "error_class": "ok",
+  "probed_at": "2026-08-06T08:35:05.705323+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "wealth_receipt": {
+          "persisted": true,
+          "path": "/root/VAULT999/wealth/receipts.jsonl",
+          "receipt_id": "6c1aa351-fed8-43f3-8ca3-89c43daf18ea",
+          "call_status": "ERROR"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"isError\": true, \"error_class\": \"INTERNAL_ERROR\", \"recoverability\": \"ESCALATE_TO_888_HOLD\", \"suspected_layer\": \"tool_execution\", \"severity\": \"FATAL\", \"message\": \"Error calling tool 'capital_primitive'\", \"next_action\": \"Log to VAULT999 and escalate \\u2014 server bug\", \"epistemic_label\": \"DER\", \"timestamp\": \"2026-08-06T08:35:05.702192+00:00\", \"source_tool\": \"capital_primitive\", \"source_organ\": \"wealth\", \"original_error\": \"ToolError: Error calling tool 'capital_primitive'\", \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"trace_id\": \"\", \"execution_authorized\": false, \"human_final_authority\": \"Arif\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 2, \"ratio\": 0.0}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"material_args_count\": 2, \"material_args\": [\"cash_flows\", \"discount_rate\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 2 material fields (['cash_flows', 'discount_rate']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 2 material fields (['cash_flows', 'discount_rate']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}"
+        }
+      ],
+      "structuredContent": {
+        "isError": true,
+        "error_class": "INTERNAL_ERROR",
+        "recoverability": "ESCALATE_TO_888_HOLD",
+        "suspected_layer": "tool_execution",
+        "severity": "FATAL",
+        "message": "Error calling tool 'capital_primitive'",
+        "next_action": "Log to VAULT999 and escalate \u2014 server bug",
+        "epistemic_label": "DER",
+        "timestamp": "2026-08-06T08:35:05.702192+00:00",
+        "source_tool": "capital_primitive",
+        "source_organ": "wealth",
+        "original_error": "ToolError: Error calling tool 'capital_primitive'",
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "trace_id": "",
+        "execution_authorized": false,
+        "human_final_authority": "Arif",
+        "verdict": "INSUFFICIENT_EVIDENCE",
+        "coverage": {
+          "known": 0,
+          "total": 2,
+          "ratio": 0.0
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 0.0,
+          "material_args_count": 2,
+          "material_args": [
+            "cash_flows",
+            "discount_rate"
+          ],
+          "gate": "CAUTION",
+          "warnings": [
+            "INSUFFICIENT_EVIDENCE: 2 material fields (['cash_flows', 'discount_rate']) provided but ZERO reflected in result. Interpretation prose blocked."
+          ]
+        },
+        "warnings": [
+          "[W0] INSUFFICIENT_EVIDENCE: 2 material fields (['cash_flows', 'discount_rate']) provided but ZERO reflected in result. Interpretation prose blocked."
+        ]
+      },
+      "isError": false
+    }
+  },
+  "sha256": "aaa0b3336296ce257f272f65462061f41ba2d59a440984bf507fc3c4fbe5fa14"
+}

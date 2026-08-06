@@ -1,0 +1,66 @@
+{
+  "tool": "capital_market",
+  "mode": "garbage_mode_test",
+  "error_class": "ok",
+  "probed_at": "2026-08-06T08:35:15.490885+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "wealth_receipt": {
+          "persisted": true,
+          "path": "/root/VAULT999/wealth/receipts.jsonl",
+          "receipt_id": "4a12f5bb-f1d2-465e-8aa6-630f4ce2fe62",
+          "call_status": "ERROR"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"isError\": true, \"error_class\": \"INTERNAL_ERROR\", \"recoverability\": \"ESCALATE_TO_888_HOLD\", \"suspected_layer\": \"tool_execution\", \"severity\": \"FATAL\", \"message\": \"Error calling tool 'capital_market'\", \"next_action\": \"Log to VAULT999 and escalate \\u2014 server bug\", \"epistemic_label\": \"DER\", \"timestamp\": \"2026-08-06T08:35:15.487815+00:00\", \"source_tool\": \"capital_market\", \"source_organ\": \"wealth\", \"original_error\": \"ToolError: Error calling tool 'capital_market'\", \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"trace_id\": \"\", \"execution_authorized\": false, \"human_final_authority\": \"Arif\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": 1.0}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 1.0, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"PASS\", \"warnings\": []}}"
+        }
+      ],
+      "structuredContent": {
+        "isError": true,
+        "error_class": "INTERNAL_ERROR",
+        "recoverability": "ESCALATE_TO_888_HOLD",
+        "suspected_layer": "tool_execution",
+        "severity": "FATAL",
+        "message": "Error calling tool 'capital_market'",
+        "next_action": "Log to VAULT999 and escalate \u2014 server bug",
+        "epistemic_label": "DER",
+        "timestamp": "2026-08-06T08:35:15.487815+00:00",
+        "source_tool": "capital_market",
+        "source_organ": "wealth",
+        "original_error": "ToolError: Error calling tool 'capital_market'",
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "trace_id": "",
+        "execution_authorized": false,
+        "human_final_authority": "Arif",
+        "verdict": "PARTIAL",
+        "coverage": {
+          "known": 0,
+          "total": 0,
+          "ratio": 1.0
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 1.0,
+          "material_args_count": 0,
+          "material_args": [],
+          "gate": "PASS",
+          "warnings": []
+        }
+      },
+      "isError": false
+    }
+  },
+  "sha256": "a470f7bb564c9922a646a85704263b32cb5d60aa5d3948f38a6b436a9d2416c8"
+}
