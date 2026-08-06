@@ -1,0 +1,326 @@
+{
+  "panel": "enron_2000",
+  "description": "Enron 2000 peer panel — firms with similar energy-trading business models and SPE structures. NOT diversified oil majors (Exxon/Chevron).",
+  "date": "2000-12-31",
+  "cases": [
+    {
+      "id": "enron",
+      "name": "Enron Corp",
+      "truth": "TRUE_POSITIVE",
+      "collapse_date": "2001-12-02",
+      "signals": {
+        "financial": {
+          "profit_change_pct": 87.0,
+          "revenue_change_pct": 151.0,
+          "cost_cutting_announced": false,
+          "sovereign_extraction": 0.0,
+          "cffo": -946.0,
+          "fcf": -3300.0,
+          "gearing": 69.0
+        },
+        "governance": {
+          "board_size": 15,
+          "board_resignations_12m": 2,
+          "company_secretaries_as_directors": 1,
+          "avg_tenure_years": 4.2,
+          "governance_separation_index": 0
+        },
+        "workforce": {
+          "rightsizing_pct": 8.0,
+          "voluntary_exits_pct": 12.0,
+          "key_personnel_departures": 3
+        },
+        "legal": {
+          "active_litigation_count": 14,
+          "injunction_value_musd": 1200.0,
+          "regulatory_uncertainty_score": 7.0
+        },
+        "exploitation": {
+          "counterparty_payment_freeze": true,
+          "interpleader_filed": false,
+          "competing_claims": 5
+        }
+      }
+    },
+    {
+      "id": "dynegy",
+      "name": "Dynegy Inc",
+      "truth": "NEAR_MISS",
+      "note": "Near-collapse 2002. Same SPE model as Enron, abandoned merger after Enron imploded, survived with asset sales.",
+      "signals": {
+        "financial": {
+          "profit_change_pct": 42.0,
+          "revenue_change_pct": 89.0,
+          "cost_cutting_announced": false,
+          "sovereign_extraction": 0.0,
+          "cffo": 520.0,
+          "fcf": -1800.0,
+          "gearing": 55.0
+        },
+        "governance": {
+          "board_size": 12,
+          "board_resignations_12m": 1,
+          "company_secretaries_as_directors": 0,
+          "avg_tenure_years": 5.5,
+          "governance_separation_index": 0
+        },
+        "workforce": {
+          "rightsizing_pct": 5.0,
+          "voluntary_exits_pct": 8.0,
+          "key_personnel_departures": 1
+        },
+        "legal": {
+          "active_litigation_count": 8,
+          "injunction_value_musd": 500.0,
+          "regulatory_uncertainty_score": 5.0
+        },
+        "exploitation": {
+          "counterparty_payment_freeze": false,
+          "interpleader_filed": false,
+          "competing_claims": 2
+        }
+      }
+    },
+    {
+      "id": "williams",
+      "name": "Williams Companies",
+      "truth": "NEAR_MISS",
+      "note": "Energy trading + pipelines. Heavily exposed to California energy crisis. Avoided bankruptcy through asset sales and debt restructuring in 2002.",
+      "signals": {
+        "financial": {
+          "profit_change_pct": 35.0,
+          "revenue_change_pct": 62.0,
+          "cost_cutting_announced": true,
+          "sovereign_extraction": 0.0,
+          "cffo": 890.0,
+          "fcf": -2100.0,
+          "gearing": 58.0
+        },
+        "governance": {
+          "board_size": 11,
+          "board_resignations_12m": 1,
+          "company_secretaries_as_directors": 0,
+          "avg_tenure_years": 6.1,
+          "governance_separation_index": 1
+        },
+        "workforce": {
+          "rightsizing_pct": 12.0,
+          "voluntary_exits_pct": 10.0,
+          "key_personnel_departures": 2
+        },
+        "legal": {
+          "active_litigation_count": 10,
+          "injunction_value_musd": 800.0,
+          "regulatory_uncertainty_score": 6.0
+        },
+        "exploitation": {
+          "counterparty_payment_freeze": false,
+          "interpleader_filed": false,
+          "competing_claims": 3
+        }
+      }
+    },
+    {
+      "id": "elpaso",
+      "name": "El Paso Corporation",
+      "truth": "NEAR_MISS",
+      "note": "Pipeline + energy trading. Massive debt from aggressive expansion. Survived through asset sales but stock collapsed 90%.",
+      "signals": {
+        "financial": {
+          "profit_change_pct": 28.0,
+          "revenue_change_pct": 45.0,
+          "cost_cutting_announced": true,
+          "sovereign_extraction": 0.0,
+          "cffo": 1200.0,
+          "fcf": -2800.0,
+          "gearing": 65.0
+        },
+        "governance": {
+          "board_size": 13,
+          "board_resignations_12m": 0,
+          "company_secretaries_as_directors": 0,
+          "avg_tenure_years": 5.8,
+          "governance_separation_index": 1
+        },
+        "workforce": {
+          "rightsizing_pct": 15.0,
+          "voluntary_exits_pct": 14.0,
+          "key_personnel_departures": 3
+        },
+        "legal": {
+          "active_litigation_count": 12,
+          "injunction_value_musd": 900.0,
+          "regulatory_uncertainty_score": 6.5
+        },
+        "exploitation": {
+          "counterparty_payment_freeze": true,
+          "interpleader_filed": false,
+          "competing_claims": 4
+        }
+      }
+    },
+    {
+      "id": "calpine",
+      "name": "Calpine Corporation",
+      "truth": "NEAR_MISS",
+      "note": "Independent power producer. Collapsed in 2005 under $17B debt. Merchant energy model failed when power prices fell.",
+      "signals": {
+        "financial": {
+          "profit_change_pct": 18.0,
+          "revenue_change_pct": 55.0,
+          "cost_cutting_announced": false,
+          "sovereign_extraction": 0.0,
+          "cffo": 450.0,
+          "fcf": -3500.0,
+          "gearing": 78.0
+        },
+        "governance": {
+          "board_size": 14,
+          "board_resignations_12m": 0,
+          "company_secretaries_as_directors": 0,
+          "avg_tenure_years": 3.9,
+          "governance_separation_index": 0
+        },
+        "workforce": {
+          "rightsizing_pct": 8.0,
+          "voluntary_exits_pct": 11.0,
+          "key_personnel_departures": 2
+        },
+        "legal": {
+          "active_litigation_count": 6,
+          "injunction_value_musd": 350.0,
+          "regulatory_uncertainty_score": 4.5
+        },
+        "exploitation": {
+          "counterparty_payment_freeze": false,
+          "interpleader_filed": false,
+          "competing_claims": 1
+        }
+      }
+    },
+    {
+      "id": "duke",
+      "name": "Duke Energy Regulated",
+      "truth": "TRUE_NEGATIVE",
+      "note": "Regulated utility arm — fundamentally different risk profile. Serves as the structural negative control.",
+      "signals": {
+        "financial": {
+          "profit_change_pct": 5.0,
+          "revenue_change_pct": 8.0,
+          "cost_cutting_announced": false,
+          "sovereign_extraction": 0.0,
+          "cffo": 3200.0,
+          "fcf": 450.0,
+          "gearing": 42.0
+        },
+        "governance": {
+          "board_size": 10,
+          "board_resignations_12m": 0,
+          "company_secretaries_as_directors": 0,
+          "avg_tenure_years": 7.2,
+          "governance_separation_index": 2
+        },
+        "workforce": {
+          "rightsizing_pct": 2.0,
+          "voluntary_exits_pct": 4.0,
+          "key_personnel_departures": 0
+        },
+        "legal": {
+          "active_litigation_count": 3,
+          "injunction_value_musd": 50.0,
+          "regulatory_uncertainty_score": 2.0
+        },
+        "exploitation": {
+          "counterparty_payment_freeze": false,
+          "interpleader_filed": false,
+          "competing_claims": 0
+        }
+      }
+    },
+    {
+      "id": "reliant",
+      "name": "Reliant Energy",
+      "truth": "NEAR_MISS",
+      "note": "Houston-based. Retail + wholesale energy. Nearly bankrupt in 2002 — California refund obligations and trading collapse.",
+      "signals": {
+        "financial": {
+          "profit_change_pct": 22.0,
+          "revenue_change_pct": 38.0,
+          "cost_cutting_announced": true,
+          "sovereign_extraction": 0.0,
+          "cffo": 380.0,
+          "fcf": -1500.0,
+          "gearing": 60.0
+        },
+        "governance": {
+          "board_size": 12,
+          "board_resignations_12m": 2,
+          "company_secretaries_as_directors": 1,
+          "avg_tenure_years": 4.5,
+          "governance_separation_index": 0
+        },
+        "workforce": {
+          "rightsizing_pct": 20.0,
+          "voluntary_exits_pct": 18.0,
+          "key_personnel_departures": 4
+        },
+        "legal": {
+          "active_litigation_count": 15,
+          "injunction_value_musd": 1100.0,
+          "regulatory_uncertainty_score": 7.5
+        },
+        "exploitation": {
+          "counterparty_payment_freeze": true,
+          "interpleader_filed": true,
+          "competing_claims": 6
+        }
+      }
+    },
+    {
+      "id": "mirant",
+      "name": "Mirant Corporation",
+      "truth": "TRUE_POSITIVE",
+      "note": "Southern Company spin-off. Filed Chapter 11 in 2003 — $11.4B in debt. Merchant energy model victim.",
+      "collapse_date": "2003-07-14",
+      "signals": {
+        "financial": {
+          "profit_change_pct": 55.0,
+          "revenue_change_pct": 72.0,
+          "cost_cutting_announced": false,
+          "sovereign_extraction": 0.0,
+          "cffo": -200.0,
+          "fcf": -4300.0,
+          "gearing": 82.0
+        },
+        "governance": {
+          "board_size": 11,
+          "board_resignations_12m": 1,
+          "company_secretaries_as_directors": 0,
+          "avg_tenure_years": 3.5,
+          "governance_separation_index": 0
+        },
+        "workforce": {
+          "rightsizing_pct": 5.0,
+          "voluntary_exits_pct": 8.0,
+          "key_personnel_departures": 2
+        },
+        "legal": {
+          "active_litigation_count": 9,
+          "injunction_value_musd": 600.0,
+          "regulatory_uncertainty_score": 5.5
+        },
+        "exploitation": {
+          "counterparty_payment_freeze": false,
+          "interpleader_filed": false,
+          "competing_claims": 3
+        }
+      }
+    }
+  ],
+  "acceptance_criteria": {
+    "required_rank_order": "Enron stress > Dynegy stress > Duke stress",
+    "metric": "confusion_matrix",
+    "minimum_separation_margin": 0.10,
+    "note": "A single VOID/HIGH on Enron proves NOTHING — rank order across the panel is the calibration test."
+  }
+}

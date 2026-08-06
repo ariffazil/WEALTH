@@ -1,0 +1,33 @@
+{
+  "task": "W-007",
+  "session": "SEAL-b3bbf8e9e1844adc",
+  "timestamp": "2026-08-06T07:57:12.038537+00:00",
+  "panel": "enron_2000",
+  "rank_order": {
+    "enron": {
+      "stress_index": 0.7072,
+      "risk_level": "RED",
+      "feedback_loop": true
+    },
+    "dynegy": {
+      "stress_index": 0.4496,
+      "risk_level": "YELLOW",
+      "feedback_loop": false
+    },
+    "duke": {
+      "stress_index": 0.1211,
+      "risk_level": "GREEN",
+      "feedback_loop": false
+    }
+  },
+  "separation_margins": {
+    "enron_dynegy": 0.2576,
+    "dynegy_duke": 0.3285
+  },
+  "verdict": "PASS \u2014 rank order Enron > Dynegy > Duke confirmed. Separation margins > 0.10 minimum.",
+  "acceptance": "A single HIGH/RED on Enron proves nothing. The rank ORDER across the panel is the calibration test. PASSED.",
+  "note": "20/21 fields consumed per payload. Only sovereign_extraction missing (not applicable to US firms). Coverage 0.95 per call.",
+  "green": 3,
+  "red": 0,
+  "total": 3
+}
