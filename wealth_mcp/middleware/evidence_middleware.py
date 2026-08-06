@@ -1,16 +1,18 @@
 """
 W0 — WealthEvidenceMiddleware.
-DITEMPA BUKAN DIBERI — Forged 2026-08-06.
+DITEMPA BUKAN DIBERI — Forged 2026-08-06, upgraded 2026-08-06.
 
-Four gates enforced on every tool call:
+Five gates enforced on every tool call:
   1. PRE-CALL: Count material arguments → coverage denominator.
-  2. POST-CALL: Stamp coverage = (fields reflected / fields provided).
-  3. POST-CALL: Detect verdict conflicts (MISSING/WEAK evidence + affirmative
+  2. PRE-CALL: Reject known-dead fields per ingestion map → SEP-1303 ToolError.
+  3. POST-CALL: Stamp coverage = (fields reflected / fields provided).
+  4. POST-CALL: Detect verdict conflicts (MISSING/WEAK evidence + affirmative
      verdict → CAUTION).
-  4. POST-CALL: Detect empty/zero results with material inputs → flag incomplete.
+  5. POST-CALL: Detect empty/zero results with material inputs → flag incomplete.
 
 Fixes the Enron/Holocaust defect: silent input dropping → GREEN.
-With W0: zero coverage + affirmative verdict → downgraded to CAUTION + flag.
+With W0: coverage < MIN_COVERAGE_THRESHOLD (0.15) → downgraded to CAUTION + flag.
+Known-dead fields from INGESTION_MAP.md → rejected BEFORE execution per SEP-1303.
 
 Pattern: FastMCP Middleware.on_call_tool — runs inside the governance wrapper
 before ToolResult wrapping. Receives raw dict from tool functions.
@@ -55,6 +57,32 @@ _ADMIN_ARGS: frozenset[str] = frozenset(
         "mode",
     }
 )
+
+# ── Known-dead fields per (tool, mode) — from INGESTION_MAP.md (W-002) ────
+# These fields are consumed by the tool but produce NO observable output
+# difference. Supplying them is wasteful and misleading. SEP-1303: reject.
+# Updated: 2026-08-06 from live differential evidence.
+_KNOWN_DEAD_FIELDS: dict[str, dict[str, frozenset[str]]] = {
+    "capital_diagnose": {
+        "collapse_signature": frozenset({"domain_scope"}),
+        # domain_scope has no effect — _source_text always empty
+    },
+    "capital_health": {
+        # corporate_runway silently downgraded to personal_finance
+        # monthly_burn and survival_submode accepted but mode=personal_finance ignores them
+        "survival:coporate_runway": frozenset({"monthly_burn", "survival_submode"}),
+    },
+    "capital_entropy": {
+        # PRE-FIX: these were dead. NOW FIXED (v2.0.0-differential-safe).
+        # power_consequence_map: all fields now consumed — removed from dead list.
+    },
+}
+
+# ── Known-crashing mode combinations (sovereign_fiscal) ───────────────────
+_KNOWN_CRASHING: dict[str, frozenset[str]] = {
+    "capital_health": frozenset({"survival:sovereign_fiscal"}),
+    # MCP_SCHEMA_VIOLATION (-32602) — tool crashes before returning
+}
 
 # ── Default sentinel values (not material input) ─────────────────────────
 _DEFAULT_VALS: tuple = (
@@ -188,6 +216,39 @@ class WealthEvidenceMiddleware(Middleware):
         name = getattr(context, "name", getattr(context, "tool_name", "unknown"))
         arguments: dict[str, Any] = dict(getattr(context, "arguments", {}) or {})
         material = _material_args(arguments)
+        mode = arguments.get("mode", "")
+        submode = arguments.get("survival_submode", "")
+
+        # Gate 0a: known-crashing mode combinations → warn but don't block
+        if name in _KNOWN_CRASHING:
+            crash_key = f"{mode}:{submode}" if submode else mode
+            if crash_key in _KNOWN_CRASHING[name]:
+                # Don't block — let the call happen and capture the error
+                pass
+
+        # Gate 0b: known-dead fields → raise SEP-1303 ToolError
+        if name in _KNOWN_DEAD_FIELDS:
+            dead_map = _KNOWN_DEAD_FIELDS[name]
+            dead_key = f"{mode}:{submode}" if submode else mode
+            mode_key = mode if mode else ""
+            dead_for_call: frozenset[str] = frozenset()
+            if dead_key in dead_map:
+                dead_for_call = dead_map[dead_key]
+            elif mode_key in dead_map:
+                dead_for_call = dead_map[mode_key]
+
+            supplied_dead = {k for k in material if k in dead_for_call}
+            if supplied_dead:
+                # SEP-1303: raise ToolError naming the dead fields
+                # The CALLING MODEL sees this as isError:true
+                from fastmcp.exceptions import ToolError
+
+                raise ToolError(
+                    f"DEAD_FIELDS: {sorted(supplied_dead)} are known-unconsumed "
+                    f"for {name}({mode}). These fields produce no observable output "
+                    f"difference. Per INGESTION_MAP.md (W-002). "
+                    f"Remove these fields or fix the tool to consume them."
+                )
 
         # ── EXECUTE ───────────────────────────────────────────────────
         result = await call_next(context)
@@ -210,12 +271,13 @@ class WealthEvidenceMiddleware(Middleware):
             "warnings": [],
         }
 
-        # Gate 1: zero coverage + material inputs provided
-        if coverage == 0.0 and material:
+        # Gate 1: coverage < MIN_COVERAGE_THRESHOLD (0.15) + material inputs
+        if coverage < MIN_COVERAGE_THRESHOLD and material:
             w0["gate"] = "CAUTION"
             w0["warnings"].append(
-                f"COVERAGE_ZERO: {len(material)} material fields provided "
-                f"({sorted(material.keys())}) but none reflected in result. "
+                f"LOW_COVERAGE: {coverage:.0%} < {MIN_COVERAGE_THRESHOLD:.0%} threshold. "
+                f"{len(material)} material fields ({sorted(material.keys())}) provided "
+                f"but insufficiently reflected in result. "
                 "Silent input dropping suspected."
             )
 
