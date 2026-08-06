@@ -182,20 +182,41 @@ def _validate_direct_session_binding(
     """Session binding without importing the kernel package.
 
     Coupling rule: WEALTH must not `import arifosmcp`.
-    - Unbound/_default + ANY tool → SESSION_REQUIRED (400, FORGED 2026-07-18)
+    - Unbound/_default + OBSERVE tools → pass-through with WARNING (2026-08-06 fix)
+    - Unbound/_default + MUTATE tools → SESSION_REQUIRED
     - Real session_id → HTTP bridge only
-    - Non-capital without session → SESSION_REQUIRED
 
-    FORGED 2026-07-18: Anonymous reads removed. All tools require a valid
-    session_id. capital_* tools previously allowed unbound sessions via
-    OBSERVE_UNBOUND — this leak is now closed.
+    FORGED 2026-07-18: Anonymous reads removed.
+    AMENDED 2026-08-06: OBSERVE-class tools (market, registry, primitive, entropy)
+    restored to OBSERVE_UNBOUND — these compute but never mutate. MUTATE tools
+    (ledger, handoff, diagnose) still require valid session_id.
     """
+    _OBSERVE_TOOLS = {
+        "capital_market",
+        "capital_registry",
+        "capital_primitive",
+        "capital_entropy",
+        "capital_wisdom",
+    }
     unbound = session_id in _UNBOUND_SESSION_TOKENS
 
     if unbound:
-        # FORGE 2026-07-18: close anonymous read posture.
-        # Previously capital_* tools got OBSERVE_UNBOUND pass-through.
-        # Now ALL tools require a valid session_id.
+        # 2026-08-06: Restore OBSERVE_UNBOUND for read-only tools.
+        # WEALTH is COMPUTE_ONLY — the worst case from a missing session
+        # is lack of audit trail, not unauthorized mutation.
+        if tool_name in _OBSERVE_TOOLS:
+            import datetime as _dt
+
+            return {
+                "ok": True,
+                "code": "OBSERVE_UNBOUND",
+                "reason": "OBSERVE-class tool — session optional",
+                "actor_id": actor_id or "wealth-mcp",
+                "session_id": session_id or "_default",
+                "tool_name": tool_name,
+                "_ts": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+            }
+
         import datetime as _dt
 
         return {
@@ -618,9 +639,14 @@ def create_mcp_server() -> FastMCP:
                                         "domain": "capital",
                                         "result": {},
                                         "result_type": "ERROR",
-                                        "epistemic_tag": "MISSING",
+                                        "epistemic_tag": "ASSUMED",
                                         "claim_state": "UNPROVEN",
                                         "evidence_quality": "MISSING",
+                                        "epistemic": {
+                                            "tag": "ASSUMED",
+                                            "quality": "MISSING",
+                                            "confidence": 0.0,
+                                        },
                                         "execution_authorized": False,
                                         "execution_authority": "OBSERVATION",
                                         "human_final_authority": "ARIF",
