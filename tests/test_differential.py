@@ -81,7 +81,7 @@ def normalize(obj):
 
 def payload_capital_health_survival():
     """Two payloads: surplus earner vs. distressed burn."""
-    session = {"session_id": "SEAL-b3bbf8e9e1844adc", "actor_id": "ARIF"}
+    session = {"session_id": "SEAL-e26fefa68fc642b6", "actor_id": "ARIF"}
 
     return {
         "tool": "capital_health",
@@ -109,7 +109,7 @@ def payload_capital_health_survival():
 
 def payload_capital_health_corporate():
     """Two payloads: well-funded vs. distressed corporate runway."""
-    session = {"session_id": "SEAL-b3bbf8e9e1844adc", "actor_id": "ARIF"}
+    session = {"session_id": "SEAL-e26fefa68fc642b6", "actor_id": "ARIF"}
 
     return {
         "tool": "capital_health",
@@ -137,7 +137,7 @@ def payload_capital_health_corporate():
 
 def payload_capital_diagnose_collapse():
     """Two payloads: opposite institutional profiles."""
-    session = {"session_id": "SEAL-b3bbf8e9e1844adc", "actor_id": "ARIF"}
+    session = {"session_id": "SEAL-e26fefa68fc642b6", "actor_id": "ARIF"}
 
     return {
         "tool": "capital_diagnose",
@@ -160,7 +160,7 @@ def payload_capital_diagnose_collapse():
 
 def payload_capital_entropy_power():
     """Two payloads: concentrated power vs. distributed."""
-    session = {"session_id": "SEAL-b3bbf8e9e1844adc", "actor_id": "ARIF"}
+    session = {"session_id": "SEAL-e26fefa68fc642b6", "actor_id": "ARIF"}
 
     return {
         "tool": "capital_entropy",
@@ -220,7 +220,7 @@ def payload_capital_entropy_power():
 
 def payload_capital_primitive_npv():
     """Two cash flow sequences: positive vs. negative NPV."""
-    session = {"session_id": "SEAL-b3bbf8e9e1844adc", "actor_id": "ARIF"}
+    session = {"session_id": "SEAL-e26fefa68fc642b6", "actor_id": "ARIF"}
 
     return {
         "tool": "capital_primitive",
@@ -243,7 +243,7 @@ def payload_capital_primitive_npv():
 
 def payload_wealth_judge_handoff():
     """Two handoff intents: reversible vs. irreversible."""
-    session = {"session_id": "SEAL-b3bbf8e9e1844adc", "actor_id": "ARIF"}
+    session = {"session_id": "SEAL-e26fefa68fc642b6", "actor_id": "ARIF"}
 
     return {
         "tool": "wealth_judge_handoff",
@@ -268,7 +268,7 @@ def payload_wealth_judge_handoff():
 
 def payload_capital_health_fiscal():
     """Two fiscal breakeven scenarios: different oil prices."""
-    session = {"session_id": "SEAL-b3bbf8e9e1844adc", "actor_id": "ARIF"}
+    session = {"session_id": "SEAL-e26fefa68fc642b6", "actor_id": "ARIF"}
 
     return {
         "tool": "capital_health",
@@ -311,20 +311,70 @@ DIFFERENTIAL_TESTS = [
 
 def make_mcp_call(tool_name: str, arguments: dict):
     """
-    Call a WEALTH MCP tool. In pytest context, uses the configured
-    wealth tools from the test harness. Falls back to fixture-based
-    comparison if live server unavailable.
+    Call a WEALTH MCP tool via proper MCP session lifecycle.
+    Initializes a new session, extracts the Mcp-Session-Id, then calls the tool.
     """
     import subprocess
 
-    payload = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "tools/call",
-        "params": {"name": tool_name, "arguments": arguments},
-    }
-    data = json.dumps(payload)
+    # Step 1: Initialize MCP session
+    init_payload = json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-11-25",
+                "capabilities": {},
+                "clientInfo": {"name": "w001-differential-test", "version": "1.0"},
+            },
+        }
+    )
+    try:
+        result = subprocess.run(
+            [
+                "curl",
+                "-s",
+                "--max-time",
+                "10",
+                "-X",
+                "POST",
+                "http://localhost:18082/mcp",
+                "-H",
+                "Content-Type: application/json",
+                "-D",
+                "-",  # dump headers to stdout
+                "-d",
+                init_payload,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        # Extract Mcp-Session-Id from response headers
+        session_id = None
+        for line in result.stdout.split("\n"):
+            if "mcp-session-id:" in line.lower():
+                session_id = line.split(":", 1)[1].strip()
+                break
+        if not session_id:
+            return {
+                "error": {
+                    "code": -1,
+                    "message": "Failed to extract MCP session ID from init",
+                }
+            }
+    except Exception as e:
+        return {"error": {"code": -1, "message": f"MCP init failed: {e}"}}
 
+    # Step 2: Call the tool with the session ID
+    call_payload = json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "tools/call",
+            "params": {"name": tool_name, "arguments": arguments},
+        }
+    )
     try:
         result = subprocess.run(
             [
@@ -337,8 +387,10 @@ def make_mcp_call(tool_name: str, arguments: dict):
                 "http://localhost:18082/mcp",
                 "-H",
                 "Content-Type: application/json",
+                "-H",
+                f"Mcp-Session-Id: {session_id}",
                 "-d",
-                data,
+                call_payload,
             ],
             capture_output=True,
             text=True,
@@ -468,7 +520,7 @@ if __name__ == "__main__":
     import sys
 
     print(f"W-001 DIFFERENTIAL TEST RUNNER")
-    print(f"Session: SEAL-b3bbf8e9e1844adc")
+    print(f"Session: SEAL-e26fefa68fc642b6")
     print(f"Test cases: {len(DIFFERENTIAL_TESTS)}")
     print(f"Timestamp: {datetime.now(timezone.utc).isoformat()}\n")
 
@@ -510,7 +562,7 @@ if __name__ == "__main__":
         "test_file": str(Path(__file__).resolve()),
         "results": results,
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "session_id": "SEAL-b3bbf8e9e1844adc",
+        "session_id": "SEAL-e26fefa68fc642b6",
         "note": "KNOWN-RED cases are expected failures — they are calibration targets, not bugs.",
     }
     receipt_path = WEALTH_ROOT / "tests" / "fixtures" / "w001_receipt.json"
