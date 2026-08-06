@@ -1,0 +1,110 @@
+{
+  "tool": "capital_diagnose",
+  "mode": "optimize_mwc",
+  "error_class": "ok",
+  "probed_at": "2026-08-06T08:35:13.199627+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "wealth_receipt": {
+          "persisted": true,
+          "path": "/root/VAULT999/wealth/receipts.jsonl",
+          "receipt_id": "5915a23f-afcd-44be-9d49-d14aa640767d",
+          "call_status": "PASS"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"tool_name\": \"capital_diagnose\", \"tool_version\": \"2026.07.12\", \"domain\": \"power\", \"result\": {\"coalition\": [], \"coalition_voting_power\": 0.0, \"total_cost\": 0.0, \"stability_index\": 0.0, \"power_distribution\": {}, \"alternative_coalitions\": [], \"feasible\": false, \"reason\": \"total voting power is zero\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"mwc_optimization\"], \"computation_timestamp\": \"2026-08-06T08:35:13.197343+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] EMPTY_RESULT: material inputs but all-zeros result\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] EMPTY_RESULT: material inputs but all-zeros result\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.93, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"material_args_count\": 1, \"material_args\": [\"domain_scope\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"EMPTY_RESULT: material inputs but all-zeros result\"]}, \"trace_id\": \"\"}"
+        }
+      ],
+      "structuredContent": {
+        "tool_name": "capital_diagnose",
+        "tool_version": "2026.07.12",
+        "domain": "power",
+        "result": {
+          "coalition": [],
+          "coalition_voting_power": 0.0,
+          "total_cost": 0.0,
+          "stability_index": 0.0,
+          "power_distribution": {},
+          "alternative_coalitions": [],
+          "feasible": false,
+          "reason": "total voting power is zero",
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "DERIVED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "MODERATE",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "mwc_optimization"
+        ],
+        "computation_timestamp": "2026-08-06T08:35:13.197343+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.",
+          "[W0] EMPTY_RESULT: material inputs but all-zeros result",
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.",
+          "[W0] EMPTY_RESULT: material inputs but all-zeros result"
+        ],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.93,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "verdict": "INSUFFICIENT_EVIDENCE",
+        "coverage": {
+          "known": 0,
+          "total": 1,
+          "ratio": 0.0
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 0.0,
+          "material_args_count": 1,
+          "material_args": [
+            "domain_scope"
+          ],
+          "gate": "CAUTION",
+          "warnings": [
+            "INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.",
+            "EMPTY_RESULT: material inputs but all-zeros result"
+          ]
+        },
+        "trace_id": ""
+      },
+      "isError": false
+    }
+  },
+  "sha256": "9ee72e974210b9047d5a6cfc2aad18c69c087c0fc2c7cf3050182dd1a6ac7dfd"
+}

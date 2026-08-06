@@ -1,0 +1,177 @@
+{
+  "tool": "capital_diagnose",
+  "mode": "power_audit",
+  "error_class": "ok",
+  "probed_at": "2026-08-06T08:35:12.355887+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "wealth_receipt": {
+          "persisted": true,
+          "path": "/root/VAULT999/wealth/receipts.jsonl",
+          "receipt_id": "05b041b7-d988-4f7e-bad5-695fd851f25c",
+          "call_status": "PASS"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"tool_name\": \"capital_diagnose\", \"tool_version\": \"2026.07.12\", \"domain\": \"power\", \"result\": {\"dimensions\": [{\"dimension\": \"incentive_asymmetry\", \"risk_level\": \"LOW\", \"evidence\": \"No incentive signals detected\", \"epistemic_tag\": \"INTERPRETED\", \"who_benefits\": \"unknown (no actors provided)\", \"who_carries_downside\": \"same party\", \"benefit_signals\": 0, \"downside_signals\": 0}, {\"dimension\": \"capture_risk\", \"risk_level\": \"LOW\", \"evidence\": \"No capture signals or patterns detected\", \"epistemic_tag\": \"INTERPRETED\", \"who_benefits\": \"unknown\", \"who_carries_downside\": \"unknown\", \"capture_signals\": 0, \"independence_signals\": 0, \"capture_patterns\": [], \"capture_pattern_count\": 0, \"wisdom_patterns\": [], \"wisdom_pattern_count\": 0}, {\"dimension\": \"rent_extraction\", \"risk_level\": \"LOW\", \"evidence\": \"No rent extraction signals detected\", \"epistemic_tag\": \"INTERPRETED\", \"who_benefits\": \"unknown\", \"who_carries_downside\": \"unknown\", \"rent_signals\": 0, \"transparent_signals\": 0}, {\"dimension\": \"opacity\", \"risk_level\": \"LOW\", \"opacity_score\": 0.5, \"evidence\": \"No opacity signals detected\", \"epistemic_tag\": \"INTERPRETED\", \"who_benefits\": \"unknown\", \"who_carries_downside\": \"unknown\", \"opaque_signals\": 0, \"transparent_signals\": 0}, {\"dimension\": \"coercion\", \"risk_level\": \"LOW\", \"evidence\": \"No coercion signals detected\", \"epistemic_tag\": \"INTERPRETED\", \"who_benefits\": \"unknown\", \"who_carries_downside\": \"unknown\", \"coercion_signals\": 0, \"no_pressure_signals\": 0}, {\"dimension\": \"rule_asymmetry\", \"risk_level\": \"LOW\", \"evidence\": \"No rule asymmetry signals detected\", \"epistemic_tag\": \"INTERPRETED\", \"who_benefits\": \"unknown\", \"who_carries_downside\": \"unknown\", \"rule_change_signals\": 0, \"protection_signals\": 0}], \"dimension_count\": 6, \"all_dimensions_present\": true, \"overall_capture_risk\": \"LOW\", \"structural_coercion_detected\": false, \"structural_coercion_risk\": \"LOW\", \"structural_coercion_evidence\": \"No structural coercion detected\", \"structural_patterns\": [], \"coercion_blind_spot\": false, \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"INTERPRETED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"WEAK\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"scenario_text_analysis\"], \"computation_timestamp\": \"2026-08-06T08:35:12.352627+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] VERDICT_CONFLICT: risk_level=LOW on evidence_quality=WEAK\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] VERDICT_CONFLICT: risk_level=LOW on evidence_quality=WEAK\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.93, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0}, \"epistemic\": {\"tag\": \"INTERPRETED\", \"quality\": \"WEAK\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"material_args_count\": 1, \"material_args\": [\"domain_scope\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"VERDICT_CONFLICT: risk_level=LOW on evidence_quality=WEAK\"]}, \"trace_id\": \"\"}"
+        }
+      ],
+      "structuredContent": {
+        "tool_name": "capital_diagnose",
+        "tool_version": "2026.07.12",
+        "domain": "power",
+        "result": {
+          "dimensions": [
+            {
+              "dimension": "incentive_asymmetry",
+              "risk_level": "LOW",
+              "evidence": "No incentive signals detected",
+              "epistemic_tag": "INTERPRETED",
+              "who_benefits": "unknown (no actors provided)",
+              "who_carries_downside": "same party",
+              "benefit_signals": 0,
+              "downside_signals": 0
+            },
+            {
+              "dimension": "capture_risk",
+              "risk_level": "LOW",
+              "evidence": "No capture signals or patterns detected",
+              "epistemic_tag": "INTERPRETED",
+              "who_benefits": "unknown",
+              "who_carries_downside": "unknown",
+              "capture_signals": 0,
+              "independence_signals": 0,
+              "capture_patterns": [],
+              "capture_pattern_count": 0,
+              "wisdom_patterns": [],
+              "wisdom_pattern_count": 0
+            },
+            {
+              "dimension": "rent_extraction",
+              "risk_level": "LOW",
+              "evidence": "No rent extraction signals detected",
+              "epistemic_tag": "INTERPRETED",
+              "who_benefits": "unknown",
+              "who_carries_downside": "unknown",
+              "rent_signals": 0,
+              "transparent_signals": 0
+            },
+            {
+              "dimension": "opacity",
+              "risk_level": "LOW",
+              "opacity_score": 0.5,
+              "evidence": "No opacity signals detected",
+              "epistemic_tag": "INTERPRETED",
+              "who_benefits": "unknown",
+              "who_carries_downside": "unknown",
+              "opaque_signals": 0,
+              "transparent_signals": 0
+            },
+            {
+              "dimension": "coercion",
+              "risk_level": "LOW",
+              "evidence": "No coercion signals detected",
+              "epistemic_tag": "INTERPRETED",
+              "who_benefits": "unknown",
+              "who_carries_downside": "unknown",
+              "coercion_signals": 0,
+              "no_pressure_signals": 0
+            },
+            {
+              "dimension": "rule_asymmetry",
+              "risk_level": "LOW",
+              "evidence": "No rule asymmetry signals detected",
+              "epistemic_tag": "INTERPRETED",
+              "who_benefits": "unknown",
+              "who_carries_downside": "unknown",
+              "rule_change_signals": 0,
+              "protection_signals": 0
+            }
+          ],
+          "dimension_count": 6,
+          "all_dimensions_present": true,
+          "overall_capture_risk": "LOW",
+          "structural_coercion_detected": false,
+          "structural_coercion_risk": "LOW",
+          "structural_coercion_evidence": "No structural coercion detected",
+          "structural_patterns": [],
+          "coercion_blind_spot": false,
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "INTERPRETED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "WEAK",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "scenario_text_analysis"
+        ],
+        "computation_timestamp": "2026-08-06T08:35:12.352627+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.",
+          "[W0] VERDICT_CONFLICT: risk_level=LOW on evidence_quality=WEAK",
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.",
+          "[W0] VERDICT_CONFLICT: risk_level=LOW on evidence_quality=WEAK"
+        ],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.93,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "verdict": "INSUFFICIENT_EVIDENCE",
+        "coverage": {
+          "known": 0,
+          "total": 1,
+          "ratio": 0.0
+        },
+        "epistemic": {
+          "tag": "INTERPRETED",
+          "quality": "WEAK",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 0.0,
+          "material_args_count": 1,
+          "material_args": [
+            "domain_scope"
+          ],
+          "gate": "CAUTION",
+          "warnings": [
+            "INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.",
+            "VERDICT_CONFLICT: risk_level=LOW on evidence_quality=WEAK"
+          ]
+        },
+        "trace_id": ""
+      },
+      "isError": false
+    }
+  },
+  "sha256": "2c11f48360dd8d81d6c02d38b028b5c9ade4d2685e54704662129891fe278107"
+}

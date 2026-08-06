@@ -1,0 +1,108 @@
+{
+  "tool": "capital_health",
+  "mode": "survival",
+  "error_class": "ok",
+  "probed_at": "2026-08-06T08:35:08.806051+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "wealth_receipt": {
+          "persisted": true,
+          "path": "/root/VAULT999/wealth/receipts.jsonl",
+          "receipt_id": "35478c10-d971-41dc-8409-cafe67fa5074",
+          "call_status": "ERROR"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"tool_name\": \"capital_health\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"status\": \"ERROR\", \"error_code\": \"MISSING_REQUIRED_PARAMS\", \"message\": \"sovereign_fiscal requires: total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd\", \"missing_params\": [\"total_govt_expenditure\", \"non_oil_revenue\", \"petronas_dividend_base_rm\", \"oil_price_assumption_usd\"], \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"ASSUMED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MISSING\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [], \"computation_timestamp\": \"2026-08-06T08:35:08.803163+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.\"], \"errors\": [\"Missing required params for sovereign_fiscal: total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd\"], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.93, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0}, \"epistemic\": {\"tag\": \"ASSUMED\", \"quality\": \"MISSING\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"material_args_count\": 1, \"material_args\": [\"survival_submode\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"trace_id\": \"\"}"
+        }
+      ],
+      "structuredContent": {
+        "tool_name": "capital_health",
+        "tool_version": "2026.07.12",
+        "domain": "capital",
+        "result": {
+          "status": "ERROR",
+          "error_code": "MISSING_REQUIRED_PARAMS",
+          "message": "sovereign_fiscal requires: total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd",
+          "missing_params": [
+            "total_govt_expenditure",
+            "non_oil_revenue",
+            "petronas_dividend_base_rm",
+            "oil_price_assumption_usd"
+          ],
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "ASSUMED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "MISSING",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [],
+        "computation_timestamp": "2026-08-06T08:35:08.803163+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.",
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked."
+        ],
+        "errors": [
+          "Missing required params for sovereign_fiscal: total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd"
+        ],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.93,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "verdict": "INSUFFICIENT_EVIDENCE",
+        "coverage": {
+          "known": 0,
+          "total": 1,
+          "ratio": 0.0
+        },
+        "epistemic": {
+          "tag": "ASSUMED",
+          "quality": "MISSING",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 0.0,
+          "material_args_count": 1,
+          "material_args": [
+            "survival_submode"
+          ],
+          "gate": "CAUTION",
+          "warnings": [
+            "INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked."
+          ]
+        },
+        "trace_id": ""
+      },
+      "isError": false
+    }
+  },
+  "sha256": "085eee4d237a8ec5a7305ed0a09a4b9578c74c078905a569c82c96565fbb664c"
+}

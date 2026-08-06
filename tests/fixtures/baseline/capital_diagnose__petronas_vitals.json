@@ -1,0 +1,332 @@
+{
+  "tool": "capital_diagnose",
+  "mode": "petronas_vitals",
+  "error_class": "ok",
+  "probed_at": "2026-08-06T08:35:14.411460+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "wealth_receipt": {
+          "persisted": true,
+          "path": "/root/VAULT999/wealth/receipts.jsonl",
+          "receipt_id": "1f02eca2-4933-414c-9c31-e25357ed9ff2",
+          "call_status": "PASS"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"tool_name\": \"capital_diagnose\", \"tool_version\": \"2026.07.12\", \"domain\": \"institutional\", \"result\": {\"organ\": \"PETRONAS\\u00b7\\u03c6 VITALS\", \"version\": \"1.2.2-f2\", \"authority\": \"COMPUTE_ONLY\", \"refusal\": \"WEALTH senses distance-to-trip only. No buy/sell/hold allocation. arifOS judges. Arif decides.\", \"pulse\": 47.5, \"pulse_verdict\": \"HOLD\", \"composite_epistemic_tag\": \"INTERPRET\", \"transmission_note\": \"Transmission: \\u00b1$10 Brent \\u2248 \\u00b1RM6.0B FCF/CFFO. FCF crosses zero at Brent \\u2248 $71.60/bbl (-$12.50/bbl from $84.10). CFFO tripwire (RM60B) requires Brent < $47.40.\", \"binding_driver_tripwire\": {\"metric\": \"#1 FCF after capex & dividend\", \"distance_to_breach_usd_bbl\": 12.5, \"breach_brent_price_usd\": 71.6}, \"layers\": {\"BODY\": {\"score\": 75.5, \"verdict\": \"SABAR\", \"weight\": 0.4}, \"SPINE\": {\"score\": 33.6, \"verdict\": \"HOLD\", \"weight\": 0.35}, \"SOUL\": {\"score\": 22.2, \"verdict\": \"HOLD\", \"weight\": 0.25}}, \"weights\": {\"BODY\": 0.4, \"SPINE\": 0.35, \"SOUL\": 0.25}, \"tripwires\": [{\"id\": 1, \"layer\": \"BODY\", \"name\": \"FCF after capex & dividend\", \"now\": 11.6, \"trip\": 0, \"safe\": 15, \"unit\": \"RM B\", \"dir\": \"below\", \"tag\": \"EVIDENCE\", \"sealed\": \"2026-07-24\", \"source\": \"PETRONAS Group FRA FY2025 IFR\", \"score\": 77.3, \"trip_state\": \"CLEAR\", \"verdict\": \"SABAR\", \"driver_distance_usd_bbl\": 19.33, \"note\": \"IFR FY25: CFFO 85.2 \\u2212 capex 41.6 \\u2212 div 32.0 \\u2248 11.6 (was 7.0 soft). Still positive.\", \"f2_status\": null}, {\"id\": 2, \"layer\": \"BODY\", \"name\": \"Gearing ratio\", \"now\": 20.7, \"trip\": 40, \"safe\": 15, \"unit\": \"%\", \"dir\": \"above\", \"tag\": \"EVIDENCE\", \"sealed\": \"2026-07-24\", \"source\": \"PETRONAS Group FRA FY2025 IFR\", \"score\": 77.2, \"trip_state\": \"CLEAR\", \"verdict\": \"SABAR\", \"driver_distance_usd_bbl\": null, \"note\": \"Audited gearing 20.7% (FY24: 19.6%). PRefChem consolidation may step ~25\\u201327% (one-time).\", \"f2_status\": null}, {\"id\": 3, \"layer\": \"BODY\", \"name\": \"CFFO \\u2014 master variable\", \"now\": 85.2, \"trip\": 60, \"safe\": 95, \"unit\": \"RM B\", \"dir\": \"below\", \"tag\": \"EVIDENCE\", \"sealed\": \"2026-07-24\", \"source\": \"PETRONAS Group FRA FY2025 IFR\", \"score\": 72.0, \"trip_state\": \"CLEAR\", \"verdict\": \"SABAR\", \"driver_distance_usd_bbl\": 42.0, \"note\": \"CFFO RM85.2B IFR. Below RM60B forces trade-off among dividend, capex, balance sheet.\", \"f2_status\": null}, {\"id\": 4, \"layer\": \"SPINE\", \"name\": \"Production / reserve replacement\", \"now\": 355, \"trip\": 300, \"safe\": 500, \"unit\": \"kbpd\", \"dir\": \"below\", \"tag\": \"EVIDENCE\", \"sealed\": \"2026-07-24\", \"source\": \"DOSM / IFR production context\", \"score\": 27.5, \"trip_state\": \"CLEAR\", \"verdict\": \"HOLD\", \"driver_distance_usd_bbl\": null, \"note\": \"Malaysia crude liquids ~355 kbpd (not group 2.4 Mboe/d total). Physics floor under cash.\", \"f2_status\": null}, {\"id\": 5, \"layer\": \"SPINE\", \"name\": \"Capital Recycling Ratio\", \"now\": 1.2, \"trip\": 1.0, \"safe\": 2.0, \"unit\": \"\\u00d7\", \"dir\": \"below\", \"tag\": \"INTERPRET\", \"sealed\": \"2026-07-24\", \"source\": \"INTERPRET \\u2014 no single IFR CRR disclosure\", \"f2_status\": \"UNVERIFIED_LINE_ITEM\", \"score\": 20.0, \"trip_state\": \"CLEAR\", \"verdict\": \"HOLD\", \"driver_distance_usd_bbl\": null, \"note\": \"F2: NOT an IFR line item. ESTIMATE domestic reinvestment \\u00f7 asset-sale proceeds. Capex 41.6 known; sale proceeds UNVERIFIED. Band ~1.0\\u20131.5.\"}, {\"id\": 6, \"layer\": \"SPINE\", \"name\": \"Dividend-to-FCF payout\", \"now\": 73.4, \"trip\": 100, \"safe\": 50, \"unit\": \"%\", \"dir\": \"above\", \"tag\": \"EVIDENCE\", \"sealed\": \"2026-07-24\", \"source\": \"PETRONAS Group FRA FY2025 IFR arithmetic\", \"score\": 53.2, \"trip_state\": \"CLEAR\", \"verdict\": \"HOLD\", \"driver_distance_usd_bbl\": null, \"note\": \"IFR: div 32.0 / (CFFO 85.2 \\u2212 capex 41.6) = 73.4%. Prior 84% used alternate FCF def. HINGE still high.\", \"f2_status\": null}, {\"id\": 7, \"layer\": \"SOUL\", \"name\": \"Enabler ratio (rightsizing gauge)\", \"now\": 30, \"trip\": 35, \"safe\": 20, \"unit\": \"%\", \"dir\": \"above\", \"tag\": \"INTERPRET\", \"sealed\": \"2026-07-24\", \"source\": \"INTERPRET \\u2014 workforce narrative / rightsizing disclosures\", \"f2_status\": \"NARRATIVE_NOT_IFR\", \"score\": 33.3, \"trip_state\": \"CLEAR\", \"verdict\": \"HOLD\", \"driver_distance_usd_bbl\": null, \"note\": \"F2: staff composition NOT in IFR. Narrative ~15.5k/52k \\u2248 30%; historic 16k/52k=31% (HANTU map). Cut ~5k enablers \\u2260 audited.\"}, {\"id\": 8, \"layer\": \"SOUL\", \"name\": \"Governance separation index\", \"now\": 1, \"trip\": 0, \"safe\": 3, \"unit\": \"idx\", \"dir\": \"below\", \"tag\": \"INTERPRET\", \"sealed\": \"2026-07-24\", \"source\": \"INTERPRET \\u2014 public dual-chair fact \\u2192 ordinal index\", \"f2_status\": \"ORDINAL_JUDGMENT\", \"score\": 33.3, \"trip_state\": \"CLEAR\", \"verdict\": \"HOLD\", \"driver_distance_usd_bbl\": null, \"note\": \"F2: dual-chair (PETRONAS+Gentari) is OBSERVABLE; index scale (0\\u20133) is judgment-only. Score INTERPRET.\"}, {\"id\": 9, \"layer\": \"SOUL\", \"name\": \"Sovereign extraction gauge\", \"now\": 70.5, \"trip\": 60, \"safe\": 30, \"unit\": \"% of PAT\", \"dir\": \"above\", \"tag\": \"EVIDENCE\", \"sealed\": \"2026-07-24\", \"source\": \"PETRONAS Group FRA FY2025 IFR (div declared, PAT)\", \"score\": 0.0, \"trip_state\": \"BREACHED\", \"verdict\": \"BREACHED\", \"driver_distance_usd_bbl\": null, \"note\": \"BREACHED (+10.5pp past 60% PAT tripwire). PETRONAS declared div RM32.0B / PAT RM45.4B = 70.5%.\", \"f2_status\": null}], \"ifr_anchors_fy2025\": {\"revenue_rm_b\": 266.1, \"pat_rm_b\": 45.4, \"cffo_rm_b\": 85.2, \"capex_rm_b\": 41.6, \"dividend_declared_rm_b\": 32.0, \"gearing_pct\": 20.7, \"source\": \"PETRONAS Group FRA FY2025 IFR / integrated-report-2025\"}, \"f2_audit\": {\"date\": \"2026-07-28\", \"changed\": [\"#9 extraction now BREACHED (+10.5pp over tripwire)\", \"Separated trip_state (BREACHED/CLEAR) from score band (HOLD/SABAR/SEAL)\", \"Corrected transmission note to reference FCF crossover @ $71.60 Brent\", \"Added driver distance ($/bbl) ranking identifying FCF as binding tripwire\"], \"unchanged_constitutional_anchors\": \"safe/trip thresholds unchanged (sovereign act to alter)\"}, \"evidence_quality\": \"WEAK\", \"unverified_inputs_detected\": true, \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"INTERPRETED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"WEAK\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"PETRONAS Group FRA FY2025 IFR\", \"wealth_core.petronas_vitals\", \"arif-fazil.com/vitals\"], \"computation_timestamp\": \"2026-08-06T08:35:14.406076+00:00\", \"missing_inputs\": [], \"metadata\": {\"unverified_inputs_detected\": true}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.93, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0}, \"epistemic\": {\"tag\": \"INTERPRETED\", \"quality\": \"WEAK\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"material_args_count\": 1, \"material_args\": [\"domain_scope\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"trace_id\": \"\"}"
+        }
+      ],
+      "structuredContent": {
+        "tool_name": "capital_diagnose",
+        "tool_version": "2026.07.12",
+        "domain": "institutional",
+        "result": {
+          "organ": "PETRONAS\u00b7\u03c6 VITALS",
+          "version": "1.2.2-f2",
+          "authority": "COMPUTE_ONLY",
+          "refusal": "WEALTH senses distance-to-trip only. No buy/sell/hold allocation. arifOS judges. Arif decides.",
+          "pulse": 47.5,
+          "pulse_verdict": "HOLD",
+          "composite_epistemic_tag": "INTERPRET",
+          "transmission_note": "Transmission: \u00b1$10 Brent \u2248 \u00b1RM6.0B FCF/CFFO. FCF crosses zero at Brent \u2248 $71.60/bbl (-$12.50/bbl from $84.10). CFFO tripwire (RM60B) requires Brent < $47.40.",
+          "binding_driver_tripwire": {
+            "metric": "#1 FCF after capex & dividend",
+            "distance_to_breach_usd_bbl": 12.5,
+            "breach_brent_price_usd": 71.6
+          },
+          "layers": {
+            "BODY": {
+              "score": 75.5,
+              "verdict": "SABAR",
+              "weight": 0.4
+            },
+            "SPINE": {
+              "score": 33.6,
+              "verdict": "HOLD",
+              "weight": 0.35
+            },
+            "SOUL": {
+              "score": 22.2,
+              "verdict": "HOLD",
+              "weight": 0.25
+            }
+          },
+          "weights": {
+            "BODY": 0.4,
+            "SPINE": 0.35,
+            "SOUL": 0.25
+          },
+          "tripwires": [
+            {
+              "id": 1,
+              "layer": "BODY",
+              "name": "FCF after capex & dividend",
+              "now": 11.6,
+              "trip": 0,
+              "safe": 15,
+              "unit": "RM B",
+              "dir": "below",
+              "tag": "EVIDENCE",
+              "sealed": "2026-07-24",
+              "source": "PETRONAS Group FRA FY2025 IFR",
+              "score": 77.3,
+              "trip_state": "CLEAR",
+              "verdict": "SABAR",
+              "driver_distance_usd_bbl": 19.33,
+              "note": "IFR FY25: CFFO 85.2 \u2212 capex 41.6 \u2212 div 32.0 \u2248 11.6 (was 7.0 soft). Still positive.",
+              "f2_status": null
+            },
+            {
+              "id": 2,
+              "layer": "BODY",
+              "name": "Gearing ratio",
+              "now": 20.7,
+              "trip": 40,
+              "safe": 15,
+              "unit": "%",
+              "dir": "above",
+              "tag": "EVIDENCE",
+              "sealed": "2026-07-24",
+              "source": "PETRONAS Group FRA FY2025 IFR",
+              "score": 77.2,
+              "trip_state": "CLEAR",
+              "verdict": "SABAR",
+              "driver_distance_usd_bbl": null,
+              "note": "Audited gearing 20.7% (FY24: 19.6%). PRefChem consolidation may step ~25\u201327% (one-time).",
+              "f2_status": null
+            },
+            {
+              "id": 3,
+              "layer": "BODY",
+              "name": "CFFO \u2014 master variable",
+              "now": 85.2,
+              "trip": 60,
+              "safe": 95,
+              "unit": "RM B",
+              "dir": "below",
+              "tag": "EVIDENCE",
+              "sealed": "2026-07-24",
+              "source": "PETRONAS Group FRA FY2025 IFR",
+              "score": 72.0,
+              "trip_state": "CLEAR",
+              "verdict": "SABAR",
+              "driver_distance_usd_bbl": 42.0,
+              "note": "CFFO RM85.2B IFR. Below RM60B forces trade-off among dividend, capex, balance sheet.",
+              "f2_status": null
+            },
+            {
+              "id": 4,
+              "layer": "SPINE",
+              "name": "Production / reserve replacement",
+              "now": 355,
+              "trip": 300,
+              "safe": 500,
+              "unit": "kbpd",
+              "dir": "below",
+              "tag": "EVIDENCE",
+              "sealed": "2026-07-24",
+              "source": "DOSM / IFR production context",
+              "score": 27.5,
+              "trip_state": "CLEAR",
+              "verdict": "HOLD",
+              "driver_distance_usd_bbl": null,
+              "note": "Malaysia crude liquids ~355 kbpd (not group 2.4 Mboe/d total). Physics floor under cash.",
+              "f2_status": null
+            },
+            {
+              "id": 5,
+              "layer": "SPINE",
+              "name": "Capital Recycling Ratio",
+              "now": 1.2,
+              "trip": 1.0,
+              "safe": 2.0,
+              "unit": "\u00d7",
+              "dir": "below",
+              "tag": "INTERPRET",
+              "sealed": "2026-07-24",
+              "source": "INTERPRET \u2014 no single IFR CRR disclosure",
+              "f2_status": "UNVERIFIED_LINE_ITEM",
+              "score": 20.0,
+              "trip_state": "CLEAR",
+              "verdict": "HOLD",
+              "driver_distance_usd_bbl": null,
+              "note": "F2: NOT an IFR line item. ESTIMATE domestic reinvestment \u00f7 asset-sale proceeds. Capex 41.6 known; sale proceeds UNVERIFIED. Band ~1.0\u20131.5."
+            },
+            {
+              "id": 6,
+              "layer": "SPINE",
+              "name": "Dividend-to-FCF payout",
+              "now": 73.4,
+              "trip": 100,
+              "safe": 50,
+              "unit": "%",
+              "dir": "above",
+              "tag": "EVIDENCE",
+              "sealed": "2026-07-24",
+              "source": "PETRONAS Group FRA FY2025 IFR arithmetic",
+              "score": 53.2,
+              "trip_state": "CLEAR",
+              "verdict": "HOLD",
+              "driver_distance_usd_bbl": null,
+              "note": "IFR: div 32.0 / (CFFO 85.2 \u2212 capex 41.6) = 73.4%. Prior 84% used alternate FCF def. HINGE still high.",
+              "f2_status": null
+            },
+            {
+              "id": 7,
+              "layer": "SOUL",
+              "name": "Enabler ratio (rightsizing gauge)",
+              "now": 30,
+              "trip": 35,
+              "safe": 20,
+              "unit": "%",
+              "dir": "above",
+              "tag": "INTERPRET",
+              "sealed": "2026-07-24",
+              "source": "INTERPRET \u2014 workforce narrative / rightsizing disclosures",
+              "f2_status": "NARRATIVE_NOT_IFR",
+              "score": 33.3,
+              "trip_state": "CLEAR",
+              "verdict": "HOLD",
+              "driver_distance_usd_bbl": null,
+              "note": "F2: staff composition NOT in IFR. Narrative ~15.5k/52k \u2248 30%; historic 16k/52k=31% (HANTU map). Cut ~5k enablers \u2260 audited."
+            },
+            {
+              "id": 8,
+              "layer": "SOUL",
+              "name": "Governance separation index",
+              "now": 1,
+              "trip": 0,
+              "safe": 3,
+              "unit": "idx",
+              "dir": "below",
+              "tag": "INTERPRET",
+              "sealed": "2026-07-24",
+              "source": "INTERPRET \u2014 public dual-chair fact \u2192 ordinal index",
+              "f2_status": "ORDINAL_JUDGMENT",
+              "score": 33.3,
+              "trip_state": "CLEAR",
+              "verdict": "HOLD",
+              "driver_distance_usd_bbl": null,
+              "note": "F2: dual-chair (PETRONAS+Gentari) is OBSERVABLE; index scale (0\u20133) is judgment-only. Score INTERPRET."
+            },
+            {
+              "id": 9,
+              "layer": "SOUL",
+              "name": "Sovereign extraction gauge",
+              "now": 70.5,
+              "trip": 60,
+              "safe": 30,
+              "unit": "% of PAT",
+              "dir": "above",
+              "tag": "EVIDENCE",
+              "sealed": "2026-07-24",
+              "source": "PETRONAS Group FRA FY2025 IFR (div declared, PAT)",
+              "score": 0.0,
+              "trip_state": "BREACHED",
+              "verdict": "BREACHED",
+              "driver_distance_usd_bbl": null,
+              "note": "BREACHED (+10.5pp past 60% PAT tripwire). PETRONAS declared div RM32.0B / PAT RM45.4B = 70.5%.",
+              "f2_status": null
+            }
+          ],
+          "ifr_anchors_fy2025": {
+            "revenue_rm_b": 266.1,
+            "pat_rm_b": 45.4,
+            "cffo_rm_b": 85.2,
+            "capex_rm_b": 41.6,
+            "dividend_declared_rm_b": 32.0,
+            "gearing_pct": 20.7,
+            "source": "PETRONAS Group FRA FY2025 IFR / integrated-report-2025"
+          },
+          "f2_audit": {
+            "date": "2026-07-28",
+            "changed": [
+              "#9 extraction now BREACHED (+10.5pp over tripwire)",
+              "Separated trip_state (BREACHED/CLEAR) from score band (HOLD/SABAR/SEAL)",
+              "Corrected transmission note to reference FCF crossover @ $71.60 Brent",
+              "Added driver distance ($/bbl) ranking identifying FCF as binding tripwire"
+            ],
+            "unchanged_constitutional_anchors": "safe/trip thresholds unchanged (sovereign act to alter)"
+          },
+          "evidence_quality": "WEAK",
+          "unverified_inputs_detected": true,
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "INTERPRETED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "WEAK",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "PETRONAS Group FRA FY2025 IFR",
+          "wealth_core.petronas_vitals",
+          "arif-fazil.com/vitals"
+        ],
+        "computation_timestamp": "2026-08-06T08:35:14.406076+00:00",
+        "missing_inputs": [],
+        "metadata": {
+          "unverified_inputs_detected": true
+        },
+        "warnings": [
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.",
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+        ],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.93,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "verdict": "INSUFFICIENT_EVIDENCE",
+        "coverage": {
+          "known": 0,
+          "total": 1,
+          "ratio": 0.0
+        },
+        "epistemic": {
+          "tag": "INTERPRETED",
+          "quality": "WEAK",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 0.0,
+          "material_args_count": 1,
+          "material_args": [
+            "domain_scope"
+          ],
+          "gate": "CAUTION",
+          "warnings": [
+            "INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+          ]
+        },
+        "trace_id": ""
+      },
+      "isError": false
+    }
+  },
+  "sha256": "5cd2c15d04d17296c679915ad8b5a9da193b018345fe5e605549b7cbad2aeeee"
+}

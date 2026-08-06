@@ -641,16 +641,48 @@ def wrap_result(
             meta["unverified_fields"] = unverified_fields
 
     # ── W-005: Inject verdict, coverage, epistemic (2026-08-06) ─────
-    # Default verdict from envelope evidence_quality — overridden by
-    # W0 gate CAUTION or governance HOLD downstream.
     d.setdefault("verdict", "PARTIAL")
     d.setdefault("coverage", {"known": 0, "total": 0, "ratio": 0.0})
-    d.setdefault(
-        "epistemic",
-        {
-            "tag": d.get("epistemic_tag", "DERIVED"),
-            "quality": d.get("evidence_quality", "MODERATE"),
-            "confidence": 0.50,
-        },
-    )
+
+    # ── W-005 FIX (2026-08-06): Force-normalize epistemic.tag ──
+    _TAG_ENUM = {"OBSERVED", "DERIVED", "INTERPRETED", "SPECULATED", "ASSUMED"}
+    _TAG_NORMALIZE = {
+        "RETRIEVED": "DERIVED",
+        "MEMORY": "DERIVED",
+        "INFERRED": "INTERPRETED",
+        "MISSING": "ASSUMED",
+        "OBS": "OBSERVED",
+        "DER": "DERIVED",
+        "INT": "INTERPRETED",
+        "SPEC": "SPECULATED",
+    }
+    _QUALITY_ENUM = {"OBSERVED", "MODERATE", "WEAK", "MISSING"}
+    _QUALITY_NORMALIZE = {
+        "STRONG": "OBSERVED",
+        "VERIFIED": "OBSERVED",
+        "SEALED": "OBSERVED",
+        "CONFLICTED": "WEAK",
+        "RETRIEVED": "MODERATE",
+        "MEMORY": "MODERATE",
+        "INFERRED": "WEAK",
+    }
+
+    raw_tag = str(d.get("epistemic_tag", "DERIVED")).upper()
+    if raw_tag in _TAG_NORMALIZE:
+        raw_tag = _TAG_NORMALIZE[raw_tag]
+    if raw_tag not in _TAG_ENUM:
+        raw_tag = "DERIVED"
+
+    raw_quality = str(d.get("evidence_quality", "MODERATE")).upper()
+    if raw_quality in _QUALITY_NORMALIZE:
+        raw_quality = _QUALITY_NORMALIZE[raw_quality]
+    if raw_quality not in _QUALITY_ENUM:
+        raw_quality = "MODERATE"
+
+    # Force-overwrite (not setdefault) to fix legacy values
+    d["epistemic"] = {
+        "tag": raw_tag,
+        "quality": raw_quality,
+        "confidence": 0.50,
+    }
     return d

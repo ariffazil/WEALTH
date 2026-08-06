@@ -1,0 +1,66 @@
+{
+  "tool": "capital_health",
+  "mode": "runway",
+  "error_class": "ok",
+  "probed_at": "2026-08-06T08:35:06.985687+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "wealth_receipt": {
+          "persisted": true,
+          "path": "/root/VAULT999/wealth/receipts.jsonl",
+          "receipt_id": "d68a5b3d-8d63-4cb4-913d-978e041a8c3d",
+          "call_status": "ERROR"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"isError\": true, \"error_class\": \"INTERNAL_ERROR\", \"recoverability\": \"ESCALATE_TO_888_HOLD\", \"suspected_layer\": \"tool_execution\", \"severity\": \"FATAL\", \"message\": \"Error calling tool 'capital_health'\", \"next_action\": \"Log to VAULT999 and escalate \\u2014 server bug\", \"epistemic_label\": \"DER\", \"timestamp\": \"2026-08-06T08:35:06.983284+00:00\", \"source_tool\": \"capital_health\", \"source_organ\": \"wealth\", \"original_error\": \"ToolError: Error calling tool 'capital_health'\", \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"trace_id\": \"\", \"execution_authorized\": false, \"human_final_authority\": \"Arif\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": 1.0}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 1.0, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"PASS\", \"warnings\": []}}"
+        }
+      ],
+      "structuredContent": {
+        "isError": true,
+        "error_class": "INTERNAL_ERROR",
+        "recoverability": "ESCALATE_TO_888_HOLD",
+        "suspected_layer": "tool_execution",
+        "severity": "FATAL",
+        "message": "Error calling tool 'capital_health'",
+        "next_action": "Log to VAULT999 and escalate \u2014 server bug",
+        "epistemic_label": "DER",
+        "timestamp": "2026-08-06T08:35:06.983284+00:00",
+        "source_tool": "capital_health",
+        "source_organ": "wealth",
+        "original_error": "ToolError: Error calling tool 'capital_health'",
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "trace_id": "",
+        "execution_authorized": false,
+        "human_final_authority": "Arif",
+        "verdict": "PARTIAL",
+        "coverage": {
+          "known": 0,
+          "total": 0,
+          "ratio": 1.0
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 1.0,
+          "material_args_count": 0,
+          "material_args": [],
+          "gate": "PASS",
+          "warnings": []
+        }
+      },
+      "isError": false
+    }
+  },
+  "sha256": "43189cd1ff071f9a1c4a2d21ad588f90ff657b85a685f3dab189665937775612"
+}

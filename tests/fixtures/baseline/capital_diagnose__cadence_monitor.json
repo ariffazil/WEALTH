@@ -1,0 +1,154 @@
+{
+  "tool": "capital_diagnose",
+  "mode": "cadence_monitor",
+  "error_class": "ok",
+  "probed_at": "2026-08-06T08:35:13.591905+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "wealth_receipt": {
+          "persisted": true,
+          "path": "/root/VAULT999/wealth/receipts.jsonl",
+          "receipt_id": "5e6f65d2-ed8b-428d-b50d-30a0382622fc",
+          "call_status": "PASS"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"tool_name\": \"capital_diagnose\", \"tool_version\": \"2026.07.12\", \"domain\": \"institutional\", \"result\": {\"cadence_health\": null, \"band\": \"INSUFFICIENT_DATA\", \"components\": {\"approval_centralisation\": {\"score\": null, \"description\": \"Are decisions moving upward?\", \"data_points\": 0, \"status\": \"UNKNOWN\"}, \"payment_stretching\": {\"score\": null, \"description\": \"Are payment cycles lengthening?\", \"data_points\": 0, \"status\": \"UNKNOWN\"}, \"decision_backlog\": {\"score\": null, \"description\": \"Are decisions piling up?\", \"data_points\": 0, \"status\": \"UNKNOWN\"}, \"contract_velocity\": {\"score\": null, \"description\": \"Are new commitments slowing?\", \"data_points\": 0, \"status\": \"UNKNOWN\"}, \"budget_release_timing\": {\"score\": null, \"description\": \"Is budget being held or delayed?\", \"data_points\": 0, \"status\": \"UNKNOWN\"}}, \"trend\": \"insufficient_data\", \"warnings\": [\"APPROVAL_DATA: Insufficient approval cycle data\", \"PAYMENT_DATA: Insufficient payment cycle data\", \"MEETING_DATA: Insufficient meeting/decision data\", \"CONTRACT_DATA: Insufficient contract signature data\", \"BUDGET_DATA: Insufficient budget release data\", \"No data provided for any cadence dimension\"], \"alternative_explanations\": [\"No measurement possible without data\", \"Institution may be operating normally but no data was supplied\"], \"falsification_test\": \"Provide data for at least one dimension to produce a reading\", \"data_dimensions_active\": 0, \"data_dimensions_total\": 5, \"org_name\": \"enron_2000\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"approval_cycle_trend\", \"payment_cycle_trend\", \"meeting_decision_ratio\", \"contract_velocity\", \"budget_release_timing\"], \"computation_timestamp\": \"2026-08-06T08:35:13.588894+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.93, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"material_args_count\": 1, \"material_args\": [\"domain_scope\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"trace_id\": \"\"}"
+        }
+      ],
+      "structuredContent": {
+        "tool_name": "capital_diagnose",
+        "tool_version": "2026.07.12",
+        "domain": "institutional",
+        "result": {
+          "cadence_health": null,
+          "band": "INSUFFICIENT_DATA",
+          "components": {
+            "approval_centralisation": {
+              "score": null,
+              "description": "Are decisions moving upward?",
+              "data_points": 0,
+              "status": "UNKNOWN"
+            },
+            "payment_stretching": {
+              "score": null,
+              "description": "Are payment cycles lengthening?",
+              "data_points": 0,
+              "status": "UNKNOWN"
+            },
+            "decision_backlog": {
+              "score": null,
+              "description": "Are decisions piling up?",
+              "data_points": 0,
+              "status": "UNKNOWN"
+            },
+            "contract_velocity": {
+              "score": null,
+              "description": "Are new commitments slowing?",
+              "data_points": 0,
+              "status": "UNKNOWN"
+            },
+            "budget_release_timing": {
+              "score": null,
+              "description": "Is budget being held or delayed?",
+              "data_points": 0,
+              "status": "UNKNOWN"
+            }
+          },
+          "trend": "insufficient_data",
+          "warnings": [
+            "APPROVAL_DATA: Insufficient approval cycle data",
+            "PAYMENT_DATA: Insufficient payment cycle data",
+            "MEETING_DATA: Insufficient meeting/decision data",
+            "CONTRACT_DATA: Insufficient contract signature data",
+            "BUDGET_DATA: Insufficient budget release data",
+            "No data provided for any cadence dimension"
+          ],
+          "alternative_explanations": [
+            "No measurement possible without data",
+            "Institution may be operating normally but no data was supplied"
+          ],
+          "falsification_test": "Provide data for at least one dimension to produce a reading",
+          "data_dimensions_active": 0,
+          "data_dimensions_total": 5,
+          "org_name": "enron_2000",
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "DERIVED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "MODERATE",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "approval_cycle_trend",
+          "payment_cycle_trend",
+          "meeting_decision_ratio",
+          "contract_velocity",
+          "budget_release_timing"
+        ],
+        "computation_timestamp": "2026-08-06T08:35:13.588894+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.",
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+        ],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.93,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "verdict": "INSUFFICIENT_EVIDENCE",
+        "coverage": {
+          "known": 0,
+          "total": 1,
+          "ratio": 0.0
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 0.0,
+          "material_args_count": 1,
+          "material_args": [
+            "domain_scope"
+          ],
+          "gate": "CAUTION",
+          "warnings": [
+            "INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+          ]
+        },
+        "trace_id": ""
+      },
+      "isError": false
+    }
+  },
+  "sha256": "2c281f53739bb0001b1510f685278b5de67d5a2188fdbee80cf1a76f212ec7c4"
+}

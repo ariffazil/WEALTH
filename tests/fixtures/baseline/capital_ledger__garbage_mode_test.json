@@ -1,0 +1,9 @@
+{
+  "tool": "capital_ledger",
+  "mode": "garbage_mode_test",
+  "error_class": "URL_ERROR:[Errno 111] Connection refused",
+  "probed_at": "2026-08-06T08:35:23.253515+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": null,
+  "sha256": null
+}

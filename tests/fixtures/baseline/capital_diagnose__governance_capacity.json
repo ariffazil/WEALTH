@@ -1,0 +1,133 @@
+{
+  "tool": "capital_diagnose",
+  "mode": "governance_capacity",
+  "error_class": "ok",
+  "probed_at": "2026-08-06T08:35:10.033889+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "wealth_receipt": {
+          "persisted": true,
+          "path": "/root/VAULT999/wealth/receipts.jsonl",
+          "receipt_id": "079594c5-438b-4a8d-8830-ce2249f9718c",
+          "call_status": "PASS"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"tool_name\": \"capital_diagnose\", \"tool_version\": \"2026.07.12\", \"domain\": \"institutional\", \"result\": {\"capacity_score\": 0.0, \"quorum_status\": \"INSUFFICIENT\", \"key_gaps\": [\"BOARD_SIZE: Below minimum effective board size (5)\", \"INDEPENDENCE: Insufficient independent NEDs for stress level. Need at least 1/3 independent.\", \"COMMITTEES: Missing essential committees (audit/risk/remuneration/nomination).\", \"FREQUENCY: Committees not meeting quarterly. Stress periods require more frequent oversight.\", \"TENURE: Board tenure outside optimal range (3-7 years). Risk of either instability or capture.\"], \"stress_capacity_gap\": 0.3, \"recommendations\": [\"CAPACITY GAP: Stress exceeds governance capacity by 0.30. Accelerate governance reforms.\", \"QUORUM: Board cannot form effective quorum. Emergency appointment of independent NEDs required.\", \"Appoint additional independent NEDs immediately.\", \"Establish or reactivate essential governance committees.\"], \"board_composition\": {\"size_score\": 0.0, \"independence_score\": 0.0, \"tenure_score\": 0.0, \"diversity_score\": 0.0, \"total_members\": 0, \"independent_neds\": 0, \"executives\": 0, \"secretaries_as_directors\": 0}, \"committee_analysis\": {\"committee_score\": 0.0, \"key_committees_present\": false, \"meeting_frequency_score\": 0.0, \"total_committees\": 0}, \"confidence\": 0.0, \"confidence_note\": \"Capped at 0.90 per F7 HUMILITY\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"INTERPRETED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"governance_analysis\"], \"computation_timestamp\": \"2026-08-06T08:35:10.031952+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.93, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0}, \"epistemic\": {\"tag\": \"INTERPRETED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"material_args_count\": 1, \"material_args\": [\"domain_scope\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"trace_id\": \"\"}"
+        }
+      ],
+      "structuredContent": {
+        "tool_name": "capital_diagnose",
+        "tool_version": "2026.07.12",
+        "domain": "institutional",
+        "result": {
+          "capacity_score": 0.0,
+          "quorum_status": "INSUFFICIENT",
+          "key_gaps": [
+            "BOARD_SIZE: Below minimum effective board size (5)",
+            "INDEPENDENCE: Insufficient independent NEDs for stress level. Need at least 1/3 independent.",
+            "COMMITTEES: Missing essential committees (audit/risk/remuneration/nomination).",
+            "FREQUENCY: Committees not meeting quarterly. Stress periods require more frequent oversight.",
+            "TENURE: Board tenure outside optimal range (3-7 years). Risk of either instability or capture."
+          ],
+          "stress_capacity_gap": 0.3,
+          "recommendations": [
+            "CAPACITY GAP: Stress exceeds governance capacity by 0.30. Accelerate governance reforms.",
+            "QUORUM: Board cannot form effective quorum. Emergency appointment of independent NEDs required.",
+            "Appoint additional independent NEDs immediately.",
+            "Establish or reactivate essential governance committees."
+          ],
+          "board_composition": {
+            "size_score": 0.0,
+            "independence_score": 0.0,
+            "tenure_score": 0.0,
+            "diversity_score": 0.0,
+            "total_members": 0,
+            "independent_neds": 0,
+            "executives": 0,
+            "secretaries_as_directors": 0
+          },
+          "committee_analysis": {
+            "committee_score": 0.0,
+            "key_committees_present": false,
+            "meeting_frequency_score": 0.0,
+            "total_committees": 0
+          },
+          "confidence": 0.0,
+          "confidence_note": "Capped at 0.90 per F7 HUMILITY",
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "INTERPRETED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "MODERATE",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "governance_analysis"
+        ],
+        "computation_timestamp": "2026-08-06T08:35:10.031952+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.",
+          "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+        ],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.93,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "verdict": "INSUFFICIENT_EVIDENCE",
+        "coverage": {
+          "known": 0,
+          "total": 1,
+          "ratio": 0.0
+        },
+        "epistemic": {
+          "tag": "INTERPRETED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 0.0,
+          "material_args_count": 1,
+          "material_args": [
+            "domain_scope"
+          ],
+          "gate": "CAUTION",
+          "warnings": [
+            "INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+          ]
+        },
+        "trace_id": ""
+      },
+      "isError": false
+    }
+  },
+  "sha256": "ac112a5a2ec3d87a9c480bd93b4d0ecda4af49b4e5ba55bce2ac2f7001d6ffc7"
+}
