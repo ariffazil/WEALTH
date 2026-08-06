@@ -422,8 +422,33 @@ def register_canonical_tools(mcp):
                         oil_price_assumption_usd,
                     ]
                 ):
-                    raise ValueError(
-                        "sovereign_fiscal survival mode requires total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd"
+                    # Loop 8 fix: return structured error instead of raising ValueError (MCP schema violation)
+                    missing = [
+                        k
+                        for k, v in [
+                            ("total_govt_expenditure", total_govt_expenditure),
+                            ("non_oil_revenue", non_oil_revenue),
+                            ("petronas_dividend_base_rm", petronas_dividend_base_rm),
+                            ("oil_price_assumption_usd", oil_price_assumption_usd),
+                        ]
+                        if v is None
+                    ]
+                    return wrap_result(
+                        tool_name="capital_health",
+                        domain="capital",
+                        result={
+                            "status": "ERROR",
+                            "error_code": "MISSING_REQUIRED_PARAMS",
+                            "message": f"sovereign_fiscal requires: total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd",
+                            "missing_params": missing,
+                        },
+                        epistemic_tag=EpistemicTag.ASSUMED,
+                        evidence_quality=EvidenceQuality.MISSING,
+                        errors=[
+                            f"Missing required params for sovereign_fiscal: {', '.join(missing)}"
+                        ],
+                        session_id=session_id,
+                        actor_id=actor_id,
                     )
                 return wrap_result(
                     tool_name="capital_health",
@@ -825,8 +850,38 @@ def register_canonical_tools(mcp):
                 actor_id=actor_id,
             )
 
-        raise ValueError(
-            f"Unknown mode '{mode}'. Valid: stress_index, governance_capacity, cascade_model, exploitation_detect, collapse_signature, beautiful_mouse, capture_scan, power_audit, bid_surface, optimize_mwc, cadence_monitor, crisis_reflex"
+        # Loop 9 fix: return structured error for unknown mode (was: ValueError with incomplete mode list)
+        _VALID_MODES = [
+            "stress_index",
+            "governance_capacity",
+            "cascade_model",
+            "exploitation_detect",
+            "collapse_signature",
+            "beautiful_mouse",
+            "capture_scan",
+            "power_audit",
+            "bid_surface",
+            "optimize_mwc",
+            "cadence_monitor",
+            "crisis_reflex",
+            "petronas_vitals",
+            "sovereign_pulse",
+            "petronas_phi",
+        ]
+        return wrap_result(
+            tool_name="capital_diagnose",
+            domain="institutional",
+            result={
+                "status": "ERROR",
+                "error_code": "UNKNOWN_MODE",
+                "message": f"Unknown mode '{mode}'. Valid: {', '.join(_VALID_MODES)}",
+                "valid_modes": _VALID_MODES,
+            },
+            epistemic_tag=EpistemicTag.ASSUMED,
+            evidence_quality=EvidenceQuality.MISSING,
+            errors=[f"Unknown mode '{mode}'. Valid: {', '.join(_VALID_MODES)}"],
+            session_id=session_id,
+            actor_id=actor_id,
         )
 
     # capital_wisdom DELETED 2026-08-06 — M0 audit. Normative synthesis
@@ -1761,6 +1816,24 @@ def register_canonical_tools(mcp):
         """Validate and prepare handoff envelope for arifOS governance."""
         m = mode.lower().strip()
         p = payload or {}
+
+        # 0. Unknown mode gate — never silently accept invalid modes (loop 10 fix)
+        if m not in ("prepare", "submit"):
+            return wrap_result(
+                tool_name="wealth_judge_handoff",
+                domain="meta",
+                result={
+                    "status": "ERROR",
+                    "error_code": "UNKNOWN_MODE",
+                    "message": f"Unknown mode '{mode}'. Valid modes: prepare, submit.",
+                    "valid_modes": ["prepare", "submit"],
+                },
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=[f"Unknown mode '{mode}'. Valid: prepare, submit."],
+                session_id=session_id,
+                actor_id=actor_id,
+            )
 
         # 1. Intent validation: reject vague/unbounded intents
         intent_clean = (intent or p.get("intent", "")).strip()
