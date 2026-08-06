@@ -20,7 +20,13 @@ from fastmcp.prompts.base import Message
 from mcp.types import EmbeddedResource, TextResourceContents
 from pydantic import AnyUrl
 
-from wealth_mcp import CAPITAL_TOOL_NAMES, PUBLIC_TOOL_NAMES, WEALTH_VERSION
+from wealth_mcp import (
+    CAPITAL_TOOL_NAMES,
+    PUBLIC_TOOL_NAMES,
+    WEALTH_VERSION,
+    WEALTH_RESOURCE_URIS,
+    WEALTH_PROMPT_NAMES,
+)
 from wealth_mcp.tools.canonical import register_canonical_tools
 from wealth_mcp.tools.institutional import register_institutional_tools
 
@@ -879,8 +885,8 @@ def _register_resources(mcp: FastMCP) -> None:
                 "json_schema_dialect": "https://json-schema.org/draft/2020-12/schema",
                 "tool_prefixes": ["capital_", "wealth_"],
                 "resource_scheme": "wealth://",
-                "prompt_count": 7,
-                "resource_count": 14,
+                "prompt_count": len(WEALTH_PROMPT_NAMES),
+                "resource_count": len(WEALTH_RESOURCE_URIS),
                 "naming_convention": "mode-dispatched public tools",
                 "public_tool_count": len(PUBLIC_TOOL_NAMES),
                 "public_tools": list(PUBLIC_TOOL_NAMES),
@@ -1331,8 +1337,8 @@ def _register_resources(mcp: FastMCP) -> None:
                 "canonical_tool_count": len(CAPITAL_TOOL_NAMES),
                 "public_tool_count": len(PUBLIC_TOOL_NAMES),
                 "public_tools": list(PUBLIC_TOOL_NAMES),
-                "prompt_count": 7,
-                "resource_count": 14,
+                "prompt_count": len(WEALTH_PROMPT_NAMES),
+                "resource_count": len(WEALTH_RESOURCE_URIS),
                 "final_authority": "arifOS 888_JUDGE → Arif (F13 SOVEREIGN)",
                 "timestamp_utc": now.isoformat(),
                 "resource_scheme": "wealth://",
