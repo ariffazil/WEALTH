@@ -950,6 +950,7 @@ def register_canonical_tools(mcp):
 
     @mcp.tool(
         name="capital_market",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
         description="Market data and commodity intelligence — observational with derived and interpreted fields.",
         tags={"domain": "market", "kind": "observational", "canonical": "v1"},
     )
