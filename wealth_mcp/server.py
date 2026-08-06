@@ -715,6 +715,70 @@ def create_mcp_server() -> FastMCP:
             )
             try:
                 result = await _original_call_tool(name, clean_arguments, **kwargs)
+
+                # ── W0 Evidence Gate (2026-08-06) ──────────────────────
+                # Inspect structured_content from CallToolResult.
+                # Catches: silent input dropping, verdict conflicts,
+                # null→green coercion.
+                sc = getattr(result, "structured_content", None)
+                if isinstance(sc, dict):
+                    from wealth_mcp.middleware.evidence_middleware import (
+                        _estimate_coverage,
+                        _material_args,
+                        _result_is_empty,
+                        _scan_verdict_conflict,
+                        MIN_COVERAGE_THRESHOLD,
+                    )
+
+                    material = _material_args(clean_arguments)
+                    coverage = _estimate_coverage(material, sc.get("result", {}))
+                    conflicts = _scan_verdict_conflict(sc)
+                    is_empty = (
+                        _result_is_empty(sc.get("result", {})) if material else False
+                    )
+
+                    w0_gate = "PASS"
+                    w0_warnings: list = []
+
+                    if coverage < MIN_COVERAGE_THRESHOLD and material:
+                        w0_gate = "CAUTION"
+                        w0_warnings.append(
+                            f"LOW_COVERAGE: {coverage:.0%} < {MIN_COVERAGE_THRESHOLD:.0%} threshold. "
+                            f"{len(material)} material fields "
+                            f"({sorted(material.keys())}) not reflected in result"
+                        )
+                    if conflicts:
+                        if w0_gate == "PASS":
+                            w0_gate = "CAUTION"
+                        w0_warnings.extend(f"VERDICT_CONFLICT: {c}" for c in conflicts)
+                    if is_empty:
+                        if w0_gate == "PASS":
+                            w0_gate = "CAUTION"
+                        w0_warnings.append(
+                            "EMPTY_RESULT: material inputs but all-zeros result"
+                        )
+
+                    sc["_w0_evidence_gate"] = {
+                        "coverage": coverage,
+                        "material_args_count": len(material),
+                        "material_args": sorted(material.keys()),
+                        "gate": w0_gate,
+                        "warnings": w0_warnings,
+                    }
+                    if w0_gate == "CAUTION" and w0_warnings:
+                        existing = sc.get("warnings", [])
+                        if isinstance(existing, list):
+                            sc["warnings"] = existing + [
+                                f"[W0] {w}" for w in w0_warnings
+                            ]
+                    # Sync content text blocks so _finalize sees updates
+                    if hasattr(result, "content") and result.content:
+                        for block in result.content:
+                            if hasattr(block, "text"):
+                                try:
+                                    block.text = json.dumps(sc, default=str)
+                                except Exception:
+                                    pass
             except Exception as e:
                 # Discovery 3: Structured error envelope on failure
                 from wealth_mcp.federation_safety import classify_error
@@ -795,13 +859,6 @@ def create_mcp_server() -> FastMCP:
                 return filtered
 
         mcp.add_middleware(WealthSurfaceFilterMiddleware())
-
-        # ── W0 Evidence Middleware (2026-08-06) ─────────────────────────
-        from wealth_mcp.middleware.evidence_middleware import (
-            WealthEvidenceMiddleware,
-        )
-
-        mcp.add_middleware(WealthEvidenceMiddleware())
 
     except Exception as e:
         print(f"[GOVERNANCE] WEALTH federated governance wrapper failed to load: {e}")

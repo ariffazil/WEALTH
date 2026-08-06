@@ -23,6 +23,24 @@ from typing import Any
 
 from fastmcp.server.middleware import Middleware
 
+from wealth_contracts.epistemic import (
+    UNMEASURED,
+    MIN_COVERAGE_THRESHOLD,
+    coverage_ratio,
+    geometric_mean_known,
+    is_unmeasured,
+)
+
+# Re-export for server.py
+__all__ = [
+    "WealthEvidenceMiddleware",
+    "_estimate_coverage",
+    "_material_args",
+    "_result_is_empty",
+    "_scan_verdict_conflict",
+    "MIN_COVERAGE_THRESHOLD",
+]
+
 # ── Known non-material (administrative) argument names ───────────────────
 _ADMIN_ARGS: frozenset[str] = frozenset(
     {
@@ -126,18 +144,27 @@ def _scan_verdict_conflict(envelope: dict) -> list[str]:
 
 
 def _estimate_coverage(material: dict[str, Any], result: Any) -> float:
-    """Estimate what fraction of material inputs are reflected in the result.
+    """Estimate coverage ratio from tool output.
 
-    Heuristic: count how many material argument names appear as substring
-    matches in the JSON-serialized result. Approximate but catches the
-    all-zeros pattern (0/X = 0.0 coverage).
+    Prefers tool-reported fields_present/fields_missing when available.
+    Falls back to heuristic substring matching.
     """
+    # If tool reports its own coverage, trust it
+    if isinstance(result, dict):
+        fields_present = result.get("fields_present", [])
+        fields_missing = result.get("fields_missing", [])
+        total = len(fields_present) + len(fields_missing)
+        if total > 0:
+            return coverage_ratio(len(fields_present), total)
+
+    # Heuristic fallback
     if not material:
         return 1.0
     if result is None:
         return 0.0
     if not isinstance(result, dict):
         return 0.5
+
     result_str = json.dumps(result, default=str).lower()
     result_keys_lower = {k.lower() for k in result.keys()}
     matched = 0
@@ -147,7 +174,7 @@ def _estimate_coverage(material: dict[str, Any], result: Any) -> float:
             matched += 1
         elif any(k_lower in rk for rk in result_keys_lower):
             matched += 1
-    return round(matched / len(material), 2)
+    return coverage_ratio(matched, len(material))
 
 
 class WealthEvidenceMiddleware(Middleware):
