@@ -466,6 +466,60 @@ def register_canonical_tools(mcp):
                     actor_id=actor_id,
                 )
 
+            if _sm == "corporate_runway":
+                # Corporate runway: liquid_assets / monthly_burn → runway_months.
+                # Distinct from personal_finance — no income/expense, burn rate is the driver.
+                if liquid_assets is None or monthly_burn is None:
+                    return wrap_result(
+                        tool_name="capital_health",
+                        domain="capital",
+                        result={
+                            "status": "ERROR",
+                            "error_code": "MISSING_REQUIRED_PARAMS",
+                            "message": "corporate_runway requires liquid_assets and monthly_burn",
+                            "missing_params": [
+                                k
+                                for k, v in [
+                                    ("liquid_assets", liquid_assets),
+                                    ("monthly_burn", monthly_burn),
+                                ]
+                                if v is None
+                            ],
+                        },
+                        epistemic_tag=EpistemicTag.ASSUMED,
+                        evidence_quality=EvidenceQuality.MISSING,
+                        errors=[
+                            "corporate_runway requires liquid_assets and monthly_burn"
+                        ],
+                        session_id=session_id,
+                        actor_id=actor_id,
+                    )
+                runway_months = (
+                    liquid_assets / monthly_burn if monthly_burn > 0 else float("inf")
+                )
+                return wrap_result(
+                    tool_name="capital_health",
+                    domain="capital",
+                    result={
+                        "runway_months": round(runway_months, 1),
+                        "liquid_assets": liquid_assets,
+                        "monthly_burn": monthly_burn,
+                        "verdict": "CORPORATE_RUNWAY_ADEQUATE"
+                        if runway_months >= 12
+                        else "CORPORATE_RUNWAY_CRITICAL",
+                        "interpretation": (
+                            f"Corporate runway: {runway_months:.1f} months at burn rate {monthly_burn}/month."
+                            if runway_months < float("inf")
+                            else "Infinite runway (zero burn rate)."
+                        ),
+                    },
+                    epistemic_tag=EpistemicTag.DERIVED,
+                    evidence_quality=EvidenceQuality.MODERATE,
+                    source_attribution=["corporate_runway_computation"],
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
+
             # Survival engine — delegates to the server-side implementation
             raw = await _call_legacy_tool(
                 "wealth_survival_engine",
