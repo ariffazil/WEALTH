@@ -422,6 +422,18 @@ def create_mcp_server() -> FastMCP:
                 )
                 enriched.setdefault("human_final_authority", "Arif")
 
+                # ── W-005: Required output fields (2026-08-06) ────────
+                enriched.setdefault("verdict", str(verdict or "PARTIAL").upper())
+                enriched.setdefault("coverage", {"known": 0, "total": 0, "ratio": 0.0})
+                enriched.setdefault(
+                    "epistemic",
+                    {
+                        "tag": enriched.get("epistemic_tag", "DERIVED"),
+                        "quality": enriched.get("evidence_quality", "MODERATE"),
+                        "confidence": 0.50,
+                    },
+                )
+
                 # ── Single Verdict Resolution (W4 Fix) ────────────────
                 # Lowest verdict wins: VOID > HOLD > SABAR > PASS/SEAL
                 apex_v = str((enriched.get("apex") or {}).get("verdict", "")).upper()
@@ -771,6 +783,21 @@ def create_mcp_server() -> FastMCP:
                             sc["warnings"] = existing + [
                                 f"[W0] {w}" for w in w0_warnings
                             ]
+                    # ── W-005: Inject verdict + coverage into envelope ─
+                    sc["verdict"] = "HOLD" if w0_gate == "CAUTION" else "PARTIAL"
+                    sc["coverage"] = {
+                        "known": 0,
+                        "total": len(material),
+                        "ratio": coverage,
+                    }
+                    sc.setdefault(
+                        "epistemic",
+                        {
+                            "tag": sc.get("epistemic_tag", "DERIVED"),
+                            "quality": sc.get("evidence_quality", "MODERATE"),
+                            "confidence": 0.50,
+                        },
+                    )
                     # Sync content text blocks so _finalize sees updates
                     if hasattr(result, "content") and result.content:
                         for block in result.content:
