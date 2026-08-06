@@ -350,6 +350,7 @@ class WealthEnvelope:
 # ── WEALTH Output Schema (MCP outputSchema contract, FORGED 2026-07-12) ──
 # Declared here — passed to @mcp.tool(output_schema=WEALTH_OUTPUT_SCHEMA)
 # Fixes 421 Misdirected Request: kernel bridge validates against declared schema.
+# W-005 (2026-08-06): Added verdict enum, coverage object, unified epistemic.
 WEALTH_OUTPUT_SCHEMA: dict = {
     "type": "object",
     "properties": {
@@ -358,6 +359,51 @@ WEALTH_OUTPUT_SCHEMA: dict = {
         "domain": {"type": "string"},
         "result": {"type": "object"},
         "result_type": {"type": "string"},
+        # ── W-005: Single verdict field ──────────────────────────────
+        "verdict": {
+            "type": "string",
+            "enum": [
+                "SEAL",
+                "PARTIAL",
+                "SABAR",
+                "HOLD",
+                "VOID",
+                "INSUFFICIENT_EVIDENCE",
+            ],
+        },
+        # ── W-005: Required coverage object ─────────────────────────
+        "coverage": {
+            "type": "object",
+            "properties": {
+                "known": {"type": "integer"},
+                "total": {"type": "integer"},
+                "ratio": {"type": "number"},
+            },
+            "required": ["known", "total", "ratio"],
+        },
+        # ── W-005: Unified epistemic object (one layer) ──────────────
+        "epistemic": {
+            "type": "object",
+            "properties": {
+                "tag": {
+                    "type": "string",
+                    "enum": [
+                        "OBSERVED",
+                        "DERIVED",
+                        "INTERPRETED",
+                        "SPECULATED",
+                        "ASSUMED",
+                    ],
+                },
+                "quality": {
+                    "type": "string",
+                    "enum": ["OBSERVED", "MODERATE", "WEAK", "MISSING"],
+                },
+                "confidence": {"type": "number", "minimum": 0, "maximum": 0.90},
+            },
+            "required": ["tag", "quality"],
+        },
+        # ── Legacy fields (backward compat, not required) ───────────
         "epistemic_tag": {
             "type": "string",
             "enum": [
@@ -409,14 +455,6 @@ WEALTH_OUTPUT_SCHEMA: dict = {
         "missing_inputs": {"type": "array", "items": {"type": "object"}},
         "warnings": {"type": "array", "items": {"type": "string"}},
         "errors": {"type": "array", "items": {"type": "string"}},
-        "uncertainty_band": {"type": "object", "additionalProperties": True},
-        "wisdom_dimensions": {"type": "array", "items": {"type": "object"}},
-        "power_dimensions": {"type": "array", "items": {"type": "object"}},
-        "capture_risk_level": {"type": "string"},
-        "who_benefits": {"type": "string"},
-        "who_carries_downside": {"type": "string"},
-        "dignity_impact": {"type": "string"},
-        "sovereignty_effect": {"type": "string"},
         "session_id": {"type": "string"},
         "trace_id": {"type": "string"},
         "actor_id": {"type": "string"},
@@ -424,18 +462,17 @@ WEALTH_OUTPUT_SCHEMA: dict = {
         "shadow": {"type": "boolean"},
         "kappa_r": {"type": "number"},
         "psi_le": {"type": "number"},
-        "pipeline_stage": {"type": "string"},
     },
     "required": [
         "tool_name",
         "domain",
         "result",
-        "epistemic_tag",
-        "evidence_quality",
         "execution_authorized",
         "execution_authority",
         "source_attribution",
         "computation_timestamp",
+        # W-005 Phase 2: verdict, coverage, epistemic become required
+        # after all 8 tools verified passing schema validation.
     ],
     "additionalProperties": True,
 }
@@ -602,4 +639,18 @@ def wrap_result(
         meta["unverified_inputs_detected"] = True
         if unverified_fields:
             meta["unverified_fields"] = unverified_fields
+
+    # ── W-005: Inject verdict, coverage, epistemic (2026-08-06) ─────
+    # Default verdict from envelope evidence_quality — overridden by
+    # W0 gate CAUTION or governance HOLD downstream.
+    d.setdefault("verdict", "PARTIAL")
+    d.setdefault("coverage", {"known": 0, "total": 0, "ratio": 0.0})
+    d.setdefault(
+        "epistemic",
+        {
+            "tag": d.get("epistemic_tag", "DERIVED"),
+            "quality": d.get("evidence_quality", "MODERATE"),
+            "confidence": 0.50,
+        },
+    )
     return d
