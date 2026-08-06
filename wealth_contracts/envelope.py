@@ -185,9 +185,9 @@ class WealthEnvelope:
             "domain": self.domain,
             "result": self.result,
             "result_type": self.result_type,
-            "epistemic_tag": self.epistemic_tag.value,
+            "epistemic_tag": self.epistemic_tag.value,  # DEPRECATED Phase 2 — use epistemic.tag
             "claim_state": self.claim_state.value,
-            "evidence_quality": self.evidence_quality.value,
+            "evidence_quality": self.evidence_quality.value,  # DEPRECATED Phase 2 — use epistemic.quality
             "execution_authorized": self.execution_authorized,
             "execution_authority": self.execution_authority.value,
             "human_final_authority": self.human_final_authority,
