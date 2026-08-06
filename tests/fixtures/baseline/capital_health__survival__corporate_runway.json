@@ -1,0 +1,40 @@
+{
+  "tool": "capital_health",
+  "tool_version": "2026.07.12",
+  "domain": "capital",
+  "mode": "survival",
+  "survival_submode": "corporate_runway",
+  "session_id": "SEAL-b3bbf8e9e1844adc",
+  "actor_id": "ARIF",
+  "probed_at": "2026-08-06T07:44:45Z",
+  "sent_payload": {
+    "liquid_assets": 500000,
+    "monthly_burn": 50000
+  },
+  "defect": "SILENT_DOWNGRADE: corporate_runway silently downgraded to personal_finance. Income and expenses zeroed despite supplied arrays.",
+  "raw_response": {
+    "primary_metrics": {
+      "engine": "wealth_survival_engine",
+      "mode": "personal_finance",
+      "runway_months": null,
+      "burn_rate": 0.0,
+      "net_monthly": 0,
+      "total_income": 0,
+      "total_expenses": 0,
+      "liquid_assets": 500000.0,
+      "survival_verdict": "SURVIVAL_ADEQUATE"
+    },
+    "domain_verdict": "SEAL",
+    "apex": {
+      "verdict": "HOLD",
+      "G": 0.0,
+      "dials": {"A": 0.9655, "P": 1.0, "H": 0.0, "S": 0.7, "U": 0.922, "E": 0.8253}
+    },
+    "risk": {"verdict": "GO", "level": "GREEN"},
+    "coverage": {"ratio": 0.33, "material_args": ["liquid_assets", "monthly_burn", "survival_submode"]},
+    "assumptions": ["income=0, expenses=0", "liquid_assets=500000.0", "conservative_factor=0.8"],
+    "receipt_hash": "34d94d13ba472cbf938d0bd7ea16aa0c9ecee17e0e192c434c5fe2355c3a44ea"
+  },
+  "error_class": "ok",
+  "sha256": "34d94d13ba472cbf938d0bd7ea16aa0c9ecee17e0e192c434c5fe2355c3a44ea"
+}

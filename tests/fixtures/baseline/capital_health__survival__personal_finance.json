@@ -1,0 +1,41 @@
+{
+  "tool": "capital_health",
+  "tool_version": "2026.07.12",
+  "domain": "capital",
+  "mode": "survival",
+  "survival_submode": "personal_finance",
+  "session_id": "SEAL-b3bbf8e9e1844adc",
+  "actor_id": "ARIF",
+  "probed_at": "2026-08-06T07:44:45Z",
+  "sent_payload": {
+    "monthly_income_v": 10000,
+    "monthly_expenses_v": 7000
+  },
+  "raw_response": {
+    "primary_metrics": {
+      "engine": "wealth_survival_engine",
+      "mode": "personal_finance",
+      "runway_months": null,
+      "burn_rate": 0.0,
+      "net_monthly": 3000.0,
+      "total_income": 10000.0,
+      "total_expenses": 7000.0,
+      "liquid_assets": 0.0,
+      "survival_verdict": "SURVIVAL_ADEQUATE"
+    },
+    "domain_verdict": "SEAL",
+    "apex": {
+      "verdict": "HOLD",
+      "G": 0.0,
+      "dials": {"A": 0.9655, "P": 1.0, "H": 0.0, "S": 0.7, "U": 0.922, "E": 0.7751}
+    },
+    "risk": {"verdict": "GO", "level": "GREEN"},
+    "coverage": {"ratio": 0.0, "material_args": ["monthly_expenses_v", "monthly_income_v", "survival_submode"]},
+    "witness": {"human": false, "ai": true, "earth": true},
+    "warnings": ["LOW_COVERAGE: 0% < 15% threshold"],
+    "receipt_hash": "3b459d74d8b202a08ad8dd3872d576912419064c74f58e43e696ac542f20e36f"
+  },
+  "verdict_contradiction": "domain_verdict=SEAL, apex_verdict=HOLD(G=0.0), risk_verdict=GO — THREE different verdicts in one response",
+  "error_class": "ok",
+  "sha256": "3b459d74d8b202a08ad8dd3872d576912419064c74f58e43e696ac542f20e36f"
+}

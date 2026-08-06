@@ -1,0 +1,43 @@
+{
+  "tool": "capital_diagnose",
+  "tool_version": "2026.07.12",
+  "domain": "collapse",
+  "mode": "collapse_signature",
+  "session_id": "SEAL-b3bbf8e9e1844adc",
+  "actor_id": "ARIF",
+  "probed_at": "2026-08-06T07:44:46Z",
+  "sent_payload": {
+    "domain_scope": "enron_2000"
+  },
+  "defect": "_source_text empty string — collapse_signature ingests NOTHING. All 6 axes signal_count=0. Enron pipeline feeds nothing in. Five tripwires all NEUTRAL.",
+  "raw_response": {
+    "profile": {
+      "axis_1_national_destiny_triumphalism": {"signal_count": 0},
+      "axis_2_politicisation_ideology": {"signal_count": 0},
+      "axis_3_extraction_over_reinvestment": {"signal_count": 0},
+      "axis_4_external_blame_denial": {"signal_count": 0},
+      "axis_5_generic_governance_boilerplate": {"signal_count": 0},
+      "axis_6_overpromise_hedge_metrics_lag": {"signal_count": 0},
+      "_source_text": "",
+      "acemoglu_axis": {"score": null, "label": "INSUFFICIENT_SIGNAL"},
+      "calhoun_axis": {"score": null, "label": "INSUFFICIENT_SIGNAL"}
+    },
+    "risk": {
+      "score": 0.0,
+      "risk_level": "MINIMAL",
+      "recommendation": "No institutional-collapse signature detected."
+    },
+    "tripwires": {
+      "tripwire_1_mof_2027_dividend": {"status": "NEUTRAL"},
+      "tripwire_2_gentari_sale": {"status": "NEUTRAL"},
+      "tripwire_3_tt_exit": {"status": "NEUTRAL"},
+      "tripwire_4_sarawak_settlement": {"status": "NEUTRAL"},
+      "tripwire_5_new_spvs": {"status": "NEUTRAL"},
+      "overall_drift": "NEUTRAL_OR_MIXED"
+    },
+    "coverage": {"ratio": 0.0, "material_args": ["domain_scope"]},
+    "warnings": ["LOW_COVERAGE: 0% < 15% threshold. domain_scope not reflected in result"]
+  },
+  "error_class": "ok",
+  "evidence_quality": "MODERATE"
+}

@@ -192,3 +192,115 @@ def upgrade_epistemic(current: EpistemicTag, new_evidence: str) -> EpistemicTag:
     if current_idx < len(hierarchy) - 1:
         return hierarchy[current_idx + 1]
     return current
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# W-004 — UNMEASURED Sentinel + Coverage Aggregation (2026-08-06)
+# ═══════════════════════════════════════════════════════════════════════════════
+# Mirrors arifOS kernel: /root/arifOS/arifosmcp/runtime/unmeasured.py
+# Singleton. Identity-check `is UNMEASURED` is safe. Any coercion raises.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+from typing import Any, NoReturn
+
+
+class UnmeasuredError(TypeError):
+    """Raised when UNMEASURED is coerced to a truth value or number."""
+
+
+class _Unmeasured:
+    """Sentinel for values that have not been measured.
+
+    Singleton. Identity-check with `is UNMEASURED` (safe). Any attempt
+    to coerce to bool, float, int, or compare numerically raises.
+    """
+
+    _instance: _Unmeasured | None = None
+
+    def __new__(cls) -> _Unmeasured:
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __repr__(self) -> str:
+        return "UNMEASURED"
+
+    def __str__(self) -> str:
+        return "UNMEASURED"
+
+    def __hash__(self) -> int:
+        return hash("UNMEASURED")
+
+    def __eq__(self, other: object) -> bool:
+        return False
+
+    def __ne__(self, other: object) -> bool:
+        return True
+
+    def __bool__(self) -> NoReturn:
+        raise UnmeasuredError("UNMEASURED has no truth value")
+
+    def __float__(self) -> NoReturn:
+        raise UnmeasuredError("UNMEASURED is not a number")
+
+    def __int__(self) -> NoReturn:
+        raise UnmeasuredError("UNMEASURED is not a number")
+
+    def __lt__(self, other: object) -> NoReturn:
+        raise UnmeasuredError("UNMEASURED is not ordered")
+
+    def __gt__(self, other: object) -> NoReturn:
+        raise UnmeasuredError("UNMEASURED is not ordered")
+
+    def __le__(self, other: object) -> NoReturn:
+        raise UnmeasuredError("UNMEASURED is not ordered")
+
+    def __ge__(self, other: object) -> NoReturn:
+        raise UnmeasuredError("UNMEASURED is not ordered")
+
+    def __add__(self, other: object) -> NoReturn:
+        raise UnmeasuredError("UNMEASURED cannot be used in arithmetic")
+
+    def __mul__(self, other: object) -> NoReturn:
+        raise UnmeasuredError("UNMEASURED cannot be used in arithmetic")
+
+    def as_string_safe(self) -> str:
+        return "UNMEASURED"
+
+
+UNMEASURED = _Unmeasured()
+
+
+def is_unmeasured(value: Any) -> bool:
+    """Safe check: returns True ONLY if value IS the UNMEASURED sentinel."""
+    return value is UNMEASURED
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Coverage Aggregation — geometric mean over KNOWN terms only
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+def geometric_mean_known(values: list[float | _Unmeasured]) -> float | _Unmeasured:
+    """Geometric mean over KNOWN (non-UNMEASURED) terms only.
+
+    Never impute 0 or 1 for UNMEASURED — that is the Enron/Holocaust defect.
+    Returns UNMEASURED if ALL values are UNMEASURED.
+    """
+    import math
+
+    known = [v for v in values if v is not UNMEASURED and isinstance(v, (int, float))]
+    if not known:
+        return UNMEASURED
+    product = math.prod(max(v, 1e-10) for v in known)
+    return float(product ** (1.0 / len(known)))
+
+
+def coverage_ratio(known: int, total: int) -> float:
+    """Coverage ratio: known / total. Returns 0.0 if total is 0."""
+    if total <= 0:
+        return 1.0
+    return round(known / total, 2)
+
+
+MIN_COVERAGE_THRESHOLD = 0.15  # Below this → INSUFFICIENT_EVIDENCE

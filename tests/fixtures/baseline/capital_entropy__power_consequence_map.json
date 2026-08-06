@@ -1,0 +1,35 @@
+{
+  "tool": "capital_entropy",
+  "tool_version": "2026.07.12",
+  "domain": "institutional",
+  "mode": "power_consequence_map",
+  "session_id": "SEAL-b3bbf8e9e1844adc",
+  "actor_id": "ARIF",
+  "probed_at": "2026-08-06T07:44:47Z",
+  "sent_payload": {
+    "session_id": "SEAL-b3bbf8e9e1844adc",
+    "actor_id": "ARIF"
+  },
+  "defect": "Zero payload returns zero scores but coverage=1.0 (tautological — no material_args). exit_ratio=1.0 on zero actors is non-physical. All sub-scores derived from list LENGTH only — decision_makers, beneficiaries, cost_bearers all empty.",
+  "raw_response": {
+    "map_id": "pcm-d218d76d40eb",
+    "power_concentration": 0.0,
+    "benefit_concentration": 0.0,
+    "harm_distance": 0.0,
+    "compensation_gap": 0.0,
+    "exit_ratio": 1.0,
+    "veto_concentration": 0.0,
+    "consequence_gap": 0.0,
+    "interpretation": "LOW consequence gap — consequences relatively well-integrated",
+    "decision_makers_count": 0,
+    "beneficiaries_count": 0,
+    "cost_bearers_count": 0,
+    "coverage": {"ratio": 1.0, "material_args": []},
+    "metadata": {
+      "mapped_at": "2026-08-06T07:44:47.244100+00:00",
+      "tool": "wealth_power_consequence_map",
+      "version": "2.0.0-differential-safe"
+    }
+  },
+  "error_class": "ok"
+}
