@@ -554,7 +554,7 @@ def create_mcp_server() -> FastMCP:
 
                 if "/root/AAA" not in _sys.path:
                     _sys.path.insert(0, "/root/AAA")
-                from governance.federation_sct import gate_tool_ingress
+                from governance.federation_act import gate_tool_ingress
 
                 # Inject actor into args for expected_actor check
                 _args_for_sct = dict(arguments) if isinstance(arguments, dict) else {}
