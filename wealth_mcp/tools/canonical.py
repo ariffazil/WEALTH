@@ -1719,6 +1719,7 @@ def register_canonical_tools(mcp):
                 session_id=session_id,
                 trace_id=trace_id,
                 actor_id=actor_id,
+                shadow=shadow,
                 errors=[message],
             )
 
