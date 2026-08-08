@@ -51,6 +51,11 @@ function runPython(command, args = []) {
 }
 
 const handlers = {
+  '/api/oil/market_health': async () => {
+    const c = getCache('market_health'); if (c) return c;
+    const d = await runPython('market_health'); setCache('market_health', d); return d;
+  },
+  '/api/market_health': async () => handlers['/api/oil/market_health'](),
   '/api/oil/apex': async () => {
     const c = getCache('apex'); if (c) return c;
     const d = await runPython('apex'); setCache('apex', d); return d;
@@ -120,6 +125,7 @@ const handlers = {
   '/api/history': async (req, res, params) => handlers['/api/oil/history'](req, res, params),
   '/api/signals': async () => handlers['/api/oil/signals'](),
   '/api/levels': async () => handlers['/api/oil/levels'](),
+  '/api/term_structure': async () => handlers['/api/oil/term_structure'](),
   '/api/oil/forecast': async (req, res, params) => {
     const horizon = params.get('horizon') || '30';
     const key = `forecast_${horizon}`;
@@ -151,6 +157,10 @@ const handlers = {
   '/api/oil/macro': async () => {
     const c = getCache('macro'); if (c) return c;
     const d = await runPython('macro'); setCache('macro', d); return d;
+  },
+  '/api/oil/term_structure': async () => {
+    const c = getCache('term_structure'); if (c) return c;
+    const d = await runPython('term_structure'); setCache('term_structure', d); return d;
   },
 };
 

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
 XBRENT Brent Crude Oil Data Fetcher — WEALTH Organ
-Fetches live gold data from yfinance, computes technical indicators,
+Fetches live Brent crude oil data from yfinance, computes technical indicators,
 generates trading signals. Called by Node.js API server.
 
 Usage:
-    python3 fetch_gold.py ticker
-    python3 fetch_gold.py history --interval 1h --period 30d
-    python3 fetch_gold.py signals
-    python3 fetch_gold.py levels
-    python3 fetch_gold.py macro
+    python3 fetch_oil.py ticker
+    python3 fetch_oil.py history --interval 1h --period 30d
+    python3 fetch_oil.py signals
+    python3 fetch_oil.py levels
+    python3 fetch_oil.py macro
 
 DITEMPA BUKAN DIBERI — Forged, Not Given.
 """
@@ -60,7 +60,6 @@ def _write_cache(path: Path, data: dict):
         pass
 
 
-
 def _read_stale(path: Path) -> dict | None:
     """Rate-limit fallback: serve expired cache rather than fail (F2: marked stale)."""
     if not path.exists():
@@ -73,6 +72,7 @@ def _read_stale(path: Path) -> dict | None:
         return data
     except Exception:
         return None
+
 
 # ── Data Fetch ───────────────────────────────────────────────────
 def fetch_ohlcv(interval: str = "1h", period: str = "30d") -> pd.DataFrame:
@@ -353,6 +353,7 @@ def cmd_ticker(args):
         "changePct": change_pct,
         "rsi": sig["rsi"],
         "rsiState": sig["rsi_state"],
+        "skewness_20d": compute_skewness(df["close"], 20),
         "signal": sig["signal"],
         "confidence": sig["confidence"],
         "ema20": sig["ema_fast"],
@@ -372,7 +373,9 @@ def cmd_history(args):
     interval = args.get("interval", "1h")
     period = args.get("period", "30d")
     # Normalize shorthand to yfinance-valid periods (F2: fail loud otherwise)
-    period = {"1M": "1mo", "3M": "3mo", "6M": "6mo", "1Y": "1y", "2Y": "2y"}.get(period, period)
+    period = {"1M": "1mo", "3M": "3mo", "6M": "6mo", "1Y": "1y", "2Y": "2y"}.get(
+        period, period
+    )
     cache = _cache_key("history", interval=interval, period=period)
     cached = _read_cache(cache)
     if cached:
@@ -497,13 +500,6 @@ def cmd_macro(args):
                 )
         except Exception:
             result[key] = None
-
-    if result.get("silver"):
-        ticker_data = cmd_ticker({})
-        if ticker_data.get("price"):
-            result["gold_silver_ratio"] = round(
-                ticker_data["price"] / result["silver"], 1
-            )
 
     _write_cache(cache, result)
     return result
@@ -845,38 +841,9 @@ def cmd_calendar(args):
     return result
 
 
-def _node_body(obj):
-    if isinstance(obj, float) and obj.is_integer():
-        return int(obj)
-    if isinstance(obj, dict):
-        return {k: _node_body(v) for k, v in obj.items() if k != "timestamp"}
-    if isinstance(obj, list):
-        return [_node_body(v) for v in obj]
-    return obj
-
-
-def build_snapshot(asset, ticker, levels, macro, observed_at=None):
-    if observed_at is None:
-        observed_at = datetime.now(timezone.utc).isoformat()
-    body = {
-        "schema": "wealth.snapshot.v1",
-        "asset": asset,
-        "observed_at": observed_at,
-        "ticker": _node_body(ticker),
-        "levels": _node_body(levels),
-        "macro": _node_body(macro),
-    }
-    canonical = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
-    body["coherence_id"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-    return body
-
-
 def cmd_snapshot(args):
-    """Return wrapped snapshot with schema/asset/coherence_id."""
-    ticker = cmd_ticker(args)
-    levels = cmd_levels(args)
-    macro = cmd_macro(args)
-    return build_snapshot("oil", ticker, levels, macro)
+    """Return raw ticker data — server wraps with schema/asset/coherence_id."""
+    return cmd_ticker(args)
 
 
 # ── Forecast Engine (wealth.forecast.v1) ─────────────────────────
@@ -919,7 +886,9 @@ def _forecast_log_append(record: dict) -> None:
         body = dict(record)
         body["prev_hash"] = prev_hash
         digest = hashlib.sha256(
-            json.dumps(body, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
+            json.dumps(body, sort_keys=True, separators=(",", ":"), default=str).encode(
+                "utf-8"
+            )
         ).hexdigest()
         body["hash"] = digest
         with FORECAST_LOG.open("a") as f:
@@ -976,7 +945,9 @@ def cmd_forecast(args):
     # 4. Scenario ladder from daily swing S/R — falsification on its face
     sr = find_support_resistance(df)
     r1 = sr["resistance"][0] if sr["resistance"] else round(price + atr_val, 2)
-    r2 = sr["resistance"][1] if len(sr["resistance"]) > 1 else round(r1 + 2 * atr_val, 2)
+    r2 = (
+        sr["resistance"][1] if len(sr["resistance"]) > 1 else round(r1 + 2 * atr_val, 2)
+    )
     s1 = sr["support"][0] if sr["support"] else round(price - atr_val, 2)
     s2 = sr["support"][1] if len(sr["support"]) > 1 else round(s1 - 2 * atr_val, 2)
     rate = max(abs(slope), 0.25 * atr_val)
@@ -985,25 +956,43 @@ def cmd_forecast(args):
         d = abs(target - price) / rate
         return f"{max(1, int(d * 0.6))}–{max(2, int(d * 1.4))}"
 
-    long_conf = sum([
-        ema20_val > ema50_val,
-        rsi_val > 55,
-        regime == "TRENDING_UP",
-        slope > 0,
-        price > ema200_val,
-    ])
-    short_conf = sum([
-        ema20_val < ema50_val,
-        rsi_val < 45,
-        regime == "TRENDING_DOWN",
-        slope < 0,
-        price < ema200_val,
-    ])
+    long_conf = sum(
+        [
+            ema20_val > ema50_val,
+            rsi_val > 55,
+            regime == "TRENDING_UP",
+            slope > 0,
+            price > ema200_val,
+        ]
+    )
+    short_conf = sum(
+        [
+            ema20_val < ema50_val,
+            rsi_val < 45,
+            regime == "TRENDING_DOWN",
+            slope < 0,
+            price < ema200_val,
+        ]
+    )
     scenarios = [
-        {"side": "LONG", "trigger": f"daily close > {r1} (R1)", "objective": r2,
-         "invalidation": s1, "confluence": long_conf, "of": 5, "eta_days": _eta(r2)},
-        {"side": "SHORT", "trigger": f"daily close < {s1} (S1)", "objective": s2,
-         "invalidation": r1, "confluence": short_conf, "of": 5, "eta_days": _eta(s2)},
+        {
+            "side": "LONG",
+            "trigger": f"daily close > {r1} (R1)",
+            "objective": r2,
+            "invalidation": s1,
+            "confluence": long_conf,
+            "of": 5,
+            "eta_days": _eta(r2),
+        },
+        {
+            "side": "SHORT",
+            "trigger": f"daily close < {s1} (S1)",
+            "objective": s2,
+            "invalidation": r1,
+            "confluence": short_conf,
+            "of": 5,
+            "eta_days": _eta(s2),
+        },
     ]
 
     # 5. Bias — one engine, one voice. Derived, never hardcoded.
@@ -1026,24 +1015,191 @@ def cmd_forecast(args):
         "asset": ASSET_KEY,
         "generated_at": generated_at,
         "horizon_days": horizon,
-        "basis": {"close": price, "atr14": atr_val, "slope_per_day": slope,
-                  "regime": regime, "rsi": rsi_val,
-                  "ema20": ema20_val, "ema50": ema50_val, "ema200": ema200_val},
+        "basis": {
+            "close": price,
+            "atr14": atr_val,
+            "slope_per_day": slope,
+            "regime": regime,
+            "rsi": rsi_val,
+            "ema20": ema20_val,
+            "ema50": ema50_val,
+            "ema200": ema200_val,
+        },
         "bias": bias,
-        "cone": {"t": t_dates, "p10": p10, "p25": p25, "p50": p50, "p75": p75, "p90": p90},
+        "cone": {
+            "t": t_dates,
+            "p10": p10,
+            "p25": p25,
+            "p50": p50,
+            "p75": p75,
+            "p90": p90,
+        },
         "scenarios": scenarios,
         "institutional_read": institutional_read,
         "epistemic": "INTERPRET — ATR-scaled drift cone, not prophecy. Falsification levels stated. Human decides.",
     }
     _write_cache(cache, result)
-    _forecast_log_append({
-        "schema": "wealth.forecastlog.v1", "asset": ASSET_KEY,
-        "generated_at": generated_at, "horizon_days": horizon, "close": price,
-        "bias": bias, "p50_end": p50[-1], "p10_end": p10[-1], "p90_end": p90[-1],
-        "long_objective": r2, "short_objective": s2,
-        "long_confluence": long_conf, "short_confluence": short_conf,
-    })
+    _forecast_log_append(
+        {
+            "schema": "wealth.forecastlog.v1",
+            "asset": ASSET_KEY,
+            "generated_at": generated_at,
+            "horizon_days": horizon,
+            "close": price,
+            "bias": bias,
+            "p50_end": p50[-1],
+            "p10_end": p10[-1],
+            "p90_end": p90[-1],
+            "long_objective": r2,
+            "short_objective": s2,
+            "long_confluence": long_conf,
+            "short_confluence": short_conf,
+        }
+    )
     return result
+
+
+
+def cmd_market_health(args):
+    """Provider health check — returns per-provider status + fallback chain info."""
+    try:
+        import sys; sys.path.insert(0, "/var/www/html/_shared/market")
+        from market_data_fallback import provider_health
+        return provider_health()
+    except Exception as e:
+        return {"error": str(e), "provider_order": ["yfinance"], "checked_at": datetime.now(MYT).isoformat()}
+
+
+def cmd_proxies(args):
+    """Live sovereign proxy gauges: MYR, KLCI, Brent, NatGas, EWM, DXY.
+    Feeds the malaysia/vitals pages — proxies, NOT sealed readings.
+    
+    ═══ MULTI-PROVIDER (2026-08-08) ═══
+    Investbrain-inspired fallback: yfinance → Stooq → Twelve Data → Alpha Vantage → Finnhub
+    Single-source SPOF eliminated. Configured via WEALTH_MARKET_PROVIDERS env.
+    """
+    cache = _cache_key("proxies")
+    cached = _read_cache(cache)
+    if cached:
+        return cached
+
+    try:
+        import sys; sys.path.insert(0, "/var/www/html/_shared/market")
+        from market_data_fallback import fetch_live_proxies
+        result = fetch_live_proxies()
+        _write_cache(cache, result)
+        return result
+    except Exception:
+        # Graceful fallback: if multi-provider fails, try single-source yfinance
+        import yfinance as yf
+        symbols = {
+            "usdmyr": ("MYR=X", 4),
+            "klci": ("^KLSE", 2),
+            "brent": ("BZ=F", 2),
+            "natgas": ("NG=F", 3),
+            "ewm": ("EWM", 2),
+            "dxy": ("DX-Y.NYB", 2),
+        }
+        result = {"timestamp": datetime.now(MYT).isoformat(), "_sources": {"_fallback": "yfinance-emergency"}}
+        for key, (sym, digits) in symbols.items():
+            try:
+                h = yf.Ticker(sym).history(period="5d")
+                if not h.empty:
+                    result[key] = round(float(h["Close"].iloc[-1]), digits)
+                    result[key + "_prev"] = round(float(h["Close"].iloc[-2]), digits)
+            except Exception:
+                result[key] = None
+        if result.get("usdmyr") and result.get("usdmyr_prev"):
+            result["usdmyr_change_pct"] = round(
+                (result["usdmyr"] - result["usdmyr_prev"]) / result["usdmyr_prev"] * 100, 2
+            )
+        _write_cache(cache, result)
+        return result
+
+def cmd_term_structure(args):
+    """EUREKA-OIL-TERM: futures curve proxy + roll yield estimate."""
+    cache = _cache_key("term_structure")
+    cached = _read_cache(cache)
+    if cached:
+        return cached
+
+    df = fetch_ohlcv(interval="1d", period="1y")
+    if df.empty:
+        return {"error": "No oil data", "timestamp": datetime.now(MYT).isoformat()}
+
+    close = df["close"]
+    price = round(float(close.iloc[-1]), 2)
+    sma50 = round(float(close.rolling(50).mean().iloc[-1]), 2)
+    sma200 = round(float(close.rolling(200).mean().iloc[-1]), 2)
+
+    # Position vs long-term average = backwardation proxy
+    vs_200_ratio = round(price / sma200, 3) if sma200 > 0 else 1.0
+    vs_50_ratio = round(price / sma50, 3) if sma50 > 0 else 1.0
+
+    # Roll yield proxy: front-month slope as % annualized
+    slope_30d = _lin_slope(close.tail(30).values) if len(close) >= 30 else 0.0
+    roll_yield_proxy = round((slope_30d / price) * 252 * 100, 2) if price > 0 else 0.0
+
+    # Curve verdict
+    if vs_200_ratio > 1.05 and roll_yield_proxy > 0:
+        curve_state = "BACKWARDATION"
+        curve_signal = "BULLISH"
+    elif vs_200_ratio < 0.95 and roll_yield_proxy < 0:
+        curve_state = "CONTANGO"
+        curve_signal = "BEARISH"
+    elif vs_200_ratio > 1.02:
+        curve_state = "MILD_BACKWARDATION"
+        curve_signal = "MILDLY_BULLISH"
+    elif vs_200_ratio < 0.98:
+        curve_state = "MILD_CONTANGO"
+        curve_signal = "MILDLY_BEARISH"
+    else:
+        curve_state = "FLAT"
+        curve_signal = "NEUTRAL"
+
+    # Try WTI/Brent spread as second signal
+    try:
+        import yfinance as yf
+
+        wti = yf.Ticker("CL=F").history(period="5d")
+        wti_price = round(float(wti["Close"].iloc[-1]), 2) if not wti.empty else None
+        spread = round(price - wti_price, 2) if wti_price else None
+    except Exception:
+        wti_price = None
+        spread = None
+
+    result = {
+        "schema": "wealth.term_structure.v1",
+        "asset": ASSET_KEY,
+        "price": price,
+        "sma50": sma50,
+        "sma200": sma200,
+        "vs_200_ratio": vs_200_ratio,
+        "vs_50_ratio": vs_50_ratio,
+        "roll_yield_proxy_pct_annual": roll_yield_proxy,
+        "curve_state": curve_state,
+        "curve_signal": curve_signal,
+        "wti_price": wti_price,
+        "brent_wti_spread": spread,
+        "read": (
+            f"Brent ${price} is {vs_200_ratio:.2%} of SMA200 (${sma200}). "
+            f"Curve: {curve_state}. Roll yield proxy: {roll_yield_proxy:+.1f}%/yr. "
+            + (f"WTI spread: ${spread}." if spread else "")
+        ),
+        "epistemic": "DERIVED — SMA ratio is a roll-yield proxy, not live futures chain data. Direction correct, magnitude approximate.",
+        "timestamp": datetime.now(MYT).isoformat(),
+    }
+    _write_cache(cache, result)
+    return result
+
+
+# ── EUREKA Signal: Skewness Risk Thermometer (shared across all assets) ──
+def compute_skewness(series: pd.Series, window: int = 20) -> float:
+    """Rolling return skewness — measures tail risk asymmetry."""
+    returns = series.pct_change().dropna()
+    if len(returns) < window:
+        return 0.0
+    return round(float(returns.tail(window).skew()), 3)
 
 
 def main():
@@ -1060,7 +1216,10 @@ def main():
             "signal_v2",
             "calendar",
             "snapshot",
-        "forecast",
+            "proxies",
+            "forecast",
+        "market_health",
+            "term_structure",
         ],
     )
     parser.add_argument("--interval", default="1h")
@@ -1078,22 +1237,27 @@ def main():
         "signal_v2": cmd_signal_v2,
         "calendar": cmd_calendar,
         "snapshot": cmd_snapshot,
-          "forecast": cmd_forecast,
+        "proxies": cmd_proxies,
+        "market_health": cmd_market_health,
+        "forecast": cmd_forecast,
+        "term_structure": cmd_term_structure,
     }
 
     try:
         result = handlers[args.command](
             {
-            "interval": args.interval,
-            "period": args.period,
-            "horizon": args.horizon,
-        }
+                "interval": args.interval,
+                "period": args.period,
+                "horizon": args.horizon,
+            }
         )
         print(json.dumps(result, default=str, indent=2))
     except Exception as e:
         # Stale fallback: serve expired cache rather than VOID the panel
         if args.command == "history":
-            stale_key = _cache_key("history", interval=args.interval, period=args.period)
+            stale_key = _cache_key(
+                "history", interval=args.interval, period=args.period
+            )
         elif args.command in ("ticker", "snapshot"):
             stale_key = _cache_key("ticker")
         else:

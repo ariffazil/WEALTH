@@ -60,7 +60,6 @@ def _write_cache(path: Path, data: dict):
         pass
 
 
-
 def _read_stale(path: Path) -> dict | None:
     """Rate-limit fallback: serve expired cache rather than fail (F2: marked stale)."""
     if not path.exists():
@@ -74,22 +73,73 @@ def _read_stale(path: Path) -> dict | None:
     except Exception:
         return None
 
-# ── Data Fetch ───────────────────────────────────────────────────
-def fetch_ohlcv(interval: str = "1h", period: str = "30d") -> pd.DataFrame:
-    import yfinance as yf
 
-    ticker = yf.Ticker("GC=F")
-    df = ticker.history(period=period, interval=interval)
+# ── Data Fetch ───────────────────────────────────────────────────
+BINANCE_INTERVALS = {"1h": "1h", "4h": "4h", "1d": "1d", "1wk": "1w", "1w": "1w"}
+BINANCE_LIMITS = {
+    ("1h", "5d"): 130, ("1h", "7d"): 170, ("1h", "30d"): 730, ("1h", "60d"): 1450,
+    ("4h", "30d"): 185, ("4h", "60d"): 365,
+    ("1d", "3mo"): 95, ("1d", "6mo"): 185, ("1d", "1y"): 370, ("1d", "2y"): 735,
+    ("1wk", "6mo"): 30, ("1wk", "1y"): 55, ("1wk", "2y"): 110,
+}
+
+
+def fetch_ohlcv_binance(interval: str = "1h", period: str = "30d") -> pd.DataFrame:
+    """Spot-venue OHLCV from Binance PAXGUSDT — tracks XAUUSD spot with no
+    futures carry premium, so charts stay in sync with MT5 spot prices."""
+    import urllib.request
+
+    bi = BINANCE_INTERVALS.get(interval)
+    limit = BINANCE_LIMITS.get((interval, period))
+    if not bi or not limit:
+        return pd.DataFrame()
+    urls = [
+        f"https://fapi.binance.com/fapi/v1/klines?symbol=PAXGUSDT&interval={bi}&limit={limit}",
+        f"https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval={bi}&limit={limit}",
+    ]
+    for u in urls:
+        try:
+            with urllib.request.urlopen(u, timeout=10) as r:
+                raw = json.loads(r.read().decode())
+            if not isinstance(raw, list) or not raw:
+                continue
+            df = pd.DataFrame(raw)[[0, 1, 2, 3, 4, 5]].copy()
+            df.columns = ["open_time", "open", "high", "low", "close", "volume"]
+            for c in ["open", "high", "low", "close", "volume"]:
+                df[c] = df[c].astype(float)
+            df["time"] = pd.to_datetime(df["open_time"], unit="ms", utc=True)
+            df = df.set_index("time")[["open", "high", "low", "close", "volume"]]
+            if not df.empty:
+                return df
+        except Exception:
+            continue
+    return pd.DataFrame()
+
+
+def fetch_ohlcv(interval: str = "1h", period: str = "30d") -> pd.DataFrame:
+    # 1) Binance PAXGUSDT — spot venue, matches MT5 XAUUSD & the banner feed.
+    df = fetch_ohlcv_binance(interval, period)
 
     if df.empty:
-        ticker = yf.Ticker("XAUUSD=X")
+        import yfinance as yf
+
+        # 2) yfinance PAXG-USD spot proxy. GC=F is COMEX futures with a carry
+        # premium (~$50-60 over spot) — last resort only.
+        ticker = yf.Ticker("PAXG-USD")
         df = ticker.history(period=period, interval=interval)
 
     if df.empty:
-        raise ValueError("No gold data available from yfinance")
+        import yfinance as yf
 
-    df = df[["Open", "High", "Low", "Close", "Volume"]].copy()
-    df.columns = ["open", "high", "low", "close", "volume"]
+        ticker = yf.Ticker("GC=F")
+        df = ticker.history(period=period, interval=interval)
+
+    if df.empty:
+        raise ValueError("No gold data available")
+
+    df = df.rename(columns={"Open": "open", "High": "high", "Low": "low",
+                            "Close": "close", "Volume": "volume"})
+    df = df[["open", "high", "low", "close", "volume"]].copy()
     df.index.name = "time"
     return df
 
@@ -353,6 +403,7 @@ def cmd_ticker(args):
         "changePct": change_pct,
         "rsi": sig["rsi"],
         "rsiState": sig["rsi_state"],
+        "skewness_20d": compute_skewness(df["close"], 20),
         "signal": sig["signal"],
         "confidence": sig["confidence"],
         "ema20": sig["ema_fast"],
@@ -372,7 +423,9 @@ def cmd_history(args):
     interval = args.get("interval", "1h")
     period = args.get("period", "30d")
     # Normalize shorthand to yfinance-valid periods (F2: fail loud otherwise)
-    period = {"1M": "1mo", "3M": "3mo", "6M": "6mo", "1Y": "1y", "2Y": "2y"}.get(period, period)
+    period = {"1M": "1mo", "3M": "3mo", "6M": "6mo", "1Y": "1y", "2Y": "2y"}.get(
+        period, period
+    )
     cache = _cache_key("history", interval=interval, period=period)
     cached = _read_cache(cache)
     if cached:
@@ -846,74 +899,66 @@ def cmd_calendar(args):
 
 
 
+def cmd_market_health(args):
+    """Provider health check — returns per-provider status + fallback chain info."""
+    try:
+        import sys; sys.path.insert(0, "/var/www/html/_shared/market")
+        from market_data_fallback import provider_health
+        return provider_health()
+    except Exception as e:
+        return {"error": str(e), "provider_order": ["yfinance"], "checked_at": datetime.now(MYT).isoformat()}
+
+
 def cmd_proxies(args):
     """Live sovereign proxy gauges: MYR, KLCI, Brent, NatGas, EWM, DXY.
-    Feeds the malaysia/vitals pages — proxies, NOT sealed readings."""
+    Feeds the malaysia/vitals pages — proxies, NOT sealed readings.
+    
+    ═══ MULTI-PROVIDER (2026-08-08) ═══
+    Investbrain-inspired fallback: yfinance → Stooq → Twelve Data → Alpha Vantage → Finnhub
+    Single-source SPOF eliminated. Configured via WEALTH_MARKET_PROVIDERS env.
+    """
     cache = _cache_key("proxies")
     cached = _read_cache(cache)
     if cached:
         return cached
 
-    import yfinance as yf
-
-    symbols = {
-        "usdmyr": ("MYR=X", 4),
-        "klci": ("^KLSE", 2),
-        "brent": ("BZ=F", 2),
-        "natgas": ("NG=F", 3),
-        "ewm": ("EWM", 2),
-        "dxy": ("DX-Y.NYB", 2),
-    }
-    result = {"timestamp": datetime.now(MYT).isoformat()}
-    for key, (sym, digits) in symbols.items():
-        try:
-            h = yf.Ticker(sym).history(period="5d")
-            if not h.empty:
-                result[key] = round(float(h["Close"].iloc[-1]), digits)
-                result[key + "_prev"] = round(float(h["Close"].iloc[-2]), digits)
-        except Exception:
-            result[key] = None
-
-    # Derived gauges
-    if result.get("usdmyr") and result.get("usdmyr_prev"):
-        result["usdmyr_change_pct"] = round(
-            (result["usdmyr"] - result["usdmyr_prev"]) / result["usdmyr_prev"] * 100, 2
-        )
-    _write_cache(cache, result)
-    return result
-
-def _node_body(obj):
-    if isinstance(obj, float) and obj.is_integer():
-        return int(obj)
-    if isinstance(obj, dict):
-        return {k: _node_body(v) for k, v in obj.items() if k != "timestamp"}
-    if isinstance(obj, list):
-        return [_node_body(v) for v in obj]
-    return obj
-
-
-def build_snapshot(asset, ticker, levels, macro, observed_at=None):
-    if observed_at is None:
-        observed_at = datetime.now(timezone.utc).isoformat()
-    body = {
-        "schema": "wealth.snapshot.v1",
-        "asset": asset,
-        "observed_at": observed_at,
-        "ticker": _node_body(ticker),
-        "levels": _node_body(levels),
-        "macro": _node_body(macro),
-    }
-    canonical = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
-    body["coherence_id"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-    return body
+    try:
+        import sys; sys.path.insert(0, "/var/www/html/_shared/market")
+        from market_data_fallback import fetch_live_proxies
+        result = fetch_live_proxies()
+        _write_cache(cache, result)
+        return result
+    except Exception:
+        # Graceful fallback: if multi-provider fails, try single-source yfinance
+        import yfinance as yf
+        symbols = {
+            "usdmyr": ("MYR=X", 4),
+            "klci": ("^KLSE", 2),
+            "brent": ("BZ=F", 2),
+            "natgas": ("NG=F", 3),
+            "ewm": ("EWM", 2),
+            "dxy": ("DX-Y.NYB", 2),
+        }
+        result = {"timestamp": datetime.now(MYT).isoformat(), "_sources": {"_fallback": "yfinance-emergency"}}
+        for key, (sym, digits) in symbols.items():
+            try:
+                h = yf.Ticker(sym).history(period="5d")
+                if not h.empty:
+                    result[key] = round(float(h["Close"].iloc[-1]), digits)
+                    result[key + "_prev"] = round(float(h["Close"].iloc[-2]), digits)
+            except Exception:
+                result[key] = None
+        if result.get("usdmyr") and result.get("usdmyr_prev"):
+            result["usdmyr_change_pct"] = round(
+                (result["usdmyr"] - result["usdmyr_prev"]) / result["usdmyr_prev"] * 100, 2
+            )
+        _write_cache(cache, result)
+        return result
 
 
 def cmd_snapshot(args):
-    """Return wrapped snapshot with schema/asset/coherence_id."""
-    ticker = cmd_ticker(args)
-    levels = cmd_levels(args)
-    macro = cmd_macro(args)
-    return build_snapshot("gold", ticker, levels, macro)
+    """Return raw ticker data — server wraps with schema/asset/coherence_id."""
+    return cmd_ticker(args)
 
 
 # ── Forecast Engine (wealth.forecast.v1) ─────────────────────────
@@ -956,7 +1001,9 @@ def _forecast_log_append(record: dict) -> None:
         body = dict(record)
         body["prev_hash"] = prev_hash
         digest = hashlib.sha256(
-            json.dumps(body, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
+            json.dumps(body, sort_keys=True, separators=(",", ":"), default=str).encode(
+                "utf-8"
+            )
         ).hexdigest()
         body["hash"] = digest
         with FORECAST_LOG.open("a") as f:
@@ -1013,7 +1060,9 @@ def cmd_forecast(args):
     # 4. Scenario ladder from daily swing S/R — falsification on its face
     sr = find_support_resistance(df)
     r1 = sr["resistance"][0] if sr["resistance"] else round(price + atr_val, 2)
-    r2 = sr["resistance"][1] if len(sr["resistance"]) > 1 else round(r1 + 2 * atr_val, 2)
+    r2 = (
+        sr["resistance"][1] if len(sr["resistance"]) > 1 else round(r1 + 2 * atr_val, 2)
+    )
     s1 = sr["support"][0] if sr["support"] else round(price - atr_val, 2)
     s2 = sr["support"][1] if len(sr["support"]) > 1 else round(s1 - 2 * atr_val, 2)
     rate = max(abs(slope), 0.25 * atr_val)
@@ -1022,25 +1071,43 @@ def cmd_forecast(args):
         d = abs(target - price) / rate
         return f"{max(1, int(d * 0.6))}–{max(2, int(d * 1.4))}"
 
-    long_conf = sum([
-        ema20_val > ema50_val,
-        rsi_val > 55,
-        regime == "TRENDING_UP",
-        slope > 0,
-        price > ema200_val,
-    ])
-    short_conf = sum([
-        ema20_val < ema50_val,
-        rsi_val < 45,
-        regime == "TRENDING_DOWN",
-        slope < 0,
-        price < ema200_val,
-    ])
+    long_conf = sum(
+        [
+            ema20_val > ema50_val,
+            rsi_val > 55,
+            regime == "TRENDING_UP",
+            slope > 0,
+            price > ema200_val,
+        ]
+    )
+    short_conf = sum(
+        [
+            ema20_val < ema50_val,
+            rsi_val < 45,
+            regime == "TRENDING_DOWN",
+            slope < 0,
+            price < ema200_val,
+        ]
+    )
     scenarios = [
-        {"side": "LONG", "trigger": f"daily close > {r1} (R1)", "objective": r2,
-         "invalidation": s1, "confluence": long_conf, "of": 5, "eta_days": _eta(r2)},
-        {"side": "SHORT", "trigger": f"daily close < {s1} (S1)", "objective": s2,
-         "invalidation": r1, "confluence": short_conf, "of": 5, "eta_days": _eta(s2)},
+        {
+            "side": "LONG",
+            "trigger": f"daily close > {r1} (R1)",
+            "objective": r2,
+            "invalidation": s1,
+            "confluence": long_conf,
+            "of": 5,
+            "eta_days": _eta(r2),
+        },
+        {
+            "side": "SHORT",
+            "trigger": f"daily close < {s1} (S1)",
+            "objective": s2,
+            "invalidation": r1,
+            "confluence": short_conf,
+            "of": 5,
+            "eta_days": _eta(s2),
+        },
     ]
 
     # 5. Bias — one engine, one voice. Derived, never hardcoded.
@@ -1063,24 +1130,144 @@ def cmd_forecast(args):
         "asset": ASSET_KEY,
         "generated_at": generated_at,
         "horizon_days": horizon,
-        "basis": {"close": price, "atr14": atr_val, "slope_per_day": slope,
-                  "regime": regime, "rsi": rsi_val,
-                  "ema20": ema20_val, "ema50": ema50_val, "ema200": ema200_val},
+        "basis": {
+            "close": price,
+            "atr14": atr_val,
+            "slope_per_day": slope,
+            "regime": regime,
+            "rsi": rsi_val,
+            "ema20": ema20_val,
+            "ema50": ema50_val,
+            "ema200": ema200_val,
+        },
         "bias": bias,
-        "cone": {"t": t_dates, "p10": p10, "p25": p25, "p50": p50, "p75": p75, "p90": p90},
+        "cone": {
+            "t": t_dates,
+            "p10": p10,
+            "p25": p25,
+            "p50": p50,
+            "p75": p75,
+            "p90": p90,
+        },
         "scenarios": scenarios,
         "institutional_read": institutional_read,
         "epistemic": "INTERPRET — ATR-scaled drift cone, not prophecy. Falsification levels stated. Human decides.",
     }
     _write_cache(cache, result)
-    _forecast_log_append({
-        "schema": "wealth.forecastlog.v1", "asset": ASSET_KEY,
-        "generated_at": generated_at, "horizon_days": horizon, "close": price,
-        "bias": bias, "p50_end": p50[-1], "p10_end": p10[-1], "p90_end": p90[-1],
-        "long_objective": r2, "short_objective": s2,
-        "long_confluence": long_conf, "short_confluence": short_conf,
-    })
+    _forecast_log_append(
+        {
+            "schema": "wealth.forecastlog.v1",
+            "asset": ASSET_KEY,
+            "generated_at": generated_at,
+            "horizon_days": horizon,
+            "close": price,
+            "bias": bias,
+            "p50_end": p50[-1],
+            "p10_end": p10[-1],
+            "p90_end": p90[-1],
+            "long_objective": r2,
+            "short_objective": s2,
+            "long_confluence": long_conf,
+            "short_confluence": short_conf,
+        }
+    )
     return result
+
+
+# ── EUREKA Signal: Multi-Timeframe Momentum ─────────────────────
+# Gold physics: trends persist due to central bank flows + macro regime.
+# Simple EMA cross misses the full momentum spectrum.
+# TS Momentum (Moskowitz-Pedersen 2012): test 1M/3M/6M/12M lookbacks.
+def cmd_momentum(args):
+    """EUREKA-GOLD-MOM: multi-timeframe momentum across 4 lookback windows."""
+    cache = _cache_key("momentum")
+    cached = _read_cache(cache)
+    if cached:
+        return cached
+
+    # Fetch enough data for 12M lookback + 1M signal window
+    df = fetch_ohlcv(interval="1d", period="2y")
+    if df.empty:
+        return {"error": "No gold data", "timestamp": datetime.now(MYT).isoformat()}
+
+    close = df["close"]
+    price = round(float(close.iloc[-1]), 2)
+
+    # Multi-timeframe momentum: returns over 1M, 3M, 6M, 12M windows
+    windows = {"1M": 21, "3M": 63, "6M": 126, "12M": 252}
+    momentum_signals = {}
+    total_signal = 0.0
+    total_weight = 0.0
+
+    for label, days in windows.items():
+        if len(close) < days + 1:
+            momentum_signals[label] = {
+                "return_pct": 0,
+                "signal": "INSUFFICIENT_DATA",
+                "z_score": 0,
+            }
+            continue
+        ret = round(float((close.iloc[-1] / close.iloc[-days] - 1) * 100), 2)
+        # Z-score: how extreme is this return relative to rolling windows of same length?
+        rolling_rets = close.pct_change(days).dropna() * 100
+        mean_ret = float(rolling_rets.mean())
+        std_ret = float(rolling_rets.std()) if float(rolling_rets.std()) > 0 else 1.0
+        z = round((ret - mean_ret) / std_ret, 2)
+
+        if z > 0.5:
+            sig = "BULLISH"
+        elif z < -0.5:
+            sig = "BEARISH"
+        else:
+            sig = "NEUTRAL"
+
+        momentum_signals[label] = {"return_pct": ret, "signal": sig, "z_score": z}
+        # Weight shorter lookbacks more for trade timing, longer for regime
+        w = {"1M": 0.35, "3M": 0.30, "6M": 0.20, "12M": 0.15}[label]
+        total_signal += z * w
+        total_weight += w
+
+    weighted_z = round(total_signal / total_weight, 2) if total_weight > 0 else 0
+
+    if weighted_z > 0.7:
+        regime = "STRONG_BULL"
+    elif weighted_z > 0.2:
+        regime = "BULL"
+    elif weighted_z < -0.7:
+        regime = "STRONG_BEAR"
+    elif weighted_z < -0.2:
+        regime = "BEAR"
+    else:
+        regime = "NEUTRAL"
+
+    result = {
+        "schema": "wealth.momentum.v1",
+        "asset": ASSET_KEY,
+        "price": price,
+        "weighted_z": weighted_z,
+        "regime": regime,
+        "windows": momentum_signals,
+        "read": (
+            f"Gold ${price} momentum regime: {regime} (z={weighted_z:+.1f}). "
+            + " | ".join(
+                f"{l}: {m['signal']} ({m['z_score']:+.1f}σ)"
+                for l, m in momentum_signals.items()
+            )
+        ),
+        "epistemic": "DERIVED — TS momentum across 4 lookbacks. Shorter windows weight more for timing, longer for regime.",
+        "timestamp": datetime.now(MYT).isoformat(),
+    }
+    _write_cache(cache, result)
+    return result
+
+
+# ── EUREKA Signal: Skewness Risk Thermometer (shared across all assets) ──
+def compute_skewness(series: pd.Series, window: int = 20) -> float:
+    """Rolling return skewness — measures tail risk asymmetry."""
+    returns = series.pct_change().dropna()
+    if len(returns) < window:
+        return 0.0
+    return round(float(returns.tail(window).skew()), 3)
 
 
 def main():
@@ -1098,7 +1285,9 @@ def main():
             "calendar",
             "snapshot",
             "proxies",
-        "forecast",
+            "forecast",
+            "momentum",
+        "market_health",
         ],
     )
     parser.add_argument("--interval", default="1h")
@@ -1117,22 +1306,26 @@ def main():
         "calendar": cmd_calendar,
         "snapshot": cmd_snapshot,
         "proxies": cmd_proxies,
-          "forecast": cmd_forecast,
+        "forecast": cmd_forecast,
+        "market_health": cmd_market_health,
+        "momentum": cmd_momentum,
     }
 
     try:
         result = handlers[args.command](
             {
-            "interval": args.interval,
-            "period": args.period,
-            "horizon": args.horizon,
-        }
+                "interval": args.interval,
+                "period": args.period,
+                "horizon": args.horizon,
+            }
         )
         print(json.dumps(result, default=str, indent=2))
     except Exception as e:
         # Stale fallback: serve expired cache rather than VOID the panel
         if args.command == "history":
-            stale_key = _cache_key("history", interval=args.interval, period=args.period)
+            stale_key = _cache_key(
+                "history", interval=args.interval, period=args.period
+            )
         elif args.command in ("ticker", "snapshot"):
             stale_key = _cache_key("ticker")
         else:

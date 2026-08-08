@@ -51,6 +51,11 @@ function runPython(command, args = []) {
 }
 
 const handlers = {
+  '/api/gold/market_health': async () => {
+    const c = getCache('market_health'); if (c) return c;
+    const d = await runPython('market_health'); setCache('market_health', d); return d;
+  },
+  '/api/market_health': async () => handlers['/api/gold/market_health'](),
   // APEX intelligence (new 2026-07-16)
   '/api/gold/apex': async () => {
     const c = getCache('apex'); if (c) return c;
@@ -126,6 +131,7 @@ const handlers = {
   '/api/history': async (req, res, params) => handlers['/api/gold/history'](req, res, params),
   '/api/signals': async () => handlers['/api/gold/signals'](),
   '/api/levels': async () => handlers['/api/gold/levels'](),
+  '/api/momentum': async () => handlers['/api/gold/momentum'](),
   // Existing endpoints
   '/api/gold/forecast': async (req, res, params) => {
     const horizon = params.get('horizon') || '30';
@@ -158,6 +164,10 @@ const handlers = {
   '/api/gold/macro': async () => {
     const c = getCache('macro'); if (c) return c;
     const d = await runPython('macro'); setCache('macro', d); return d;
+  },
+  '/api/gold/momentum': async () => {
+    const c = getCache('momentum'); if (c) return c;
+    const d = await runPython('momentum'); setCache('momentum', d); return d;
   },
 };
 
