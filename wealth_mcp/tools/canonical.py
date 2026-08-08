@@ -75,7 +75,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_primitive",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description="Deductive capital math primitives — pure computation, no inference or governance verdict.",
+        description="Deductive capital math primitives — pure computation, no inference or governance verdict. SIDE EFFECT: writes a vault receipt to /root/VAULT999/wealth/receipts.jsonl (per wealth-organ.service.d/receipts-write.conf). Receipts include call_status=PASS/FAIL and input hashes.",
         tags={"domain": "capital", "kind": "deductive", "canonical": "v1"},
     )
     async def capital_primitive(
@@ -312,7 +312,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_health",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description="Financial health metrics — deductive computation from structured inputs, no inference or governance verdict.",
+        description="Financial health metrics — deductive computation from structured inputs, no inference or governance verdict. SIDE EFFECT: writes a vault receipt to /root/VAULT999/wealth/receipts.jsonl (per wealth-organ.service.d/receipts-write.conf). Receipts include call_status=PASS/FAIL and input hashes.",
         tags={"domain": "capital", "kind": "deductive", "canonical": "v1"},
     )
     async def capital_health(
@@ -626,7 +626,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_diagnose",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description="Abductive institutional diagnostics — inference from partial evidence across stress, governance, and institutional domains.",
+        description="Abductive institutional diagnostics — inference from partial evidence across stress, governance, and institutional domains. SIDE EFFECT: writes a vault receipt to /root/VAULT999/wealth/receipts.jsonl (per wealth-organ.service.d/receipts-write.conf). Receipts include call_status=PASS/FAIL and input hashes.",
         tags={"domain": "institutional", "kind": "abductive", "canonical": "v1"},
     )
     async def capital_diagnose(
@@ -951,7 +951,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_market",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description="Market data and commodity intelligence — observational with derived and interpreted fields.",
+        description="Market data and commodity intelligence — observational with derived and interpreted fields. SIDE EFFECT: writes a vault receipt to /root/VAULT999/wealth/receipts.jsonl (per wealth-organ.service.d/receipts-write.conf). Receipts include call_status=PASS/FAIL and input hashes.",
         tags={"domain": "market", "kind": "observational", "canonical": "v1"},
     )
     async def capital_market(
@@ -1117,7 +1117,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_ledger",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description="VAULT999 immutable ledger access — query read-only, write requires human acknowledgment.",
+        description="VAULT999 immutable ledger access — query read-only, write requires human acknowledgment. SIDE EFFECT: writes a vault receipt to /root/VAULT999/wealth/receipts.jsonl (per wealth-organ.service.d/receipts-write.conf). Receipts include call_status=PASS/FAIL and input hashes.",
         tags={"domain", "kind", "canonical", "action:irreversible", "risk:c2"},
     )
     async def capital_ledger(
@@ -1226,7 +1226,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_registry",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description="WEALTH meta/introspection — registry status, tool schema, domain index, health check. Observational only.",
+        description="WEALTH meta/introspection — registry status, tool schema, domain index, health check. Observational only. SIDE EFFECT: writes a vault receipt to /root/VAULT999/wealth/receipts.jsonl (per wealth-organ.service.d/receipts-write.conf). Receipts include call_status=PASS/FAIL and input hashes.",
         tags={"domain": "meta", "kind": "observational", "canonical": "v1"},
     )
     async def capital_registry(
@@ -1625,7 +1625,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_entropy",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description="Capital and institutional entropy analysis — measures information loss, consequence displacement, and metric drift. Computes, never allocates.",
+        description="Capital and institutional entropy analysis — measures information loss, consequence displacement, and metric drift. Computes, never allocates. SIDE EFFECT: writes a vault receipt to /root/VAULT999/wealth/receipts.jsonl (per wealth-organ.service.d/receipts-write.conf). Receipts include call_status=PASS/FAIL and input hashes.",
         tags={
             "domain": "institutional",
             "kind": "abductive",
@@ -1850,7 +1850,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="wealth_judge_handoff",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description="Build or validate structured handoff envelope for arifOS governance review and 888_HOLD judgment.",
+        description="Build or validate structured handoff envelope for arifOS governance review and 888_HOLD judgment. SIDE EFFECT: writes a vault receipt to /root/VAULT999/wealth/receipts.jsonl (per wealth-organ.service.d/receipts-write.conf). Receipts include call_status=PASS/FAIL and input hashes.",
         tags={"domain": "meta", "kind": "governance", "canonical": "v1"},
     )
     async def wealth_judge_handoff(

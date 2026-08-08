@@ -369,6 +369,14 @@ WEALTH_OUTPUT_SCHEMA: dict = {
                 "HOLD",
                 "VOID",
                 "INSUFFICIENT_EVIDENCE",
+                # W-A6-FIX (2026-08-08): verdict enum expanded to accept
+                # governance-class verdicts emitted by organ_governance.py
+                # (READONLY for read-only ops, C1_PASS for C1 authority
+                # class). These are orthogonal to coverage but emitted by
+                # the same field. Without these, schema validation rejects
+                # every read-only tool call (-32602).
+                "READONLY",
+                "C1_PASS",
             ],
         },
         # ── W-005: Required coverage object ─────────────────────────
