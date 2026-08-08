@@ -34,3 +34,14 @@ include /root/arifOS/scripts/security_audit.mk
 
 forge: security-audit
 	@echo "WEALTH Surgical Burn complete. Awaiting SOVEREIGN SEAL."
+deploy-local: verify
+	@echo "═══ WEALTH deploy-local ═══"
+	@echo "source → runtime: /root/WEALTH/ (source IS runtime, .venv)"
+	systemctl restart wealth-organ.service
+	@echo "restarted wealth-organ.service"
+	@sleep 3
+	@curl -sf http://127.0.0.1:18082/health >/dev/null && echo "✅ WEALTH healthy" || echo "❌ WEALTH down"
+
+verify:
+	@echo "verifying authority_ceiling on WEALTH..."
+	@curl -sf http://127.0.0.1:18082/health | python3 -c "import json,sys;h=json.load(sys.stdin);assert h.get('authority_ceiling'),'authority_ceiling ABSENT';print(f'✅ authority_ceiling={h[\"authority_ceiling\"]}')" || echo "❌ verify failed"
