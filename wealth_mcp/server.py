@@ -834,6 +834,22 @@ def create_mcp_server() -> FastMCP:
                             sc["warnings"] = existing + [
                                 f"[W0] {w}" for w in w0_warnings
                             ]
+
+                    # BUG 4 FIX: evidence_quality:MISSING + gate:PASS → contradiction
+                    _evidence_q = str(sc.get("evidence_quality", "")).upper()
+                    if (
+                        _evidence_q == "MISSING"
+                        and w0_gate == "PASS"
+                        and not (sc.get("result") or {}).get("reflection")
+                    ):
+                        w0_gate = "CAUTION"
+                        w0_warnings.append(
+                            "EVIDENCE_QUALITY_MISMATCH: PASS gate but MISSING evidence "
+                            "and no reflection prose — internal contradiction"
+                        )
+                        sc["_w0_evidence_gate"]["gate"] = "CAUTION"
+                        sc["_w0_evidence_gate"]["warnings"] = w0_warnings
+
                     # ── W-005: Inject verdict + coverage into envelope ─
                     if w0_gate == "FAIL":
                         # No verdict — coverage was UNMEASURED
@@ -922,19 +938,22 @@ def create_mcp_server() -> FastMCP:
                 )
 
             call_status = _tool_result_status(result)
-            receipt_state = _emit_receipt(
-                name,
-                arguments,
-                status=call_status,
-                verdict=verdict,
-                actor_id=actor_id,
-                session_id=session_id,
-            )
-            return _finalize(
-                _attach_receipt_meta(result, receipt_state),
-                verdict,
-                is_err=False,
-            )
+            # F2: shadow flag suppresses vault receipt writes
+            if not arguments.get("shadow", False):
+                receipt_state = _emit_receipt(
+                    name,
+                    arguments,
+                    status=call_status,
+                    verdict=verdict,
+                    actor_id=actor_id,
+                    session_id=session_id,
+                )
+                return _finalize(
+                    _attach_receipt_meta(result, receipt_state),
+                    verdict,
+                    is_err=False,
+                )
+            return _finalize(result, verdict, is_err=False)
 
         mcp.call_tool = _governance_call_tool
 

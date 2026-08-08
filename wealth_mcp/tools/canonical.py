@@ -37,11 +37,24 @@ def _coerce_json_string(v: Any) -> Any:
     return v
 
 
+def _coerce_dict_to_list_of_dicts(v: Any) -> Any:
+    """Coerce a single dict into list-of-dicts. F1 AMANAH: prevents silent
+    input dropping when MCP transport serializes a single dict instead of
+    a list of dicts. Applies to all CoercedDictList parameters."""
+    v = _coerce_json_string(v)
+    if isinstance(v, dict):
+        return [v]
+    return v
+
+
 # Schema-level coerced types — Pydantic validates AFTER coercion
 CoercedList = Annotated[list[float] | None, BeforeValidator(_coerce_json_string)]
 CoercedIntList = Annotated[list[int] | None, BeforeValidator(_coerce_json_string)]
 CoercedDict = Annotated[dict | None, BeforeValidator(_coerce_json_string)]
 CoercedDictList = Annotated[list[dict] | None, BeforeValidator(_coerce_json_string)]
+CoercedDictListStrict = Annotated[
+    list[dict] | None, BeforeValidator(_coerce_dict_to_list_of_dicts)
+]
 CoercedStrList = Annotated[list[str] | None, BeforeValidator(_coerce_json_string)]
 
 
@@ -1635,26 +1648,27 @@ def register_canonical_tools(mcp):
     )
     async def capital_entropy(
         mode: str,
-        decision_makers: CoercedDictList = None,
-        beneficiaries: CoercedDictList = None,
-        cost_bearers: CoercedDictList = None,
+        decision_makers: CoercedDictListStrict = None,
+        beneficiaries: CoercedDictListStrict = None,
+        cost_bearers: CoercedDictListStrict = None,
         veto_holders: CoercedStrList = None,
         declared_purpose: str | None = None,
-        current_kpis: CoercedDictList = None,
+        current_kpis: CoercedDictListStrict = None,
         actual_behaviors: CoercedStrList = None,
         excluded_outcomes: CoercedStrList = None,
         decision_ref: str | None = None,
-        actors: CoercedDictList = None,
-        trust_events: CoercedDictList = None,
+        actors: CoercedDictListStrict = None,
+        trust_events: CoercedDictListStrict = None,
         current_trust_balance: float = 0.5,
         order_indicators: CoercedDict = None,
         suppression_indicators: CoercedDict = None,
         actor_ref: str | None = None,
         local_efficiency_claims: CoercedDict = None,
-        exported_costs: CoercedDictList = None,
+        exported_costs: CoercedDictListStrict = None,
         session_id: str | None = None,
         trace_id: str | None = None,
         actor_id: str | None = None,
+        shadow: bool = False,
     ) -> dict:
         """Entropy Integrity Mesh — WEALTH domain witness."""
         # Parameters are coerced by the Pydantic BeforeValidator annotations.
@@ -1673,6 +1687,7 @@ def register_canonical_tools(mcp):
                 session_id=session_id,
                 trace_id=trace_id,
                 actor_id=actor_id,
+                shadow=shadow,
             )
 
         def _entropy_failure(
@@ -1767,16 +1782,23 @@ def register_canonical_tools(mcp):
                     "Keyword-overlap alignment scores are token-set Jaccard similarity — "
                     "NOT semantic analysis. Use the reflection questions, not the numbers."
                 )
-                return wrap_result(
-                    tool_name="capital_entropy",
-                    domain="institutional",
-                    result=raw_result,
-                    epistemic_tag=EpistemicTag.SPECULATED,
-                    evidence_quality=EvidenceQuality.MISSING,
-                    source_attribution=["entropy_integrity_local_dependency"],
-                    session_id=session_id,
-                    trace_id=trace_id,
-                    actor_id=actor_id,
+                return _wrap_entropy(
+                    {
+                        "audit_id": raw_result.get("audit_id"),
+                        "declared_purpose": raw_result.get("declared_purpose"),
+                        "kpi_alignment": raw_result.get("kpi_alignment", []),
+                        "purpose_fidelity": raw_result.get("purpose_fidelity"),
+                        "gaming_signals": raw_result.get("gaming_signals", []),
+                        "externality_count": raw_result.get("externality_count", 0),
+                        "excluded_outcomes": raw_result.get("excluded_outcomes", []),
+                        "reflection": raw_result.get("reflection", []),
+                        "metadata": raw_result.get("metadata", {}),
+                        "_zen_note": (
+                            "Interpretation removed per Phase 3. "
+                            "Keyword-overlap alignment scores are token-set Jaccard similarity — "
+                            "NOT semantic analysis. Use the reflection questions, not the numbers."
+                        ),
+                    }
                 )
 
             if m == "responsibility_ledger":
