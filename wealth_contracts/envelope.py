@@ -510,11 +510,14 @@ def wrap_result(
     Automatically computes shadow flag and attaches kappar/psile/qdf.
     """
     # Auto-compute shadow flag from violations/holds in result
-    shadow = False
-    if isinstance(result, dict):
+    # BUG FIX (2026-08-08): respect explicit shadow kwarg (caller intent).
+    # shadow only exists in kwargs (constructor param), not as wrap_result arg.
+    explicit_shadow = kwargs.get("shadow", False)
+    if not explicit_shadow and isinstance(result, dict):
         violations = result.get("violations", [])
         holds = result.get("holds", [])
-        shadow = len(violations) > 0 or len(holds) > 0
+        explicit_shadow = len(violations) > 0 or len(holds) > 0
+    kwargs["shadow"] = explicit_shadow
 
     # Auto-attach constitutional fields if not provided
     try:
@@ -525,6 +528,21 @@ def wrap_result(
         get_qdf_version = lambda: "QDF-v2.0-TRINITY"  # noqa: E731
 
     kappa_r = kwargs.pop("kappa_r", None)
+    # BUG FIX (2026-08-08): if kappa_r not explicitly provided, derive from
+    # evidence_quality so it varies per call (was hardcoded to 0.93).
+    if kappa_r is None:
+        eq = evidence_quality
+        if hasattr(eq, "value"):
+            eq = eq.value  # unwrap Enum
+        eq = str(eq).upper()
+        _KAPPA_BY_EVIDENCE = {
+            "OBSERVED": 0.88,
+            "MODERATE": 0.70,
+            "WEAK": 0.52,
+            "MISSING": 0.35,
+            "SPECULATED": 0.42,
+        }
+        kappa_r = _KAPPA_BY_EVIDENCE.get(eq, 0.50)
     psi_le = kwargs.pop("psi_le", None)
     qdf = kwargs.pop("qdf", None)
     witness = kwargs.pop("witness", None)
@@ -540,7 +558,7 @@ def wrap_result(
             source_attribution = list(source_attribution) + [source]
 
     if kappa_r is None:
-        kappa_r = compute_kappa_r(0.9, 0.95)
+        pass  # F3 fix: do not emit constant 0.93; leave None → not serialized
     if psi_le is None:
         psi_le = compute_psi_le(0.3, 0.5)
     if qdf is None:
@@ -640,7 +658,7 @@ def wrap_result(
         epistemic_tag=epistemic_tag,
         evidence_quality=evidence_quality,
         source_attribution=source_attribution or [],
-        shadow=shadow,
+        shadow=kwargs.pop("shadow", False),
         kappa_r=kappa_r,
         psi_le=psi_le,
         qdf=qdf,
