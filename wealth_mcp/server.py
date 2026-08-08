@@ -814,7 +814,15 @@ def create_mcp_server() -> FastMCP:
                         )
 
                     sc["_w0_evidence_gate"] = {
-                        "coverage": coverage if coverage >= 0.0 else "UNMEASURED",
+                        # W-A6-FIX (2026-08-08): coverage is a NUMBER per
+                        # WEALTH_OUTPUT_SCHEMA. The previous ternary
+                        # emitted the string "UNMEASURED" which violated
+                        # schema validation (-32602). Now: emit a numeric
+                        # sentinel (-1.0) plus a sibling boolean for
+                        # readability. Schema accepts; observers read
+                        # `unmeasured` first.
+                        "coverage": coverage if coverage >= 0.0 else -1.0,
+                        "coverage_unmeasured": coverage < 0.0,
                         "material_args_count": material_count,
                         "material_args": sorted(material.keys()) if material else [],
                         "gate": w0_gate,
@@ -845,7 +853,12 @@ def create_mcp_server() -> FastMCP:
                     sc["coverage"] = {
                         "known": _known_estimate,
                         "total": material_count,
-                        "ratio": coverage if coverage >= 0.0 else "UNMEASURED",
+                        # W-A6-FIX (2026-08-08): ratio MUST be a number per
+                        # WEALTH_OUTPUT_SCHEMA. Emit numeric sentinel -1.0
+                        # when coverage is unmeasured; clients read
+                        # `coverage_unmeasured` for explicit semantics.
+                        "ratio": coverage if coverage >= 0.0 else -1.0,
+                        "unmeasured": coverage < 0.0,
                     }
                     sc.setdefault(
                         "epistemic",
@@ -1029,7 +1042,7 @@ def _register_resources(mcp: FastMCP) -> None:
     @mcp.resource(
         uri="wealth://schema",
         name="WEALTH Schema",
-        description="WEALTH organ identity, version, protocol, and canonical tool surface.",
+        description="WEALTH organ identity, version, protocol, and canonical tool surface. SIDE EFFECT: writes a vault receipt to /root/VAULT999/wealth/receipts.jsonl (per wealth-organ.service.d/receipts-write.conf). Receipts include call_status=PASS/FAIL and input hashes.",
         mime_type="application/json",
         tags={"wealth", "schema", "sot", "identity"},
         annotations={"readOnlyHint": True, "idempotentHint": True},
