@@ -150,6 +150,9 @@ if __name__ == "__main__":
                     "note": "geometry owned by arifOS; WEALTH reports local presence only",
                 },
                 "final_authority": "ARIF",
+                # F2-fidelity fix (MCP-PROBE-2026-08-08): declare authority_ceiling.
+                # Per ORGAN.md, WEALTH = COMPUTE_ONLY (555).
+                "authority_ceiling": "555_COMPUTE_ONLY",
                 "version": (
                     f"v{WEALTH_VERSION}"
                     if WEALTH_VERSION != "UNAVAILABLE"
