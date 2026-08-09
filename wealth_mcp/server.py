@@ -197,6 +197,9 @@ def _validate_direct_session_binding(
         "capital_primitive",
         "capital_entropy",
         "capital_wisdom",
+        "capital_indicator",
+        "capital_backtest",
+        "capital_entry_plan",
     }
     unbound = session_id in _UNBOUND_SESSION_TOKENS
 
@@ -347,7 +350,18 @@ def create_mcp_server() -> FastMCP:
                 for k in ("personal_finance", "cashflow", "runway", "zakat", "epf")
             ):
                 return "personal"
-            if any(k in t for k in ("market", "fx", "commodity", "macro")):
+            if any(
+                k in t
+                for k in (
+                    "market",
+                    "fx",
+                    "commodity",
+                    "macro",
+                    "indicator",
+                    "backtest",
+                    "entry_plan",
+                )
+            ):
                 return "market"
             if any(k in t for k in ("stock",)):
                 return "stock"

@@ -14,6 +14,9 @@ CAPITAL_TOOL_NAMES = (
     "capital_registry",
     "capital_entropy",
     "wealth_judge_handoff",
+    "capital_indicator",
+    "capital_backtest",
+    "capital_entry_plan",
 )
 
 # Zen Phase 1a: shadow tools removed from MCP surface.

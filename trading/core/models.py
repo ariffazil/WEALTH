@@ -2,6 +2,7 @@
 Data models for the trading system.
 Pure dataclasses — no business logic, no I/O.
 """
+
 from __future__ import annotations
 
 import json
@@ -19,9 +20,9 @@ class Direction(str, Enum):
 
 
 class SignalStrength(str, Enum):
-    STRONG = "STRONG"      # ≥3 confluence factors
+    STRONG = "STRONG"  # ≥3 confluence factors
     MODERATE = "MODERATE"  # 2 confluence factors
-    WEAK = "WEAK"          # 1 factor, needs confirmation
+    WEAK = "WEAK"  # 1 factor, needs confirmation
     NONE = "NONE"
 
 
@@ -33,15 +34,16 @@ class Verdict(str, Enum):
 
 
 class EpistemicLabel(str, Enum):
-    OBS = "OBS"       # observed (price, indicator value)
-    DER = "DER"       # derived (computed from observations)
-    INT = "INT"       # interpreted (pattern recognition)
-    SPEC = "SPEC"     # speculative (prediction)
+    OBS = "OBS"  # observed (price, indicator value)
+    DER = "DER"  # derived (computed from observations)
+    INT = "INT"  # interpreted (pattern recognition)
+    SPEC = "SPEC"  # speculative (prediction)
 
 
 @dataclass
 class OHLCV:
     """Single candlestick."""
+
     timestamp: datetime
     open: float
     high: float
@@ -74,6 +76,7 @@ class OHLCV:
 @dataclass
 class Indicators:
     """Snapshot of all technical indicators at a point in time."""
+
     timestamp: datetime
     # EMAs
     ema_20: float = 0.0
@@ -90,6 +93,13 @@ class Indicators:
     support: float = 0.0
     resistance: float = 0.0
     pivot: float = 0.0
+    # Bollinger Bands (FORGED 2026-08-09)
+    bb_upper: float = 0.0
+    bb_mid: float = 0.0
+    bb_lower: float = 0.0
+    # Parabolic SAR (FORGED 2026-08-09)
+    psar: float = 0.0
+    psar_trend: str = "NONE"  # BULL | BEAR | NONE
     # Trend
     trend: Direction = Direction.FLAT
     # Epistemic label
@@ -99,6 +109,7 @@ class Indicators:
 @dataclass
 class ConfluenceFactor:
     """A single factor contributing to a signal."""
+
     name: str
     direction: Direction
     weight: float  # 0.0 - 1.0
@@ -110,6 +121,7 @@ class ConfluenceFactor:
 @dataclass
 class Signal:
     """A trading signal with full provenance."""
+
     signal_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     symbol: str = "XAUUSD"
@@ -149,7 +161,13 @@ class Signal:
         return self._format_full()
 
     def _format_syed(self) -> str:
-        emoji = "🟢" if self.direction == Direction.BUY else "🔴" if self.direction == Direction.SELL else "⚪"
+        emoji = (
+            "🟢"
+            if self.direction == Direction.BUY
+            else "🔴"
+            if self.direction == Direction.SELL
+            else "⚪"
+        )
         conf_pct = int(self.confidence * 100)
         lines = [
             f"{emoji} **XAUUSD {self.direction.value}** — {self.strength.value}",
@@ -174,6 +192,7 @@ class Signal:
 @dataclass
 class Position:
     """An open position."""
+
     ticket: int = 0
     symbol: str = "XAUUSD"
     direction: Direction = Direction.FLAT
@@ -189,6 +208,7 @@ class Position:
 @dataclass
 class TradeRecord:
     """Closed trade for journaling and learning."""
+
     signal_id: str = ""
     symbol: str = "XAUUSD"
     direction: Direction = Direction.FLAT
@@ -208,6 +228,7 @@ class TradeRecord:
 @dataclass
 class RiskState:
     """Current risk exposure snapshot."""
+
     equity: float = 0.0
     balance: float = 0.0
     open_positions: int = 0
@@ -222,5 +243,6 @@ class RiskState:
     def daily_loss_remaining(self) -> float:
         """How much more can be lost today before halt."""
         from .config import get_config
+
         cfg = get_config()
         return max(0, (cfg.max_daily_loss_pct / 100 * self.equity) + self.daily_pnl)
