@@ -18,7 +18,7 @@ classifiers = [
 
 dependencies = [
     "supabase>=2.10.0",
-    "fastmcp[tasks]==3.4.5",
+    "fastmcp[tasks]==3.4.6",
     "anyio>=4.13.0",
     "numpy>=2.4.6",
     "scipy>=1.17.1",
