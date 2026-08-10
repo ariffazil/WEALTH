@@ -22,6 +22,7 @@ concurrency:
 
 jobs:
   secrets:
+    if: github.actor != 'dependabot[bot]' && github.actor != 'app/dependabot'
     name: 🔐 Secrets Scan
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -35,6 +36,7 @@ jobs:
 
   # ─── Q1: Critical path changes? ────────────────────────────────────────
   q1-critical-paths:
+    if: github.actor != 'dependabot[bot]' && github.actor != 'app/dependabot'
     name: "Q1 — Critical Paths"
     runs-on: ubuntu-latest
     outputs:
@@ -74,6 +76,7 @@ jobs:
 
   # ─── Q2: Financial invariants? ─────────────────────────────────────────
   q2-financial-invariants:
+    if: github.actor != 'dependabot[bot]' && github.actor != 'app/dependabot'
     name: "Q2 — Financial Invariants"
     runs-on: ubuntu-latest
     steps:
@@ -113,6 +116,7 @@ jobs:
 
   # ─── Q3: Tests pass? ───────────────────────────────────────────────────
   q3-tests:
+    if: github.actor != 'dependabot[bot]' && github.actor != 'app/dependabot'
     name: "Q3 — Tests"
     runs-on: ubuntu-latest
     steps:
@@ -132,14 +136,16 @@ jobs:
         run: uv sync --extra dev || pip install -e ".[dev]"
 
       - name: Test
-        run: uv run pytest tests/ -q --tb=short || python -m pytest tests/ -q --tb=short
+        run: uv run pytest tests/ -q --tb=short || python -m pytest tests/ -q 
+          --tb=short
 
   # ─── Final gate ────────────────────────────────────────────────────────
   sentinel-gate:
+    if: (always()) && (github.actor != 'dependabot[bot]' && github.actor != 
+      'app/dependabot')
     name: "✅ Sentinel Gate"
     needs: [q1-critical-paths, q2-financial-invariants, q3-tests]
     runs-on: ubuntu-latest
-    if: always()
     steps:
       - name: Gate verdict
         run: |

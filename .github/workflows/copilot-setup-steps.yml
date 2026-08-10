@@ -11,6 +11,7 @@ on:
 
 jobs:
   copilot-setup-steps:
+    if: github.actor != 'dependabot[bot]' && github.actor != 'app/dependabot'
     name: "WEALTH — Pre-install capital intelligence dependencies"
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -24,7 +25,8 @@ jobs:
       - name: Install Python dependencies
         run: pip install -e ".[dev]" -q
       - name: Verify WEALTH server loads
-        run: python3 -c "import internal.monolith; print('[PASS] WEALTH monolith loaded')"
+        run: python3 -c "import internal.monolith; print('[PASS] WEALTH monolith
+          loaded')"
         env:
           ARIFOS_ENV: ci
       - name: Run smoke tests
