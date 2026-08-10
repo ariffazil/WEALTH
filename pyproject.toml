@@ -33,7 +33,7 @@ dependencies = [
     "yfinance>=0.2.0",
     # klse_screener is a custom package (not on PyPI) — installed system-wide in /usr/local/lib/python3.13/dist-packages
     # WEALTH's internal bursa/klse_adapter.py imports it as a system package; kept out of pyproject.toml to avoid resolution failure.
-    "pydantic-ai>=0.0.14",
+    "pydantic-ai>=2.26.0",
     "langgraph>=0.2.0",
     "opa-python-client>=0.3.0",
     "sigstore>=2.0.0",
