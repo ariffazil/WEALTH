@@ -5844,7 +5844,7 @@ requires-dist = [
     { name = "sigstore", specifier = ">=2.0.0" },
     { name = "starlette", specifier = ">=0.40.0" },
     { name = "supabase", specifier = ">=2.10.0" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.49.0" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.52.1" },
     { name = "yfinance", specifier = ">=0.2.0" },
 ]
 provides-extras = ["dev"]
