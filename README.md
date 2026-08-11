@@ -1,8 +1,8 @@
 <!-- SOT-MANIFEST
 owner: Muhammad Arif bin Fazil (F13 SOVEREIGN)
-last_verified: 2026-08-10T12:10:00Z
+last_verified: 2026-08-11T05:58:51Z
 federation_release: v2026.08.09
-live_commit: 0a42774 (M0-C11 stabilization: 7 files, +132/-147, net -15)
+live_commit: 50a4047 (pydantic-ai 2.25.0→2.26.0 dependabot bump)
 tools_loaded: 8
 public_tools: 8
 canonical_tools: 8
@@ -11,6 +11,8 @@ prompts: 7
 receipt_chain: PERSISTING (/root/VAULT999/wealth/receipts.jsonl)
 truth_rule: live :18082/health + tools/list beat any static count in prose
 owner_summary: GREEN (identity_present, service_healthy, receipts_persisting, 0_ghosts)
+infra_organs: arifFlow:7073 METABOLISM, FED:7074 ADVISORY, FLAME:18901 ADVISORY, FRAME:frame-organ.service OBSERVE
+audit_basis: 333-AGI Δ MIND session (2026-08-11)
 -->
 
 # 💰 WEALTH — Capital Intelligence Organ
@@ -69,6 +71,75 @@ IT NEVER:
 | **Ledger** | `capital_ledger` | query · write (ack_irreversible required) | VAULT999 append-only audit |
 | **Registry** | `capital_registry` | status · schema · domains · health | Self-introspection, 8/8 PASS |
 | **Handoff** | `wealth_judge_handoff` | prepare · submit | arifOS 888_HOLD governance envelope |
+
+---
+
+## 🗺️ Where WEALTH Sits in the Federation
+
+```mermaid
+flowchart LR
+  subgraph Witness["🔬 Witness Plane (compute-only)"]
+    WEALTH[("💰 WEALTH :18082<br/>Capital evidence<br/>14 public tools")]
+  end
+
+  subgraph Governance["⚖️ Governance"]
+    ARIFOS["arifOS :8088<br/>F1-F13 · 888 JUDGE"]
+  end
+
+  subgraph Execution["⚒️ Execution"]
+    AFORGE["A-FORGE :7071/72"]
+  end
+
+  subgraph Truth["💀 Truth"]
+    VAULT["VAULT999<br/>WEALTH receipts"]
+  end
+
+  subgraph Sibling["Sibling witness"]
+    GEOX["🌍 GEOX"]
+    WELL["� WELL"]
+  end
+
+  WEALTH ==>|capital_primitive<br/>capital_health<br/>+ epistemic label| ARIFOS
+  WEALTH ==>"capital_ledger.write (ack_irreversible)"| VAULT
+  GEOX <-->|"capital bridge<br/>(EMV, NPV)"| WEALTH
+  WELL -.->|"no cross-talk"| WEALTH
+
+  ARIFOS ==>|"SEAL verdict"| AFORGE
+  AFORGE ==>|"execute · verify"| VAULT
+  VAULT ==>|"audit receipt<br/>with WEALTH computation hash"| WEALTH
+
+  classDef witness fill:#4285F4,stroke:#000,color:#fff
+  classDef governance fill:#A42E2E,stroke:#000,color:#fff
+  classDef execution fill:#2E7D32,stroke:#000,color:#fff
+  classDef truth fill:#000,stroke:#000,color:#fff
+  class WEALTH witness
+  class ARIFOS governance
+  class AFORGE execution
+  class VAULT truth
+```
+
+**WEALTH internal loop (capital reasoning):**
+
+```
+intent ───▶ capital_primitive (npv/irr/emv/mc) ───▶ capital_health (conservation/runway)
+                                                              │
+                                                              ▼
+                                              capital_diagnose (collapse_signature · cascade)
+                                                              │
+                                                              ▼
+                                              capital_entropy (power · who-pays · metric-drift)
+                                                              │
+                                                              ▼
+                                              capital_ledger.write ──▶ VAULT999 (irreversible)
+                                                              │
+                                                              ▼
+                                              wealth_judge_handoff ──▶ arifOS 888 JUDGE
+```
+
+**Hard rules:**
+- WEALTH never allocates capital. Returns numbers + epistemic labels. Allocation is sovereign decision.
+- `capital_ledger.write` requires `ack_irreversible=true` — no silent ledger writes.
+- WEALTH never self-cites between witness organs except the GEOX capital bridge.
 
 ## Resources (18)
 
@@ -136,8 +207,12 @@ All three test the ability to detect failure gradients using only pre-collapse p
 | **⚒️ A-FORGE** | Execution Engine — builds, deploys | 7071/72 | [repo](https://github.com/ariffazil/A-FORGE) | [mcp](https://forge.arif-fazil.com/mcp) | [health](https://forge.arif-fazil.com/health) | [llms.txt](https://forge.arif-fazil.com/llms.txt) |
 | **🏛️ AAA** | Control Plane — A2A gateway, cockpit | 3001 | [repo](https://github.com/ariffazil/AAA) | — | [health](https://aaa.arif-fazil.com/health) | [llms.txt](https://aaa.arif-fazil.com/llms.txt) |
 | **🌍 GEOX** | Earth Intelligence — seismic, wells | 8081 | [repo](https://github.com/ariffazil/GEOX) | [mcp](https://geox.arif-fazil.com/mcp) | [health](https://geox.arif-fazil.com/health) | [llms.txt](https://geox.arif-fazil.com/llms.txt) |
-| **💰 WEALTH** | Capital Intelligence — NPV, risk | 18082 | [repo](https://github.com/ariffazil/WEALTH) | [mcp](https://wealth.arif-fazil.com/mcp) | [health](https://wealth.arif-fazil.com/health) | [llms.txt](https://wealth.arif-fazil.com/llms.txt) |
+| **💰 WEALTH** | Capital Intelligence — NPV, risk | 18082 | [repo](https://github.com/ariffazil/WEALTH) | [mcp](https://wealth.arif-fazil.com/mcp) | [health](https://wealth.arif-fazil.com/health) | (llms.txt pending) |
 | **🫀 WELL** | Vitality Guard — human readiness | 18083 | [repo](https://github.com/ariffazil/WELL) | [mcp](https://well.arif-fazil.com/mcp) | [health](https://well.arif-fazil.com/health) | [llms.txt](https://well.arif-fazil.com/llms.txt) |
+| **🫀 arifFlow** | Metabolism — FQ pulse, receipts | 7073 | [repo](https://github.com/ariffazil/arifFlow) | — | [health](https://arifflow.arif-fazil.com/health) | — |
+| **� FED** | Route Advisor — model/provider ranking | 7074 | private (internal) | — | [health](https://fed.arif-fazil.com/health) | — |
+| **🔥 FLAME** | RM0 Inference — free-loop model mesh | 18901 | private (internal) | — | [health](https://flame.arif-fazil.com/health) | — |
+| **🧱 FRAME** | Substrate — federation scaffolding | frame-organ.service | private (internal) | — | — | — |
 | **🔮 HERMES** | Multi-Modal Bridge — Telegram relay | 8644 | [repo](https://github.com/ariffazil/HERMES) | — | — | — |
 | **🌐 arif-fazil.com** | Public Web Surface — one domain | 443 | [repo](https://github.com/ariffazil/arif-fazil.com) | — | [verify](https://arif-fazil.com/999/verify) | — |
 
@@ -149,11 +224,10 @@ WEALTH is registered as an MCP server on the federation registries. Discovery me
 
 | Registry | Server | Manifest |
 |----------|--------|----------|
-| **Glama** | [glama.ai/mcp/servers/ariffazil/wealth](https://glama.ai/mcp/servers/ariffazil/wealth) | `https://wealth.arif-fazil.com/.well-known/glama.json` |
-| **Smithery** | [smithery.ai/server/wealth](https://smithery.ai/server/wealth) | `https://wealth.arif-fazil.com/.well-known/smithery.yaml` |
-| **mcp.so** | [mcp.so/server/ariffazil/wealth](https://mcp.so/server/ariffazil/wealth) | `https://wealth.arif-fazil.com/.well-known/mcp-so.json` |
+| **Glama** | ⚠️ 301 → [glama.ai/mcp/servers/ariffazil/arifos](https://glama.ai/mcp/servers/ariffazil/arifos) | WEALTH uses arifOS umbrella |
+| **TurboMCP** | ❌ 404 (2026-08-11) | Federation-wide entry — was `turbomcp.ai/server/ariffazil/arifos`, now dead |
 
-Discovery endpoint: `GET https://wealth.arif-fazil.com/.well-known/mcp/server.json`
+Discovery endpoint: `GET https://arif-fazil.com/.well-known/mcp/server.json`
 
 ---
 
