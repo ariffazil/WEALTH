@@ -94,6 +94,64 @@ curl -s http://127.0.0.1:18082/health | jq .
 
 ---
 
+## 🔁 Capital Evidence Pipeline — Inner Loop
+
+```mermaid
+flowchart LR
+    MKT["capital_market<br/>live FX · commodity · indicator"] --> PRIM["capital_primitive<br/>npv · irr · emv · mc · kelly"]
+    PRIM --> HEALTH["capital_health<br/>conservation · runway · survival"]
+    HEALTH --> DIAG["capital_diagnose<br/>collapse · capture · stress"]
+    DIAG --> ENT["capital_entropy<br/>who pays, who benefits"]
+    ENT --> LEDGER[("capital_ledger<br/>VAULT999 append")]
+    LEDGER --> HANDOFF["wealth_judge_handoff<br/>→ arifOS 888_HOLD envelope"]
+    HANDOFF -.->|evidence only, never allocates| MKT
+```
+
+WEALTH's loop only ever produces **evidence**. `wealth_judge_handoff` is the sole
+exit — it hands the envelope to arifOS `arif_judge`; WEALTH never authorizes spend itself.
+
+---
+
+## 🌐 Federation — Outer Loop
+
+The evidence pipeline above feeds directly into the federation's outer loop — the
+whole linked state, one diagram:
+
+```mermaid
+flowchart TB
+    ARIF["👑 ARIF — F13 SOVEREIGN<br/>purpose, irreversible consent, final veto"]
+    ARIFOS["⚖️ arifOS :8088<br/>judges — never executes"]
+    AAA["🏛️ AAA :3001<br/>routes & displays — never adjudicates"]
+    GEOX["🌍 GEOX :8081<br/>earth evidence"]
+    WEALTH["💰 WEALTH :18082<br/>capital evidence"]
+    WELL["🫀 WELL :18083<br/>vitality mirror"]
+    FORGE["⚒️ A-FORGE :7071/72<br/>executes — only after SEAL"]
+    VAULT["💀 VAULT999<br/>immutable seal chain"]
+
+    ARIF -->|purpose, veto| ARIFOS
+    ARIFOS -->|444 route| AAA
+    AAA --> GEOX
+    AAA --> WEALTH
+    AAA --> WELL
+    GEOX -->|evidence| ARIFOS
+    WEALTH -->|evidence| ARIFOS
+    WELL -->|readiness mirror| ARIFOS
+    ARIFOS -->|888 SEAL/HOLD/VOID → 777 forge| FORGE
+    FORGE -->|999 receipt| VAULT
+    VAULT -->|immutable record| ARIF
+
+    classDef here fill:#0a7b83,color:#fff,stroke:#063f43,stroke-width:2px
+    class WEALTH here
+```
+
+**Linked state:** [arifOS](https://github.com/ariffazil/arifos#-federation--outer-loop) ·
+[A-FORGE](https://github.com/ariffazil/A-FORGE#-federation--outer-loop) ·
+[GEOX](https://github.com/ariffazil/GEOX#-federation--outer-loop) ·
+[WELL](https://github.com/ariffazil/WELL#-federation--outer-loop) ·
+full contract: [`FEDERATION_CONTRACT.md`](./FEDERATION_CONTRACT.md)
+
+---
+
 ## 🔧 Stabilization (2026-08-06)
 
 WEALTH underwent a constitutional stabilization audit. Changes across 6 files (−76 net lines, 0 new tools):
@@ -157,7 +215,7 @@ Discovery endpoint: `GET https://wealth.arif-fazil.com/.well-known/mcp/server.js
 
 ---
 
-## � Sovereignty & License
+## 📜 Sovereignty & License
 
 - **License:** GNU Affero General Public License v3.0 (**AGPL-3.0**)
 - **Sovereign:** **Muhammad Arif bin Fazil** (F13 SOVEREIGN)
