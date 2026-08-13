@@ -2568,7 +2568,7 @@ def _handle_governance_singularity(entities_json: str = "") -> dict:
                                 "In Calhoun's Universe 25, the Beautiful Ones were mice "
                                 "that withdrew from social chaos, groomed obsessively, "
                                 "and occupied safe apex positions while the colony collapsed. "
-                                "They were the SYMPTOM of behavioral sink, not the cause — "
+                                "They were the SYMPTOM of governance drift, not the cause — "
                                 "but their presence signaled terminal institutional decay."
                             ),
                         }
@@ -9375,7 +9375,7 @@ def wealth_entropy_audit(
     # If capex drops faster than EBITDA, capital depletion risk spikes
     starvation_delta = max(0.0, ebitda_trend_yoy - capex_trend_yoy)
 
-    # 3. Behavioral Sink Index (Calhoun Hyper-Grooming Flag)
+    # 3. Governance Drift Index (Calhoun Hyper-Grooming Flag)
     # Long feedback loops (high interval) + high presentation volume = narrative hypertrophy
     grooming_coefficient = (reporting_interval_months / 3.0) * (
         narrative_page_count / 100.0
@@ -15486,7 +15486,7 @@ def wealth_role_scarcity_risk(
         "final_authority": "ARIF",
         "recommendation_only": True,
         "calhoun_lesson": (
-            "Phase transition detected: behavioral sink dynamics active. "
+            "Phase transition detected: governance drift dynamics active. "
             "Abundance without role architecture produces civilizational despair."
             if above_threshold
             else "Role architecture present but stressed. Monitor future_orientation and mobility dimensions."
