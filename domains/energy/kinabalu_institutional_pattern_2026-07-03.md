@@ -25,7 +25,7 @@ This is not specific to petroleum geology. It is a thermodynamic statement about
 | Social role breakdown | Nobody owns first-principles questioning |
 | "Beautiful ones" withdraw | Smart staff become presentation polishers |
 | Reproduction collapse | No new theories survive internal review |
-| Behavioral sink | **Citation sink / committee sink** |
+| Governance drift | **Citation sink / committee sink** |
 
 **The collapse is not lack of resources. The collapse is role saturation without truth metabolism.**
 

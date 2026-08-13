@@ -843,7 +843,7 @@ ACEMOGLU_INCLUSIVE_SIGNALS: List[str] = [
 
 
 # ============================================================================
-# CALHOUN PATTERNS — Healthy roles vs Behavioural sink
+# CALHOUN PATTERNS — Healthy roles vs Governance drift
 # Universe 25 dynamics: role scarcity, parenting collapse, cannibalism-of-future,
 # "beautiful ones" (in reverse — narcissistic defense, not withdrawal)
 # ============================================================================
@@ -1178,7 +1178,7 @@ def detect_tripwires(text: str) -> dict:
 def calhoun_axis(profile: dict) -> dict:
     """Compute Calhoun behavioural-sink stress score.
 
-    Returns score 0.0 (healthy roles) → 1.0 (behavioural sink).
+    Returns score 0.0 (healthy roles) → 1.0 (governance drift).
     """
     text = profile.get("_source_text", "")
     if not text:
