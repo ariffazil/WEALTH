@@ -24,6 +24,11 @@ audit_basis: 333-AGI Δ MIND session (2026-08-11)
 > **WEALTH computes. arifOS judges. Arif decides.**
 > **DITEMPA BUKAN DIBERI — Forged, Not Given.**
 
+<!-- RULE-5 First Fold -->
+> **What?** Capital intelligence organ — NPV, EMV, portfolio risk, and market synthesis under thermodynamic rigor.
+> **Why?** Money decisions without physics-grounded models are gambling dressed as analysis.
+> **Care?** Was Petronas Brazil a good investment? WEALTH computes the answer with conservation laws, not opinions.
+
 **WEALTH** is the capital intelligence organ of the arifOS Federation. It is not a finance tool, a trading bot, a personal finance app, or a Bloomberg terminal. It is a **capital-intelligence nervous system** — it computes valuation, risk, institutional decay, capital entropy, and investment-consequence chains across months-to-years timeframes, not minutes-to-hours.
 
 ---

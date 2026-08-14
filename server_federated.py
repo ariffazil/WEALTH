@@ -197,7 +197,7 @@ if __name__ == "__main__":
 
     # 2026-06-29 — Federation-wide OAuth discovery (Hermes-flow fix).
     # Spec-compliant MCP clients (Cursor, Claude Code, MiniMax) fetch
-    # /.well-known/oauth-protected-resource first per RFC 8707. Without
+    # /.well-known/oauth-protected-resource first per RFC 9728. Without
     # this, OAuth clients fail with "failed to get oauth authorization url".
     # arifOS (port 8088) is the canonical authorization server for the
     # whole federation; these endpoints mirror its metadata.
