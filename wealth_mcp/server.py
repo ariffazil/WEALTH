@@ -148,7 +148,9 @@ def _validate_session_via_http_bridge(
             },
             method="POST",
         )
-        with urllib.request.urlopen(req, timeout=2.0) as resp:
+        # KRT-2026-08-15 F5: 2.0s timed out whenever the single-worker kernel
+        # was busy (SESSION_BRIDGE_UNAVAILABLE while kernel was up). 10s.
+        with urllib.request.urlopen(req, timeout=10.0) as resp:
             sid = resp.headers.get("Mcp-Session-Id") or resp.headers.get(
                 "mcp-session-id"
             )
