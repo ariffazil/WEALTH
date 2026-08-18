@@ -18,13 +18,12 @@ import hashlib
 import logging
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
 from .provider_config import (
     DEFAULT_PRIORITY,
-    KIND_LITERAL,
     apply_geo_skip,
 )
 
@@ -58,7 +57,7 @@ class SourceBundle(BaseModel):
     """
     provider:        Literal["coingecko", "binance_public", "defillama", "arkham"]
     asset:           str
-    kind:            KIND_LITERAL       # type: ignore[valid-type]
+    kind:            Literal["spot_price", "24h_change", "depth_top20", "tvl", "flow"]
     value:           float
     currency:        str = "USD"
     timestamp:       datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -117,7 +116,7 @@ class CryptoRouter:
     def fetch(
         self,
         asset: str,
-        kind: KIND_LITERAL,
+        kind: Literal["spot_price", "24h_change", "depth_top20", "tvl", "flow"],
         priority: list[str] | None = None,
     ) -> SourceBundle:
         """Dispatch + auto-fallback.
