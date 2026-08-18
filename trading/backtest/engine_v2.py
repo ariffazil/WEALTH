@@ -8,6 +8,7 @@ Changes from v1:
 5. Max 2 positions
 6. Partial TP at 1R, trail rest with 1.5 ATR trailing stop
 """
+
 from __future__ import annotations
 
 import json
@@ -18,12 +19,20 @@ from datetime import datetime
 from typing import Optional
 
 import sys
-sys.path.insert(0, '/root')
+
+sys.path.insert(0, "/root")
 
 from trading.signals.scanner import ema, rsi, atr
 from trading.signals.regime import detect_regime, find_swing_points, Regime
 from trading.core.models import OHLCV
-from trading.core.models import Signal, SignalStrength, Direction, Verdict, ConfluenceFactor, Indicators
+from trading.core.models import (
+    Signal,
+    SignalStrength,
+    Direction,
+    Verdict,
+    ConfluenceFactor,
+    Indicators,
+)
 from trading.apex.apex_predictor import evaluate_market, APEXMarketState
 
 
@@ -69,8 +78,11 @@ def generate_signal_v2(
         candles_1h=candles,
         candles_4h=candles_4h,
         candles_1d=candles_1d,
-        ema_20=ema_20, ema_50=ema_50, ema_200=ema_200,
-        atr_val=atr_14, atr_avg=atr_14,
+        ema_20=ema_20,
+        ema_50=ema_50,
+        ema_200=ema_200,
+        atr_val=atr_14,
+        atr_avg=atr_14,
     )
 
     # APEX direction.value is e.g. "LONG"/"SHORT"/"NEUTRAL" — map to engine Direction.
@@ -85,7 +97,9 @@ def generate_signal_v2(
     apex_verdict = (apex.verdict or "").upper()
     if apex_verdict in ("PROCEED", "SEAL", "LONG"):
         verdict = Verdict.PROCEED
-        strength = SignalStrength.STRONG if apex.confidence > 0.7 else SignalStrength.MODERATE
+        strength = (
+            SignalStrength.STRONG if apex.confidence > 0.7 else SignalStrength.MODERATE
+        )
     elif apex_verdict in ("REVIEW", "SABAR", "HOLD"):
         verdict = Verdict.HOLD
         strength = SignalStrength.WEAK
@@ -112,16 +126,44 @@ def generate_signal_v2(
 
     indicators = Indicators(
         timestamp=datetime.now(),
-        ema_20=ema_20, ema_50=ema_50, ema_200=ema_200,
-        rsi_14=rsi_14, atr_14=atr_14,
+        ema_20=ema_20,
+        ema_50=ema_50,
+        ema_200=ema_200,
+        rsi_14=rsi_14,
+        atr_14=atr_14,
     )
 
     factors = [
-        ConfluenceFactor(name=f"APEX.A={apex.A:.2f}",  direction=direction, weight=0.2, confidence=apex.A),
-        ConfluenceFactor(name=f"APEX.P={apex.P:.2f}",  direction=direction, weight=0.2, confidence=apex.P),
-        ConfluenceFactor(name=f"APEX.E={apex.E:.2f}",  direction=direction, weight=0.2, confidence=apex.E),
-        ConfluenceFactor(name=f"APEX.X={apex.X:.2f}",  direction=direction, weight=0.2, confidence=apex.X),
-        ConfluenceFactor(name=f"APEX.Φ={apex.Phi:.2f}", direction=direction, weight=0.2, confidence=apex.Phi),
+        ConfluenceFactor(
+            name=f"APEX.A={apex.A:.2f}",
+            direction=direction,
+            weight=0.2,
+            confidence=apex.A,
+        ),
+        ConfluenceFactor(
+            name=f"APEX.P={apex.P:.2f}",
+            direction=direction,
+            weight=0.2,
+            confidence=apex.P,
+        ),
+        ConfluenceFactor(
+            name=f"APEX.E={apex.E:.2f}",
+            direction=direction,
+            weight=0.2,
+            confidence=apex.E,
+        ),
+        ConfluenceFactor(
+            name=f"APEX.X={apex.X:.2f}",
+            direction=direction,
+            weight=0.2,
+            confidence=apex.X,
+        ),
+        ConfluenceFactor(
+            name=f"APEX.Φ={apex.Phi:.2f}",
+            direction=direction,
+            weight=0.2,
+            confidence=apex.Phi,
+        ),
     ]
     confluence_score = round(apex.G, 3)
 
@@ -207,11 +249,31 @@ def run_backtest(candles: list[OHLCV], cfg: BacktestConfig) -> dict:
         price = bar.close
 
         # Get indicators for this bar
-        e20 = ema20[i - e20_off] if i - e20_off >= 0 and i - e20_off < len(ema20) else None
-        e50 = ema50[i - e50_off] if i - e50_off >= 0 and i - e50_off < len(ema50) else None
-        e200 = ema200[i - e200_off] if i - e200_off >= 0 and i - e200_off < len(ema200) else None
-        rsi_val = rsi_vals[i - rsi_off] if i - rsi_off >= 0 and i - rsi_off < len(rsi_vals) else 50
-        atr_val = atr_vals[i - atr_off] if i - atr_off >= 0 and i - atr_off < len(atr_vals) else 10
+        e20 = (
+            ema20[i - e20_off]
+            if i - e20_off >= 0 and i - e20_off < len(ema20)
+            else None
+        )
+        e50 = (
+            ema50[i - e50_off]
+            if i - e50_off >= 0 and i - e50_off < len(ema50)
+            else None
+        )
+        e200 = (
+            ema200[i - e200_off]
+            if i - e200_off >= 0 and i - e200_off < len(ema200)
+            else None
+        )
+        rsi_val = (
+            rsi_vals[i - rsi_off]
+            if i - rsi_off >= 0 and i - rsi_off < len(rsi_vals)
+            else 50
+        )
+        atr_val = (
+            atr_vals[i - atr_off]
+            if i - atr_off >= 0 and i - atr_off < len(atr_vals)
+            else 10
+        )
 
         if None in (e20, e50, e200) or atr_val <= 0:
             continue
@@ -222,8 +284,14 @@ def run_backtest(candles: list[OHLCV], cfg: BacktestConfig) -> dict:
         # === RULE 1: Skip SIDEWAYS ===
         if regime == Regime.SIDEWAYS:
             # Still manage existing positions
-            positions = _manage_positions(positions, bar, atr_val, cfg, trades, i, candles, regime)
-            equity = cfg.initial_equity + sum(t.pnl for t in trades) + sum(_unrealized(p, price) for p in positions)
+            positions = _manage_positions(
+                positions, bar, atr_val, cfg, trades, i, candles, regime
+            )
+            equity = (
+                cfg.initial_equity
+                + sum(t.pnl for t in trades)
+                + sum(_unrealized(p, price) for p in positions)
+            )
             peak_equity = max(peak_equity, equity)
             dd = (peak_equity - equity) / peak_equity * 100 if peak_equity > 0 else 0
             max_dd = max(max_dd, dd)
@@ -231,11 +299,17 @@ def run_backtest(candles: list[OHLCV], cfg: BacktestConfig) -> dict:
             continue
 
         # Manage existing positions
-        positions = _manage_positions(positions, bar, atr_val, cfg, trades, i, candles, regime)
+        positions = _manage_positions(
+            positions, bar, atr_val, cfg, trades, i, candles, regime
+        )
 
         # === Check for new entry ===
         if len(positions) >= cfg.max_positions:
-            equity = cfg.initial_equity + sum(t.pnl for t in trades) + sum(_unrealized(p, price) for p in positions)
+            equity = (
+                cfg.initial_equity
+                + sum(t.pnl for t in trades)
+                + sum(_unrealized(p, price) for p in positions)
+            )
             peak_equity = max(peak_equity, equity)
             dd = (peak_equity - equity) / peak_equity * 100 if peak_equity > 0 else 0
             max_dd = max(max_dd, dd)
@@ -245,11 +319,15 @@ def run_backtest(candles: list[OHLCV], cfg: BacktestConfig) -> dict:
         # Find recent swing points for zones
         lookback = min(20, i - cfg.warmup)
         if lookback < 5:
-            equity = cfg.initial_equity + sum(t.pnl for t in trades) + sum(_unrealized(p, price) for p in positions)
+            equity = (
+                cfg.initial_equity
+                + sum(t.pnl for t in trades)
+                + sum(_unrealized(p, price) for p in positions)
+            )
             equity_curve.append(equity)
             continue
 
-        recent = candles[i - lookback:i]
+        recent = candles[i - lookback : i]
         swings = find_swing_points(recent, lookback=max(3, lookback // 4))
 
         support_levels = sorted([s[0] for s in swings if s[1] == "LOW"])
@@ -280,18 +358,23 @@ def run_backtest(candles: list[OHLCV], cfg: BacktestConfig) -> dict:
                     tp = price + risk * cfg.min_rr
                     rr = (tp - price) / risk
                     if rr >= cfg.min_rr:
-                        lots = max(0.001, round((equity * cfg.risk_per_trade) / (risk * 1000), 2))
-                        positions.append({
-                            "direction": "BUY",
-                            "entry": price,
-                            "sl": sl,
-                            "tp": tp,
-                            "lots": lots,
-                            "entry_bar": i,
-                            "regime": regime.value,
-                            "partial_closed": False,
-                            "entry_time": bar.timestamp.isoformat(),
-                        })
+                        lots = max(
+                            0.001,
+                            round((equity * cfg.risk_per_trade) / (risk * 1000), 2),
+                        )
+                        positions.append(
+                            {
+                                "direction": "BUY",
+                                "entry": price,
+                                "sl": sl,
+                                "tp": tp,
+                                "lots": lots,
+                                "entry_bar": i,
+                                "regime": regime.value,
+                                "partial_closed": False,
+                                "entry_time": bar.timestamp.isoformat(),
+                            }
+                        )
 
         elif regime == Regime.DOWNTREND:
             # === RULE 3: RSI must be overbought for sell ===
@@ -313,20 +396,29 @@ def run_backtest(candles: list[OHLCV], cfg: BacktestConfig) -> dict:
                     tp = price - risk * cfg.min_rr
                     rr = (price - tp) / risk
                     if rr >= cfg.min_rr:
-                        lots = max(0.001, round((equity * cfg.risk_per_trade) / (risk * 1000), 2))
-                        positions.append({
-                            "direction": "SELL",
-                            "entry": price,
-                            "sl": sl,
-                            "tp": tp,
-                            "lots": lots,
-                            "entry_bar": i,
-                            "regime": regime.value,
-                            "partial_closed": False,
-                            "entry_time": bar.timestamp.isoformat(),
-                        })
+                        lots = max(
+                            0.001,
+                            round((equity * cfg.risk_per_trade) / (risk * 1000), 2),
+                        )
+                        positions.append(
+                            {
+                                "direction": "SELL",
+                                "entry": price,
+                                "sl": sl,
+                                "tp": tp,
+                                "lots": lots,
+                                "entry_bar": i,
+                                "regime": regime.value,
+                                "partial_closed": False,
+                                "entry_time": bar.timestamp.isoformat(),
+                            }
+                        )
 
-        equity = cfg.initial_equity + sum(t.pnl for t in trades) + sum(_unrealized(p, price) for p in positions)
+        equity = (
+            cfg.initial_equity
+            + sum(t.pnl for t in trades)
+            + sum(_unrealized(p, price) for p in positions)
+        )
         peak_equity = max(peak_equity, equity)
         dd = (peak_equity - equity) / peak_equity * 100 if peak_equity > 0 else 0
         max_dd = max(max_dd, dd)
@@ -336,21 +428,23 @@ def run_backtest(candles: list[OHLCV], cfg: BacktestConfig) -> dict:
     for p in positions:
         price = candles[-1].close
         pnl = _unrealized(p, price)
-        trades.append(Trade(
-            entry_time=p["entry_time"],
-            exit_time=candles[-1].timestamp.isoformat(),
-            direction=p["direction"],
-            entry_price=p["entry"],
-            exit_price=price,
-            stop_loss=p["sl"],
-            take_profit=p["tp"],
-            lot_size=p["lots"],
-            pnl=round(pnl, 2),
-            pnl_pct=round(pnl / cfg.initial_equity * 1000, 2),
-            regime=p["regime"],
-            exit_reason="END_OF_DATA",
-            bars_held=len(candles) - 1 - p["entry_bar"],
-        ))
+        trades.append(
+            Trade(
+                entry_time=p["entry_time"],
+                exit_time=candles[-1].timestamp.isoformat(),
+                direction=p["direction"],
+                entry_price=p["entry"],
+                exit_price=price,
+                stop_loss=p["sl"],
+                take_profit=p["tp"],
+                lot_size=p["lots"],
+                pnl=round(pnl, 2),
+                pnl_pct=round(pnl / cfg.initial_equity * 1000, 2),
+                regime=p["regime"],
+                exit_reason="END_OF_DATA",
+                bars_held=len(candles) - 1 - p["entry_bar"],
+            )
+        )
 
     return _compute_metrics(trades, equity_curve, cfg, max_dd)
 
@@ -413,22 +507,28 @@ def _manage_positions(positions, bar, atr_val, cfg, trades, i, candles, regime):
                     p["sl"] = min(p["sl"], new_sl)
 
         if exit_price:
-            pnl = (exit_price - entry) * lots * 1000 if direction == "BUY" else (entry - exit_price) * lots * 1000
-            trades.append(Trade(
-                entry_time=p["entry_time"],
-                exit_time=bar.timestamp.isoformat(),
-                direction=direction,
-                entry_price=entry,
-                exit_price=round(exit_price, 2),
-                stop_loss=sl,
-                take_profit=tp,
-                lot_size=lots,
-                pnl=round(pnl, 2),
-                pnl_pct=round(pnl / cfg.initial_equity * 1000, 2),
-                regime=p["regime"],
-                exit_reason=exit_reason,
-                bars_held=i - p["entry_bar"],
-            ))
+            pnl = (
+                (exit_price - entry) * lots * 1000
+                if direction == "BUY"
+                else (entry - exit_price) * lots * 1000
+            )
+            trades.append(
+                Trade(
+                    entry_time=p["entry_time"],
+                    exit_time=bar.timestamp.isoformat(),
+                    direction=direction,
+                    entry_price=entry,
+                    exit_price=round(exit_price, 2),
+                    stop_loss=sl,
+                    take_profit=tp,
+                    lot_size=lots,
+                    pnl=round(pnl, 2),
+                    pnl_pct=round(pnl / cfg.initial_equity * 1000, 2),
+                    regime=p["regime"],
+                    exit_reason=exit_reason,
+                    bars_held=i - p["entry_bar"],
+                )
+            )
         else:
             remaining.append(p)
 
@@ -474,13 +574,58 @@ def _compute_metrics(trades, equity_curve, cfg, max_dd):
     avg_win = sum(t.pnl for t in wins) / len(wins) if wins else 0
     avg_loss = sum(t.pnl for t in losses) / len(losses) if losses else 0
     avg_rr = abs(avg_win / avg_loss) if avg_loss != 0 else 0
-    profit_factor = abs(sum(t.pnl for t in wins) / sum(t.pnl for t in losses)) if losses and sum(t.pnl for t in losses) != 0 else float('inf')
+    profit_factor = (
+        abs(sum(t.pnl for t in wins) / sum(t.pnl for t in losses))
+        if losses and sum(t.pnl for t in losses) != 0
+        else float("inf")
+    )
 
     # Sharpe
     returns = [t.pnl_pct for t in trades]
     avg_ret = sum(returns) / len(returns) if returns else 0
-    std_ret = (sum((r - avg_ret) ** 2 for r in returns) / len(returns)) ** 0.5 if len(returns) > 1 else 1
-    sharpe = (avg_ret / std_ret) * (252 ** 0.5) if std_ret > 0 else 0
+    std_ret = (
+        (sum((r - avg_ret) ** 2 for r in returns) / len(returns)) ** 0.5
+        if len(returns) > 1
+        else 1
+    )
+    sharpe = (avg_ret / std_ret) * (252**0.5) if std_ret > 0 else 0
+
+    # Enhanced metrics (ported from chrisconlan/algorithmic-trading-with-python)
+    try:
+        from trading.backtest.metrics_enhanced import compute_enhanced, format_enhanced
+        from datetime import datetime as _dt
+
+        trade_dates = []
+        for t in trades:
+            try:
+                trade_dates.append(_dt.fromisoformat(t.entry_time))
+            except Exception:
+                pass
+        years = (
+            (trade_dates[-1] - trade_dates[0]).days / 365.25
+            if len(trade_dates) > 1
+            else 1.0
+        )
+        enhanced = compute_enhanced(
+            trade_pnls=[t.pnl for t in trades],
+            equity_curve=equity_curve,
+            dates=trade_dates if trade_dates else None,
+            initial_equity=cfg.initial_equity,
+            years=max(years, 0.01),
+        )
+        enhanced_dict = {
+            "sortino_ratio": round(enhanced.sortino, 2),
+            "calmar_ratio": round(enhanced.calmar, 2),
+            "pure_profit_score": round(enhanced.pure_profit_score, 4),
+            "annualized_volatility": round(enhanced.annualized_vol, 4),
+            "log_drawdown_ratio": round(enhanced.log_dd_ratio, 4),
+            "expectancy_per_trade": round(enhanced.expectancy_per_trade, 2),
+            "kelly_fraction": round(enhanced.kelly_fraction, 4),
+        }
+        enhanced_display = format_enhanced(enhanced)
+    except Exception as _e:
+        enhanced_dict = {"_error": str(_e)}
+        enhanced_display = f"  (enhanced metrics unavailable: {_e})"
 
     # By regime
     regime_stats = {}
@@ -532,13 +677,21 @@ def _compute_metrics(trades, equity_curve, cfg, max_dd):
             "worst_trade": round(min(t.pnl for t in trades), 2),
         },
         "by_regime": {
-            r: {"count": s["count"], "win_rate": round(s["wins"] / s["count"] * 100, 1) if s["count"] > 0 else 0, "pnl": round(s["pnl"], 2)}
+            r: {
+                "count": s["count"],
+                "win_rate": round(s["wins"] / s["count"] * 100, 1)
+                if s["count"] > 0
+                else 0,
+                "pnl": round(s["pnl"], 2),
+            }
             for r, s in regime_stats.items()
         },
         "by_exit": {
             e: {"count": s["count"], "pnl": round(s["pnl"], 2)}
             for e, s in exit_stats.items()
         },
+        "enhanced": enhanced_dict,
+        "_enhanced_display": enhanced_display,
     }
 
 
@@ -553,11 +706,17 @@ def main():
     print(f"Loading {args.data}...")
     with open(args.data) as f:
         raw = json.load(f)
-    candles = [OHLCV(
-        timestamp=datetime.fromisoformat(d["timestamp"]),
-        open=d["open"], high=d["high"], low=d["low"], close=d["close"],
-        volume=d.get("volume", 0),
-    ) for d in raw]
+    candles = [
+        OHLCV(
+            timestamp=datetime.fromisoformat(d["timestamp"]),
+            open=d["open"],
+            high=d["high"],
+            low=d["low"],
+            close=d["close"],
+            volume=d.get("volume", 0),
+        )
+        for d in raw
+    ]
     print(f"Loaded {len(candles)} bars.")
 
     cfg = BacktestConfig(initial_equity=args.equity, risk_per_trade=args.risk)
@@ -566,33 +725,43 @@ def main():
 
     # Print summary
     s = results["summary"]
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  XAUUSD BACKTEST v2 — IMPROVED STRATEGY")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"  Data: {len(candles)} bars | Warmup: 210")
-    print(f"  Initial: ${cfg.initial_equity:,.2f} | Final: ${cfg.initial_equity + s['total_pnl']:,.2f}")
-    print(f"  {'─'*56}")
+    print(
+        f"  Initial: ${cfg.initial_equity:,.2f} | Final: ${cfg.initial_equity + s['total_pnl']:,.2f}"
+    )
+    print(f"  {'─' * 56}")
     print(f"  Trades:     {s['total_trades']}")
     print(f"  Win rate:   {s['win_rate']}%")
     print(f"  Avg RR:     1:{s['avg_rr']}")
     print(f"  Profit factor: {s['profit_factor']}")
     print(f"  Sharpe:     {s['sharpe_ratio']}")
-    print(f"  {'─'*56}")
+    print(f"  {'─' * 56}")
     print(f"  Return:     {s['total_return_pct']}% (${s['total_pnl']:,.2f})")
     print(f"  Max DD:     {s['max_drawdown_pct']}%")
-    print(f"  {'─'*56}")
+    print(f"  {'─' * 56}")
     print(f"  Avg win:    ${s['avg_win']:.2f} | Avg loss: ${s['avg_loss']:.2f}")
     print(f"  Best:       ${s['best_trade']:.2f} | Worst: ${s['worst_trade']:.2f}")
     print(f"  Avg hold:   {s['avg_bars_held']} bars")
 
     print(f"\n  BY REGIME:")
     for r, st in results["by_regime"].items():
-        print(f"    {r:12s} {st['count']:4d} trades  {st['win_rate']:5.1f}% win  ${st['pnl']:>10,.2f}")
+        print(
+            f"    {r:12s} {st['count']:4d} trades  {st['win_rate']:5.1f}% win  ${st['pnl']:>10,.2f}"
+        )
 
     print(f"\n  BY EXIT:")
     for e, st in results["by_exit"].items():
         print(f"    {e:14s} {st['count']:4d} trades  ${st['pnl']:>10,.2f}")
-    print(f"{'='*60}")
+
+    # Enhanced metrics (chrisconlan port)
+    if "_enhanced_display" in results:
+        print(f"\n  ENHANCED METRICS:")
+        print(results["_enhanced_display"])
+
+    print(f"{'=' * 60}")
 
     if args.output:
         with open(args.output, "w") as f:
