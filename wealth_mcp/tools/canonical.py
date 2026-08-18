@@ -975,6 +975,7 @@ def register_canonical_tools(mcp):
         indicator: str = "usd_myr",
         country: str = "MYS",
         stock_payload: CoercedDict = None,
+        asset_class: str = "fx_commodity",
         session_id: str | None = None,
         trace_id: str | None = None,
         actor_id: str | None = None,
@@ -984,6 +985,50 @@ def register_canonical_tools(mcp):
 
         m = mode.lower()
         sp: dict[str, Any] = dict(stock_payload or {})
+
+        # ━━━ Step 9 (Phase 3 close): asset_class discriminator for crypto ━━━
+        # Wires crypto_router to canonical surface. NO new tool created --
+        # asset_class is an additive discriminator on the existing tool.
+        # Existing modes (fx/commodity/indicator/stock/gold/oil/gas)
+        # unchanged because asset_class defaults to "fx_commodity".
+        if asset_class == "crypto":
+            asset = sp.get("asset", "BTC")
+            _valid_kinds = ("spot_price", "24h_change", "depth_top20", "tvl")
+            kind = sp.get("kind") or (m if m in _valid_kinds else "spot_price")
+            try:
+                from wealth_core.ingest.crypto.router import CryptoRouter
+                bundle = CryptoRouter().fetch(asset=asset, kind=kind)
+            except Exception as e:
+                # F12 RESILIENCE: router exceptions don't crash the canonical tool
+                return wrap_result(
+                    tool_name="capital_market",
+                    domain="capital",
+                    result={
+                        "status": "ERROR",
+                        "error_code": "CRYPTO_ROUTER_FAILED",
+                        "message": str(e),
+                    },
+                    epistemic_tag=EpistemicTag.OBSERVED,
+                    evidence_quality=EvidenceQuality.WEAK,
+                    errors=[f"crypto_router raised {type(e).__name__}: {e}"],
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
+            return wrap_result(
+                tool_name="capital_market",
+                domain="capital",
+                result=bundle.model_dump(),
+                epistemic_tag=EpistemicTag.OBSERVED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=[
+                    f"crypto_router:{bundle.provider}",
+                    bundle.source_uri,
+                ],
+                session_id=session_id,
+                trace_id=trace_id,
+                actor_id=actor_id,
+            )
 
         if m == "fx":
             raw = await _call_legacy_tool(
