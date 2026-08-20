@@ -314,8 +314,63 @@ def register_canonical_tools(mcp):
                 actor_id=actor_id,
             )
 
-        raise ValueError(
-            f"Unknown mode '{mode}'. Valid: npv, irr, emv, evoi, mc, kelly, markowitz, robust, chance_constrained, two_stage"
+        # ═══ REWARD DESIGN — TradeMaster distillation (2026-08-18) ═══
+        if m == "reward_design":
+            import sys as _sys
+
+            _wealth_root = "/root/WEALTH"
+            if _wealth_root not in _sys.path:
+                _sys.path.insert(0, _wealth_root)
+
+            from wealth_core.reward_design import compute_reward_design
+
+            task_type = "portfolio"
+            returns_list = list(returns) if returns else None
+            risk_av = float(risk_aversion) if risk_aversion else 1.0
+            max_dd_tolerance = 0.15
+
+            result = compute_reward_design(
+                task_type, returns_list, risk_av, max_dd_tolerance
+            )
+            return wrap_result(
+                tool_name="capital_primitive",
+                domain="risk",
+                result={
+                    "recommended_reward": {
+                        "name": result.recommended_reward.name,
+                        "task_type": result.recommended_reward.task_type,
+                        "formula": result.recommended_reward.formula,
+                        "parameters": result.recommended_reward.parameters,
+                        "description": result.recommended_reward.description,
+                    },
+                    "all_rewards": result.all_rewards,
+                    "task_type": result.task_type,
+                    "justification": result.justification,
+                    "framework": "Multi-Task Reward Design (TradeMaster distillation)",
+                },
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=["reward_design_engine", "trademaster_distillation"],
+                session_id=session_id,
+                actor_id=actor_id,
+            )
+
+        return wrap_result(
+            tool_name="capital_primitive",
+            domain="capital",
+            result={
+                "error": f"Unknown mode '{mode}'.",
+                "valid_modes": [
+                    "npv", "irr", "emv", "evoi", "mc", "kelly",
+                    "markowitz", "robust", "chance_constrained",
+                    "two_stage", "reward_design",
+                ],
+            },
+            epistemic_tag=EpistemicTag.DERIVED,
+            evidence_quality=EvidenceQuality.WEAK,
+            source_attribution=["capital_primitive:error"],
+            session_id=session_id,
+            actor_id=actor_id,
         )
 
     # ═══════════════════════════════════════════════════════════════════
@@ -628,8 +683,71 @@ def register_canonical_tools(mcp):
                 actor_id=actor_id,
             )
 
+        # ═══ ASYMMETRIC RISK — TradeMaster DeepScalper distillation (2026-08-18) ═══
+        if m == "asymmetric_risk":
+            import sys as _sys
+
+            _wealth_root = "/root/WEALTH"
+            if _wealth_root not in _sys.path:
+                _sys.path.insert(0, _wealth_root)
+
+            from wealth_core.asymmetric_risk import compute_asymmetric_risk
+
+            # Accept trade_returns and equity_curve in the standard params
+            # Use upside_scenarios as trade_returns, downside_scenarios as equity_curve
+            trade_rets = list(upside_scenarios or [])
+            equity_curve = list(downside_scenarios or [])
+            loss_aversion = float(conservative_factor) if conservative_factor else 2.5
+            base_risk = (
+                float(oil_price_assumption_usd) if oil_price_assumption_usd else 1.0
+            )
+
+            if not trade_rets or not equity_curve:
+                return wrap_result(
+                    tool_name="capital_health",
+                    domain="risk",
+                    result={
+                        "status": "ERROR",
+                        "error_code": "MISSING_DATA",
+                        "message": "asymmetric_risk requires upside_scenarios (trade_returns) and downside_scenarios (equity_curve)",
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
+
+            result = compute_asymmetric_risk(
+                trade_rets, equity_curve, loss_aversion, base_risk
+            )
+            return wrap_result(
+                tool_name="capital_health",
+                domain="risk",
+                result={
+                    "standard_kelly": result.standard_kelly,
+                    "asymmetric_kelly": result.asymmetric_kelly,
+                    "loss_aversion_coefficient": result.loss_aversion_coefficient,
+                    "omega_ratio": result.omega_ratio,
+                    "pain_to_gain_ratio": result.pain_to_gain_ratio,
+                    "recommended_risk_pct": result.recommended_risk_pct,
+                    "position_scaling": result.position_scaling,
+                    "drawdown_state": result.drawdown_state,
+                    "metrics": result.metrics,
+                    "recommendations": result.recommendations,
+                    "framework": "DeepScalper Asymmetric Risk (TradeMaster distillation)",
+                },
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=[
+                    "asymmetric_risk_engine",
+                    "trademaster_distillation",
+                ],
+                session_id=session_id,
+                actor_id=actor_id,
+            )
+
         raise ValueError(
-            f"Unknown mode '{mode}'. Valid: conservation, flow, runway, survival, fiscal_breakeven, confluence, asymmetry"
+            f"Unknown mode '{mode}'. Valid: conservation, flow, runway, survival, fiscal_breakeven, confluence, asymmetry, asymmetric_risk"
         )
 
     # ═══════════════════════════════════════════════════════════════════
@@ -919,6 +1037,73 @@ def register_canonical_tools(mcp):
                 actor_id=actor_id,
             )
 
+        # ═══ REGIME MAP — TradeMaster distillation (2026-08-18) ═══
+        if m == "regime_map":
+            import sys as _sys
+
+            _wealth_root = "/root/WEALTH"
+            if _wealth_root not in _sys.path:
+                _sys.path.insert(0, _wealth_root)
+
+            from wealth_core.regime_map import compute_regime_map
+
+            # Accept OHLCV data in payload: {closes: [...], highs: [...], lows: [...]}
+            closes = p.get("closes") or []
+            highs = p.get("highs") or []
+            lows = p.get("lows") or []
+            window = int(p.get("window", 20))
+            atr_period = int(p.get("atr_period", 14))
+
+            if not closes or not highs or not lows:
+                return wrap_result(
+                    tool_name="capital_diagnose",
+                    domain="market",
+                    result={
+                        "status": "ERROR",
+                        "error_code": "MISSING_DATA",
+                        "message": "regime_map requires payload.closes, payload.highs, payload.lows (arrays of float)",
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
+
+            result = compute_regime_map(closes, highs, lows, window, atr_period)
+            return wrap_result(
+                tool_name="capital_diagnose",
+                domain="market",
+                result={
+                    "current_regime": result.current_regime,
+                    "current_confidence": result.current_confidence,
+                    "volatility_state": result.volatility_state,
+                    "trend_strength": result.trend_strength,
+                    "regime_distribution": result.regime_distribution,
+                    "transitions": [
+                        {
+                            "from": t.from_regime,
+                            "to": t.to_regime,
+                            "count": t.count,
+                            "probability": t.probability,
+                        }
+                        for t in result.transitions
+                    ],
+                    "recent_bars": result.regime_bars,
+                    "distribution_shift_detected": result.distribution_shift_detected,
+                    "shift_severity": result.shift_severity,
+                    "bars_analyzed": result.bars_analyzed,
+                    "window_size": result.window_size,
+                },
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=[
+                    "regime_map_engine",
+                    "distribution_shift_detection",
+                ],
+                session_id=session_id,
+                actor_id=actor_id,
+            )
+
         # Loop 9 fix: return structured error for unknown mode (was: ValueError with incomplete mode list)
         _VALID_MODES = [
             "stress_index",
@@ -936,6 +1121,7 @@ def register_canonical_tools(mcp):
             "petronas_vitals",
             "sovereign_pulse",
             "petronas_phi",
+            "regime_map",
         ]
         return wrap_result(
             tool_name="capital_diagnose",
@@ -997,6 +1183,7 @@ def register_canonical_tools(mcp):
             kind = sp.get("kind") or (m if m in _valid_kinds else "spot_price")
             try:
                 from wealth_core.ingest.crypto.router import CryptoRouter
+
                 bundle = CryptoRouter().fetch(asset=asset, kind=kind)
             except Exception as e:
                 # F12 RESILIENCE: router exceptions don't crash the canonical tool
@@ -1163,9 +1350,18 @@ def register_canonical_tools(mcp):
                 actor_id=actor_id,
             )
 
-        raise ValueError(
-            f"Unknown mode '{mode}'. "
-            "Valid: fx, commodity, indicator, stock, gold, oil, gas"
+        return wrap_result(
+            tool_name="capital_market",
+            domain="market",
+            result={
+                "error": f"Unknown mode '{mode}'.",
+                "valid_modes": ["fx", "commodity", "indicator", "stock", "gold", "oil", "gas"],
+            },
+            epistemic_tag=EpistemicTag.DERIVED,
+            evidence_quality=EvidenceQuality.WEAK,
+            source_attribution=["capital_market:error"],
+            session_id=session_id,
+            actor_id=actor_id,
         )
 
     # ═══════════════════════════════════════════════════════════════════
@@ -2597,6 +2793,38 @@ def register_canonical_tools(mcp):
 
             result = out
 
+        # ── ALPHA158 — TradeMaster distillation (2026-08-18) ──
+        elif ind == "alpha158":
+            import sys as _sys
+
+            _wealth_root = "/root/WEALTH"
+            if _wealth_root not in _sys.path:
+                _sys.path.insert(0, _wealth_root)
+
+            from wealth_core.alpha158 import compute_alpha158
+
+            opens = hist["Open"].values.astype(np.float64) if "Open" in hist else close
+            volumes = (
+                hist["Volume"].values.astype(np.float64) if "Volume" in hist else None
+            )
+
+            alpha = compute_alpha158(
+                opens.tolist(),
+                high.tolist(),
+                low.tolist(),
+                close.tolist(),
+                volumes.tolist() if volumes is not None else None,
+            )
+            result = {
+                "symbol": sym,
+                "indicator": "ALPHA158",
+                "feature_count": alpha.feature_count,
+                "categories": alpha.feature_categories,
+                "top_features": alpha.top_features[:10],
+                "bars_processed": alpha.bars_processed,
+                "framework": "Alpha158 (TradeMaster distillation)",
+            }
+
         else:
             valid = "ema, sma, rsi, macd, bb, psar, atr, adx"
             return wrap_result(
@@ -2645,6 +2873,8 @@ def register_canonical_tools(mcp):
         lookback: str = "2y",
         initial_capital: float = 10000.0,
         risk_per_trade_pct: float = 1.0,
+        mode: str = "backtest",
+        payload: CoercedDict = None,
         session_id: str | None = None,
         trace_id: str | None = None,
         actor_id: str | None = None,
@@ -2655,6 +2885,180 @@ def register_canonical_tools(mcp):
         _trading_path = "/root/WEALTH/trading"
         if _trading_path not in sys.path:
             sys.path.insert(0, _trading_path)
+
+        _wealth_root = "/root/WEALTH"
+        if _wealth_root not in sys.path:
+            sys.path.insert(0, _wealth_root)
+
+        m = str(mode).lower()
+        p: dict[str, Any] = dict(payload or {})
+
+        # ═══ COMPASS — TradeMaster PRUDEX-Compass distillation (2026-08-18) ═══
+        if m == "compass":
+            from wealth_core.compass import compute_compass
+
+            equity_curve = p.get("equity_curve") or []
+            trade_returns = p.get("trade_returns") or []
+            benchmark_returns = p.get("benchmark_returns")
+            regime_labels = p.get("regime_labels")
+            risk_free_rate = float(p.get("risk_free_rate", 0.0))
+            periods_per_year = float(p.get("periods_per_year", 252.0))
+
+            if not equity_curve or not trade_returns:
+                return wrap_result(
+                    tool_name="capital_backtest",
+                    domain="evaluation",
+                    result={
+                        "status": "ERROR",
+                        "error_code": "MISSING_DATA",
+                        "message": "compass requires payload.equity_curve and payload.trade_returns",
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
+
+            compass = compute_compass(
+                equity_curve,
+                trade_returns,
+                benchmark_returns,
+                regime_labels,
+                risk_free_rate,
+                periods_per_year,
+            )
+            return wrap_result(
+                tool_name="capital_backtest",
+                domain="evaluation",
+                result={
+                    "axes": compass.axes,
+                    "overall_score": compass.overall_score,
+                    "classification": compass.prudef_label,
+                    "regime_performance": compass.regime_performance,
+                    "recommendations": compass.recommendations,
+                    "framework": "PRUDEX-Compass (TradeMaster distillation)",
+                },
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=[
+                    "prudex_compass_engine",
+                    "trademaster_distillation",
+                ],
+                session_id=session_id,
+                actor_id=actor_id,
+            )
+
+        # ═══ STRESS TEST — TradeMaster Market-GAN distillation (2026-08-18) ═══
+        if m == "stress_test":
+            from wealth_core.stress_test import run_stress_test
+
+            equity_curve = p.get("equity_curve") or []
+            trade_returns = p.get("trade_returns") or []
+            scenarios_config = p.get("scenarios")
+            seed = p.get("seed")
+
+            if not equity_curve or not trade_returns:
+                return wrap_result(
+                    tool_name="capital_backtest",
+                    domain="evaluation",
+                    result={
+                        "status": "ERROR",
+                        "error_code": "MISSING_DATA",
+                        "message": "stress_test requires payload.equity_curve and payload.trade_returns",
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
+
+            stress = run_stress_test(
+                equity_curve, trade_returns, scenarios_config, seed
+            )
+            return wrap_result(
+                tool_name="capital_backtest",
+                domain="evaluation",
+                result={
+                    "baseline": stress.baseline,
+                    "scenarios": stress.scenarios,
+                    "worst_case": stress.worst_case,
+                    "robustness_score": stress.robustness_score,
+                    "scenarios_tested": stress.scenarios_tested,
+                    "scenarios_survived": stress.scenarios_survived,
+                    "recommendations": stress.recommendations,
+                    "framework": "Synthetic Adversarial Reality (TradeMaster distillation)",
+                },
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=["stress_test_engine", "trademaster_distillation"],
+                session_id=session_id,
+                actor_id=actor_id,
+            )
+
+        # ═══ ENSEMBLE — TradeMaster AlphaMix+ distillation (2026-08-18) ═══
+        if m == "ensemble":
+            import yfinance as yf
+            from wealth_core.ensemble import compute_ensemble
+
+            sym = symbol.upper()
+            try:
+                ticker = yf.Ticker(sym)
+                hist = ticker.history(period=lookback, interval=interval)
+            except Exception as e:
+                return wrap_result(
+                    tool_name="capital_backtest",
+                    domain="market",
+                    result={
+                        "status": "ERROR",
+                        "error_code": "FETCH_FAILED",
+                        "message": str(e)[:200],
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
+
+            if hist.empty:
+                return wrap_result(
+                    tool_name="capital_backtest",
+                    domain="market",
+                    result={
+                        "status": "ERROR",
+                        "error_code": "NO_DATA",
+                        "message": f"No data for {sym}",
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
+
+            closes = [float(r["Close"]) for _, r in hist.iterrows()]
+            highs = [float(r["High"]) for _, r in hist.iterrows()]
+            lows = [float(r["Low"]) for _, r in hist.iterrows()]
+
+            ensemble = compute_ensemble(closes, highs, lows)
+            return wrap_result(
+                tool_name="capital_backtest",
+                domain="evaluation",
+                result={
+                    "strategies_tested": ensemble.strategies_tested,
+                    "regimes_detected": ensemble.regimes_detected,
+                    "regime_strategy_map": ensemble.regime_strategy_map,
+                    "strategy_performances": ensemble.strategy_performances,
+                    "ensemble_metrics": ensemble.ensemble_metrics,
+                    "baseline_metrics": ensemble.baseline_metrics,
+                    "improvement": ensemble.improvement,
+                    "recommendations": ensemble.recommendations,
+                    "framework": "AlphaMix+ Ensemble (TradeMaster distillation)",
+                },
+                epistemic_tag=EpistemicTag.DERIVED,
+                evidence_quality=EvidenceQuality.MODERATE,
+                source_attribution=["ensemble_engine", "trademaster_distillation"],
+                session_id=session_id,
+                actor_id=actor_id,
+            )
 
         try:
             import yfinance as yf
@@ -2750,6 +3154,7 @@ def register_canonical_tools(mcp):
             )
 
         except ImportError as e:
+            import traceback as _tb
             return wrap_result(
                 tool_name="capital_backtest",
                 domain="market",
@@ -2757,6 +3162,7 @@ def register_canonical_tools(mcp):
                     "status": "ERROR",
                     "error_code": "IMPORT_FAILED",
                     "message": f"Trading engine import failed: {e}",
+                    "traceback": _tb.format_exc(),
                 },
                 epistemic_tag=EpistemicTag.ASSUMED,
                 evidence_quality=EvidenceQuality.MISSING,

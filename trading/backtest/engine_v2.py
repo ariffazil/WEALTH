@@ -19,8 +19,12 @@ from datetime import datetime
 from typing import Optional
 
 import sys
+import os
 
-sys.path.insert(0, "/root")
+# Ensure parent directory is on sys.path for sibling package imports
+_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _parent not in sys.path:
+    sys.path.insert(0, _parent)
 
 from trading.signals.scanner import ema, rsi, atr
 from trading.signals.regime import detect_regime, find_swing_points, Regime
