@@ -145,3 +145,140 @@ tools:
       domain: governance
       kind: handoff
       canonical: v1
+
+  # ═══ NEW MODES — TradeMaster Distillation (2026-08-18) ═══
+  # All new modes are additive to existing canonical tools.
+  # No new tools created. DITEMPA BUKAN DIBERI.
+
+  - name: capital_diagnose.mode=regime_map
+    access: public
+    description: >
+      Distribution-aware market regime classification. Labels each bar as
+      BULL/BEAR/SIDEWAYS/VOLATILE/CRISIS using rolling statistics (mean, std,
+      skew, kurtosis), ATR volatility ratio, and directional movement index.
+
+      Computes regime transition probabilities and detects distribution shifts.
+
+      Eureka source: TradeMaster (NTU) market dynamics labeling + AlphaMix+.
+      Engine: wealth_core/regime_map.py
+
+      Input: payload.closes, payload.highs, payload.lows (float arrays)
+      Output: current_regime, regime_distribution, transitions, shift_detection
+    tags:
+      domain: market
+      kind: derived
+      canonical: v1
+      eureka: trademaster-distillation
+
+  - name: capital_backtest.mode=compass
+    access: public
+    description: >
+      PRUDEX-Compass: 6-axis strategy evaluation framework.
+      Axes: Profitability, Risk Control, Diversity, Reliability,
+      Explainability, Universality. 16 measures total.
+
+      Eureka source: TradeMaster (NTU) PRUDEX-Compass.
+      Engine: wealth_core/compass.py
+
+      Input: payload.equity_curve, payload.trade_returns, optional
+      payload.benchmark_returns, payload.regime_labels
+      Output: axes[], overall_score, classification, regime_performance
+    tags:
+      domain: evaluation
+      kind: derived
+      canonical: v1
+      eureka: prudex-compass
+
+  - name: capital_backtest.mode=stress_test
+    access: public
+    description: >
+      Synthetic adversarial reality generation for strategy stress testing.
+      8 default scenarios: vol scaling (+50%/+100%/+200%), crisis injection,
+      flash crash, fat tail amplification, combined stress.
+
+      Eureka source: TradeMaster (NTU) Market-GAN concepts.
+      Engine: wealth_core/stress_test.py
+
+      Input: payload.equity_curve, payload.trade_returns
+      Output: baseline metrics, per-scenario results, robustness_score (0-100)
+    tags:
+      domain: evaluation
+      kind: derived
+      canonical: v1
+      eureka: market-gan-stress
+
+  - name: capital_backtest.mode=ensemble
+    access: public
+    description: >
+      Regime-aware strategy composition (AlphaMix+ distillation).
+      Runs 6 strategy variants (trend_fast, trend_standard, trend_slow,
+      mean_revert, breakout, conservative) across detected regimes.
+      Optimal regime-to-strategy mapping via greedy Sharpe assignment.
+
+      Eureka source: TradeMaster (NTU) AlphaMix+ (KDD 2023).
+      Engine: wealth_core/ensemble.py
+
+      Input: symbol, interval, lookback (uses live yfinance data)
+      Output: regime_strategy_map, ensemble_metrics, improvement vs baseline
+    tags:
+      domain: evaluation
+      kind: derived
+      canonical: v1
+      eureka: alphamix-ensemble
+
+  - name: capital_health.mode=asymmetric_risk
+    access: public
+    description: >
+      Drawdown-sensitive position sizing (DeepScalper distillation).
+      Asymmetric Kelly Criterion with loss aversion coefficient,
+      Omega Ratio, Pain-to-Gain ratio, drawdown state classification.
+
+      Eureka source: TradeMaster (NTU) DeepScalper (CIKM 2022).
+      Engine: wealth_core/asymmetric_risk.py
+
+      Input: upside_scenarios (trade_returns), downside_scenarios (equity_curve)
+      Output: standard_kelly, asymmetric_kelly, omega_ratio, drawdown_state,
+      position_scaling, recommended_risk_pct
+    tags:
+      domain: risk
+      kind: derived
+      canonical: v1
+      eureka: deepscalper-asymmetric
+
+  - name: capital_indicator.indicator=alpha158
+    access: public
+    description: >
+      Systematic feature generation (Alpha158 distillation).
+      Generates 39+ candidate features from OHLCV data across 7 categories:
+      price ratios, returns, volatility, momentum, mean reversion,
+      volume-price, microstructure proxies. Top features ranked by variance.
+
+      Eureka source: TradeMaster (NTU) Alpha158 feature set.
+      Engine: wealth_core/alpha158.py
+
+      Input: symbol, lookback (uses live yfinance data)
+      Output: feature_count, categories, top_features, bars_processed
+    tags:
+      domain: market
+      kind: derived
+      canonical: v1
+      eureka: alpha158-features
+
+  - name: capital_primitive.mode=reward_design
+    access: public
+    description: >
+      Multi-task reward function design (TradeMaster distillation).
+      Designs optimal reward functions for different trading tasks:
+      portfolio (Sharpe/Sortino/Calmar), algo (risk-adjusted PnL),
+      execution (implementation shortfall), HFT (PnL per trade).
+
+      Eureka source: TradeMaster (NTU) task-specific reward design.
+      Engine: wealth_core/reward_design.py
+
+      Input: returns (optional for calibration)
+      Output: recommended_reward, all_rewards, task_type, justification
+    tags:
+      domain: risk
+      kind: derived
+      canonical: v1
+      eureka: trade-master-reward-design

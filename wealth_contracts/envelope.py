@@ -462,7 +462,7 @@ WEALTH_OUTPUT_SCHEMA: dict = {
         "execution_authorized": {"type": "boolean"},
         "execution_authority": {
             "type": "string",
-            "enum": ["OBSERVATION", "ADVISORY", "EXECUTIVE", "SOVEREIGN"],
+            "enum": ["OBSERVATION", "RECOMMENDATION", "ADVISORY", "EXECUTIVE", "SOVEREIGN", "BLOCKED"],
         },
         "human_final_authority": {"type": "string"},
         "requires_888_hold": {"type": "boolean"},
