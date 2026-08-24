@@ -1,5 +1,5 @@
 # requirements.txt - WEALTH MCP Low-Entropy Capital Engine
-numpy>=1.24.0
+numpy>=2.5.2
 scipy>=1.10.0
 numpy-financial>=1.0.0
 supabase>=2.10.0
