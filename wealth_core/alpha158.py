@@ -301,6 +301,18 @@ def compute_alpha158(
         amihud = [_safe_div(abs(log_rets[i]), vols[i]) for i in range(n)]
         _add("amihud_illiquidity", "microstructure", amihud)
 
+    # ═══ Volatility Features (volatility_features.py) ═══
+    # Extends alpha158 with Garman-Klass, Parkinson, Yang-Zhang,
+    # Rogers-Satchell, vol-of-vol, range compression, etc.
+    try:
+        from .volatility_features import compute_all_volatility_features, format_features_as_dict
+        vol = compute_all_volatility_features(opens, highs, lows, closes, window=20)
+        vol_dict = format_features_as_dict(vol)
+        for k, v in vol_dict.items():
+            _add(k, "volatility_hff", v)
+    except Exception:
+        pass  # Volatility engine is additive — its absence is non-fatal
+
     # ═══ Compute feature statistics ═══
     top_features = []
     for name, values in features.items():
