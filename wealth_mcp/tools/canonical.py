@@ -3335,14 +3335,48 @@ def register_canonical_tools(mcp):
         support_zones = _cluster(swing_lows)
 
         # ── Build trade plan ──
-        nearest_support = support_zones[0][0] if support_zones else current_price * 0.98
-        nearest_resistance = (
-            resistance_zones[0][0] if resistance_zones else current_price * 1.02
+        # Zone selection: filter to actionable bands around spot BEFORE ranking.
+        # _cluster() orders zones by recency of formation (cluster scan order),
+        # NOT by price proximity — index 0 was historically "oldest regime wins"
+        # (9-touch zone from months back chosen while price traded 500+ above).
+        max_zone_dist = 5 * current_atr
+
+        def _nearest(levels, direction):
+            candidates = [
+                (lvl, strength)
+                for lvl, strength in levels
+                if direction == "below"
+                and lvl <= current_price
+                and (current_price - lvl) <= max_zone_dist
+                or direction == "above"
+                and lvl >= current_price
+                and (lvl - current_price) <= max_zone_dist
+            ]
+            if not candidates:
+                return None
+            return min(candidates, key=lambda z: abs(current_price - z[0]))
+
+        nearest_support = (
+            _nearest(support_zones, "below")[0]
+            if _nearest(support_zones, "below")
+            else current_price * 0.98
         )
+        nearest_resistance = (
+            _nearest(resistance_zones, "above")[0]
+            if _nearest(resistance_zones, "above")
+            else current_price * 1.02
+        )
+        # next_resistance must clear the first, not merely be zones[1]
+        further_res = [
+            z
+            for z in resistance_zones
+            if z[0] > nearest_resistance + current_atr
+            and (z[0] - current_price) <= max_zone_dist
+        ]
         next_resistance = (
-            resistance_zones[1][0]
-            if len(resistance_zones) > 1
-            else current_price * 1.04
+            further_res[0][0]
+            if further_res
+            else max(nearest_resistance + 2 * current_atr, current_price * 1.02)
         )
 
         if trend == "UPTREND":
@@ -3355,8 +3389,16 @@ def register_canonical_tools(mcp):
             entry_zone = round(nearest_resistance, 2)
             stop_loss = round(nearest_resistance + 2 * current_atr, 2)
             target_1 = round(nearest_support, 2)
+            further_sup = [
+                z
+                for z in support_zones
+                if z[0] < nearest_support - current_atr
+                and (current_price - z[0]) <= max_zone_dist
+            ]
             target_2 = round(
-                support_zones[1][0] if len(support_zones) > 1 else current_price * 0.97,
+                further_sup[0][0]
+                if further_sup
+                else min(nearest_support - 2 * current_atr, current_price * 0.97),
                 2,
             )
             direction = "SHORT"
