@@ -88,16 +88,11 @@ ENGINE_PATH_PREFIX = "/api/{asset}/{operation}"
 
 
 async def _http_get(url: str, timeout: float = ENGINE_TIMEOUT) -> dict[str, Any]:
-    """Async HTTP GET with timeout. Uses to_thread for sync urllib."""
-    import urllib.request
-
-    def _fetch():
-        req = urllib.request.Request(url, method="GET")
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            body = resp.read().decode("utf-8")
-            return json.loads(body)
-
-    return await asyncio.to_thread(_fetch)
+    """Async HTTP GET with timeout and retry. Uses httpx via retry utility."""
+    from wealth_core.http_retry import async_fetch_with_retry
+    return await async_fetch_with_retry(
+        url, timeout=timeout, provider="internal_commodity",
+    )
 
 
 async def call_engine(
@@ -159,6 +154,18 @@ async def call_engine(
 
     try:
         data = await _http_get(url)
+
+        # Phase 1c: _http_get now returns error dicts on failure (not exceptions)
+        if isinstance(data, dict) and data.get("status") == "ERROR":
+            return {
+                "asset": asset,
+                "operation": operation,
+                "source": "wealth://commodity",
+                "error": True,
+                "code": data.get("error_code", "ENGINE_FAILURE"),
+                "message": data.get("message", "Engine returned error response"),
+                "data": None,
+            }
 
         return {
             "asset": asset,

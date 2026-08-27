@@ -141,17 +141,24 @@ class CoinGeckoAdapter:
         return asset.lower()
 
     def _http_get(self, url: str) -> tuple[str, int]:
-        """Bare urllib. F12: 5s timeout hard cap. No retries (router decides)."""
+        """httpx with retry + timeout. F12: 10s timeout. No retries at adapter level (router decides)."""
+        from wealth_core.http_retry import sync_fetch_raw_with_retry
+        headers = {
+            "User-Agent": "arifOS-WEALTH-CryptoRouter/1.0",
+            "Accept":      "application/json",
+        }
         try:
-            req = urllib.request.Request(url, headers={
-                "User-Agent": "arifOS-WEALTH-CryptoRouter/1.0",
-                "Accept":      "application/json",
-            })
-            with urllib.request.urlopen(req, timeout=5) as resp:
-                return resp.read().decode("utf-8"), resp.status
-        except urllib.error.HTTPError as e:
-            if e.code == 429:
+            raw, status = sync_fetch_raw_with_retry(
+                url, timeout=10.0, provider="coingecko", headers=headers,
+            )
+            if status == 429:
                 return "", 429
-            raise ProviderError(f"coingecko HTTP {e.code}: {e.reason}") from e
-        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            if status == -1:
+                raise ProviderError("coingecko network failure after retries")
+            if status >= 400:
+                raise ProviderError(f"coingecko HTTP {status}")
+            return raw, status
+        except ProviderError:
+            raise
+        except Exception as e:
             raise ProviderError(f"coingecko network failure: {e}") from e

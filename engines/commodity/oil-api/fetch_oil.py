@@ -76,22 +76,42 @@ def _read_stale(path: Path) -> dict | None:
 
 # ── Data Fetch ───────────────────────────────────────────────────
 def fetch_ohlcv(interval: str = "1h", period: str = "30d") -> pd.DataFrame:
+    import sys
+    import time as _time
     import yfinance as yf
 
-    ticker = yf.Ticker("BZ=F")
-    df = ticker.history(period=period, interval=interval)
+    _MAX_RETRIES = 3
+    _BACKOFF_BASE = 1.0
+    tickers_to_try = ["BZ=F", "BRENT=X"]
 
-    if df.empty:
-        ticker = yf.Ticker("BRENT=X")
-        df = ticker.history(period=period, interval=interval)
+    for sym in tickers_to_try:
+        last_exc = None
+        for attempt in range(1, _MAX_RETRIES + 1):
+            try:
+                ticker = yf.Ticker(sym)
+                df = ticker.history(period=period, interval=interval)
+                if not df.empty:
+                    df = df[["Open", "High", "Low", "Close", "Volume"]].copy()
+                    df.columns = ["open", "high", "low", "close", "volume"]
+                    df.index.name = "time"
+                    return df
+            except Exception as e:
+                last_exc = e
+                if attempt < _MAX_RETRIES:
+                    print(
+                        f"[HTTP_RETRY] attempt {attempt}/{_MAX_RETRIES} for yfinance {sym}: "
+                        f"{type(e).__name__}: {e}",
+                        file=sys.stderr, flush=True,
+                    )
+                    _time.sleep(_BACKOFF_BASE * (2 ** (attempt - 1)))
+        if last_exc:
+            print(
+                f"[HTTP_RETRY] FINAL_FAILURE for yfinance {sym}: "
+                f"{type(last_exc).__name__}: {last_exc}",
+                file=sys.stderr, flush=True,
+            )
 
-    if df.empty:
-        raise ValueError("No oil data available from yfinance")
-
-    df = df[["Open", "High", "Low", "Close", "Volume"]].copy()
-    df.columns = ["open", "high", "low", "close", "volume"]
-    df.index.name = "time"
-    return df
+    raise ValueError("No oil data available from yfinance")
 
 
 # ── Technical Indicators ─────────────────────────────────────────

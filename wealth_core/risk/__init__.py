@@ -293,12 +293,25 @@ def fiscal_breakeven_oil_price(
         annual_production_boe * royalty_tax_effective_rate / 1e9
     )  # RM B per USD
 
-    # Breakeven: additional oil revenue needed / government take per USD
-    breakeven_price_usd = (
-        additional_oil_revenue_needed / government_take_per_usd
-        if government_take_per_usd > 0
-        else None
-    )
+    # ── Division-by-zero guard ──
+    _breakeven_error = None
+    if government_take_per_usd <= 0:
+        _breakeven_error = (
+            "Cannot compute breakeven: government take per USD is zero "
+            "(check production and royalty rate inputs)"
+        )
+        breakeven_price_usd = None
+    else:
+        # Breakeven: additional oil revenue needed / government take per USD
+        try:
+            breakeven_price_usd = (
+                additional_oil_revenue_needed / government_take_per_usd
+            )
+        except ZeroDivisionError:
+            _breakeven_error = (
+                "Cannot compute breakeven: division by zero in government take"
+            )
+            breakeven_price_usd = None
 
     # Sensitivity: how much does fiscal position change per USD move?
     fiscal_sensitivity_rm_per_usd = government_take_per_usd  # RM B per USD/bbl
@@ -312,13 +325,14 @@ def fiscal_breakeven_oil_price(
     )
 
     # Pressure flag: if breakeven price > current price, fiscal path needs correction
-    fiscal_pressure = (
-        "UNSUSTAINABLE"
-        if breakeven_price_usd and breakeven_price_usd > oil_price_assumption_usd
-        else "MANAGEABLE"
-        if breakeven_price_usd and breakeven_price_usd < oil_price_assumption_usd * 0.8
-        else "AT_RISK"
-    )
+    if _breakeven_error:
+        fiscal_pressure = "UNMEASURABLE"
+    elif breakeven_price_usd and breakeven_price_usd > oil_price_assumption_usd:
+        fiscal_pressure = "UNSUSTAINABLE"
+    elif breakeven_price_usd and breakeven_price_usd < oil_price_assumption_usd * 0.8:
+        fiscal_pressure = "MANAGEABLE"
+    else:
+        fiscal_pressure = "AT_RISK"
 
     return {
         "breakeven_price_usd": round(breakeven_price_usd, 1)
@@ -336,6 +350,7 @@ def fiscal_breakeven_oil_price(
         "total_govt_expenditure_rm_b": total_government_expenditure,
         "epistemic_tag": "CLAIM",
         "confidence_band": 0.70,
+        "breakeven_error": _breakeven_error,
         "caveat": (
             "Breakeven price assumes constant production and no reserve depletion. "
             "In crisis (USD 50-), production also declines, worsening the fiscal gap. "

@@ -87,7 +87,7 @@ BINANCE_LIMITS = {
 def fetch_ohlcv_binance(interval: str = "1h", period: str = "30d") -> pd.DataFrame:
     """Spot-venue OHLCV from Binance PAXGUSDT — tracks XAUUSD spot with no
     futures carry premium, so charts stay in sync with MT5 spot prices."""
-    import urllib.request
+    from wealth_core.http_retry import sync_fetch_with_retry
 
     bi = BINANCE_INTERVALS.get(interval)
     limit = BINANCE_LIMITS.get((interval, period))
@@ -98,9 +98,11 @@ def fetch_ohlcv_binance(interval: str = "1h", period: str = "30d") -> pd.DataFra
         f"https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval={bi}&limit={limit}",
     ]
     for u in urls:
+        result = sync_fetch_with_retry(u, timeout=10.0, provider="binance_public")
+        if result.get("status") == "ERROR":
+            continue
         try:
-            with urllib.request.urlopen(u, timeout=10) as r:
-                raw = json.loads(r.read().decode())
+            raw = result if isinstance(result, list) else json.loads(json.dumps(result))
             if not isinstance(raw, list) or not raw:
                 continue
             df = pd.DataFrame(raw)[[0, 1, 2, 3, 4, 5]].copy()

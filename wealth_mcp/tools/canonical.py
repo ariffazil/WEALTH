@@ -1218,9 +1218,9 @@ def register_canonical_tools(mcp):
             )
 
         if m == "fx":
-            raw = await _call_legacy_tool(
-                "wealth_market_data", {"mode": "fx", "base": base, "targets": targets}
-            )
+            # Phase 1c: direct import, bypass legacy dispatcher
+            from internal.monolith import wealth_fx_rate
+            raw = wealth_fx_rate(base=base, targets=targets)
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         if m == "commodity":
@@ -1264,26 +1264,24 @@ def register_canonical_tools(mcp):
             )
 
         if m == "indicator":
-            raw = await _call_legacy_tool(
-                "wealth_market_data",
-                {"mode": "indicator", "indicator": indicator, "country": country},
-            )
+            # Phase 1c: direct import, bypass legacy dispatcher
+            from internal.monolith import wealth_macro_indicator
+            raw = wealth_macro_indicator(indicator=indicator, country=country)
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         if m == "stock":
-            raw = await _call_legacy_tool(
-                "wealth_stock_analysis",
-                {
-                    "mode": sp.get("stock_mode") or sp.get("mode") or "verify_math",
-                    "ticker": sp.get("ticker") or "",
-                    "entry_price": sp.get("entry_price") or 0,
-                    "exit_price": sp.get("exit_price"),
-                    "current_price": sp.get("current_price"),
-                    "position_size": sp.get("position_size") or 0,
-                    "status": sp.get("status") or sp.get("status_") or "unrealized",
-                    "direction": sp.get("direction") or "long",
-                    "factors": sp.get("factors"),
-                },
+            # Phase 1c: direct import, bypass legacy dispatcher
+            from internal.monolith import wealth_stock_analysis
+            raw = await wealth_stock_analysis(
+                mode=sp.get("stock_mode") or sp.get("mode") or "verify_math",
+                ticker=sp.get("ticker") or "",
+                entry_price=sp.get("entry_price") or 0,
+                exit_price=sp.get("exit_price"),
+                current_price=sp.get("current_price"),
+                position_size=sp.get("position_size") or 0,
+                status=sp.get("status") or sp.get("status_") or "unrealized",
+                direction=sp.get("direction") or "long",
+                factors=sp.get("factors"),
             )
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
@@ -1420,7 +1418,16 @@ def register_canonical_tools(mcp):
                     domain="vault",
                     result={
                         "status": "HOLD",
-                        "message": "Write requires ack_irreversible=true. This action is irreversible.",
+                        "error_code": "F13_ACK_REQUIRED",
+                        "message": (
+                            "VAULT999 write blocked: requires explicit human "
+                            "acknowledgment (ack_irreversible=true). This action "
+                            "is IRREVERSIBLE — no undo is possible after commit."
+                        ),
+                        "write_blocked_reason": (
+                            "ack_irreversible was not explicitly set to True. "
+                            "VAULT999 writes are append-only and immutable."
+                        ),
                     },
                     epistemic_tag=EpistemicTag.DERIVED,
                     evidence_quality=EvidenceQuality.SPECULATED,
@@ -3245,6 +3252,29 @@ def register_canonical_tools(mcp):
                 actor_id=actor_id,
             )
 
+        # ── NaN filter: drop any row with NaN in OHLC ──
+        hist = hist.dropna(subset=["Open", "High", "Low", "Close"])
+        n_raw_bars = len(hist)
+        if n_raw_bars < 50:
+            return wrap_result(
+                tool_name="capital_entry_plan",
+                domain="market",
+                result={
+                    "status": "ERROR",
+                    "error_code": "INSUFFICIENT_DATA",
+                    "message": (
+                        f"Need >= 50 clean bars for analysis, got {n_raw_bars} "
+                        f"(after NaN removal from raw data)"
+                    ),
+                },
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                session_id=session_id,
+                actor_id=actor_id,
+            )
+        bars_before_nan = len(hist)
+        has_enough_for_ema200 = bars_before_nan >= 200
+
         high = hist["High"].values.astype(np.float64)
         low = hist["Low"].values.astype(np.float64)
         close = hist["Close"].values.astype(np.float64)
@@ -3284,6 +3314,14 @@ def register_canonical_tools(mcp):
         if len(ema200) > n:
             ema200 = ema200[-n:]
 
+        # EMA200 warning: when bars < 200, the EMA is seeded with padded values
+        ema200_data_warning = None
+        if not has_enough_for_ema200:
+            ema200_data_warning = (
+                f"EMA200 computed from {n} bars (< 200 required). "
+                "Padded with leading values — EMA200 alignment is unreliable."
+            )
+
         trend = "SIDEWAYS"
         if ema20[-1] > ema50[-1] > ema200[-1]:
             trend = "UPTREND"
@@ -3298,15 +3336,20 @@ def register_canonical_tools(mcp):
         lookback_swing = 20
         swing_highs = []
         swing_lows = []
-        for i in range(lookback_swing, n - lookback_swing):
-            if all(
-                high[i] >= high[i - j] for j in range(1, lookback_swing + 1)
-            ) and all(high[i] >= high[i + j] for j in range(1, lookback_swing + 1)):
-                swing_highs.append(float(high[i]))
-            if all(low[i] <= low[i - j] for j in range(1, lookback_swing + 1)) and all(
-                low[i] <= low[i + j] for j in range(1, lookback_swing + 1)
-            ):
-                swing_lows.append(float(low[i]))
+        if n < 50:
+            # Insufficient bars for swing detection — use ATR-only zones
+            swing_highs = []
+            swing_lows = []
+        else:
+            for i in range(lookback_swing, n - lookback_swing):
+                if all(
+                    high[i] >= high[i - j] for j in range(1, lookback_swing + 1)
+                ) and all(high[i] >= high[i + j] for j in range(1, lookback_swing + 1)):
+                    swing_highs.append(float(high[i]))
+                if all(low[i] <= low[i - j] for j in range(1, lookback_swing + 1)) and all(
+                    low[i] <= low[i + j] for j in range(1, lookback_swing + 1)
+                ):
+                    swing_lows.append(float(low[i]))
 
         # Cluster nearby levels
         def _cluster(levels, tolerance_pct=0.5):
@@ -3435,6 +3478,7 @@ def register_canonical_tools(mcp):
                 "risk_reward_2": rr_2,
                 "support_zones": support_zones[:3],
                 "resistance_zones": resistance_zones[:3],
+                "ema200_data_warning": ema200_data_warning,
             },
             epistemic_tag=EpistemicTag.DERIVED,
             evidence_quality=EvidenceQuality.OBSERVED,
