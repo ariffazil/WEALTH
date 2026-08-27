@@ -99,7 +99,8 @@ def fetch_ohlcv_binance(interval: str = "1h", period: str = "30d") -> pd.DataFra
     ]
     for u in urls:
         result = sync_fetch_with_retry(u, timeout=10.0, provider="binance_public")
-        if result.get("status") == "ERROR":
+        # sync_fetch_with_retry returns error dict on failure, raw JSON (list) on success
+        if isinstance(result, dict) and result.get("status") == "ERROR":
             continue
         try:
             raw = result if isinstance(result, list) else json.loads(json.dumps(result))
