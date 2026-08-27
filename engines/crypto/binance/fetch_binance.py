@@ -179,28 +179,33 @@ class BinanceAdapter:
         return f"{upper}USDT"
 
     def _http_get(self, url: str) -> tuple[str, int]:
-        """Bare urllib. F12: 5s timeout. Detects 403/451 as geo-block.
+        """httpx with retry + timeout. F12: 10s timeout. Detects 403/451 as geo-block.
 
         Geo-block surfaces as ProviderError, NOT RateLimitHit, so the
         router's fallback chain triggers and CoinGecko gets the call.
         """
+        from wealth_core.http_retry import sync_fetch_raw_with_retry
+        headers = {
+            "User-Agent": "arifOS-WEALTH-CryptoRouter/1.0",
+            "Accept":      "application/json",
+        }
         try:
-            req = urllib.request.Request(url, headers={
-                "User-Agent": "arifOS-WEALTH-CryptoRouter/1.0",
-                "Accept":      "application/json",
-            })
-            with urllib.request.urlopen(req, timeout=5) as resp:
-                return resp.read().decode("utf-8"), resp.status
-        except urllib.error.HTTPError as e:
-            if e.code == 429:
+            raw, status = sync_fetch_raw_with_retry(
+                url, timeout=10.0, provider="binance_public", headers=headers,
+            )
+            if status == 429:
                 return "", 429
-            if e.code in (403, 451):
-                # F12: geo-block detected. Surface as ProviderError
-                # so router falls back to position 2 (CoinGecko).
+            if status == -1:
+                raise ProviderError("binance network failure after retries")
+            if status in (403, 451):
                 raise ProviderError(
-                    f"binance geographic restriction (HTTP {e.code}): "
+                    f"binance geographic restriction (HTTP {status}): "
                     f"set WEALTH_BINANCE_ENABLED=false on US VPS"
-                ) from e
-            raise ProviderError(f"binance HTTP {e.code}: {e.reason}") from e
-        except (urllib.error.URLError, TimeoutError, OSError) as e:
+                )
+            if status >= 400:
+                raise ProviderError(f"binance HTTP {status}")
+            return raw, status
+        except ProviderError:
+            raise
+        except Exception as e:
             raise ProviderError(f"binance network failure: {e}") from e
