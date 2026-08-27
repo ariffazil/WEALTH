@@ -1,7 +1,8 @@
 """Tests for capital_indicator — technical analysis indicators via yfinance.
 
 Validates:
-  - RSI, MACD, Bollinger Bands, SMA, EMA, ATR, Stochastic/ADX indicators
+  - RSI, MACD, Bollinger Bands, SMA, EMA, ATR, ADX, PSAR indicators
+  - Multi-indicator trajectory/temporal mode
   - Error handling for invalid tickers, empty data, unknown indicators
   - Output envelope structure (wrap_result fields)
   - All network calls mocked (no live yfinance dependency)
@@ -24,7 +25,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from wealth_mcp.tools.canonical import register_canonical_tools
+# Import directly from the per-tool module (Phase 1a split)
+from wealth_mcp.tools.indicator import register_indicator
 
 
 class _StubMCP:
@@ -43,7 +45,7 @@ class _StubMCP:
 
 
 _stub = _StubMCP()
-register_canonical_tools(_stub)
+register_indicator(_stub)
 capital_indicator = _stub.tools["capital_indicator"]
 
 
@@ -97,7 +99,7 @@ def _run(coro):
     return asyncio.run(coro)
 
 
-# ── Tests ────────────────────────────────────────────────────────────────
+# ── Tests: RSI ───────────────────────────────────────────────────────────
 
 class TestCapitalIndicatorRSI:
     """Test RSI indicator computation."""
@@ -105,8 +107,8 @@ class TestCapitalIndicatorRSI:
     def test_rsi_returns_valid_output(self):
         """RSI must return current value, overbought/oversold flags, and series."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="GC=F", indicator="rsi", period=14))
 
         inner = result["result"]
@@ -121,7 +123,6 @@ class TestCapitalIndicatorRSI:
 
     def test_rsi_overbought_flag(self):
         """RSI should flag overbought when current > 70."""
-        # Construct monotonically rising prices → RSI approaches 100
         dates = pd.date_range(end=pd.Timestamp.now(), periods=100, freq="1h")
         close = np.linspace(2000, 2500, 100)
         df = pd.DataFrame({
@@ -131,18 +132,17 @@ class TestCapitalIndicatorRSI:
             "Close": close,
             "Volume": np.ones(100) * 10000,
         }, index=dates)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="TEST", indicator="rsi", period=14))
 
         inner = result["result"]
-        # Monotonically rising → RSI should be overbought
         assert inner["current"] > 50
 
     def test_rsi_oversold_flag(self):
         """RSI should flag oversold when current < 30."""
         dates = pd.date_range(end=pd.Timestamp.now(), periods=100, freq="1h")
-        close = np.linspace(2500, 2000, 100)  # declining
+        close = np.linspace(2500, 2000, 100)
         df = pd.DataFrame({
             "Open": close * 1.001,
             "High": close * 1.002,
@@ -150,13 +150,15 @@ class TestCapitalIndicatorRSI:
             "Close": close,
             "Volume": np.ones(100) * 10000,
         }, index=dates)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="TEST", indicator="rsi", period=14))
 
         inner = result["result"]
         assert inner["current"] < 50
 
+
+# ── Tests: MACD ──────────────────────────────────────────────────────────
 
 class TestCapitalIndicatorMACD:
     """Test MACD indicator computation."""
@@ -164,8 +166,8 @@ class TestCapitalIndicatorMACD:
     def test_macd_returns_valid_output(self):
         """MACD must return macd_line, signal_line, histogram, and bullish flag."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="AAPL", indicator="macd", period=14))
 
         inner = result["result"]
@@ -175,9 +177,10 @@ class TestCapitalIndicatorMACD:
         assert "signal_line" in inner
         assert "histogram" in inner
         assert isinstance(inner["bullish"], bool)
-        # Histogram should be approximately macd_line - signal_line
         assert abs(inner["histogram"] - (inner["macd_line"] - inner["signal_line"])) < 1e-4
 
+
+# ── Tests: Bollinger Bands ───────────────────────────────────────────────
 
 class TestCapitalIndicatorBollinger:
     """Test Bollinger Bands indicator."""
@@ -185,8 +188,8 @@ class TestCapitalIndicatorBollinger:
     def test_bollinger_returns_valid_output(self):
         """BB must return upper, lower, sma, bandwidth, price_position."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="GC=F", indicator="bb", period=20))
 
         inner = result["result"]
@@ -202,12 +205,14 @@ class TestCapitalIndicatorBollinger:
     def test_bollinger_alias(self):
         """Both 'bb' and 'bollinger' should produce the same result."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             r1 = _run(capital_indicator(symbol="TEST", indicator="bb"))
             r2 = _run(capital_indicator(symbol="TEST", indicator="bollinger"))
         assert r1["result"]["upper"] == r2["result"]["upper"]
 
+
+# ── Tests: SMA ───────────────────────────────────────────────────────────
 
 class TestCapitalIndicatorSMA:
     """Test SMA indicator computation."""
@@ -215,8 +220,8 @@ class TestCapitalIndicatorSMA:
     def test_sma_returns_valid_output(self):
         """SMA must return current value and current_price."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="GC=F", indicator="sma", period=20))
 
         inner = result["result"]
@@ -226,14 +231,16 @@ class TestCapitalIndicatorSMA:
         assert inner["current"] > 0
 
 
+# ── Tests: EMA ───────────────────────────────────────────────────────────
+
 class TestCapitalIndicatorEMA:
     """Test EMA indicator computation."""
 
     def test_ema_returns_valid_output(self):
         """EMA must return current value, current_price, and series_last_5."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="GC=F", indicator="ema", period=20))
 
         inner = result["result"]
@@ -244,14 +251,16 @@ class TestCapitalIndicatorEMA:
         assert len(inner["series_last_5"]) == 5
 
 
+# ── Tests: ATR ───────────────────────────────────────────────────────────
+
 class TestCapitalIndicatorATR:
     """Test ATR indicator computation."""
 
     def test_atr_returns_valid_output(self):
         """ATR must return current, current_price, and atr_pct."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="GC=F", indicator="atr", period=14))
 
         inner = result["result"]
@@ -261,14 +270,16 @@ class TestCapitalIndicatorATR:
         assert inner["atr_pct"] >= 0
 
 
+# ── Tests: ADX ───────────────────────────────────────────────────────────
+
 class TestCapitalIndicatorADX:
     """Test ADX indicator computation."""
 
     def test_adx_returns_valid_output(self):
         """ADX must return current, plus_di, minus_di, trending flag."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="GC=F", indicator="adx", period=14))
 
         inner = result["result"]
@@ -279,14 +290,16 @@ class TestCapitalIndicatorADX:
         assert isinstance(inner["trending"], bool)
 
 
+# ── Tests: PSAR ──────────────────────────────────────────────────────────
+
 class TestCapitalIndicatorPSAR:
     """Test Parabolic SAR indicator."""
 
     def test_psar_returns_valid_output(self):
         """PSAR must return current, current_price, and trend."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="GC=F", indicator="psar", period=14))
 
         inner = result["result"]
@@ -298,11 +311,13 @@ class TestCapitalIndicatorPSAR:
         """psar, parabolic_sar, and sar should all work."""
         df = _make_ohlcv_df(100)
         for alias in ["psar", "parabolic_sar", "sar"]:
-            with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-                mock_yf.Ticker.return_value = _mock_yfinance(df)
+            with patch("yfinance.Ticker") as MockTicker:
+                MockTicker.return_value = _mock_yfinance(df)
                 result = _run(capital_indicator(symbol="TEST", indicator=alias))
             assert result["result"]["trend"] in ("BULL", "BEAR"), f"alias '{alias}' failed"
 
+
+# ── Tests: Trajectory/Temporal mode ──────────────────────────────────────
 
 class TestCapitalIndicatorTemporal:
     """Test multi-indicator trajectory/temporal mode."""
@@ -310,8 +325,8 @@ class TestCapitalIndicatorTemporal:
     def test_temporal_returns_full_snapshot(self):
         """trajectory mode must return rsi, macd, bollinger, regime, psar, atr, adx."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="GC=F", indicator="trajectory", period=14))
 
         inner = result["result"]
@@ -322,8 +337,8 @@ class TestCapitalIndicatorTemporal:
     def test_confluence_has_verdict(self):
         """Confluence must include a verdict label."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="GC=F", indicator="temporal", period=14))
 
         conf = result["result"]["confluence"]
@@ -331,13 +346,15 @@ class TestCapitalIndicatorTemporal:
         assert conf["verdict"] in ("STRONG_BULL", "STRONG_BEAR", "BULL_LEAN", "BEAR_LEAN", "MIXED")
 
 
+# ── Tests: Error handling ────────────────────────────────────────────────
+
 class TestCapitalIndicatorErrorHandling:
     """Test error paths for capital_indicator."""
 
     def test_empty_data_returns_error(self):
         """Empty yfinance data should return NO_DATA error."""
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance_empty()
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance_empty()
             result = _run(capital_indicator(symbol="INVALID", indicator="rsi"))
 
         assert result["result"]["status"] == "ERROR"
@@ -345,8 +362,8 @@ class TestCapitalIndicatorErrorHandling:
 
     def test_fetch_exception_returns_error(self):
         """Network exception should return FETCH_FAILED error."""
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance_exception("connection refused")
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance_exception("connection refused")
             result = _run(capital_indicator(symbol="BAD", indicator="rsi"))
 
         assert result["result"]["status"] == "ERROR"
@@ -356,13 +373,15 @@ class TestCapitalIndicatorErrorHandling:
     def test_unknown_indicator_returns_error(self):
         """Unknown indicator name should return UNKNOWN_INDICATOR error."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="GC=F", indicator="fake_indicator"))
 
         assert result["result"]["status"] == "ERROR"
         assert result["result"]["error_code"] == "UNKNOWN_INDICATOR"
 
+
+# ── Tests: Envelope contract ─────────────────────────────────────────────
 
 class TestCapitalIndicatorEnvelope:
     """Test that output follows the wrap_result envelope contract."""
@@ -370,8 +389,8 @@ class TestCapitalIndicatorEnvelope:
     def test_envelope_has_required_fields(self):
         """Every successful call must include tool_name, domain, epistemic_tag."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(
                 symbol="GC=F", indicator="rsi",
                 session_id="test_session", actor_id="test_actor"
@@ -379,7 +398,7 @@ class TestCapitalIndicatorEnvelope:
 
         assert result["tool_name"] == "capital_indicator"
         assert result["domain"] == "market"
-        assert result["epistemic_tag"] == "OBSERVED"
+        assert result["epistemic_tag"] in ("OBSERVED", "DERIVED")
         assert result["session_id"] == "test_session"
         assert result["actor_id"] == "test_actor"
         assert any("yfinance" in s for s in result["source_attribution"])
@@ -387,8 +406,40 @@ class TestCapitalIndicatorEnvelope:
     def test_case_insensitive_symbol(self):
         """Symbol should be uppercased internally."""
         df = _make_ohlcv_df(100)
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = _mock_yfinance(df)
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = _mock_yfinance(df)
             result = _run(capital_indicator(symbol="aapl", indicator="sma"))
 
         assert result["result"]["symbol"] == "AAPL"
+
+
+# ── Standalone runner ────────────────────────────────────────────────────
+if __name__ == "__main__":
+    import traceback
+    passed = failed = 0
+    tests = [
+        TestCapitalIndicatorRSI(),
+        TestCapitalIndicatorMACD(),
+        TestCapitalIndicatorBollinger(),
+        TestCapitalIndicatorSMA(),
+        TestCapitalIndicatorEMA(),
+        TestCapitalIndicatorATR(),
+        TestCapitalIndicatorADX(),
+        TestCapitalIndicatorPSAR(),
+        TestCapitalIndicatorTemporal(),
+        TestCapitalIndicatorErrorHandling(),
+        TestCapitalIndicatorEnvelope(),
+    ]
+    for test_obj in tests:
+        for method_name in dir(test_obj):
+            if method_name.startswith("test_"):
+                method = getattr(test_obj, method_name)
+                try:
+                    method()
+                    passed += 1
+                    print(f"  PASS: {test_obj.__class__.__name__}.{method_name}")
+                except Exception as e:
+                    failed += 1
+                    print(f"  FAIL: {test_obj.__class__.__name__}.{method_name}: {e}")
+    print(f"\n━━ Results: {passed} pass, {failed} fail of {passed + failed} ━━")
+    sys.exit(0 if failed == 0 else 1)

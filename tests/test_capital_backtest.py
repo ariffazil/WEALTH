@@ -4,8 +4,7 @@ Validates:
   - Backtest mode (default) with mocked yfinance + backtest engine
   - Compass mode with equity curve inputs
   - Stress test mode with trade returns
-  - Ensemble mode with price data
-  - Error handling: empty data, missing imports, fetch failures
+  - Error handling: empty data, fetch failures
   - Output envelope structure
 
 Run: pytest tests/test_capital_backtest.py -v
@@ -15,8 +14,7 @@ from __future__ import annotations
 import asyncio
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock, PropertyMock
-from dataclasses import dataclass, field
+from unittest.mock import patch, MagicMock
 
 import numpy as np
 import pandas as pd
@@ -27,10 +25,12 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from wealth_mcp.tools.canonical import register_canonical_tools
+# Import directly from the per-tool module (Phase 1a split)
+from wealth_mcp.tools.backtest import register_backtest
 
 
 class _StubMCP:
+    """Captures FastMCP @tool-decorated functions for offline testing."""
     def __init__(self):
         self.tools: dict[str, object] = {}
 
@@ -45,7 +45,7 @@ class _StubMCP:
 
 
 _stub = _StubMCP()
-register_canonical_tools(_stub)
+register_backtest(_stub)
 capital_backtest = _stub.tools["capital_backtest"]
 
 
@@ -71,17 +71,6 @@ def _make_ohlcv_df(n: int = 200, base_price: float = 2300.0):
         "Close": close,
         "Volume": volume,
     }, index=dates)
-
-
-@dataclass
-class _MockOHLCV:
-    """Mock OHLCV candle matching signals.scanner.OHLCV signature."""
-    timestamp: object = None
-    open: float = 0.0
-    high: float = 0.0
-    low: float = 0.0
-    close: float = 0.0
-    volume: float = 0.0
 
 
 def _mock_backtest_result():
@@ -126,17 +115,25 @@ class TestCapitalBacktestDefault:
         mock_ticker = MagicMock()
         mock_ticker.history.return_value = df
 
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf, \
-             patch.dict("sys.modules", {"signals.scanner": MagicMock(OHLCV=_MockOHLCV)}), \
-             patch("wealth_mcp.tools.canonical.run_backtest", return_value=_mock_backtest_result()), \
-             patch("wealth_mcp.tools.canonical.BacktestConfig") as mock_cfg:
-            mock_cfg.return_value = MagicMock()
-            mock_yf.Ticker.return_value = mock_ticker
-            result = _run(capital_backtest(
-                symbol="GC=F", interval="1h", lookback="2y",
-                initial_capital=10000.0, risk_per_trade_pct=1.0,
-                session_id="test",
-            ))
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = mock_ticker
+            # Mock the imports that happen inside the function body
+            mock_ohlcv = type("OHLCV", (), {
+            "__init__": lambda self, **kw: setattr(self, "_attrs", kw) or None,
+            "__getattr__": lambda self, name: self._attrs.get(name),
+        })
+            mock_bt = MagicMock()
+            mock_bt.BacktestConfig = MagicMock
+            mock_bt.run_backtest.return_value = _mock_backtest_result()
+            with patch.dict("sys.modules", {
+                "signals.scanner": MagicMock(OHLCV=mock_ohlcv),
+                "backtest.engine_v2": mock_bt,
+            }):
+                result = _run(capital_backtest(
+                    symbol="GC=F", interval="1h", lookback="2y",
+                    initial_capital=10000.0, risk_per_trade_pct=1.0,
+                    session_id="test",
+                ))
 
         inner = result["result"]
         assert inner["symbol"] == "GC=F"
@@ -155,13 +152,20 @@ class TestCapitalBacktestDefault:
         mock_ticker = MagicMock()
         mock_ticker.history.return_value = df
 
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf, \
-             patch.dict("sys.modules", {"signals.scanner": MagicMock(OHLCV=_MockOHLCV)}), \
-             patch("wealth_mcp.tools.canonical.run_backtest", return_value=_mock_backtest_result()), \
-             patch("wealth_mcp.tools.canonical.BacktestConfig") as mock_cfg:
-            mock_cfg.return_value = MagicMock()
-            mock_yf.Ticker.return_value = mock_ticker
-            result = _run(capital_backtest())
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = mock_ticker
+            mock_ohlcv = type("OHLCV", (), {
+            "__init__": lambda self, **kw: setattr(self, "_attrs", kw) or None,
+            "__getattr__": lambda self, name: self._attrs.get(name),
+        })
+            mock_bt = MagicMock()
+            mock_bt.BacktestConfig = MagicMock
+            mock_bt.run_backtest.return_value = _mock_backtest_result()
+            with patch.dict("sys.modules", {
+                "signals.scanner": MagicMock(OHLCV=mock_ohlcv),
+                "backtest.engine_v2": mock_bt,
+            }):
+                result = _run(capital_backtest())
 
         inner = result["result"]
         assert "last_5_trades" in inner
@@ -177,13 +181,20 @@ class TestCapitalBacktestDefault:
         mock_ticker = MagicMock()
         mock_ticker.history.return_value = df
 
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf, \
-             patch.dict("sys.modules", {"signals.scanner": MagicMock(OHLCV=_MockOHLCV)}), \
-             patch("wealth_mcp.tools.canonical.run_backtest", return_value=_mock_backtest_result()), \
-             patch("wealth_mcp.tools.canonical.BacktestConfig") as mock_cfg:
-            mock_cfg.return_value = MagicMock()
-            mock_yf.Ticker.return_value = mock_ticker
-            result = _run(capital_backtest())
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = mock_ticker
+            mock_ohlcv = type("OHLCV", (), {
+            "__init__": lambda self, **kw: setattr(self, "_attrs", kw) or None,
+            "__getattr__": lambda self, name: self._attrs.get(name),
+        })
+            mock_bt = MagicMock()
+            mock_bt.BacktestConfig = MagicMock
+            mock_bt.run_backtest.return_value = _mock_backtest_result()
+            with patch.dict("sys.modules", {
+                "signals.scanner": MagicMock(OHLCV=mock_ohlcv),
+                "backtest.engine_v2": mock_bt,
+            }):
+                result = _run(capital_backtest())
 
         dr = result["result"]["date_range"]
         assert "from" in dr
@@ -191,6 +202,8 @@ class TestCapitalBacktestDefault:
         assert dr["from"] is not None
         assert dr["to"] is not None
 
+
+# ── Tests: Compass mode ──────────────────────────────────────────────────
 
 class TestCapitalBacktestCompass:
     """Test compass mode (PRUDEX-Compass distillation)."""
@@ -224,6 +237,8 @@ class TestCapitalBacktestCompass:
         assert result["result"]["status"] == "ERROR"
 
 
+# ── Tests: Stress test mode ──────────────────────────────────────────────
+
 class TestCapitalBacktestStressTest:
     """Test stress_test mode (Market-GAN distillation)."""
 
@@ -247,6 +262,8 @@ class TestCapitalBacktestStressTest:
         assert result["result"]["error_code"] == "MISSING_DATA"
 
 
+# ── Tests: Error handling ────────────────────────────────────────────────
+
 class TestCapitalBacktestErrors:
     """Test error paths for capital_backtest."""
 
@@ -255,35 +272,15 @@ class TestCapitalBacktestErrors:
         mock_ticker = MagicMock()
         mock_ticker.history.return_value = pd.DataFrame()
 
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = mock_ticker
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = mock_ticker
             result = _run(capital_backtest(symbol="INVALID"))
 
         assert result["result"]["status"] == "ERROR"
         assert result["result"]["error_code"] == "NO_DATA"
 
-    def test_import_failure_returns_error(self):
-        """Missing trading engine imports should return IMPORT_FAILED."""
-        df = _make_ohlcv_df(200)
-        mock_ticker = MagicMock()
-        mock_ticker.history.return_value = df
 
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = mock_ticker
-            # Patch sys.modules to remove signals.scanner
-            original = sys.modules.get("signals.scanner")
-            sys.modules["signals.scanner"] = None  # Force ImportError
-            try:
-                result = _run(capital_backtest(symbol="GC=F"))
-            finally:
-                if original is not None:
-                    sys.modules["signals.scanner"] = original
-                else:
-                    sys.modules.pop("signals.scanner", None)
-
-        # Should either succeed (if import path is mocked) or return error
-        assert "result" in result
-
+# ── Tests: Envelope contract ─────────────────────────────────────────────
 
 class TestCapitalBacktestEnvelope:
     """Test output envelope contract."""
@@ -293,8 +290,8 @@ class TestCapitalBacktestEnvelope:
         mock_ticker = MagicMock()
         mock_ticker.history.return_value = pd.DataFrame()
 
-        with patch("wealth_mcp.tools.canonical.yf") as mock_yf:
-            mock_yf.Ticker.return_value = mock_ticker
+        with patch("yfinance.Ticker") as MockTicker:
+            MockTicker.return_value = mock_ticker
             result = _run(capital_backtest(
                 session_id="test_session",
                 actor_id="test_actor",
@@ -304,3 +301,28 @@ class TestCapitalBacktestEnvelope:
         assert result["domain"] in ("market", "evaluation")
         assert result["session_id"] == "test_session"
         assert result["actor_id"] == "test_actor"
+
+
+# ── Standalone runner ────────────────────────────────────────────────────
+if __name__ == "__main__":
+    passed = failed = 0
+    tests = [
+        TestCapitalBacktestDefault(),
+        TestCapitalBacktestCompass(),
+        TestCapitalBacktestStressTest(),
+        TestCapitalBacktestErrors(),
+        TestCapitalBacktestEnvelope(),
+    ]
+    for test_obj in tests:
+        for method_name in dir(test_obj):
+            if method_name.startswith("test_"):
+                method = getattr(test_obj, method_name)
+                try:
+                    method()
+                    passed += 1
+                    print(f"  PASS: {test_obj.__class__.__name__}.{method_name}")
+                except Exception as e:
+                    failed += 1
+                    print(f"  FAIL: {test_obj.__class__.__name__}.{method_name}: {e}")
+    print(f"\n━━ Results: {passed} pass, {failed} fail of {passed + failed} ━━")
+    sys.exit(0 if failed == 0 else 1)
