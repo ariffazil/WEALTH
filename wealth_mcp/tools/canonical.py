@@ -1218,9 +1218,9 @@ def register_canonical_tools(mcp):
             )
 
         if m == "fx":
-            # Phase 1c: direct import, bypass legacy dispatcher
-            from internal.monolith import wealth_fx_rate
-            raw = wealth_fx_rate(base=base, targets=targets)
+            raw = await _call_legacy_tool(
+                "wealth_market_data", {"mode": "fx", "base": base, "targets": targets}
+            )
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         if m == "commodity":
@@ -1264,24 +1264,26 @@ def register_canonical_tools(mcp):
             )
 
         if m == "indicator":
-            # Phase 1c: direct import, bypass legacy dispatcher
-            from internal.monolith import wealth_macro_indicator
-            raw = wealth_macro_indicator(indicator=indicator, country=country)
+            raw = await _call_legacy_tool(
+                "wealth_market_data",
+                {"mode": "indicator", "indicator": indicator, "country": country},
+            )
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         if m == "stock":
-            # Phase 1c: direct import, bypass legacy dispatcher
-            from internal.monolith import wealth_stock_analysis
-            raw = await wealth_stock_analysis(
-                mode=sp.get("stock_mode") or sp.get("mode") or "verify_math",
-                ticker=sp.get("ticker") or "",
-                entry_price=sp.get("entry_price") or 0,
-                exit_price=sp.get("exit_price"),
-                current_price=sp.get("current_price"),
-                position_size=sp.get("position_size") or 0,
-                status=sp.get("status") or sp.get("status_") or "unrealized",
-                direction=sp.get("direction") or "long",
-                factors=sp.get("factors"),
+            raw = await _call_legacy_tool(
+                "wealth_stock_analysis",
+                {
+                    "mode": sp.get("stock_mode") or sp.get("mode") or "verify_math",
+                    "ticker": sp.get("ticker") or "",
+                    "entry_price": sp.get("entry_price") or 0,
+                    "exit_price": sp.get("exit_price"),
+                    "current_price": sp.get("current_price"),
+                    "position_size": sp.get("position_size") or 0,
+                    "status": sp.get("status") or sp.get("status_") or "unrealized",
+                    "direction": sp.get("direction") or "long",
+                    "factors": sp.get("factors"),
+                },
             )
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
@@ -1421,12 +1423,12 @@ def register_canonical_tools(mcp):
                         "error_code": "F13_ACK_REQUIRED",
                         "message": (
                             "VAULT999 write blocked: requires explicit human "
-                            "acknowledgment (ack_irreversible=true). This action "
-                            "is IRREVERSIBLE — no undo is possible after commit."
+                            "acknowledgment (ack_irreversible=true). This is an "
+                            "irreversible action under F13 sovereign authority."
                         ),
                         "write_blocked_reason": (
-                            "ack_irreversible was not explicitly set to True. "
-                            "VAULT999 writes are append-only and immutable."
+                            "ack_irreversible parameter is not True. VAULT999 "
+                            "writes require sovereign (F13) approval."
                         ),
                     },
                     epistemic_tag=EpistemicTag.DERIVED,
@@ -3264,21 +3266,24 @@ def register_canonical_tools(mcp):
                     "error_code": "INSUFFICIENT_DATA",
                     "message": (
                         f"Need >= 50 clean bars for analysis, got {n_raw_bars} "
-                        f"(after NaN removal from raw data)"
+                        f"after NaN removal. Try longer lookback period."
                     ),
+                    "bars_available": n_raw_bars,
+                    "bars_required": 50,
                 },
                 epistemic_tag=EpistemicTag.ASSUMED,
                 evidence_quality=EvidenceQuality.MISSING,
                 session_id=session_id,
                 actor_id=actor_id,
             )
-        bars_before_nan = len(hist)
-        has_enough_for_ema200 = bars_before_nan >= 200
 
         high = hist["High"].values.astype(np.float64)
         low = hist["Low"].values.astype(np.float64)
         close = hist["Close"].values.astype(np.float64)
         n = len(close)
+
+        # Track whether we have enough bars for EMA200
+        has_enough_for_ema200 = n >= 200
 
         # ── Compute ATR(14) ──
         p = 14
@@ -3318,8 +3323,9 @@ def register_canonical_tools(mcp):
         ema200_data_warning = None
         if not has_enough_for_ema200:
             ema200_data_warning = (
-                f"EMA200 computed from {n} bars (< 200 required). "
-                "Padded with leading values — EMA200 alignment is unreliable."
+                f"EMA200 computed from {n} bars (padded with {200 - n} "
+                f"repeated values). Trend detection via EMA200 is unreliable "
+                f"with < 200 bars. Consider using longer lookback."
             )
 
         trend = "SIDEWAYS"
@@ -3336,11 +3342,9 @@ def register_canonical_tools(mcp):
         lookback_swing = 20
         swing_highs = []
         swing_lows = []
-        if n < 50:
-            # Insufficient bars for swing detection — use ATR-only zones
-            swing_highs = []
-            swing_lows = []
-        else:
+        # Guard: skip swing detection if insufficient bars
+        bars_for_swing = max(lookback_swing * 2 + 1, 50)
+        if n >= bars_for_swing:
             for i in range(lookback_swing, n - lookback_swing):
                 if all(
                     high[i] >= high[i - j] for j in range(1, lookback_swing + 1)
