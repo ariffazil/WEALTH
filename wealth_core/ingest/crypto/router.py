@@ -182,7 +182,16 @@ class CryptoRouter:
         """L2 dispatch via registry. Lazy import keeps cold-start light."""
         from .adapters.registry import get_adapter
         adapter = get_adapter(provider)
-        return adapter.fetch(asset=asset, kind=kind)
+        try:
+            return adapter.fetch(asset=asset, kind=kind)
+        except (RateLimitHit, ProviderError):
+            raise  # re-raise known types for router fallback
+        except Exception as e:
+            # Phase 1c: catch unexpected errors and convert to ProviderError
+            # so the router fallback chain triggers instead of crashing
+            raise ProviderError(
+                f"{provider} unexpected error: {type(e).__name__}: {e}"
+            ) from e
 
     def _get_cache(self, asset: str, kind: str) -> SourceBundle | None:
         key = (asset, kind)
