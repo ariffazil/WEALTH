@@ -8,8 +8,8 @@ resolution-markers = [
     "python_full_version == '3.14.*' and sys_platform == 'win32'",
     "python_full_version == '3.14.*' and sys_platform != 'win32'",
     "python_full_version == '3.13.*' and sys_platform == 'win32'",
-    "python_full_version < '3.13' and sys_platform == 'win32'",
     "python_full_version == '3.13.*' and sys_platform != 'win32'",
+    "python_full_version < '3.13' and sys_platform == 'win32'",
     "python_full_version < '3.13' and sys_platform != 'win32'",
 ]
 
@@ -4148,7 +4148,7 @@ crypto = [
 
 [[package]]
 name = "pymc"
-version = "6.2.0"
+version = "6.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "arviz" },
@@ -4162,9 +4162,9 @@ dependencies = [
     { name = "threadpoolctl" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f2/62/cfbcf20c27a50489bf1156cf11f552e0138095e9b859afb4aa5150df34e1/pymc-6.2.0.tar.gz", hash = "sha256:ae6aafe14992cbabcf577026f0f1fa66f9876d0d216bf58cbf85a5ac6e537b64", size = 546261, upload-time = "2026-07-23T14:27:32.818Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1c/3e/5ff8e170253de4e11183409d1046cd178eae0c074eccbb756a2716477061/pymc-6.3.1.tar.gz", hash = "sha256:c909ea4c88bd2f2311ecceb6f078a1bfe9e652732991e438a11660cd367c5d19", size = 555410, upload-time = "2026-08-16T09:04:21.629Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e5/85/17cf7c824c239d9272d77308337b53c78a096d702c78ca77ded93ef975b4/pymc-6.2.0-py3-none-any.whl", hash = "sha256:b168d0ce7e55df947a01289425f038346445232cfc4d1dfdfa8f54b909e8bcc1", size = 600467, upload-time = "2026-07-23T14:27:31.068Z" },
+    { url = "https://files.pythonhosted.org/packages/de/12/5b4852fc4ce4ff4e09d2532a964775c1fb431069097339fc41f9c64df443/pymc-6.3.1-py3-none-any.whl", hash = "sha256:a2840af709888d1077dab252db133bcaa1befd72b74503483cde159b9d19efc8", size = 608477, upload-time = "2026-08-16T09:04:20.044Z" },
 ]
 
 [[package]]
