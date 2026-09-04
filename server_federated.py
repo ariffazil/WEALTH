@@ -266,6 +266,10 @@ if __name__ == "__main__":
         "wealth.arif-fazil.com",
         "mcp.arif-fazil.com",
         "arif-fazil.com",
+        # 2026-09-04 FI-008: mesh ingress — OpenClaw edge (kvm4-forge) reaches organs via the
+        # tailscaled front on 100.64.0.2, so Host header is the mesh IP/name. Edge migration fix.
+        "100.64.0.2",
+        "af-forge",
     )
     _ALLOWED_ORIGIN_PREFIXES = (
         "https://wealth.arif-fazil.com",
