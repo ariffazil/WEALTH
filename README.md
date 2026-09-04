@@ -2,119 +2,205 @@
 owner: Muhammad Arif bin Fazil (F13 SOVEREIGN)
 federation_release: v2026.08.25
 last_verified: 2026-08-25T04:30:00Z
-live_commit: f714140 (docs(readme): ZEN consequence-first rewrite)
-tools_live: 11 (canonical, live-witnessed 2026-08-25 via :18082/health)
+live_commit: f714140
+tools_live: 11 (canonical, live-witnessed via :18082/health)
 resources: 18
 prompts: 7
 authority_ceiling: 555_COMPUTE_ONLY
 truth_rule: live :18082/health + tools/list beat any static count in prose
-owner_summary: GREEN (identity_present, service_healthy, receipts_persisting, 0_ghosts)
-receipt_chain: PERSISTING (/root/VAULT999/wealth/receipts.jsonl)
-infra_organs: arifFlow:7073 METABOLISM, FED:7074 ADVISORY, FLAME:18901 ADVISORY
-readme_note: ZEN consequence-first — full technical README preserved at docs/README-FULL.md
 -->
 
-# WEALTH — Capital Intelligence for Humans, Agents, and Institutions
+# WEALTH — Capital Intelligence Engine
 
-## WEALTH is a Capital Intelligence Engine that makes incentives, risk, and long-term consequences visible before money moves.
+## AI-driven capital health, market intelligence, and financial decision engine.
 
-Ask the questions that matter:
-
-- **Was Petronas Brazil a good investment?**
-- Which basin creates value — and which destroys it?
-- Where is institutional failure beginning?
-- What is the downside nobody is pricing?
-- Who benefits? Who pays?
-- What happens five years later?
-
-WEALTH transforms capital flows, markets, incentives, and risk into auditable evidence.
-It computes.
-It never allocates.
-It never trades.
-It never decides.
+WEALTH transforms capital flows, markets, incentives, and risk into auditable evidence. It answers the questions that matter before money moves: *Where is institutional failure beginning? What is the downside nobody is pricing? Who benefits? Who pays?*
 
 **WEALTH computes. arifOS judges. Humans decide.**
 
-> **DITEMPA BUKAN DIBERI — Forged, Not Given.**
+Licensed under **AGPL-3.0**.
 
 ---
 
-## Famous failures, replayed honestly
+## The Problem
 
-WEALTH can replay historical collapses using **only information available before the collapse**:
+Organizations rarely fail because they lack spreadsheets. They fail because:
+- Risk accumulates unseen until it's too late
+- Incentive structures drift away from stated goals
+- Governance erodes silently over quarters and years
+- Reporting diverges from reality without anyone noticing
 
-| Case | Pre-collapse signal (measured) |
-|---|---|
-| **Enron** (2000) | Reality ↔ Narrative divergence — `collapse_signature` + `governance_capacity` elevated **before** bankruptcy |
-| **1MDB** (2014) | Power ↔ Incentive capture — `capture_scan` + `power_audit` elevated **before** public unraveling |
+Traditional financial tools show you prices and charts. They don't show you the structural rot underneath.
+
+---
+
+## Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    WEALTH Capital Engine                      │
+│  Port :18082  ·  MCP Interface  ·  11 Tools  ·  18 Resources│
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────┐ │
+│  │  Capital     │  │   Market     │  │   Entropy          │ │
+│  │ Diagnostics  │  │   Pulse      │  │   Modeling         │ │
+│  └──────┬───────┘  └──────┬───────┘  └─────────┬──────────┘ │
+│         │                 │                     │           │
+│  ┌──────▼─────────────────▼─────────────────────▼──────────┐│
+│  │              WEALTH Compute Core                         ││
+│  │  NPV · IRR · EMV · Scenario Stress · Monte Carlo        ││
+│  └──────────────────────────┬──────────────────────────────┘│
+│                             │                               │
+│  ┌──────────────┐  ┌───────▼───────┐  ┌──────────────────┐ │
+│  │  Entry Plan  │  │   Backtest    │  │  Ledger & Runway │ │
+│  │  (S/R aware) │  │   Engine      │  │  Tracking        │ │
+│  └──────────────┘  └───────────────┘  └──────────────────┘ │
+│                                                              │
+└──────────────────────────┬───────────────────────────────────┘
+                           │ MCP
+                    ┌──────▼──────┐
+                    │  arifOS FED  │
+                    │  :7080 MCP   │
+                    └─────────────┘
+```
+
+---
+
+## Quick Start
+
+### Docker
+
+```bash
+git clone https://github.com/arif-fazil/WEALTH.git
+cd WEALTH
+docker compose up -d
+
+# Verify
+curl http://localhost:18082/health
+curl http://localhost:18082/tools/list
+```
+
+### Local Development
+
+```bash
+cd WEALTH
+pip install -e .
+python -m wealth.server --port 18082
+```
+
+---
+
+## Capabilities
+
+### Capital Diagnostics
+- NPV, IRR, EMV computation with scenario stress
+- Capital health monitoring across portfolios
+- Concentration risk identification
+- Downside exposure analysis
+
+### Market Intelligence
+- Real-time FX, commodity, and stock indicators
+- Technical analysis: EMA, SMA, RSI, MACD, Bollinger Bands, PSAR, ATR, ADX
+- XAUUSD (gold) market analysis
+- Commodity price monitoring and alerts
+
+### Entropy Modeling
+- Institutional decay detection
+- Narrative vs. reality divergence scoring
+- Incentive structure mapping
+- Governance capacity assessment
+
+### Entry Planning
+- Support/resistance-aware entry, stop, and target computation
+- Strategy backtesting with enhanced metrics
+- Risk/reward ratio analysis
+- Monte Carlo simulation
+
+### Ledger & Runway
+- Immutable capital ledger tracking
+- Financial runway analysis
+- Receipt chain persistence (VAULT999)
+- Historical collapse replay (Enron, 1MDB, Wirecard, FTX, LTCM)
+
+---
+
+## Historical Collapse Replay
+
+WEALTH can replay historical financial collapses using **only information available before the collapse**:
+
+| Case | Pre-collapse Signal Detected |
+|------|------------------------------|
+| **Enron** (2000) | Reality ↔ Narrative divergence |
+| **1MDB** (2014) | Power ↔ Incentive capture |
 | **Wirecard** | Reporting ↔ Reality divergence |
 | **FTX** | Custody ↔ Governance coupling |
 | **LTCM** | Leverage ↔ Liquidity concentration |
 
-The objective is not hindsight. The objective is measuring **whether risk signals existed before reality arrived**.
+The objective is not hindsight. It is measuring **whether risk signals existed before reality arrived**.
 
-Full benchmark: [VOIDX_BENCHMARK.md](./VOIDX_BENCHMARK.md)
+---
 
-## Why AI agents connect
+## Use Cases
 
-Most financial AI systems generate opinions. **WEALTH generates evidence.**
+| Industry | Application | Value |
+|----------|-------------|-------|
+| Sovereign Wealth Funds | Investment evaluation | Long-term consequence visibility |
+| Oil & Gas | Capital project assessment | NPV/IRR with scenario stress |
+| Asset Management | Portfolio health | Real-time diagnostics + entropy |
+| Trading | Algorithmic strategy | Backtesting + entry planning (XAUUSD) |
+| Policy Analysis | Institutional health | Decay detection + governance scoring |
 
-Agents use WEALTH to:
+---
 
-- compute NPV, IRR, EMV
-- simulate downside scenarios
-- map incentive structures
-- detect institutional decay
-- identify hidden risk concentrations
-- evaluate long-term capital consequences
+## MCP Interface
 
-Every output contains explicit provenance and reasoning boundaries.
+WEALTH exposes 11 canonical tools via MCP (Model Context Protocol):
 
-**WEALTH supplies evidence. It never supplies authority.**
+`capital_backtest` · `capital_diagnose` · `capital_entropy` · `capital_entry_plan` · `capital_health` · `capital_indicator` · `capital_ledger` · `capital_market` · `capital_primitive` · `capital_registry` · `wealth_judge_handoff`
 
-## Why institutions use WEALTH
+Full tool list: `curl http://localhost:18082/tools/list`
 
-Organizations rarely fail because they lack spreadsheets. They fail because:
+---
 
-- risk accumulates unseen
-- incentives drift
-- governance erodes
-- reporting diverges from reality
+## Federation Role
 
-WEALTH was built to surface these failure gradients early — for sovereign wealth funds, national oil companies, investment committees, portfolio managers, and policy analysis.
+WEALTH is the capital intelligence organ in the arifOS federation. It computes financial evidence — it never allocates, trades, or decides.
 
-The goal is not prediction. The goal is **making consequences visible before they become expensive**.
-
-## One-minute demo
-
-```text
-User: "Was Petronas Brazil a good investment?"
-
-WEALTH:
-  CAPITAL INPUTS   acquisition cost · production profile · oil-price assumptions
-  COMPUTATION      NPV · IRR · scenario stress
-  INSTITUTIONAL    strategic fit · concentration risk · downside exposure
-
-  EVIDENCE        value creation uncertain
-  RISK            high commodity dependence
-  OPEN QUESTION   were incentive structures aligned with long-term returns?
-
-  → Candidate capital assessment.
-  → Awaiting judgment.
-```
-
-## Not a finance tool
-
-WEALTH is not a trading bot, a personal finance app, or a Bloomberg terminal.
-It is capital-intelligence infrastructure — months-to-years consequence horizons, not minutes-to-hours price ticks.
-
-## Federation triad
-
-**GEOX = truth about reality · WEALTH = truth about consequences · WELL = truth about readiness**
+**GEOX** = truth about reality · **WEALTH** = truth about consequences · **WELL** = truth about readiness
 
 **ARIF vetoes. arifOS judges. AAA routes. A-FORGE executes.**
 
-11 tools live-witnessed via [tools/list](https://wealth.arif-fazil.com/mcp).
+**Sister Repos:**
+- [arifOS](https://github.com/arif-fazil/arifOS) — Constitutional kernel
+- [AAA](https://github.com/arif-fazil/AAA) — Intelligence routing
+- [A-FORGE](https://github.com/arif-fazil/A-FORGE) — Execution engine
+- [GEOX](https://github.com/arif-fazil/GEOX) — Earth sciences
+- [WELL](https://github.com/arif-fazil/WELL) — Biometric monitoring
+- [arifFlow](https://github.com/arif-fazil/arifFlow) — Workflow orchestration
 
-Full technical README: [docs/README-FULL.md](./docs/README-FULL.md) ·
-MCP door: [wealth.arif-fazil.com/mcp](https://wealth.arif-fazil.com/mcp)
+---
+
+## Documentation
+
+- [Full Technical README](docs/README-FULL.md)
+- [Unified Architecture](docs/WEALTH_UNIFIED_ARCHITECTURE.md)
+- [Sovereign Wealth Spec](docs/SOVEREIGN_WEALTH_SPEC.md)
+- [Deployment Guide](DEPLOYMENT.md)
+- [Changelog](CHANGELOG.md)
+- [Security Policy](SECURITY.md)
+- [Contributing](CONTRIBUTING.md)
+
+---
+
+## License
+
+**GNU Affero General Public License v3.0 (AGPL-3.0)**
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU AGPL v3.0. See [LICENSE](LICENSE) for the full text.
+
+---
+
+**DITEMPA BUKAN DIBERI** — Forged, Not Given.
+
+Built by Muhammad Arif bin Fazil.
