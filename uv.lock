@@ -2892,7 +2892,7 @@ wheels = [
 
 [[package]]
 name = "opa-python-client"
-version = "2.0.5"
+version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
@@ -2900,9 +2900,9 @@ dependencies = [
     { name = "requests" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/57/7f/57da73536b76e2d8d5b633559a8609f3c0625698055dc4f60a6dfd1aa0a7/opa_python_client-2.0.5.tar.gz", hash = "sha256:a903465243d35e0109d0d1fe65f6afc360c886d02bffb68914322ffafa3c4724", size = 18718, upload-time = "2026-06-25T10:57:46.582Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/54/f3/323dae1121927430715a53b77e9e12ba00773a87c5aae37fe7b45cfabcbe/opa_python_client-2.1.0.tar.gz", hash = "sha256:a867e505b5c27f159c0dcf442b982994c1e1214c7eed0f0c72bfd6263a343680", size = 21752, upload-time = "2026-08-18T11:36:34.473Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/58/71/38a4bdfce5b7f9d6c29956698c87502fc21f9be895441327598f69dfad05/opa_python_client-2.0.5-py3-none-any.whl", hash = "sha256:403ab2522674c03efa5cbbff8d47ab8fb140ca605e05c97dbb3836896acb93bf", size = 23533, upload-time = "2026-06-25T10:57:47.84Z" },
+    { url = "https://files.pythonhosted.org/packages/a0/46/a0588fac7ebf2b1d4ecfe218e95db37846c1b7741e0155b5650334507d64/opa_python_client-2.1.0-py3-none-any.whl", hash = "sha256:e93d97753bf748bd6843461aa341f967b48becf059e59f79db4cd1f00bc85aff", size = 26618, upload-time = "2026-08-18T11:36:35.583Z" },
 ]
 
 [[package]]
