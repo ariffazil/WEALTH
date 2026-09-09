@@ -80,7 +80,7 @@ def register_ledger(mcp):
                         ),
                     },
                     epistemic_tag=EpistemicTag.DERIVED,
-                    evidence_quality=EvidenceQuality.SPECULATED,
+                    evidence_quality=EvidenceQuality.MISSING,
                     execution_authority=ExecutionAuthority.BLOCKED,
                     requires_888_hold=True,
                     source_attribution=["ledger_write_gate"],
@@ -113,7 +113,7 @@ def register_ledger(mcp):
                 evidence_quality=(
                     EvidenceQuality.OBSERVED
                     if persisted
-                    else EvidenceQuality.SPECULATED
+                    else EvidenceQuality.MISSING
                 ),
                 execution_authority=(
                     ExecutionAuthority.OBSERVATION

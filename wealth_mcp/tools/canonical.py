@@ -1432,7 +1432,7 @@ def register_canonical_tools(mcp):
                         ),
                     },
                     epistemic_tag=EpistemicTag.DERIVED,
-                    evidence_quality=EvidenceQuality.SPECULATED,
+                    evidence_quality=EvidenceQuality.MISSING,
                     execution_authority=ExecutionAuthority.BLOCKED,
                     requires_888_hold=True,
                     source_attribution=["ledger_write_gate"],
@@ -1465,7 +1465,7 @@ def register_canonical_tools(mcp):
                 evidence_quality=(
                     EvidenceQuality.OBSERVED
                     if persisted
-                    else EvidenceQuality.SPECULATED
+                    else EvidenceQuality.MISSING
                 ),
                 execution_authority=(
                     ExecutionAuthority.OBSERVATION
@@ -1962,7 +1962,7 @@ def register_canonical_tools(mcp):
                 domain="institutional",
                 result=result,
                 epistemic_tag=EpistemicTag.OBSERVED,
-                evidence_quality=EvidenceQuality.SPECULATED,
+                evidence_quality=EvidenceQuality.MISSING,
                 execution_authority=ExecutionAuthority.BLOCKED,
                 requires_888_hold=False,
                 source_attribution=["entropy_integrity_dependency_check"],
@@ -2230,7 +2230,7 @@ def register_canonical_tools(mcp):
                 domain="meta",
                 result=result,
                 epistemic_tag=EpistemicTag.INTERPRETED,
-                evidence_quality=EvidenceQuality.SPECULATED,
+                evidence_quality=EvidenceQuality.MISSING,
                 claim_state=ClaimState.VOID if errors else ClaimState.DRAFT,
                 execution_authorized=False,
                 requires_888_hold=True,

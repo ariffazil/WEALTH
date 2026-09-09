@@ -125,7 +125,7 @@ def register_judge_handoff(mcp):
                 domain="meta",
                 result=result,
                 epistemic_tag=EpistemicTag.INTERPRETED,
-                evidence_quality=EvidenceQuality.SPECULATED,
+                evidence_quality=EvidenceQuality.MISSING,
                 claim_state=ClaimState.VOID if errors else ClaimState.DRAFT,
                 execution_authorized=False,
                 requires_888_hold=True,
