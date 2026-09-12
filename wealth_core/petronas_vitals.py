@@ -285,3 +285,85 @@ def compute_petronas_vitals(
             "unchanged_constitutional_anchors": "safe/trip thresholds unchanged (sovereign act to alter)",
         },
     }
+
+
+# ---------------------------------------------------------------------------
+# Brent sensitivity — dynamic exit-threshold projection
+# ---------------------------------------------------------------------------
+# Model: PAT_usd ≈ brent_usd × monthly_revenue_per_bbl × 12 × scaling_factor
+#   - monthly_revenue_per_bbl = 0.6B USD (rough realised price per barrel)
+#   - scaling_factor calibrates against FY2025 anchor:
+#       PAT RM45.4B ÷ (84.10 × 0.6 × 12) ≈ 0.075
+#   - Accounts for ~2.34 MMboed production, refining margin, gas revenue.
+#
+# Sovereign extraction divisor: RM20B (government dividend demand).
+# Exit threshold: extraction_ratio < 55% → dividend sustainable.
+#
+# Deterministic. No side effects. Auditable against IFR anchors.
+# ---------------------------------------------------------------------------
+
+_BRENT_SENSITIVITY_ANCHOR: dict[str, Any] = {
+    "monthly_revenue_per_bbl_usd": 0.6,
+    "scaling_factor": 0.075,
+    "anchor_brent_usd": 84.10,
+    "anchor_pat_rm_b": 45.4,
+    "sovereign_dividend_rm_b": 20.0,
+    "exit_extraction_threshold_pct": 55.0,
+    "note": "Calibrated: 45.4 = 84.10 × 0.6 × 12 × 0.075 (FY2025 IFR anchor). "
+            "RM20B dividend is approximate sovereign demand floor.",
+}
+
+
+def compute_brent_sensitivity(
+    current_brent_usd: float,
+    *,
+    monthly_revenue_per_bbl_usd: float | None = None,
+    scaling_factor: float | None = None,
+    sovereign_dividend_rm_b: float | None = None,
+    exit_extraction_threshold_pct: float | None = None,
+) -> dict[str, Any]:
+    """Project PETRONAS financial health at a given Brent price.
+
+    Returns a dict with:
+      - projected_full_year_pat_usd_b: annualised PAT (USD billions, RM-equivalent)
+      - projected_extraction_ratio: RM20B / projected_pat × 100
+      - exit_threshold_met: True if extraction_ratio < 55% (dividend sustainable)
+      - brent_threshold_for_exit_usd: Brent price where extraction drops below 55%
+      - model: parameter snapshot for audit trail
+
+    Deterministic, no side effects. Cross-reference with IFR anchors.
+    """
+    rev = monthly_revenue_per_bbl_usd if monthly_revenue_per_bbl_usd is not None else _BRENT_SENSITIVITY_ANCHOR["monthly_revenue_per_bbl_usd"]
+    sf = scaling_factor if scaling_factor is not None else _BRENT_SENSITIVITY_ANCHOR["scaling_factor"]
+    div = sovereign_dividend_rm_b if sovereign_dividend_rm_b is not None else _BRENT_SENSITIVITY_ANCHOR["sovereign_dividend_rm_b"]
+    threshold = exit_extraction_threshold_pct if exit_extraction_threshold_pct is not None else _BRENT_SENSITIVITY_ANCHOR["exit_extraction_threshold_pct"]
+
+    # Projected full-year PAT (RM-equivalent, USD B scale)
+    projected_pat = current_brent_usd * rev * 12.0 * sf
+
+    # Extraction ratio: what % of PAT goes to sovereign dividend
+    extraction_ratio = (div / projected_pat * 100.0) if projected_pat > 0 else float("inf")
+
+    # Exit threshold: extraction_ratio < 55% → sustainable
+    exit_met = extraction_ratio < threshold
+
+    # Brent price where extraction == threshold (solve for Brent):
+    #   threshold = div / (Brent × rev × 12 × sf) × 100
+    #   Brent = div / (threshold/100 × rev × 12 × sf)
+    brent_threshold = div / (threshold / 100.0 * rev * 12.0 * sf)
+
+    return {
+        "projected_full_year_pat_usd_b": round(projected_pat, 2),
+        "projected_extraction_ratio": round(extraction_ratio, 1),
+        "exit_threshold_met": exit_met,
+        "brent_threshold_for_exit_usd": round(brent_threshold, 2),
+        "model": {
+            "monthly_revenue_per_bbl_usd": rev,
+            "scaling_factor": sf,
+            "sovereign_dividend_rm_b": div,
+            "exit_extraction_threshold_pct": threshold,
+            "anchor_pat_rm_b": _BRENT_SENSITIVITY_ANCHOR["anchor_pat_rm_b"],
+            "anchor_brent_usd": _BRENT_SENSITIVITY_ANCHOR["anchor_brent_usd"],
+        },
+        "source": "WEALTH compute_brent_sensitivity — calibrated to PETRONAS Group FRA FY2025 IFR",
+    }
