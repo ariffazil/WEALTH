@@ -1,9 +1,11 @@
 <!-- SOT-MANIFEST
 owner: Muhammad Arif bin Fazil (F13 SOVEREIGN)
-federation_release: v2026.08.25
-last_verified: 2026-08-25T04:30:00Z
-live_commit: f714140
+federation_release: v2026.09.13
+last_verified: 2026-09-13T06:32:00Z
+live_commit: 9ba4583
+apex_zen: A2A delegates ⊥ MCP equips ⊥ ACT mutates ⊥ arifOS governs ⊥ F13 decides
 tools_live: 11 (canonical, live-witnessed via :18082/health)
+holds: research only — money movement is 888_HOLD
 resources: 18
 prompts: 7
 authority_ceiling: 555_COMPUTE_ONLY
