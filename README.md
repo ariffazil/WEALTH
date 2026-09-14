@@ -62,8 +62,8 @@ Traditional financial tools show you prices and charts. They don't show you the 
 └──────────────────────────┬───────────────────────────────────┘
                            │ MCP
                     ┌──────▼──────┐
-                    │  arifOS FED  │
-                    │  :7080 MCP   │
+                    │  arifOS      │
+                    │  :8088 MCP   │
                     └─────────────┘
 ```
 
@@ -174,12 +174,12 @@ WEALTH is the capital intelligence organ in the arifOS federation. It computes f
 **ARIF vetoes. arifOS judges. AAA routes. A-FORGE executes.**
 
 **Sister Repos:**
-- [arifOS](https://github.com/arif-fazil/arifOS) — Constitutional kernel
-- [AAA](https://github.com/arif-fazil/AAA) — Intelligence routing
-- [A-FORGE](https://github.com/arif-fazil/A-FORGE) — Execution engine
-- [GEOX](https://github.com/arif-fazil/GEOX) — Earth sciences
-- [WELL](https://github.com/arif-fazil/WELL) — Biometric monitoring
-- [arifFlow](https://github.com/arif-fazil/arifFlow) — Workflow orchestration
+- [arifOS](https://github.com/arif-fazil/arifOS) — Authority Plane — constitutional judgment
+- [AAA](https://github.com/arif-fazil/AAA) — Attention Plane — reality compression + routing
+- [A-FORGE](https://github.com/arif-fazil/A-FORGE) — Execution Plane — governed mutation
+- [GEOX](https://github.com/arif-fazil/GEOX) — Earth Intelligence
+- [WELL](https://github.com/arif-fazil/WELL) — Readiness Intelligence
+- [arifFlow](https://github.com/arif-fazil/arifFlow) — Witness Plane — metabolism, FQ monitoring
 
 ---
 
