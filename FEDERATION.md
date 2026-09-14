@@ -1,4 +1,7 @@
 # Federation Contract v2 — WEALTH
+
+> ⚠️ **SUPERSEDED (2026-09-14).** Historical snapshot (auto-generated 2026-07-25, `fed-phase-7-zen`), preserved as-is — its organ table below still lists HERMES as a core organ, which this federation no longer treats as accurate. **Canonical, current federation topology: [arifOS FEDERATION_CONTRACT.md](https://github.com/ariffazil/arifos/blob/main/FEDERATION_CONTRACT.md).** Do not cite this file's organ table as current.
+
 > SOT: 2026-07-25 | seal_seq: fed-phase-7-zen | Authority: F13 SOVEREIGN
 > role: CAPITAL | layer: L5
 > mcp: capital_* — https://wealth.arif-fazil.com/mcp
