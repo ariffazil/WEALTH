@@ -5,3 +5,10 @@
 > This file is a pointer, not a constitution. Load /root/AGENTS.md for full doctrine.
 
 This organ operates under the arifOS Federation. For constitutional floors (F1-F13), organ topology, build/test/deploy conventions, autonomy tiers, and memory architecture — read `/root/AGENTS.md`.
+## APEX-ZEN Alignment (canonical)
+> **Governance chain:** BUILD → VERIFY → JUDGE → SEAL → ACT → WITNESS
+> **Invariant:** CAPABILITY ≠ AUTHORITY
+> **Doctrine:** Govern capabilities, not implementations.
+> **Canonical ref:** `/root/AAA/canon/APEX-ZEN-CANONICAL-COMPRESSION.md`
+> **Motto:** DITEMPA BUKAN DIBERI ⚒️
+
