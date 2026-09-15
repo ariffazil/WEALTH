@@ -1150,7 +1150,7 @@ def register_canonical_tools(mcp):
     @mcp.tool(
         name="capital_market",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description="Market data and commodity intelligence — observational with derived and interpreted fields. SIDE EFFECT: writes a vault receipt to /root/VAULT999/wealth/receipts.jsonl (per wealth-organ.service.d/receipts-write.conf). Receipts include call_status=PASS/FAIL and input hashes.",
+        description="Market data and commodity intelligence — observational with derived and interpreted fields. MODES: fundamentals (pass ticker=<BURSA_CODE> for the F1-F9 fundamental-invariant engine), fx, commodity, indicator, stock, gold, oil, gas. SIDE EFFECT: writes a vault receipt to /root/VAULT999/wealth/receipts.jsonl (per wealth-organ.service.d/receipts-write.conf). Receipts include call_status=PASS/FAIL and input hashes.",
         tags={"domain": "market", "kind": "observational", "canonical": "v1"},
     )
     async def capital_market(
@@ -1161,16 +1161,34 @@ def register_canonical_tools(mcp):
         indicator: str = "usd_myr",
         country: str = "MYS",
         stock_payload: CoercedDict = None,
+        ticker: str = "",
         asset_class: str = "fx_commodity",
         session_id: str | None = None,
         trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
-        """Market data (ZEN 2026-07-11 W4). Stock fields in stock_payload."""
+        """Market data (ZEN 2026-07-11 W4). Stock fields in stock_payload.
+
+        mode="fundamentals" is an alias for mode="stock" with
+        stock_mode="fundamentals" — pass ticker=<BURSA_CODE> at top level.
+        """
         # Coerce MCP transport string serialization
 
         m = mode.lower()
         sp: dict[str, Any] = dict(stock_payload or {})
+
+        # ━━━ Discoverability alias: mode="fundamentals" (2026-09-15) ━━━
+        # F2 TRUTH: `fundamentals` was ADVERTISED (registry examples) but no
+        # handler existed — callers got "Unknown mode 'fundamentals'".
+        # The 2026-09-15 fix landed in tools/market.py FIRST, but the live
+        # server mounts ONLY canonical.py (server.py imports
+        # register_canonical_tools; market.register_market is unwired here),
+        # so the alias must exist in THIS registration. Additive only.
+        if m == "fundamentals":
+            m = "stock"
+            sp.setdefault("stock_mode", "fundamentals")
+            if ticker:
+                sp.setdefault("ticker", ticker)
 
         # ━━━ Step 9 (Phase 3 close): asset_class discriminator for crypto ━━━
         # Wires crypto_router to canonical surface. NO new tool created --
@@ -1355,7 +1373,18 @@ def register_canonical_tools(mcp):
             domain="market",
             result={
                 "error": f"Unknown mode '{mode}'.",
-                "valid_modes": ["fx", "commodity", "indicator", "stock", "gold", "oil", "gas"],
+                "valid_modes": [
+                    "fundamentals",
+                    "fx",
+                    "commodity",
+                    "indicator",
+                    "stock",
+                    "gold",
+                    "oil",
+                    "gas",
+                ],
+                "hint": "fundamentals: pass ticker=<BURSA_CODE> for the F1-F9 "
+                "fundamental-invariant engine.",
             },
             epistemic_tag=EpistemicTag.DERIVED,
             evidence_quality=EvidenceQuality.WEAK,
