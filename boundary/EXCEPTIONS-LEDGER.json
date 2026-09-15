@@ -1,0 +1,30 @@
+{
+  "schema": "arifos.boundary-exceptions.v1",
+  "policy": "Ratchet: CI fails on NEW violations and on EXPIRED entries. Extending expiry is a deliberate ledger edit (visible in diff).",
+  "default_expiry_days": 90,
+  "forged": "2026-09-16",
+  "forged_by": "333-AGI",
+  "violations": [
+    {
+      "id": "EX-WEALTH-001-001",
+      "contract": "wealth-contract-001",
+      "path": "wealth_contracts -> wealth_core",
+      "detail": "contracts.envelope->wealth_core.math (l.524); layering aspirational: envelope<->mcp/server co-change 15x/500 commits",
+      "discovered": "2026-09-16",
+      "expires": "2026-12-15",
+      "owner_note": "Fix: inline the math primitive into contracts or expose via neutral kernel package."
+    },
+    {
+      "id": "EX-WEALTH-001-002",
+      "contract": "wealth-contract-001",
+      "path": "wealth_contracts -> internal",
+      "detail": "transitive via wealth_core.math -> internal.invariants; surfaced by import-linter multi-target reporting",
+      "discovered": "2026-09-16",
+      "expires": "2026-12-15",
+      "owner_note": "Resolve together with EX-WEALTH-001-001 (same refactor)."
+    }
+  ],
+  "observations_non_gating": [
+    "mutual imports: canonical_tools<->monolith, router<->registry \u2014 refactor = 888_HOLD"
+  ]
+}
