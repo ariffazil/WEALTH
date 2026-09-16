@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wealth.arif-fazil.com/schemas/wealth-envelope.v2.json",
+  "title": "WEALTH Envelope v2",
+  "description": "Universal envelope wrapping every public WEALTH MCP tool output. Backward-compatible with v1 fields; adds receipt v2 fields and input_fidelity block.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "tool_name",
+    "domain",
+    "result",
+    "execution_authorized",
+    "execution_authority",
+    "human_final_authority",
+    "source_attribution",
+    "computation_timestamp"
+  ],
+  "properties": {
+    "tool_name": {"type": "string"},
+    "tool_version": {"type": "string"},
+    "domain": {"type": "string"},
+    "result": {},
+    "result_type": {"type": "string"},
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "SEAL",
+        "PARTIAL",
+        "SABAR",
+        "HOLD",
+        "VOID",
+        "INSUFFICIENT_EVIDENCE",
+        "READONLY",
+        "C1_PASS"
+      ]
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "known": {"type": "integer"},
+        "total": {"type": "integer"},
+        "ratio": {"type": "number"}
+      },
+      "required": ["known", "total", "ratio"]
+    },
+    "epistemic": {
+      "type": "object",
+      "properties": {
+        "tag": {"type": "string"},
+        "quality": {"type": "string"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 0.90}
+      },
+      "required": ["tag", "quality"]
+    },
+    "epistemic_tag": {"type": "string"},
+    "claim_state": {"type": "string"},
+    "evidence_quality": {"type": "string"},
+    "execution_authorized": {"type": "boolean", "const": false},
+    "execution_authority": {
+      "type": "string",
+      "enum": ["OBSERVATION", "RECOMMENDATION", "ADVISORY", "EXECUTIVE", "SOVEREIGN", "BLOCKED"]
+    },
+    "human_final_authority": {"type": "string"},
+    "requires_888_hold": {"type": "boolean"},
+    "source_attribution": {"type": "array", "items": {"type": "string"}},
+    "computation_timestamp": {"type": "string", "format": "date-time"},
+    "missing_inputs": {"type": "array", "items": {"type": "object"}},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "errors": {"type": "array", "items": {"type": "string"}},
+    "session_id": {"type": "string"},
+    "trace_id": {"type": "string"},
+    "actor_id": {"type": "string"},
+    "witness": {"type": "object"},
+    "shadow": {"type": "boolean"},
+    "kappa_r": {"type": "number"},
+    "psi_le": {"type": "number"},
+    "_governance_advisory": {"type": "object"},
+    "named_entity_claim_gate": {"type": "object"},
+    "receipt": {
+      "type": "object",
+      "description": "Phase C: nested receipt v2 four-truth envelope (optional, populated when middleware is enabled)"
+    },
+    "input_fidelity": {
+      "type": "object",
+      "description": "Phase C: input-fidelity gate report (optional, populated when middleware is enabled)"
+    }
+  }
+}
