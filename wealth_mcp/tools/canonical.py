@@ -1294,11 +1294,44 @@ def register_canonical_tools(mcp):
                 raw = await _call_legacy_tool(
                     "wealth_market_data", {"mode": "commodity", "commodity": commodity}
                 )
+            # ── P0 fail-closed (WEALTH-RECONCILIATION-20260916): a dead
+            # engine must never surface as data. Empty snapshot = all
+            # sub-calls failed → UNAVAILABLE, not a wrapped empty reading.
+            _commodity_errors = (
+                dict(raw.get("errors") or {})
+                if isinstance(raw, dict)
+                else {}
+            )
+            if engine_name and not (raw.get("snapshot") or {}):
+                return wrap_result(
+                    tool_name="capital_market",
+                    domain="capital",
+                    result={
+                        "status": "UNAVAILABLE",
+                        "asset": engine_name,
+                        "message": (
+                            "All commodity engine sub-calls failed — no "
+                            "observed data."
+                        ),
+                        "engine_errors": _commodity_errors,
+                        "decision_eligibility": "INELIGIBLE",
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    errors=[f"{k}: {v}" for k, v in _commodity_errors.items()],
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
             # Zen C9: cross-witness metadata
             if isinstance(raw, dict):
                 raw["_cross_witness"] = {
                     "primary_source": "wealth_core.commodity_engines",
-                    "feed_type": "LIVE" if engine_name else "CACHED",
+                    "feed_type": (
+                        "LIVE_PARTIAL"
+                        if engine_name and raw.get("partial")
+                        else ("LIVE" if engine_name else "CACHED")
+                    ),
                     "witness_status": "SINGLE_SOURCE",
                     "note": "Cross-witness requires second independent source. Delta > 3% would raise WITNESS_DIVERGENCE.",
                 }
@@ -1309,6 +1342,10 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["commodity_engine_live"],
+                errors=[
+                    f"partial snapshot — {k}: {v}"
+                    for k, v in _commodity_errors.items()
+                ],
                 session_id=session_id,
                 trace_id=trace_id,
                 actor_id=actor_id,
@@ -1363,6 +1400,61 @@ def register_canonical_tools(mcp):
             else:
                 raw = await call_engine(m, engine_op)
 
+            # ── P0 fail-closed (WEALTH-RECONCILIATION-20260916): engine
+            # failures must never surface as OBSERVED data. Total failure
+            # → UNAVAILABLE; partial snapshot failure surfaces as errors.
+            _engine_error_list: list = []
+            if isinstance(raw, dict) and raw.get("error"):
+                return wrap_result(
+                    tool_name="capital_market",
+                    domain="capital",
+                    result={
+                        "status": "UNAVAILABLE",
+                        "asset": m,
+                        "operation": engine_op,
+                        "message": raw.get("message", "commodity engine call failed"),
+                        "engine_code": raw.get("code"),
+                        "decision_eligibility": "INELIGIBLE",
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    errors=[
+                        f"engine {m}/{engine_op}: {raw.get('code')} — "
+                        f"{raw.get('message')}"
+                    ],
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
+            if engine_op == "snapshot" and isinstance(raw, dict):
+                _snap_data = raw.get("snapshot") or {}
+                _snap_errors = raw.get("errors") or {}
+                if not _snap_data:
+                    return wrap_result(
+                        tool_name="capital_market",
+                        domain="capital",
+                        result={
+                            "status": "UNAVAILABLE",
+                            "asset": m,
+                            "operation": "snapshot",
+                            "message": (
+                                "All snapshot sub-calls failed — no observed "
+                                "data."
+                            ),
+                            "engine_errors": _snap_errors,
+                            "decision_eligibility": "INELIGIBLE",
+                        },
+                        epistemic_tag=EpistemicTag.ASSUMED,
+                        evidence_quality=EvidenceQuality.MISSING,
+                        errors=[f"{k}: {v}" for k, v in _snap_errors.items()],
+                        session_id=session_id,
+                        trace_id=trace_id,
+                        actor_id=actor_id,
+                    )
+                _engine_error_list = [
+                    f"partial snapshot — {k}: {v}" for k, v in _snap_errors.items()
+                ]
+
             # ── FLAME Enrichment (P2, 2026-07-25) ─────────────────────
             # For signal/daily modes, enrich raw engine output with FLAME
             # natural-language interpretation. FLAME is ADVISORY only —
@@ -1397,6 +1489,7 @@ def register_canonical_tools(mcp):
                 else EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=[f"wealth://commodity/{m}/{engine_op}"],
+                errors=_engine_error_list,
                 session_id=session_id,
                 actor_id=actor_id,
             )
