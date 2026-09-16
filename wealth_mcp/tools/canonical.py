@@ -1548,22 +1548,143 @@ def register_canonical_tools(mcp):
         m = mode.lower()
 
         if m == "query":
-            raw = await _call_legacy_tool(
-                "wealth_vault_query",
-                {
-                    "query": query,
-                    "limit": limit,
-                    "asset_id": asset_id,
-                    "session_id": session_id,
-                },
+            # ── P1 ledger query reconciliation (WEALTH-RECONCILIATION-20260916) ──
+            # The receipts writer appends to /root/VAULT999/wealth/receipts.jsonl,
+            # but the legacy path queried a Supabase index (action column,
+            # ilike only) with a data/vault999.jsonl fallback — a different
+            # store. Sealed IDs (e.g. AMEND-2026-08-03-001) live inside
+            # `arguments` and were invisible to every layer of that chain,
+            # yielding authoritative-looking empty results. Primary source is
+            # now the file the writer actually writes; the Supabase index is
+            # kept as a NAMED secondary. Absence is only reported after a
+            # scan of the primary file — never from a store mismatch.
+            import os as _os
+            from pathlib import Path as _P
+
+            _receipts_path = _P(
+                _os.environ.get(
+                    "WEALTH_RECEIPTS_PATH", "/root/VAULT999/wealth/receipts.jsonl"
+                )
             )
+            if not _receipts_path.is_file():
+                return wrap_result(
+                    tool_name="capital_ledger",
+                    domain="vault",
+                    result={
+                        "status": "UNAVAILABLE",
+                        "error_code": "RECEIPTS_FILE_ABSENT",
+                        "message": (
+                            f"Primary receipt file not found: {_receipts_path}. "
+                            "Cannot witness ledger state — refusing to report "
+                            "an empty result as absence."
+                        ),
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    errors=[f"receipts file absent: {_receipts_path}"],
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
+
+            _q = (query or "").strip().lower()
+            _matches: list = []
+            _scanned = 0
+            try:
+                with _receipts_path.open("r", encoding="utf-8", errors="replace") as _f:
+                    for _line in _f:
+                        _line = _line.strip()
+                        if not _line:
+                            continue
+                        _scanned += 1
+                        if (not _q) or (_q in _line.lower()):
+                            try:
+                                _rec = json.loads(_line)
+                            except ValueError:
+                                _rec = {"raw": _line[:200]}
+                            _matches.append(
+                                {
+                                    "receipt_id": _rec.get("receipt_id"),
+                                    "timestamp_utc": _rec.get("timestamp_utc"),
+                                    "actor_id": _rec.get("actor_id"),
+                                    "tool_name": _rec.get("tool_name"),
+                                    "call_status": _rec.get("call_status"),
+                                    "governance_status": _rec.get(
+                                        "governance_status"
+                                    ),
+                                    "trace_id": _rec.get("trace_id"),
+                                    "arguments_preview": str(
+                                        _rec.get("arguments")
+                                    )[:160],
+                                }
+                            )
+            except OSError as _exc:
+                return wrap_result(
+                    tool_name="capital_ledger",
+                    domain="vault",
+                    result={
+                        "status": "UNAVAILABLE",
+                        "error_code": "RECEIPTS_FILE_UNREADABLE",
+                        "message": f"Cannot read primary receipt file: {_exc}",
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    errors=[f"receipts file unreadable: {_exc}"],
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
+
+            if not _q:
+                # Append-order file: newest last — reverse for a browse view.
+                _matches.reverse()
+            _matches = _matches[: max(1, int(limit))]
+
+            _remote: dict = {"status": "SKIPPED"}
+            try:
+                _remote = await _call_legacy_tool(
+                    "wealth_vault_query",
+                    {
+                        "query": query,
+                        "limit": limit,
+                        "session_id": session_id,
+                    },
+                )
+            except Exception:
+                _remote = {"status": "UNAVAILABLE"}
+
+            _result = {
+                "status": "OK",
+                "source_path": str(_receipts_path),
+                "scan_scope": (
+                    "full-text substring across the raw receipt record "
+                    "(all fields incl. arguments)"
+                ),
+                "scanned": _scanned,
+                "matched": len(_matches),
+                "query": query,
+                "records": _matches,
+                "remote_index": {
+                    "store": "supabase:arifosmcp_transactions (action ilike)",
+                    "status": _remote.get("status", "UNAVAILABLE"),
+                    "count": _remote.get("count"),
+                    "note": "named secondary — NOT authoritative for receipts.jsonl contents",
+                },
+                "read_only": True,
+            }
+            if _q and not _matches:
+                _result["absence_note"] = (
+                    f"0 matches across {_scanned} scanned records of the "
+                    "primary receipt file — this is witnessed absence, not "
+                    "a store mismatch."
+                )
             return wrap_result(
                 tool_name="capital_ledger",
                 domain="vault",
-                result=raw,
+                result=_result,
                 epistemic_tag=EpistemicTag.OBSERVED,
                 evidence_quality=EvidenceQuality.OBSERVED,
-                source_attribution=["vault999_query"],
+                source_attribution=["vault999:wealth/receipts.jsonl"],
                 session_id=session_id,
                 trace_id=trace_id,
                 actor_id=actor_id,
