@@ -1654,7 +1654,8 @@ def register_canonical_tools(mcp):
         trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
-        del tool_name  # Reserved for schema lookup compatibility.
+        # tool_name is honored in manifests/schema modes (P1 2026-09-16);
+        # previously discarded — the "ignored filter" defect.
         m = mode.lower()
         canonical_tools = list(CAPITAL_TOOL_NAMES)
         public_tools = list(PUBLIC_TOOL_NAMES)
@@ -1711,6 +1712,179 @@ def register_canonical_tools(mcp):
                 probe_failures.append(f"{t_name}: {type(_p_exc).__name__} ({_p_exc})")
 
         reg_truth = "PASS" if not probe_failures else "DEGRADED"
+
+        if m == "manifests":
+            # ── P1 five-manifest registry (WEALTH-RECONCILIATION-20260916) ──
+            # Declared ≠ runtime. Each view declares its own scope; per-tool
+            # truth is the LOWEST state across views — a tool can be
+            # canonical and dead simultaneously. Count drift (6/8/11/12) is
+            # resolved by naming each view, never by one blended number.
+            from datetime import datetime, timezone as _tz
+            from pathlib import Path as _P
+
+            _runtime_tools = None
+            _runtime_state = "UNWITNESSABLE"
+            try:
+                _runtime_tools = sorted(
+                    {
+                        k.split("@", 1)[0][len("tool:") :]
+                        for k in mcp._local_provider._components
+                        if k.startswith("tool:")
+                    }
+                )
+                _runtime_state = "WITNESSED"
+            except Exception:
+                pass  # fail-closed: runtime view reports unwitnessable
+
+            _probe_failed = {f.split(":", 1)[0] for f in probe_failures}
+            _tests_dir = _P(__file__).resolve().parents[2] / "tests"
+
+            _all_tools = sorted(
+                set(canonical_tools) | set(public_tools) | set(_runtime_tools or [])
+            )
+
+            def _lowest_state(t: str) -> dict:
+                declared = t in canonical_tools or t in public_tools
+                mounted = (
+                    t in _runtime_tools if _runtime_tools is not None else None
+                )
+                if not declared and mounted is True:
+                    state = "MOUNTED_UNDECLARED"
+                elif not declared:
+                    state = "RUNTIME_ONLY"
+                elif t in _probe_failed:
+                    state = "IMPORT_FAILED"
+                elif mounted is False:
+                    state = "NOT_REGISTERED"
+                else:
+                    state = "LIVE"  # declared + probe-passed + mounted (or mount unwitnessable)
+                return {
+                    "tool": t,
+                    "state": state,
+                    "declared": declared,
+                    "import_probe_passed": (
+                        (t not in _probe_failed) if t in public_tools else None
+                    ),
+                    "mounted": mounted,
+                    "validated": (_tests_dir / f"test_{t}.py").is_file(),
+                }
+
+            _per_tool = [_lowest_state(t) for t in _all_tools]
+
+            _ghosts = (
+                [t for t in _runtime_tools if t not in set(canonical_tools) | set(public_tools)]
+                if _runtime_tools is not None
+                else None
+            )
+            _missing = (
+                [t for t in public_tools if t not in _runtime_tools]
+                if _runtime_tools is not None
+                else None
+            )
+
+            if tool_name:
+                _match = next((e for e in _per_tool if e["tool"] == tool_name), None)
+                if _match is None:
+                    return wrap_result(
+                        tool_name="capital_registry",
+                        domain="meta",
+                        result={
+                            "status": "ERROR",
+                            "error_code": "UNKNOWN_TOOL",
+                            "message": f"Tool '{tool_name}' not found in any manifest.",
+                            "known_tools": _all_tools,
+                        },
+                        epistemic_tag=EpistemicTag.ASSUMED,
+                        evidence_quality=EvidenceQuality.MISSING,
+                        errors=[f"unknown tool_name '{tool_name}'"],
+                        session_id=session_id,
+                        trace_id=trace_id,
+                        actor_id=actor_id,
+                    )
+                _views = {
+                    "source": tool_name in canonical_tools,
+                    "public": tool_name in public_tools,
+                    "runtime": (
+                        tool_name in _runtime_tools
+                        if _runtime_tools is not None
+                        else None
+                    ),
+                    "build_probe_passed": (
+                        tool_name not in _probe_failed
+                        if tool_name in public_tools
+                        else None
+                    ),
+                }
+                return wrap_result(
+                    tool_name="capital_registry",
+                    domain="meta",
+                    result={
+                        "status": "OK",
+                        "mode": "manifests",
+                        "tool": tool_name,
+                        "views": _views,
+                        **_match,
+                    },
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
+
+            return wrap_result(
+                tool_name="capital_registry",
+                domain="meta",
+                result={
+                    "status": "OK",
+                    "mode": "manifests",
+                    "manifests": {
+                        "source": {
+                            "scope": "declared registrations in code (canonical.py + tools/ modules)",
+                            "tools": canonical_tools,
+                            "count": len(canonical_tools),
+                        },
+                        "build": {
+                            "scope": "import probes executed at registry call time",
+                            "probed": public_tools,
+                            "import_failed": sorted(_probe_failed),
+                            "truth": reg_truth,
+                        },
+                        "runtime": {
+                            "scope": "components mounted by THIS FastMCP server instance",
+                            "witness_state": _runtime_state,
+                            "tools": _runtime_tools,
+                            "count": (
+                                len(_runtime_tools)
+                                if _runtime_tools is not None
+                                else None
+                            ),
+                        },
+                        "public": {
+                            "scope": "advertised public MCP surface",
+                            "tools": public_tools,
+                            "count": len(public_tools),
+                        },
+                        "probe": {
+                            "scope": "last probe execution record",
+                            "executed_at": datetime.now(_tz.utc).isoformat(),
+                            "failures": probe_failures,
+                        },
+                    },
+                    "per_tool": _per_tool,
+                    "count_reconciliation": {
+                        "source": len(canonical_tools),
+                        "public": len(public_tools),
+                        "runtime": (
+                            len(_runtime_tools) if _runtime_tools is not None else None
+                        ),
+                        "ghosts_mounted_undeclared": _ghosts,
+                        "missing_advertised_unmounted": _missing,
+                        "note": "Counts differ by scope. Schema mode is a partial mode-map, not a tool census.",
+                    },
+                },
+                session_id=session_id,
+                trace_id=trace_id,
+                actor_id=actor_id,
+            )
 
         if m == "status":
             return wrap_result(
@@ -1826,15 +2000,48 @@ def register_canonical_tools(mcp):
                     "description": "Sovereign 888_HOLD judge handoff envelope",
                 },
             }
+            # P1 scope disclosure (2026-09-16): this map is PARTIAL — it is
+            # a mode-map for schema lookup, never a census of public tools.
+            if tool_name:
+                if tool_name in tool_schemas:
+                    _schema_out = {tool_name: tool_schemas[tool_name]}
+                    _schema_err = None
+                else:
+                    _schema_out = {}
+                    _schema_err = (
+                        f"tool '{tool_name}' is not in the schema mode-map "
+                        "(map is partial — use mode=manifests for tool truth)"
+                    )
+                return wrap_result(
+                    tool_name="capital_registry",
+                    domain="meta",
+                    result={
+                        "version": WEALTH_VERSION,
+                        "architecture": architecture,
+                        "scope": "partial mode-map filtered by tool_name — not a tool census",
+                        "tools": _schema_out,
+                        "canonical_tool_count": len(canonical_tools),
+                        "public_tool_count": len(public_tools),
+                        "schema_map_count": len(tool_schemas),
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED if _schema_err else EpistemicTag.DERIVED,
+                    evidence_quality=EvidenceQuality.MISSING if _schema_err else EvidenceQuality.MODERATE,
+                    errors=[_schema_err] if _schema_err else [],
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
             return wrap_result(
                 tool_name="capital_registry",
                 domain="meta",
                 result={
                     "version": WEALTH_VERSION,
                     "architecture": architecture,
+                    "scope": "partial mode-map — NOT a census of all public tools (use mode=manifests)",
                     "tools": tool_schemas,
                     "canonical_tool_count": len(canonical_tools),
                     "public_tool_count": len(public_tools),
+                    "schema_map_count": len(tool_schemas),
                 },
                 session_id=session_id,
                 trace_id=trace_id,
@@ -1912,12 +2119,12 @@ def register_canonical_tools(mcp):
             result={
                 "status": "ERROR",
                 "error_code": "UNKNOWN_MODE",
-                "message": f"Unknown mode '{mode}'. Valid: status, schema, domains, health",
+                "message": f"Unknown mode '{mode}'. Valid: status, manifests, schema, domains, health",
             },
             epistemic_tag=EpistemicTag.ASSUMED,
             evidence_quality=EvidenceQuality.MISSING,
             claim_state=ClaimState.VOID,
-            errors=[f"Unknown mode '{mode}'. Valid: status, schema, domains, health"],
+            errors=[f"Unknown mode '{mode}'. Valid: status, manifests, schema, domains, health"],
             session_id=session_id,
             actor_id=actor_id,
         )
