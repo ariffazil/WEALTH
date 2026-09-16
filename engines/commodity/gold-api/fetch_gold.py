@@ -60,13 +60,23 @@ def _write_cache(path: Path, data: dict):
         pass
 
 
+_STALE_MAX_AGE_S = 86400  # 24h: beyond this a cached quote is UNAVAILABLE, not stale
+
+
 def _read_stale(path: Path) -> dict | None:
-    """Rate-limit fallback: serve expired cache rather than fail (F2: marked stale)."""
+    """Rate-limit fallback: serve expired cache rather than fail (F2: marked stale).
+
+    Bounded (2026-09-16): a snapshot older than _STALE_MAX_AGE_S returns None
+    so the lane fails honestly instead of serving week-old prices (observed:
+    an 8.4-day-old gold quote still reaching the public snapshot as OBSERVED).
+    """
     if not path.exists():
         return None
     try:
         data = json.loads(path.read_text())
         age = int(datetime.now().timestamp() - path.stat().st_mtime)
+        if age > _STALE_MAX_AGE_S:
+            return None
         data["stale"] = True
         data["stale_age_s"] = age
         return data

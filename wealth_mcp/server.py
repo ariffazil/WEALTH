@@ -83,23 +83,42 @@ def _append_existing_jsonl(path: str, payload: dict[str, Any]) -> dict[str, Any]
 
 
 def _tool_result_status(result: Any) -> str:
-    """Derive receipt status from the actual FastMCP result, not mere return."""
+    """Derive receipt status from the actual FastMCP result, not mere return.
+
+    Receipt-truth gate (P0, 2026-09-16): a wrapper that returns a tidy
+    structured error is NOT a pass. Observed while the old logic logged
+    call_status=PASS: capital_market oil with three upstream HTTP 500s
+    inside result.errors and partial=true. Failure signals outrank a
+    missing "status" key.
+    """
     if getattr(result, "is_error", False):
         return "ERROR"
     payload = getattr(result, "structured_content", None)
     if not isinstance(payload, dict):
         return "PASS"
     candidates = [payload.get("result"), payload]
+    status_word = None
     for candidate in candidates:
         if not isinstance(candidate, dict):
             continue
         status = candidate.get("status")
-        if not status:
+        if status:
+            status_word = str(status).upper()
+            break
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
             continue
-        normalized = str(status).upper()
-        if normalized in {"OK", "ALIVE", "PASS", "APPENDED", "INSERTED"}:
+        errs = candidate.get("errors")
+        if errs:
+            return "FAIL"
+        if candidate.get("error_code") or candidate.get("error_class"):
+            return "FAIL"
+        if candidate.get("partial") is True:
+            return "PARTIAL"
+    if status_word:
+        if status_word in {"OK", "ALIVE", "PASS", "APPENDED", "INSERTED"}:
             return "PASS"
-        return normalized
+        return status_word
     return "PASS"
 
 
@@ -291,6 +310,12 @@ def create_mcp_server() -> FastMCP:
         # because clients couldn't populate the session preload cache.
         pass
 
+        # Receipt idempotency (P0, 2026-09-16): double-dispatched calls produced
+        # duplicate receipts 0.3 ms apart. Same tool+args within 1 s emits a
+        # second receipt carrying duplicate_of the first + a stable
+        # idempotency_key so downstream dedup is possible without guessing.
+        _RECEIPT_DEDUP: dict[str, dict[str, Any]] = {}
+
         def _now_iso() -> str:
             return _dt.datetime.now(_dt.timezone.utc).isoformat()
 
@@ -310,6 +335,25 @@ def create_mcp_server() -> FastMCP:
                 "OBSERVED" if status == "PASS" else "MISSING"
             )
             receipt_id = str(_uuid.uuid4())
+            import hashlib as _hashlib
+            import time as _time
+
+            _idem_raw = json.dumps(
+                {"tool": tool_name, "args": arguments or {}},
+                sort_keys=True,
+                default=str,
+            )
+            idempotency_key = _hashlib.sha256(_idem_raw.encode("utf-8")).hexdigest()[:32]
+            _t_mono = _time.monotonic()
+            _prev_rcpt = _RECEIPT_DEDUP.get(idempotency_key)
+            duplicate_of = (
+                _prev_rcpt["receipt_id"]
+                if _prev_rcpt and (_t_mono - _prev_rcpt["mono"]) < 1.0
+                else None
+            )
+            _RECEIPT_DEDUP[idempotency_key] = {"receipt_id": receipt_id, "mono": _t_mono}
+            if len(_RECEIPT_DEDUP) > 512:
+                _RECEIPT_DEDUP.clear()
             receipt = {
                 "receipt_id": receipt_id,
                 "timestamp_utc": _now_iso(),
@@ -326,10 +370,13 @@ def create_mcp_server() -> FastMCP:
                 "session_id": session_id,
                 "trace_id": (arguments or {}).get("trace_id"),
                 "call_status": status,
+                "idempotency_key": idempotency_key,
                 "governance_status": verdict or "UNAVAILABLE",
                 "transport": "mcp_call_tool",
                 "schema_version": _SCHEMA_VERSION,
             }
+            if duplicate_of:
+                receipt["duplicate_of"] = duplicate_of
             if missing_preload:
                 receipt["non_compliant_preload"] = missing_preload
 

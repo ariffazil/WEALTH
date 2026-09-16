@@ -11,7 +11,7 @@ const path = require('path');
 const url = require('url');
 
 const PORT = 3456;
-const PYTHON = '/root/venv/bin/python3';
+const PYTHON = '/root/WEALTH/.venv/bin/python3';
 const SCRIPT = path.join(__dirname, 'fetch_gold.py');
 const CACHE_TTL = 300_000;
 

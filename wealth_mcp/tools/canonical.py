@@ -597,6 +597,9 @@ def register_canonical_tools(mcp):
                     "monthly_expenses": monthly_expenses_v,
                     "liquid_assets": liquid_assets,
                     "horizon_months": horizon_months,
+                    "actor_id": actor_id,
+                    "session_id": session_id,
+                    "trace_id": trace_id,
                 },
             )
             # If empty inputs / insufficient signal, enforce DRAFT / MISSING
@@ -806,6 +809,36 @@ def register_canonical_tools(mcp):
         if m == "governance_capacity":
             from wealth_core.institutional import compute_governance_capacity
 
+            _gc_expected = {"board_members", "committees", "stress_level"}
+            if p and not (_gc_expected & set(p.keys())):
+                # Fail-closed input gate (P0, 2026-09-16): a payload carrying
+                # none of this mode's recognized fields must not be silently
+                # coerced to an empty board — that exact silent default
+                # produced a false "0 independent NEDs" diagnosis that
+                # reached a public page about a real institution.
+                return wrap_result(
+                    tool_name="capital_diagnose",
+                    domain="institutional",
+                    result={
+                        "status": "INSUFFICIENT_DATA",
+                        "mode": m,
+                        "expected_fields": sorted(_gc_expected),
+                        "received_fields": sorted(p.keys()),
+                        "recommendation": None,
+                        "note": (
+                            "Payload contained no recognized fields for this "
+                            "mode. Re-send with board_members (list of "
+                            "name/role/independent dicts) to compute "
+                            "governance capacity. No diagnosis is emitted "
+                            "on unrecognized input."
+                        ),
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    source_attribution=["input_fidelity_gate"],
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
             return wrap_result(
                 tool_name="capital_diagnose",
                 domain="institutional",
@@ -1562,6 +1595,25 @@ def register_canonical_tools(mcp):
                         )
                 elif t_name == "wealth_judge_handoff":
                     from wealth_contracts.envelope import ClaimState
+                elif t_name == "capital_backtest":
+                    # P0-E runtime truth (2026-09-16): probe the exact lazy
+                    # import that broke live while registry said PASS.
+                    from trading.signals.scanner import OHLCV as _probe_ohlcv  # noqa: F401
+                    from trading.backtest.engine_v2 import BacktestConfig as _probe_bt  # noqa: F401
+                else:
+                    _probe_modules = {
+                        "capital_indicator": "yfinance",
+                        "capital_entry_plan": "yfinance",
+                        "capital_market": "wealth_core.commodity_engines",
+                        "capital_health": "internal.monolith",
+                        "capital_ledger": "internal.monolith",
+                        "capital_primitive": "internal.monolith",
+                    }
+                    _probe_mod = _probe_modules.get(t_name)
+                    if _probe_mod:
+                        import importlib as _il
+
+                        _il.import_module(_probe_mod)
             except Exception as _p_exc:
                 probe_failures.append(f"{t_name}: {type(_p_exc).__name__} ({_p_exc})")
 
@@ -3203,7 +3255,7 @@ def register_canonical_tools(mcp):
                 )
 
             # Convert to OHLCV list for the backtest engine
-            from signals.scanner import OHLCV as _OHLCV
+            from trading.signals.scanner import OHLCV as _OHLCV
 
             candles = []
             for idx, row in hist.iterrows():
@@ -3283,7 +3335,7 @@ def register_canonical_tools(mcp):
                     "status": "ERROR",
                     "error_code": "IMPORT_FAILED",
                     "message": f"Trading engine import failed: {e}",
-                    "traceback": _tb.format_exc(),
+                    "traceback": _tb.format_exc().replace("/root/WEALTH/", ""),
                 },
                 epistemic_tag=EpistemicTag.ASSUMED,
                 evidence_quality=EvidenceQuality.MISSING,
@@ -3574,6 +3626,36 @@ def register_canonical_tools(mcp):
         rr_1 = round(reward_1 / risk, 2) if risk > 0 else 0.0
         rr_2 = round(reward_2 / risk, 2) if risk > 0 else 0.0
 
+        # ── P1 freshness contract (2026-09-16): a plan must carry its data's
+        # age, and zones entirely on one side of price are historical, not
+        # actionable levels. This responds to the all-zones-below-price
+        # finding from the 2026-09-16 agentic test. ──
+        import datetime as _dtmod
+
+        _MAX_AGE_S = {
+            "15m": 86400, "30m": 172800, "1h": 172800,
+            "4h": 345600, "1d": 604800,
+        }
+        _last_bar = hist.index[-1]
+        try:
+            _last_dt = _last_bar.to_pydatetime()
+            _last_age_s = max(
+                0, int((_dtmod.datetime.now(_last_dt.tzinfo) - _last_dt).total_seconds())
+            )
+        except Exception:
+            _last_age_s = -1
+        _max_age = _MAX_AGE_S.get(interval, 172800)
+        _fresh = 0 <= _last_age_s <= _max_age
+        zone_warning = None
+        if resistance_zones and all(z[0] < current_price for z in resistance_zones[:3]):
+            zone_warning = (
+                "ALL_RESISTANCE_BELOW_PRICE — zones predate the current level; "
+                "treat as historical reference, not actionable resistance"
+            )
+        decision_eligibility = (
+            "ELIGIBLE" if _fresh and not zone_warning and rr_1 >= 1.0 else "NO_ACTION"
+        )
+
         return wrap_result(
             tool_name="capital_entry_plan",
             domain="market",
@@ -3595,6 +3677,11 @@ def register_canonical_tools(mcp):
                 "support_zones": support_zones[:3],
                 "resistance_zones": resistance_zones[:3],
                 "ema200_data_warning": ema200_data_warning,
+                "market_data_timestamp": str(_last_bar),
+                "market_data_age_s": _last_age_s,
+                "freshness_policy": f"max_age_s={_max_age}",
+                "zone_warning": zone_warning,
+                "decision_eligibility": decision_eligibility,
             },
             epistemic_tag=EpistemicTag.DERIVED,
             evidence_quality=EvidenceQuality.OBSERVED,
