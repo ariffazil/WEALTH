@@ -123,12 +123,26 @@ if __name__ == "__main__":
 
         commit_identity = _resolve_source_commit(base_dir)
 
+        # Five-manifest health plane (P1 2026-09-16): a patch on disk is not
+        # a patch in service — surface working-tree seal state so disk/runtime
+        # drift is visible at the health endpoint.
+        try:
+            _wt = subprocess.run(
+                ["/usr/bin/git", "-C", str(base_dir), "status", "--porcelain"],
+                capture_output=True, text=True, timeout=3, check=False,
+            )
+            working_tree = "DIRTY" if _wt.stdout.strip() else ("CLEAN" if _wt.returncode == 0 else "UNKNOWN")
+        except Exception:
+            working_tree = "UNKNOWN"
+
         return JSONResponse(
             {
                 "status": "healthy",
                 "identity": identity_hash,
                 "identity_hash": identity_hash,
                 **commit_identity,
+                "working_tree": working_tree,
+                "runtime_seal_state": "UNSEALED" if working_tree == "DIRTY" else "SEALED",
                 "tools_loaded": public_tools_live,
                 "public_tools": public_tools_live,
                 "public_tools_declared": len(PUBLIC_TOOL_NAMES),

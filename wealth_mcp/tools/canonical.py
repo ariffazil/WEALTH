@@ -1713,6 +1713,79 @@ def register_canonical_tools(mcp):
 
         reg_truth = "PASS" if not probe_failures else "DEGRADED"
 
+        # ── Five-manifest completion (FI-003, 2026-09-16): build plane
+        # (git commit + working-tree seal + source digest), deprecated-name
+        # sweep, session-gate surface, runtime mount helper. Fail-closed. ──
+        import hashlib as _hl
+        import subprocess as _sp
+        from pathlib import Path as _P  # helper-scoped; manifests branch rebind is harmless
+
+        def _build_plane() -> dict:
+            _repo = _P(__file__).resolve().parents[2]
+            try:
+                _c = _sp.run(
+                    ["git", "-C", str(_repo), "rev-parse", "--short=7", "HEAD"],
+                    capture_output=True, text=True, timeout=5,
+                )
+                _commit = _c.stdout.strip() if _c.returncode == 0 else "UNAVAILABLE"
+                _d = _sp.run(
+                    ["git", "-C", str(_repo), "status", "--porcelain"],
+                    capture_output=True, text=True, timeout=5,
+                )
+                _dirty = bool(_d.stdout.strip()) if _d.returncode == 0 else None
+            except Exception:
+                _commit, _dirty = "UNAVAILABLE", None
+            _h = _hl.sha256()
+            _n = 0
+            for _f in sorted((_repo / "wealth_mcp").rglob("*.py")):
+                _h.update(str(_f.relative_to(_repo)).encode())
+                _h.update(_f.read_bytes())
+                _n += 1
+            return {
+                "git_commit": _commit,
+                "working_tree": ("DIRTY" if _dirty else "CLEAN") if _dirty is not None else "UNKNOWN",
+                "seal_state": ("UNSEALED" if _dirty else "SEALED") if _dirty is not None else "UNKNOWN",
+                "build_digest": f"sha256:{_h.hexdigest()[:16]}",
+                "packaged_files_hashed": _n,
+            }
+
+        def _deprecated_sweep() -> list:
+            import re as _re
+            _found = []
+            for _rel in ("wealth_mcp/server.py", "wealth_mcp/__init__.py"):
+                try:
+                    _txt = (_P(__file__).resolve().parents[2] / _rel).read_text()
+                except OSError:
+                    continue
+                for _ln in _txt.splitlines():
+                    if "deleted" not in _ln.lower():
+                        continue
+                    for _nm in _re.findall(r'"(capital_[a-z_]+|wealth_[a-z_]+)"', _ln):
+                        if _nm not in _found:
+                            _found.append(_nm)
+            return _found
+
+        def _session_gate_surface() -> list:
+            import re as _re
+            try:
+                _txt = (_P(__file__).resolve().parents[2] / "wealth_mcp" / "server.py").read_text()
+            except OSError:
+                return []
+            _blk = _re.search(r"_OBSERVE_TOOLS\s*=\s*\{([^}]*)\}", _txt)
+            return _re.findall(r'"([a-z_]+)"', _blk.group(1)) if _blk else []
+
+        def _runtime_mounts() -> list | None:
+            try:
+                return sorted(
+                    {
+                        k.split("@", 1)[0][len("tool:"):]
+                        for k in mcp._local_provider._components
+                        if k.startswith("tool:")
+                    }
+                )
+            except Exception:
+                return None  # fail-closed: unwitnessable
+
         if m == "manifests":
             # ── P1 five-manifest registry (WEALTH-RECONCILIATION-20260916) ──
             # Declared ≠ runtime. Each view declares its own scope; per-tool
@@ -1841,10 +1914,16 @@ def register_canonical_tools(mcp):
                             "scope": "declared registrations in code (canonical.py + tools/ modules)",
                             "tools": canonical_tools,
                             "count": len(canonical_tools),
+                            "includes_deprecated": _deprecated_sweep(),
+                            "session_gate_surface": _session_gate_surface(),
+                            "session_gate_note": (
+                                "session-gate allowlist is a POLICY subset, not a tool "
+                                "census — this is the historical 8-vs-11 count layer"
+                            ),
                         },
                         "build": {
-                            "scope": "import probes executed at registry call time",
-                            "probed": public_tools,
+                            "scope": "deployable tree state (git commit + working-tree seal + source digest)",
+                            **_build_plane(),
                             "import_failed": sorted(_probe_failed),
                             "truth": reg_truth,
                         },
@@ -1904,6 +1983,18 @@ def register_canonical_tools(mcp):
                     "public_tool_count": len(public_tools),
                     "registry_truth": reg_truth,
                     "probe_failures": probe_failures,
+                    "manifest_summary": {
+                        "source": len(canonical_tools),
+                        "public": len(public_tools),
+                        "runtime": (lambda r: len(r) if r is not None else None)(_runtime_mounts()),
+                        "probe_failures": len(probe_failures),
+                        "build": _build_plane(),
+                        "note": (
+                            "Counts are per-view and may legitimately differ; "
+                            "per-tool lowest-state truth = capital_registry mode=manifests. "
+                            "A tool can be canonical and dead simultaneously."
+                        ),
+                    },
                     "legacy_dispatch": "direct_import",
                     "final_authority": "ARIF",
                     "read_only": True,
