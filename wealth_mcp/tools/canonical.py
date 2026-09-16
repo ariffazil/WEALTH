@@ -1823,6 +1823,7 @@ def register_canonical_tools(mcp):
                         "capital_health": "internal.monolith",
                         "capital_ledger": "internal.monolith",
                         "capital_primitive": "internal.monolith",
+                        "capital_claims": "wealth_core.evidence.claim_gate",
                     }
                     _probe_mod = _probe_modules.get(t_name)
                     if _probe_mod:
@@ -2207,6 +2208,13 @@ def register_canonical_tools(mcp):
                     ],
                     "description": "Thermodynamic power/consequence and metric-purpose drift",
                 },
+                "capital_claims": {
+                    "modes": ["validate"],
+                    "description": (
+                        "Named-entity claim gate — external citation + retrieval "
+                        "timestamp + CHECKED contradiction required for OBS_ELIGIBLE"
+                    ),
+                },
                 "wealth_judge_handoff": {
                     "modes": ["prepare", "submit"],
                     "description": "Sovereign 888_HOLD judge handoff envelope",
@@ -2338,6 +2346,73 @@ def register_canonical_tools(mcp):
             claim_state=ClaimState.VOID,
             errors=[f"Unknown mode '{mode}'. Valid: status, manifests, schema, domains, health"],
             session_id=session_id,
+            actor_id=actor_id,
+        )
+
+    # ═══════════════════════════════════════════════════════════════════
+    # 8b. capital_claims — Named-entity claim gate (P1 2026-09-16)
+    # The gate that would have blocked the false "zero independent NEDs"
+    # claim before publication: named-entity OBS claims require an
+    # EXTERNAL citation — engine output never counts as source.
+    # ═══════════════════════════════════════════════════════════════════
+
+    @mcp.tool(
+        name="capital_claims",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
+        description=(
+            "Named-entity claim gate — validates claims about real "
+            "institutions/persons before publication. OBS_ELIGIBLE requires "
+            "external source_uri + ISO retrieval timestamp + CHECKED "
+            "contradiction with external second source; person-trait claims "
+            "rejected (structures, not people); any HOLD/REJECT blocks the "
+            "batch. SIDE EFFECT: writes a vault receipt."
+        ),
+        tags={"domain": "evidence", "kind": "deductive", "canonical": "v1"},
+    )
+    async def capital_claims(
+        claims: CoercedDictListStrict = None,
+        session_id: str | None = None,
+        trace_id: str | None = None,
+        actor_id: str | None = None,
+    ) -> dict:
+        if not claims:
+            return wrap_result(
+                tool_name="capital_claims",
+                domain="evidence",
+                result={
+                    "status": "ERROR",
+                    "error_code": "MISSING_DATA",
+                    "message": (
+                        "capital_claims requires claims: list of "
+                        "{claim_text, about_entities, source_uri, "
+                        "retrieved_at, contradiction_check} dicts."
+                    ),
+                },
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=["claims list missing or empty"],
+                session_id=session_id,
+                trace_id=trace_id,
+                actor_id=actor_id,
+            )
+        from wealth_core.evidence.claim_gate import validate_claims
+
+        result = validate_claims(claims)
+        blocked = [
+            f"{c['verdict']}: {c['claim_text'][:60]} — {'; '.join(c['reasons'])}"
+            for c in result["claims"]
+            if c["verdict"] in ("HOLD", "REJECT")
+        ]
+        return wrap_result(
+            tool_name="capital_claims",
+            domain="evidence",
+            result=result,
+            epistemic_tag=EpistemicTag.DERIVED,
+            evidence_quality=EvidenceQuality.MODERATE,
+            source_attribution=["wealth_core.evidence.claim_gate"],
+            errors=blocked,
+            session_id=session_id,
+            trace_id=trace_id,
             actor_id=actor_id,
         )
 
