@@ -2045,6 +2045,8 @@ def register_canonical_tools(mcp):
                 )
 
             if m == "metric_purpose_audit":
+                from wealth_mcp.tools import rasa_bridge as _rb
+
                 # Zen Phase 3: keyword overlap is not semantic analysis.
                 # This tool computes token-set Jaccard similarity only.
                 # Output tagged SPECULATED/MISSING to prevent false precision.
@@ -2069,6 +2071,10 @@ def register_canonical_tools(mcp):
                         "kpi_alignment": raw_result.get("kpi_alignment", []),
                         "purpose_fidelity": raw_result.get("purpose_fidelity"),
                         "gaming_signals": raw_result.get("gaming_signals", []),
+                        "declared_vs_revealed": _rb.declared_revealed_block(
+                            declared_purpose=declared_purpose or "",
+                            gaming_signals=raw_result.get("gaming_signals", []),
+                        ),
                         "externality_count": raw_result.get("externality_count", 0),
                         "excluded_outcomes": raw_result.get("excluded_outcomes", []),
                         "reflection": raw_result.get("reflection", []),
@@ -2175,6 +2181,28 @@ def register_canonical_tools(mcp):
         m = str(mode).lower().strip()
         p = payload or {}
 
+        # ── U1/U6 RASA spine (2026-09-16): claims entering the handoff carry
+        # provenance; authority may not increase by rephrasing alone. ─────────
+        from wealth_mcp.tools import rasa_bridge
+
+        claim_chain = p.get("claim_chain") or p.get("claims")
+        rasa_spine: dict = {}
+        if claim_chain:
+            chain_violations = rasa_bridge.validate_authority_chain(claim_chain)
+            envelopes = [
+                rasa_bridge.assess_claim_envelope(c, writer=actor_id or "wealth")
+                for c in claim_chain
+                if isinstance(c, dict)
+            ]
+            rasa_spine = {
+                "authority_chain_violations": chain_violations,
+                "claim_envelopes": envelopes,
+                "canonical_eligible": bool(envelopes)
+                and all(e["storage_class"] == "CANONICAL_ELIGIBLE" for e in envelopes)
+                and not chain_violations,
+                "law": "Authority(C_t+1) > Authority(C_t) ⇒ ∃E_new ∧ E_new ≢ rephrasing(C_t)",
+            }
+
         # 0. Unknown mode gate — never silently accept invalid modes (loop 10 fix)
         if m not in ("prepare", "submit"):
             return wrap_result(
@@ -2240,6 +2268,8 @@ def register_canonical_tools(mcp):
             warnings.append(
                 "888_HOLD_REQUIRED: Critical blast radius requires 888_HOLD or cryptographic actor verification."
             )
+        if rasa_spine.get("authority_chain_violations"):
+            errors.extend(rasa_spine["authority_chain_violations"])
 
         if m == "submit" and (errors or requires_888):
             # Submission forbidden if validation errors exist or 888_HOLD required
@@ -2253,6 +2283,7 @@ def register_canonical_tools(mcp):
                 "action": "PREPARE_ONLY",
                 "validation_errors": errors,
                 "warnings": warnings,
+                "rasa_spine": rasa_spine,
             }
             return wrap_result(
                 tool_name="wealth_judge_handoff",
@@ -2282,6 +2313,7 @@ def register_canonical_tools(mcp):
             "requires_888_hold": requires_888,
             "validation_errors": errors,
             "warnings": warnings,
+            "rasa_spine": rasa_spine,
         }
         return wrap_result(
             tool_name="wealth_judge_handoff",
