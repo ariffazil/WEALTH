@@ -805,6 +805,96 @@ def create_mcp_server() -> FastMCP:
                     is_err=True,
                 )
 
+            # ── HERMES semantic gate (F13 directive 2026-09-16) ────────
+            # Meaning preconditions capital compute: prose claims inside
+            # tool arguments must pass hermes_claim_validate (:18087)
+            # before execution. WEALTH calls HERMES — the arrow stays
+            # one-directional (meaning gates money, never the reverse).
+            # The gate BLOCKS on semantically invalid claims; it never
+            # authorizes anything (CAPABILITY ≠ AUTHORITY).
+            hermes_gate_state: dict[str, Any] = {}
+            try:
+                from wealth_mcp.hermes_gate import run_semantic_gate
+
+                hermes_gate_state = await run_semantic_gate(name, arguments)
+            except Exception as _hg_exc:
+                hermes_gate_state = {
+                    "gate": "hermes_semantic",
+                    "status": "BLOCKED",
+                    "outcome": "GATE_INTERNAL_ERROR",
+                    "error_code": "SEMANTIC_GATE_INTERNAL",
+                    "detail": f"{type(_hg_exc).__name__}: {_hg_exc}",
+                }
+            if hermes_gate_state.get("status") == "BLOCKED":
+                _hg_code = (
+                    hermes_gate_state.get("error_code") or "SEMANTIC_GATE_HOLD"
+                )
+                _hg_hold = hermes_gate_state.get("outcome") in (
+                    "HOLD",
+                    "INJECTION",
+                    "UNAVAILABLE",
+                    "PROTOCOL",
+                    "GATE_INTERNAL_ERROR",
+                )
+                _hg_payload = {
+                    "tool_name": name,
+                    "tool_version": WEALTH_VERSION,
+                    "domain": "capital",
+                    "result": {},
+                    "result_type": "ERROR",
+                    "epistemic_tag": "ASSUMED",
+                    "claim_state": "UNPROVEN",
+                    "evidence_quality": "MISSING",
+                    "epistemic": {
+                        "tag": "ASSUMED",
+                        "quality": "MISSING",
+                        "confidence": 0.0,
+                    },
+                    "execution_authorized": False,
+                    "execution_authority": "OBSERVATION",
+                    "human_final_authority": "ARIF",
+                    "requires_888_hold": _hg_hold,
+                    "source_attribution": ["wealth-hermes-gate", "hermes-mcp:18087"],
+                    "computation_timestamp": _now_iso(),
+                    "session_id": session_id,
+                    "actor_id": actor_id,
+                    "errors": [
+                        (
+                            hermes_gate_state.get("detail")
+                            or hermes_gate_state.get("permitted_statement")
+                            or (
+                                "HERMES semantic gate "
+                                f"{hermes_gate_state.get('outcome')}: claim "
+                                "not admissible for capital compute"
+                            )
+                        )
+                    ],
+                    "error_code": _hg_code,
+                    "semantic_gate": hermes_gate_state,
+                }
+                _hg_receipt = _emit_receipt(
+                    name,
+                    arguments,
+                    status="BLOCKED",
+                    verdict=_hg_code,
+                    actor_id=actor_id,
+                    session_id=session_id,
+                )
+                return _finalize(
+                    ToolResult(
+                        content=[
+                            TextContent(
+                                type="text",
+                                text=json.dumps(_hg_payload, default=str),
+                            )
+                        ],
+                        meta={"wealth_receipt": _hg_receipt},
+                        is_error=True,
+                    ),
+                    "BLOCKED",
+                    is_err=True,
+                )
+
             # ── Execute + envelope + receipt ───────────────────────────
             # Strip _meta before passing to original tool — Pydantic tool
             # signatures reject unknown kwargs. _meta was already extracted
@@ -891,6 +981,11 @@ def create_mcp_server() -> FastMCP:
                         "gate": w0_gate,
                         "warnings": w0_warnings,
                     }
+                    # HERMES semantic gate outcome — attached on every
+                    # compute pass (PASS / NO_SEMANTIC_CONTENT / WARN_*)
+                    # so downstream witnesses can audit the precondition.
+                    if hermes_gate_state:
+                        sc["_hermes_semantic_gate"] = hermes_gate_state
                     if w0_gate in ("CAUTION", "FAIL") and w0_warnings:
                         existing = sc.get("warnings", [])
                         if isinstance(existing, list):
