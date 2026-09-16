@@ -1,0 +1,58 @@
+{
+  "version": "2026-09-16",
+  "method": "fixtures authored from public-record facts (annual-report excerpts summarized); each case carries the known outcome class",
+  "cases": [
+    {
+      "id": "pdvsa_2001_style",
+      "class": "POSITIVE",
+      "text": "The state oil company transferred 8.4 billion dollars of dividends to the treasury, equal to 84 percent of every dollar of earnings, while production declined 25 percent from its peak and quarterly reporting was quietly moved to semi-annual disclosure. Management appointments went to political loyalists over technical staff, and capex was cut by more than half against committee recommendations."
+    },
+    {
+      "id": "pemex_2010_style",
+      "class": "POSITIVE",
+      "text": "Taxes and duties exceeded income for the fourth consecutive year; the sovereign took more than 100 percent of the company's operating profit via fiscal duties, while production decline accelerated and reinvestment stayed below replacement needs. Off-balance guaranteed notes issued through an SPV kept the debt outside the consolidated gearing ratio."
+    },
+    {
+      "id": "petrobras_2013_style",
+      "class": "POSITIVE",
+      "text": "Refinery contracts were inflated by politically connected contractors; kickback markups on capex projects reached 3 percent, funneled through party channels. Senior appointments rewarded loyalists, and downstream losses accumulated quietly while quarterly reporting praised record investment."
+    },
+    {
+      "id": "onemdb_2016_style",
+      "class": "POSITIVE",
+      "text": "A sovereign fund moved assets through a chain of special purpose vehicles registered offshore, funded by fully guaranteed notes the ministry co-signed. Funds raised for strategic development projects were transferred to accounts outside parliamentary visibility; RM3.0 B could not be located by the auditor general."
+    },
+    {
+      "id": "petronas_adversarial_paraphrase",
+      "class": "POSITIVE",
+      "note": "the exact paraphrase class that scored MINIMAL on v1 (2026-09-16 Hermes probe)",
+      "text": "FY2025 shows 70.5 percent sovereign extraction, breaching the 65 percent pacemaker threshold. Reporting cadence quietly shifted quarterly to semi-annual. Upstream assets were moved to an SPV in the UK under English law. The results recognise RM14.8 B non-cash loss from a subsidiary buyout, and the 60 percent dividend cap collides with the treasury floor below RM33 B of profit."
+    },
+    {
+      "id": "enron_2000_style",
+      "class": "POSITIVE",
+      "text": "Earnings were driven by mark-to-market gains on long-term energy contracts booked through special purpose entities kept off the balance sheet. Guaranteed note programs with related parties funded the vehicles. Senior management praised record performance while debt guarantees accumulated outside consolidated disclosure."
+    },
+    {
+      "id": "healthy_reinvestment",
+      "class": "NEGATIVE",
+      "text": "The company paid a sustainable dividend of 30 percent of profit, maintained quarterly reporting, grew reserves replacement to 1.6 times, and invested 4.2 billion in development projects with independent non-executive directors chairing the audit committee."
+    },
+    {
+      "id": "ordinary_jv",
+      "class": "NEGATIVE",
+      "text": "A joint venture was formed with a peer company to develop a regional hub; both partners contributed assets at agreed valuations, reporting remains quarterly, and the board added two independent non-executive directors with full committee access."
+    },
+    {
+      "id": "ambiguous_highdiv_highreinv",
+      "class": "AMBIGUOUS",
+      "expect_not_minimal": true,
+      "text": "The dividend was raised substantially this year, and the company also says it is investing heavily."
+    },
+    {
+      "id": "sparse_thin_text",
+      "class": "SPARSE",
+      "text": "Things are fine."
+    }
+  ]
+}

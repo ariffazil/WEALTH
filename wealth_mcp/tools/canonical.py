@@ -894,7 +894,11 @@ def register_canonical_tools(mcp):
                 tool_name="capital_diagnose",
                 domain="collapse",
                 result=compute_collapse_risk(
-                    p.get("scenario") or p.get("domain_scope") or ""
+                    p.get("scenario")
+                    or p.get("text")
+                    or p.get("source_text")
+                    or p.get("domain_scope")
+                    or ""
                 ),
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
