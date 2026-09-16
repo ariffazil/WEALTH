@@ -71,7 +71,11 @@ _SKIP_KEYS = frozenset(
 # tickers, dates, and numeric strings pass through untouched.
 _MIN_PROSE_LEN = 24
 _MAX_FIELDS = 8
-_MAX_FIELD_CHARS = 500
+# Validate the claim that will actually be stored, not a prefix of it.
+# At 500 chars (2026-09-16) the gate judged a truncated mid-sentence
+# prediction and returned REWRITE_REQUIRED while the identical full claim
+# passed a direct probe — validation must cover the real content.
+_MAX_FIELD_CHARS = 4000
 
 
 class GateTransportError(RuntimeError):
@@ -114,7 +118,10 @@ def extract_semantic_fields(arguments: dict[str, Any] | None) -> dict[str, str]:
             for i, item in enumerate(node):
                 walk(item, f"{path}[{i}]", out)
         elif isinstance(node, str) and is_prose(node):
-            out[path or "claim"] = node[:_MAX_FIELD_CHARS]
+            text = node[:_MAX_FIELD_CHARS]
+            if len(node) > _MAX_FIELD_CHARS:
+                text += " …[truncated for validation]"
+            out[path or "claim"] = text
 
     out: dict[str, str] = {}
     if isinstance(arguments, dict):
