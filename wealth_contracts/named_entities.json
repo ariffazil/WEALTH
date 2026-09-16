@@ -1,0 +1,33 @@
+{
+  "version": "2026.09.16",
+  "note": "Named entities recognized by the claim gate. Structures, not persons — institutional claims only (witness rule 2026-09-16: score structures, not personalities).",
+  "institutions": [
+    "PETRONAS",
+    "Petronas",
+    "Gentari",
+    "SEARAH",
+    "Searah",
+    "PRefChem",
+    "Pengerang",
+    "Aramco",
+    "Saudi Aramco",
+    "EnQuest",
+    "Eni",
+    "PETROS",
+    "MoF",
+    "Kementerian Kewangan",
+    "Ministry of Finance",
+    "Moody's",
+    "Fitch",
+    "S&P",
+    "Bank Negara",
+    "MLNG",
+    "Carigali",
+    "Kasawari",
+    "PDB",
+    "PGB",
+    "PCG",
+    "MISC"
+  ],
+  "persons": []
+}

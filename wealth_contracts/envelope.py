@@ -519,6 +519,29 @@ def wrap_result(
         explicit_shadow = len(violations) > 0 or len(holds) > 0
     kwargs["shadow"] = explicit_shadow
 
+    # Named-entity claim gate (P1#1, 2026-09-16): institutional results that
+    # mention real named entities carry their external-evidence binding state.
+    # Labels publication eligibility; never blocks computation (COMPUTE_ONLY).
+    # Fail-closed: gate error -> treat-as-unbound.
+    if domain == "institutional" and isinstance(result, dict):
+        try:
+            from wealth_contracts.claim_gate import evaluate_dict_result as _ne_gate
+
+            _gate_block = _ne_gate(result, source_attribution, tool_name)
+            if _gate_block.get("state") != "NO_NAMED_ENTITIES":
+                result = dict(result)
+                result["named_entity_claim_gate"] = _gate_block
+        except Exception as _ne_exc:  # noqa: BLE001
+            result = dict(result)
+            result["named_entity_claim_gate"] = {
+                "gate": "named_entity_claim_gate",
+                "tool": tool_name,
+                "state": "GATE_ERROR",
+                "error": str(_ne_exc)[:160],
+                "publication_eligibility": "UNKNOWN_TREAT_AS_UNBOUND",
+                "origin": "0-independent-NEDs public-page incident, 2026-09-16",
+            }
+
     # Auto-attach constitutional fields if not provided
     try:
         from wealth_core.math import compute_kappa_r, compute_psi_le, get_qdf_version
