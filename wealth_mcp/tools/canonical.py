@@ -2167,11 +2167,16 @@ def register_canonical_tools(mcp):
         reversibility: str = "REVERSIBLE",
         blast_radius: str = "low",
         actor_id: str | None = None,
-        # C10 2026-08-06: This flag is CALLER-DECLARED. WEALTH has no independent
-        # cryptographic verification of actor identity. Gate policy (blast_radius=
-        # critical → 888_HOLD) is enforceable only when this flag is externally
-        # verified (e.g., via SCT token validation in the governance wrapper).
-        # Until C10 hardening, do not treat this as a security boundary.
+        # C10 HARDENED 2026-09-16 (F13 go): this argument is ACCEPTED FOR
+        # BACKWARD COMPAT ONLY and has ZERO authority effect. The former
+        # behaviour — `auth_verified = bool(caller_flag or payload_flag)` —
+        # let any caller clear an 888_HOLD on blast_radius=critical by typing
+        # True (proven live: receipts b06020e3 / de238ed7, and the INADMISSIBLE_
+        # INTENT case where the boolean beat an erroring validator).
+        # Authority is now resolved from the arifOS kernel session record only
+        # (wealth_arifos_bridge.validate_session_at_arifos → standing.actor.verified),
+        # fail-closed. The param is kept so legacy callers get an IGNORED warning
+        # instead of a hard schema rejection.
         actor_cryptographically_verified: bool = False,
         payload: CoercedDict = None,
         session_id: str | None = None,
@@ -2246,16 +2251,60 @@ def register_canonical_tools(mcp):
         # 3. Blast radius & authentication check
         blast = str(blast_radius or p.get("blast_radius", "low")).lower().strip()
         is_critical = blast == "critical"
-        auth_verified = bool(
-            actor_cryptographically_verified
-            or p.get("actor_cryptographically_verified")
-        )
+
+        # ── C10 HARDENED 2026-09-16 (F13 go) ────────────────────────────────
+        # BEFORE: auth_verified = bool(caller_flag or payload_flag) — a caller
+        #   could clear 888_HOLD on blast_radius=critical by typing True.
+        #   Proof on the live organ: receipts b06020e3 (flag → requires_888_hold
+        #   False, warnings empty) and de238ed7 (flag cleared 888 while
+        #   INADMISSIBLE_INTENT was still erroring).
+        # AFTER: authority is resolved from the arifOS kernel session record
+        #   (wealth_arifos_bridge.validate_session_at_arifos → arif_init
+        #   mode=validate → standing.actor.verified). Caller-supplied flags have
+        #   ZERO effect and are reported as IGNORED. Fail-closed: unreachable or
+        #   rejected kernel → auth_verified False → 888_HOLD stands.
+        auth_verified = False
+        auth_source = "UNRESOLVED"
+        auth_reason = ""
+        try:
+            from wealth_arifos_bridge import validate_session_at_arifos
+
+            _kernel_auth = await validate_session_at_arifos(
+                session_id=session_id,
+                actor_id=actor_id,
+            )
+            if _kernel_auth.get("valid") is True:
+                auth_verified = True
+                auth_source = "ARIFOS_KERNEL_SESSION"
+            else:
+                auth_source = (
+                    "ARIFOS_UNREACHABLE"
+                    if _kernel_auth.get("reason") == "ARIFOS_UNREACHABLE"
+                    else "ARIFOS_KERNEL_REJECTED"
+                )
+                auth_reason = str(_kernel_auth.get("reason") or "session not verified")
+        except Exception as _auth_exc:  # fail-closed, never open
+            auth_source = "ARIFOS_UNREACHABLE"
+            auth_reason = f"{type(_auth_exc).__name__}: {_auth_exc}"
 
         # Rule: blast_radius=critical without cryptographic actor verification requires 888_HOLD
         requires_888 = is_critical and not auth_verified
 
         errors = []
         warnings = []
+        if actor_cryptographically_verified or p.get("actor_cryptographically_verified"):
+            warnings.append(
+                "SELF_ATTESTED_VERIFICATION_IGNORED: actor_cryptographically_verified "
+                "is caller-declared and carries no authority (C10 hardening 2026-09-16). "
+                f"Verification resolved from kernel instead: source={auth_source}."
+            )
+        if is_critical and not auth_verified:
+            warnings.append(
+                f"AUTH_UNRESOLVED: blast_radius=critical but kernel verification "
+                f"unavailable ({auth_source}: {auth_reason or 'no reason'}). "
+                "888_HOLD enforced — fail-closed."
+            )
+
         if is_unbounded:
             errors.append(
                 f"INADMISSIBLE_INTENT: Intent '{intent_clean}' is unbounded/vague. Provide bounded, specific intent."
@@ -2310,6 +2359,8 @@ def register_canonical_tools(mcp):
             "blast_radius": blast,
             "actor_id": actor_id or "unverified",
             "actor_cryptographically_verified": auth_verified,
+            "actor_verification_source": auth_source,
+            "actor_verification_reason": auth_reason,
             "requires_888_hold": requires_888,
             "validation_errors": errors,
             "warnings": warnings,

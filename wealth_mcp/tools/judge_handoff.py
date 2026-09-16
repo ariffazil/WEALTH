@@ -27,11 +27,11 @@ def register_judge_handoff(mcp):
         reversibility: str = "REVERSIBLE",
         blast_radius: str = "low",
         actor_id: str | None = None,
-        # C10 2026-08-06: This flag is CALLER-DECLARED. WEALTH has no independent
-        # cryptographic verification of actor identity. Gate policy (blast_radius=
-        # critical → 888_HOLD) is enforceable only when this flag is externally
-        # verified (e.g., via SCT token validation in the governance wrapper).
-        # Until C10 hardening, do not treat this as a security boundary.
+        # C10 HARDENED 2026-09-16 (F13 go): ACCEPTED FOR BACKWARD COMPAT ONLY —
+        # ZERO authority effect. Caller-declared verification could previously
+        # clear an 888_HOLD on blast_radius=critical (proven live on the serving
+        # organ: receipts b06020e3 / de238ed7). Authority now comes from the
+        # arifOS kernel session record; fail-closed.
         actor_cryptographically_verified: bool = False,
         payload: CoercedDict = None,
         session_id: str | None = None,
@@ -84,16 +84,54 @@ def register_judge_handoff(mcp):
         # 3. Blast radius & authentication check
         blast = str(blast_radius or p.get("blast_radius", "low")).lower().strip()
         is_critical = blast == "critical"
-        auth_verified = bool(
-            actor_cryptographically_verified
-            or p.get("actor_cryptographically_verified")
-        )
+
+        # ── C10 HARDENED 2026-09-16 (F13 go) — mirror of canonical.py ───────
+        # NOTE: this module is NOT wired into the live server (server.py calls
+        # register_canonical_tools only); the live tool is canonical.py:2159.
+        # Patched so the dead mirror cannot reintroduce the bypass if it is ever
+        # re-registered. Caller-supplied flags have ZERO authority effect.
+        auth_verified = False
+        auth_source = "UNRESOLVED"
+        auth_reason = ""
+        try:
+            from wealth_arifos_bridge import validate_session_at_arifos
+
+            _kernel_auth = await validate_session_at_arifos(
+                session_id=session_id,
+                actor_id=actor_id,
+            )
+            if _kernel_auth.get("valid") is True:
+                auth_verified = True
+                auth_source = "ARIFOS_KERNEL_SESSION"
+            else:
+                auth_source = (
+                    "ARIFOS_UNREACHABLE"
+                    if _kernel_auth.get("reason") == "ARIFOS_UNREACHABLE"
+                    else "ARIFOS_KERNEL_REJECTED"
+                )
+                auth_reason = str(_kernel_auth.get("reason") or "session not verified")
+        except Exception as _auth_exc:  # fail-closed, never open
+            auth_source = "ARIFOS_UNREACHABLE"
+            auth_reason = f"{type(_auth_exc).__name__}: {_auth_exc}"
 
         # Rule: blast_radius=critical without cryptographic actor verification requires 888_HOLD
         requires_888 = is_critical and not auth_verified
 
         errors = []
         warnings = []
+        if actor_cryptographically_verified or p.get("actor_cryptographically_verified"):
+            warnings.append(
+                "SELF_ATTESTED_VERIFICATION_IGNORED: actor_cryptographically_verified "
+                "is caller-declared and carries no authority (C10 hardening 2026-09-16). "
+                f"Verification resolved from kernel instead: source={auth_source}."
+            )
+        if is_critical and not auth_verified:
+            warnings.append(
+                f"AUTH_UNRESOLVED: blast_radius=critical but kernel verification "
+                f"unavailable ({auth_source}: {auth_reason or 'no reason'}). "
+                "888_HOLD enforced — fail-closed."
+            )
+
         if is_unbounded:
             errors.append(
                 f"INADMISSIBLE_INTENT: Intent '{intent_clean}' is unbounded/vague. Provide bounded, specific intent."
@@ -145,6 +183,8 @@ def register_judge_handoff(mcp):
             "blast_radius": blast,
             "actor_id": actor_id or "unverified",
             "actor_cryptographically_verified": auth_verified,
+            "actor_verification_source": auth_source,
+            "actor_verification_reason": auth_reason,
             "requires_888_hold": requires_888,
             "validation_errors": errors,
             "warnings": warnings,
