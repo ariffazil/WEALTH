@@ -18,6 +18,8 @@ CAPITAL_TOOL_NAMES = (
     "capital_backtest",
     "capital_entry_plan",
     "capital_claims",
+    "capital_polix",
+    "capital_civx",
 )
 
 # Zen Phase 1a: shadow tools removed from MCP surface.
