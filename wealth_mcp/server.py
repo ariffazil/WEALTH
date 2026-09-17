@@ -453,6 +453,7 @@ def create_mcp_server() -> FastMCP:
             evidence_quality: str | None = None,
             missing_preload: list | None = None,
             result: Any = None,
+            floor_verdict: dict | None = None,
         ) -> dict[str, Any]:
             """Persist an audit receipt and return observable persistence state.
 
@@ -505,6 +506,8 @@ def create_mcp_server() -> FastMCP:
                 "transport": "mcp_call_tool",
                 "schema_version": _SCHEMA_VERSION,
             }
+            if floor_verdict:
+                receipt["floor_verdict"] = floor_verdict
             if duplicate_of:
                 receipt["duplicate_of"] = duplicate_of
             if missing_preload:
@@ -895,7 +898,7 @@ def create_mcp_server() -> FastMCP:
 
             # ── arifOS governance check ────────────────────────────────
             # Pass extracted system actor_id and session_id (Gap-C alignment)
-            verdict, error = _check_governance(
+            verdict, error, floor_verdict = _check_governance(
                 name,
                 arguments,
                 actor_id=actor_id,
@@ -919,6 +922,7 @@ def create_mcp_server() -> FastMCP:
                     verdict=verdict,
                     actor_id=actor_id,
                     session_id=session_id,
+                    floor_verdict=floor_verdict,
                 )
                 # MCP logging — governance block (transport only; arifOS owns enforcement)
                 try:
@@ -1258,6 +1262,7 @@ def create_mcp_server() -> FastMCP:
                     actor_id=actor_id,
                     session_id=session_id,
                     result=result,
+                    floor_verdict=floor_verdict,
                 )
                 return _finalize(
                     _attach_receipt_meta(result, receipt_state),

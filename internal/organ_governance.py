@@ -65,11 +65,12 @@ WEALTH_RISK_TIERS = {
 
 def _call_arifOS_judge(
     tool_name: str, arguments: dict, actor_id: str, session_id: Optional[str] = None
-) -> Tuple[str, Optional[dict]]:
+) -> Tuple[str, Optional[dict], dict]:
     """
     Call arifOS kernel arif_judge.
-    Returns (verdict, error_response).
+    Returns (verdict, error_response, verdict_data).
     error_response is not None if call failed or returned HOLD/VOID.
+    verdict_data is the full kernel response dict for floor-level extraction.
     """
     import json
 
@@ -111,17 +112,32 @@ def _call_arifOS_judge(
             data = response.json()
 
             if "error" in data:
-                return "HOLD", {"error": data["error"]["message"]}
+                return "HOLD", {"error": data["error"]["message"]}, {}
 
             result = data.get("result", {})
             content_text = result.get("content", [{}])[0].get("text", "{}")
             verdict_data = json.loads(content_text)
 
             verdict = verdict_data.get("verdict", verdict_data.get("status", "HOLD"))
-            return verdict, None
+            return verdict, None, verdict_data
 
     except Exception as e:
-        return "HOLD", {"error": str(e)}
+        return "HOLD", {"error": str(e)}, {}
+
+
+def _extract_floor_verdict(verdict_data: dict) -> dict:
+    """Extract floor-level verdict from arifOS kernel response.
+
+    Returns a dict with: effective_verdict, failed_floors, reason_code,
+    floors_checked, hold_required — or sensible defaults if absent.
+    """
+    return {
+        "effective_verdict": verdict_data.get("effective_verdict", verdict_data.get("verdict", "UNKNOWN")),
+        "failed_floors": verdict_data.get("failed_floors", []),
+        "reason_code": verdict_data.get("reason_code"),
+        "floors_checked": verdict_data.get("floors_checked", []),
+        "hold_required": verdict_data.get("hold_required", False),
+    }
 
 
 def check_governance(
@@ -129,13 +145,13 @@ def check_governance(
     arguments: dict,
     actor_id: str = "wealth-mcp",
     session_id: Optional[str] = None,
-) -> Tuple[str, Optional[dict]]:
+) -> Tuple[str, Optional[dict], dict]:
     """
-    Main entry point. Returns (verdict, error_response).
+    Main entry point. Returns (verdict, error_response, floor_verdict).
 
     - verdict = "READONLY" or "C1_PASS" if tool should proceed
     - error_response = not None if execution should be BLOCKED
-      (contains the HOLD/VOID response to return to caller)
+    - floor_verdict = dict with effective_verdict, failed_floors, reason_code
     """
     risk = WEALTH_RISK_TIERS.get(tool_name, "c1")
     if (
@@ -146,16 +162,17 @@ def check_governance(
 
     # READONLY tools: execute without governance check
     if risk == "readonly":
-        return "READONLY", None
+        return "READONLY", None, {"effective_verdict": "READONLY", "failed_floors": [], "reason_code": None, "floors_checked": [], "hold_required": False}
 
     # C1 tools: arifOS pre-check, proceed regardless
     if risk == "c1":
-        verdict, err = _call_arifOS_judge(tool_name, arguments, actor_id, session_id)
-        return verdict, None  # C1 proceeds even if HOLD
+        verdict, err, vdata = _call_arifOS_judge(tool_name, arguments, actor_id, session_id)
+        return verdict, None, _extract_floor_verdict(vdata)
 
     # C2 tools: require SEAL
     if risk == "c2":
-        verdict, err = _call_arifOS_judge(tool_name, arguments, actor_id, session_id)
+        verdict, err, vdata = _call_arifOS_judge(tool_name, arguments, actor_id, session_id)
+        fv = _extract_floor_verdict(vdata)
         if verdict != "SEAL":
             return verdict, {
                 "jsonrpc": "2.0",
@@ -169,9 +186,9 @@ def check_governance(
                         "floor": "F1-F13",
                     },
                 },
-            }
-        return "SEAL", None
+            }, fv
+        return "SEAL", None, fv
 
     # Unknown risk: default to C1 (advisory check, proceed)
-    verdict, _ = _call_arifOS_judge(tool_name, arguments, actor_id, session_id)
-    return verdict, None
+    verdict, _, vdata = _call_arifOS_judge(tool_name, arguments, actor_id, session_id)
+    return verdict, None, _extract_floor_verdict(vdata)
