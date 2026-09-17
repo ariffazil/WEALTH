@@ -122,6 +122,125 @@ def _tool_result_status(result: Any) -> str:
     return "PASS"
 
 
+def _compute_four_truths(
+    tool_name: str,
+    result: Any,
+    call_status: str,
+    actor_id: str | None = None,
+) -> dict[str, Any]:
+    """Four-truth receipt model (L6 Witness Quality, 2026-09-16).
+
+    DECISION_PASS = T_transport ∧ T_execution ∧ T_semantic ∧ T_policy
+
+    Each truth is independently measured:
+      T_transport: Did the request reach the service and get a response?
+      T_execution: Did the runtime finish without error?
+      T_semantic:  Was the output valid, complete, fresh, contract-compliant?
+      T_policy:    May this output be acted upon or published?
+
+    Copilot witness assessment: "A witness that sees correctly but cannot
+    propagate truth is still losing reality." This function ensures each
+    receipt carries all four truth dimensions, not just call_status.
+    """
+    import datetime as _dt
+
+    payload = getattr(result, "structured_content", None) or {}
+    inner = payload.get("result") if isinstance(payload.get("result"), dict) else payload
+    if not isinstance(inner, dict):
+        inner = {}
+
+    # T_transport: we got a response (not a connection error/timeout)
+    # If we're here at all, transport succeeded. Connection failures
+    # are caught upstream and never reach _emit_receipt.
+    t_transport = True
+
+    # T_execution: tool runtime completed without error
+    t_execution = call_status in {"PASS", "APPENDED", "INSERTED", "OK", "ALIVE"}
+
+    # T_semantic: output is valid, complete, fresh, contract-compliant
+    semantic_reasons = []
+
+    # Freshness: check for timestamp/age fields
+    freshness = inner.get("freshness", {})
+    if isinstance(freshness, dict):
+        freshness_status = freshness.get("status", "").upper()
+        if freshness_status in {"STALE", "EXPIRED"}:
+            semantic_reasons.append(f"freshness={freshness_status}")
+        age = freshness.get("age_seconds")
+        max_age = freshness.get("max_fresh_age_seconds")
+        if age is not None and max_age is not None and age > max_age:
+            semantic_reasons.append(f"age({age}s) > max_fresh({max_age}s)")
+
+    # L1 Signal typing: check market signal_state
+    signal_state = inner.get("signal_state", "").upper()
+    if signal_state:
+        if signal_state == "UNAVAILABLE":
+            semantic_reasons.append("signal_state=UNAVAILABLE")
+        elif signal_state == "CONFLICTED":
+            semantic_reasons.append("signal_state=CONFLICTED")
+        elif signal_state == "HISTORICAL_STALE":
+            semantic_reasons.append("signal_state=HISTORICAL_STALE")
+        elif signal_state == "ASSUMED":
+            semantic_reasons.append("signal_state=ASSUMED")
+        # DERIVED and LIVE are acceptable for T_semantic
+
+    # Completeness: check for partial results, missing required fields
+    if inner.get("partial") is True:
+        semantic_reasons.append("partial=true")
+    errors = inner.get("errors")
+    if errors:
+        semantic_reasons.append(f"errors_present({len(errors) if isinstance(errors, list) else 'yes'})")
+
+    # Contract compliance: check for UNMEASURED critical fields
+    unmeasured = inner.get("missing_inputs") or inner.get("unmeasured_keys")
+    if isinstance(unmeasured, list) and len(unmeasured) > 0:
+        semantic_reasons.append(f"unmeasured_fields({len(unmeasured)})")
+
+    # Contradiction: check for conflicting status signals
+    status_field = str(inner.get("status", "")).upper()
+    if status_field in {"OK", "HEALTHY", "PASS"} and errors:
+        semantic_reasons.append("contradiction:status_ok_but_errors_present")
+
+    t_semantic = len(semantic_reasons) == 0
+
+    # T_policy: output may be acted upon (authority + governance check)
+    policy_reasons = []
+    verdict = str(inner.get("verdict", "")).upper()
+    if verdict in {"HOLD", "888_HOLD", "BLOCKED", "REJECTED"}:
+        policy_reasons.append(f"verdict={verdict}")
+    authority = str(inner.get("authority_ceiling", "")).upper()
+    if authority in {"DISPLAY_ONLY", "REFLECT_ONLY", "OBSERVE_ONLY"}:
+        policy_reasons.append(f"authority={authority}")
+    governance = str(inner.get("governance_status", "") or inner.get("_hermes_semantic_gate", {}).get("outcome", "")).upper()
+    if governance in {"BLOCKED", "888_HOLD", "REWRITE_REQUIRED"}:
+        policy_reasons.append(f"governance={governance}")
+
+    t_policy = len(policy_reasons) == 0
+
+    decision_pass = t_transport and t_execution and t_semantic and t_policy
+
+    return {
+        "four_truths": {
+            "T_transport": {"value": t_transport, "source": "connection_established"},
+            "T_execution": {"value": t_execution, "source": f"call_status={call_status}"},
+            "T_semantic": {
+                "value": t_semantic,
+                "source": "freshness+completeness+contract+contradiction",
+                "failures": semantic_reasons if not t_semantic else [],
+            },
+            "T_policy": {
+                "value": t_policy,
+                "source": "authority+governance+verdict",
+                "failures": policy_reasons if not t_policy else [],
+            },
+        },
+        "decision_pass": decision_pass,
+        "truth_score": sum([t_transport, t_execution, t_semantic, t_policy]) / 4.0,
+        "schema_version": "L6-v1.0.0",
+        "computed_at": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+    }
+
+
 def _attach_receipt_meta(result: Any, receipt_state: dict[str, Any]) -> Any:
     """Expose receipt persistence state to MCP callers."""
     meta = dict(getattr(result, "meta", None) or {})
@@ -228,6 +347,11 @@ def _validate_direct_session_binding(
         # 2026-08-06: Restore OBSERVE_UNBOUND for read-only tools.
         # WEALTH is COMPUTE_ONLY — the worst case from a missing session
         # is lack of audit trail, not unauthorized mutation.
+        # 2026-09-17: Federation organism cycle — replaced silent "_default"
+        # placeholder with self-documenting "_MISSING_SESSION" so bridge
+        # session-loss (the arifOS bridge audit 2026-09-17 finding) is
+        # observably visible. Any consumer mistaking this for a real
+        # session is now obvious in logs and federation probes.
         if tool_name in _OBSERVE_TOOLS:
             import datetime as _dt
 
@@ -236,7 +360,7 @@ def _validate_direct_session_binding(
                 "code": "OBSERVE_UNBOUND",
                 "reason": "OBSERVE-class tool — session optional",
                 "actor_id": actor_id or "wealth-mcp",
-                "session_id": session_id or "_default",
+                "session_id": session_id or "_MISSING_SESSION",
                 "tool_name": tool_name,
                 "_ts": _dt.datetime.now(_dt.timezone.utc).isoformat(),
             }
@@ -328,8 +452,14 @@ def create_mcp_server() -> FastMCP:
             session_id: str | None = None,
             evidence_quality: str | None = None,
             missing_preload: list | None = None,
+            result: Any = None,
         ) -> dict[str, Any]:
-            """Persist an audit receipt and return observable persistence state."""
+            """Persist an audit receipt and return observable persistence state.
+
+            L6 Witness Quality (2026-09-16): every receipt now carries a
+            four_truths block computing DECISION_PASS from independent
+            transport/execution/semantic/policy measurements.
+            """
             actor_id = actor_id or "wealth-mcp"
             evidence_quality = evidence_quality or (
                 "OBSERVED" if status == "PASS" else "MISSING"
@@ -379,6 +509,28 @@ def create_mcp_server() -> FastMCP:
                 receipt["duplicate_of"] = duplicate_of
             if missing_preload:
                 receipt["non_compliant_preload"] = missing_preload
+
+            # L6 Witness Quality: four-truth receipt model
+            # DECISION_PASS = T_transport ∧ T_execution ∧ T_semantic ∧ T_policy
+            if result is not None:
+                four_truths = _compute_four_truths(tool_name, result, status, actor_id)
+                receipt["four_truths"] = four_truths["four_truths"]
+                receipt["decision_pass"] = four_truths["decision_pass"]
+                receipt["truth_score"] = four_truths["truth_score"]
+            else:
+                # No result available (governance block, error path)
+                # T_transport=True (we got here), T_execution from status,
+                # T_semantic=UNMEASURED, T_policy from verdict
+                t_exec = status in {"PASS", "APPENDED", "INSERTED", "OK", "ALIVE"}
+                t_policy = verdict not in {"HOLD", "888_HOLD", "BLOCKED", "REJECTED"}
+                receipt["four_truths"] = {
+                    "T_transport": {"value": True, "source": "connection_established"},
+                    "T_execution": {"value": t_exec, "source": f"call_status={status}"},
+                    "T_semantic": {"value": False, "source": "UNMEASURED_no_result", "failures": ["no_result_object"]},
+                    "T_policy": {"value": t_policy, "source": f"verdict={verdict or 'none'}"},
+                }
+                receipt["decision_pass"] = False  # T_semantic unmeasured
+                receipt["truth_score"] = sum([True, t_exec, False, t_policy]) / 4.0
 
             state = _append_existing_jsonl(_RECEIPT_PATH, receipt)
             state["receipt_id"] = receipt_id
@@ -1105,6 +1257,7 @@ def create_mcp_server() -> FastMCP:
                     verdict=verdict,
                     actor_id=actor_id,
                     session_id=session_id,
+                    result=result,
                 )
                 return _finalize(
                     _attach_receipt_meta(result, receipt_state),
@@ -1161,6 +1314,13 @@ def create_mcp_server() -> FastMCP:
 
     # ── Register canonical tools (8-mode surface, 2026-07-07) ──────────
     register_canonical_tools(mcp)
+
+    # ── Register POLIX/CIVX tools (L4+L10 knowledge axes, 2026-09-16) ─
+    try:
+        from wealth_mcp.tools.polix_civx import register_polix_civx
+        register_polix_civx(mcp)
+    except Exception as e:
+        print(f"[TOOLS] POLIX/CIVX registration failed: {e}")
 
     return mcp
 
