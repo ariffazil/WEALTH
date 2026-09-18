@@ -17,6 +17,12 @@ CANONICAL_FLOORS: dict[str, list[str]] = {
     "capital_ledger": ["F1", "F2", "F4", "F7", "F11", "F13"],
     "capital_registry": ["F1", "F2", "F7", "F11"],
     "capital_entropy": ["F1", "F2", "F4", "F6", "F7", "F9", "F11", "F13"],
+    "capital_claims": ["F1", "F2", "F6", "F7", "F11"],
+    # Phase 1a extracted tools — floor gap closed 2026-09-16 (N5):
+    # extracted from canonical.py without their floor bindings.
+    "capital_indicator": ["F1", "F2", "F7", "F11"],
+    "capital_backtest": ["F1", "F2", "F4", "F7", "F11"],
+    "capital_entry_plan": ["F1", "F2", "F7", "F11"],
     "wealth_judge_handoff": ["F1", "F2", "F4", "F7", "F11", "F13"],
     "wealth_bid_surface": ["F1", "F2", "F4", "F7", "F11"],
     # Core primitives — computational only, low risk

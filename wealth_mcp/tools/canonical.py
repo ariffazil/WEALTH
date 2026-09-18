@@ -597,6 +597,9 @@ def register_canonical_tools(mcp):
                     "monthly_expenses": monthly_expenses_v,
                     "liquid_assets": liquid_assets,
                     "horizon_months": horizon_months,
+                    "actor_id": actor_id,
+                    "session_id": session_id,
+                    "trace_id": trace_id,
                 },
             )
             # If empty inputs / insufficient signal, enforce DRAFT / MISSING
@@ -806,6 +809,36 @@ def register_canonical_tools(mcp):
         if m == "governance_capacity":
             from wealth_core.institutional import compute_governance_capacity
 
+            _gc_expected = {"board_members", "committees", "stress_level"}
+            if p and not (_gc_expected & set(p.keys())):
+                # Fail-closed input gate (P0, 2026-09-16): a payload carrying
+                # none of this mode's recognized fields must not be silently
+                # coerced to an empty board — that exact silent default
+                # produced a false "0 independent NEDs" diagnosis that
+                # reached a public page about a real institution.
+                return wrap_result(
+                    tool_name="capital_diagnose",
+                    domain="institutional",
+                    result={
+                        "status": "INSUFFICIENT_DATA",
+                        "mode": m,
+                        "expected_fields": sorted(_gc_expected),
+                        "received_fields": sorted(p.keys()),
+                        "recommendation": None,
+                        "note": (
+                            "Payload contained no recognized fields for this "
+                            "mode. Re-send with board_members (list of "
+                            "name/role/independent dicts) to compute "
+                            "governance capacity. No diagnosis is emitted "
+                            "on unrecognized input."
+                        ),
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    source_attribution=["input_fidelity_gate"],
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
             return wrap_result(
                 tool_name="capital_diagnose",
                 domain="institutional",
@@ -861,7 +894,11 @@ def register_canonical_tools(mcp):
                 tool_name="capital_diagnose",
                 domain="collapse",
                 result=compute_collapse_risk(
-                    p.get("scenario") or p.get("domain_scope") or ""
+                    p.get("scenario")
+                    or p.get("text")
+                    or p.get("source_text")
+                    or p.get("domain_scope")
+                    or ""
                 ),
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
@@ -1261,11 +1298,44 @@ def register_canonical_tools(mcp):
                 raw = await _call_legacy_tool(
                     "wealth_market_data", {"mode": "commodity", "commodity": commodity}
                 )
+            # ── P0 fail-closed (WEALTH-RECONCILIATION-20260916): a dead
+            # engine must never surface as data. Empty snapshot = all
+            # sub-calls failed → UNAVAILABLE, not a wrapped empty reading.
+            _commodity_errors = (
+                dict(raw.get("errors") or {})
+                if isinstance(raw, dict)
+                else {}
+            )
+            if engine_name and not (raw.get("snapshot") or {}):
+                return wrap_result(
+                    tool_name="capital_market",
+                    domain="capital",
+                    result={
+                        "status": "UNAVAILABLE",
+                        "asset": engine_name,
+                        "message": (
+                            "All commodity engine sub-calls failed — no "
+                            "observed data."
+                        ),
+                        "engine_errors": _commodity_errors,
+                        "decision_eligibility": "INELIGIBLE",
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    errors=[f"{k}: {v}" for k, v in _commodity_errors.items()],
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
             # Zen C9: cross-witness metadata
             if isinstance(raw, dict):
                 raw["_cross_witness"] = {
                     "primary_source": "wealth_core.commodity_engines",
-                    "feed_type": "LIVE" if engine_name else "CACHED",
+                    "feed_type": (
+                        "LIVE_PARTIAL"
+                        if engine_name and raw.get("partial")
+                        else ("LIVE" if engine_name else "CACHED")
+                    ),
                     "witness_status": "SINGLE_SOURCE",
                     "note": "Cross-witness requires second independent source. Delta > 3% would raise WITNESS_DIVERGENCE.",
                 }
@@ -1276,6 +1346,10 @@ def register_canonical_tools(mcp):
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["commodity_engine_live"],
+                errors=[
+                    f"partial snapshot — {k}: {v}"
+                    for k, v in _commodity_errors.items()
+                ],
                 session_id=session_id,
                 trace_id=trace_id,
                 actor_id=actor_id,
@@ -1330,6 +1404,61 @@ def register_canonical_tools(mcp):
             else:
                 raw = await call_engine(m, engine_op)
 
+            # ── P0 fail-closed (WEALTH-RECONCILIATION-20260916): engine
+            # failures must never surface as OBSERVED data. Total failure
+            # → UNAVAILABLE; partial snapshot failure surfaces as errors.
+            _engine_error_list: list = []
+            if isinstance(raw, dict) and raw.get("error"):
+                return wrap_result(
+                    tool_name="capital_market",
+                    domain="capital",
+                    result={
+                        "status": "UNAVAILABLE",
+                        "asset": m,
+                        "operation": engine_op,
+                        "message": raw.get("message", "commodity engine call failed"),
+                        "engine_code": raw.get("code"),
+                        "decision_eligibility": "INELIGIBLE",
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    errors=[
+                        f"engine {m}/{engine_op}: {raw.get('code')} — "
+                        f"{raw.get('message')}"
+                    ],
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
+            if engine_op == "snapshot" and isinstance(raw, dict):
+                _snap_data = raw.get("snapshot") or {}
+                _snap_errors = raw.get("errors") or {}
+                if not _snap_data:
+                    return wrap_result(
+                        tool_name="capital_market",
+                        domain="capital",
+                        result={
+                            "status": "UNAVAILABLE",
+                            "asset": m,
+                            "operation": "snapshot",
+                            "message": (
+                                "All snapshot sub-calls failed — no observed "
+                                "data."
+                            ),
+                            "engine_errors": _snap_errors,
+                            "decision_eligibility": "INELIGIBLE",
+                        },
+                        epistemic_tag=EpistemicTag.ASSUMED,
+                        evidence_quality=EvidenceQuality.MISSING,
+                        errors=[f"{k}: {v}" for k, v in _snap_errors.items()],
+                        session_id=session_id,
+                        trace_id=trace_id,
+                        actor_id=actor_id,
+                    )
+                _engine_error_list = [
+                    f"partial snapshot — {k}: {v}" for k, v in _snap_errors.items()
+                ]
+
             # ── FLAME Enrichment (P2, 2026-07-25) ─────────────────────
             # For signal/daily modes, enrich raw engine output with FLAME
             # natural-language interpretation. FLAME is ADVISORY only —
@@ -1364,6 +1493,7 @@ def register_canonical_tools(mcp):
                 else EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=[f"wealth://commodity/{m}/{engine_op}"],
+                errors=_engine_error_list,
                 session_id=session_id,
                 actor_id=actor_id,
             )
@@ -1422,22 +1552,143 @@ def register_canonical_tools(mcp):
         m = mode.lower()
 
         if m == "query":
-            raw = await _call_legacy_tool(
-                "wealth_vault_query",
-                {
-                    "query": query,
-                    "limit": limit,
-                    "asset_id": asset_id,
-                    "session_id": session_id,
-                },
+            # ── P1 ledger query reconciliation (WEALTH-RECONCILIATION-20260916) ──
+            # The receipts writer appends to /root/VAULT999/wealth/receipts.jsonl,
+            # but the legacy path queried a Supabase index (action column,
+            # ilike only) with a data/vault999.jsonl fallback — a different
+            # store. Sealed IDs (e.g. AMEND-2026-08-03-001) live inside
+            # `arguments` and were invisible to every layer of that chain,
+            # yielding authoritative-looking empty results. Primary source is
+            # now the file the writer actually writes; the Supabase index is
+            # kept as a NAMED secondary. Absence is only reported after a
+            # scan of the primary file — never from a store mismatch.
+            import os as _os
+            from pathlib import Path as _P
+
+            _receipts_path = _P(
+                _os.environ.get(
+                    "WEALTH_RECEIPTS_PATH", "/root/VAULT999/wealth/receipts.jsonl"
+                )
             )
+            if not _receipts_path.is_file():
+                return wrap_result(
+                    tool_name="capital_ledger",
+                    domain="vault",
+                    result={
+                        "status": "UNAVAILABLE",
+                        "error_code": "RECEIPTS_FILE_ABSENT",
+                        "message": (
+                            f"Primary receipt file not found: {_receipts_path}. "
+                            "Cannot witness ledger state — refusing to report "
+                            "an empty result as absence."
+                        ),
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    errors=[f"receipts file absent: {_receipts_path}"],
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
+
+            _q = (query or "").strip().lower()
+            _matches: list = []
+            _scanned = 0
+            try:
+                with _receipts_path.open("r", encoding="utf-8", errors="replace") as _f:
+                    for _line in _f:
+                        _line = _line.strip()
+                        if not _line:
+                            continue
+                        _scanned += 1
+                        if (not _q) or (_q in _line.lower()):
+                            try:
+                                _rec = json.loads(_line)
+                            except ValueError:
+                                _rec = {"raw": _line[:200]}
+                            _matches.append(
+                                {
+                                    "receipt_id": _rec.get("receipt_id"),
+                                    "timestamp_utc": _rec.get("timestamp_utc"),
+                                    "actor_id": _rec.get("actor_id"),
+                                    "tool_name": _rec.get("tool_name"),
+                                    "call_status": _rec.get("call_status"),
+                                    "governance_status": _rec.get(
+                                        "governance_status"
+                                    ),
+                                    "trace_id": _rec.get("trace_id"),
+                                    "arguments_preview": str(
+                                        _rec.get("arguments")
+                                    )[:160],
+                                }
+                            )
+            except OSError as _exc:
+                return wrap_result(
+                    tool_name="capital_ledger",
+                    domain="vault",
+                    result={
+                        "status": "UNAVAILABLE",
+                        "error_code": "RECEIPTS_FILE_UNREADABLE",
+                        "message": f"Cannot read primary receipt file: {_exc}",
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    errors=[f"receipts file unreadable: {_exc}"],
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
+
+            if not _q:
+                # Append-order file: newest last — reverse for a browse view.
+                _matches.reverse()
+            _matches = _matches[: max(1, int(limit))]
+
+            _remote: dict = {"status": "SKIPPED"}
+            try:
+                _remote = await _call_legacy_tool(
+                    "wealth_vault_query",
+                    {
+                        "query": query,
+                        "limit": limit,
+                        "session_id": session_id,
+                    },
+                )
+            except Exception:
+                _remote = {"status": "UNAVAILABLE"}
+
+            _result = {
+                "status": "OK",
+                "source_path": str(_receipts_path),
+                "scan_scope": (
+                    "full-text substring across the raw receipt record "
+                    "(all fields incl. arguments)"
+                ),
+                "scanned": _scanned,
+                "matched": len(_matches),
+                "query": query,
+                "records": _matches,
+                "remote_index": {
+                    "store": "supabase:arifosmcp_transactions (action ilike)",
+                    "status": _remote.get("status", "UNAVAILABLE"),
+                    "count": _remote.get("count"),
+                    "note": "named secondary — NOT authoritative for receipts.jsonl contents",
+                },
+                "read_only": True,
+            }
+            if _q and not _matches:
+                _result["absence_note"] = (
+                    f"0 matches across {_scanned} scanned records of the "
+                    "primary receipt file — this is witnessed absence, not "
+                    "a store mismatch."
+                )
             return wrap_result(
                 tool_name="capital_ledger",
                 domain="vault",
-                result=raw,
+                result=_result,
                 epistemic_tag=EpistemicTag.OBSERVED,
                 evidence_quality=EvidenceQuality.OBSERVED,
-                source_attribution=["vault999_query"],
+                source_attribution=["vault999:wealth/receipts.jsonl"],
                 session_id=session_id,
                 trace_id=trace_id,
                 actor_id=actor_id,
@@ -1528,7 +1779,8 @@ def register_canonical_tools(mcp):
         trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
-        del tool_name  # Reserved for schema lookup compatibility.
+        # tool_name is honored in manifests/schema modes (P1 2026-09-16);
+        # previously discarded — the "ignored filter" defect.
         m = mode.lower()
         canonical_tools = list(CAPITAL_TOOL_NAMES)
         public_tools = list(PUBLIC_TOOL_NAMES)
@@ -1562,10 +1814,282 @@ def register_canonical_tools(mcp):
                         )
                 elif t_name == "wealth_judge_handoff":
                     from wealth_contracts.envelope import ClaimState
+                elif t_name == "capital_backtest":
+                    # P0-E runtime truth (2026-09-16): probe the exact lazy
+                    # import that broke live while registry said PASS.
+                    from trading.signals.scanner import OHLCV as _probe_ohlcv  # noqa: F401
+                    from trading.backtest.engine_v2 import BacktestConfig as _probe_bt  # noqa: F401
+                else:
+                    _probe_modules = {
+                        "capital_indicator": "yfinance",
+                        "capital_entry_plan": "yfinance",
+                        "capital_market": "wealth_core.commodity_engines",
+                        "capital_health": "internal.monolith",
+                        "capital_ledger": "internal.monolith",
+                        "capital_primitive": "internal.monolith",
+                        "capital_claims": "wealth_core.evidence.claim_gate",
+                    }
+                    _probe_mod = _probe_modules.get(t_name)
+                    if _probe_mod:
+                        import importlib as _il
+
+                        _il.import_module(_probe_mod)
             except Exception as _p_exc:
                 probe_failures.append(f"{t_name}: {type(_p_exc).__name__} ({_p_exc})")
 
         reg_truth = "PASS" if not probe_failures else "DEGRADED"
+
+        # ── Five-manifest completion (FI-003, 2026-09-16): build plane
+        # (git commit + working-tree seal + source digest), deprecated-name
+        # sweep, session-gate surface, runtime mount helper. Fail-closed. ──
+        import hashlib as _hl
+        import subprocess as _sp
+        from pathlib import Path as _P  # helper-scoped; manifests branch rebind is harmless
+
+        def _build_plane() -> dict:
+            _repo = _P(__file__).resolve().parents[2]
+            try:
+                _c = _sp.run(
+                    ["git", "-C", str(_repo), "rev-parse", "--short=7", "HEAD"],
+                    capture_output=True, text=True, timeout=5,
+                )
+                _commit = _c.stdout.strip() if _c.returncode == 0 else "UNAVAILABLE"
+                _d = _sp.run(
+                    ["git", "-C", str(_repo), "status", "--porcelain"],
+                    capture_output=True, text=True, timeout=5,
+                )
+                _dirty = bool(_d.stdout.strip()) if _d.returncode == 0 else None
+            except Exception:
+                _commit, _dirty = "UNAVAILABLE", None
+            _h = _hl.sha256()
+            _n = 0
+            for _f in sorted((_repo / "wealth_mcp").rglob("*.py")):
+                _h.update(str(_f.relative_to(_repo)).encode())
+                _h.update(_f.read_bytes())
+                _n += 1
+            return {
+                "git_commit": _commit,
+                "working_tree": ("DIRTY" if _dirty else "CLEAN") if _dirty is not None else "UNKNOWN",
+                "seal_state": ("UNSEALED" if _dirty else "SEALED") if _dirty is not None else "UNKNOWN",
+                "build_digest": f"sha256:{_h.hexdigest()[:16]}",
+                "packaged_files_hashed": _n,
+            }
+
+        def _deprecated_sweep() -> list:
+            import re as _re
+            _found = []
+            for _rel in ("wealth_mcp/server.py", "wealth_mcp/__init__.py"):
+                try:
+                    _txt = (_P(__file__).resolve().parents[2] / _rel).read_text()
+                except OSError:
+                    continue
+                for _ln in _txt.splitlines():
+                    if "deleted" not in _ln.lower():
+                        continue
+                    for _nm in _re.findall(r'"(capital_[a-z_]+|wealth_[a-z_]+)"', _ln):
+                        if _nm not in _found:
+                            _found.append(_nm)
+            return _found
+
+        def _session_gate_surface() -> list:
+            import re as _re
+            try:
+                _txt = (_P(__file__).resolve().parents[2] / "wealth_mcp" / "server.py").read_text()
+            except OSError:
+                return []
+            _blk = _re.search(r"_OBSERVE_TOOLS\s*=\s*\{([^}]*)\}", _txt)
+            return _re.findall(r'"([a-z_]+)"', _blk.group(1)) if _blk else []
+
+        def _runtime_mounts() -> list | None:
+            try:
+                return sorted(
+                    {
+                        k.split("@", 1)[0][len("tool:"):]
+                        for k in mcp._local_provider._components
+                        if k.startswith("tool:")
+                    }
+                )
+            except Exception:
+                return None  # fail-closed: unwitnessable
+
+        if m == "manifests":
+            # ── P1 five-manifest registry (WEALTH-RECONCILIATION-20260916) ──
+            # Declared ≠ runtime. Each view declares its own scope; per-tool
+            # truth is the LOWEST state across views — a tool can be
+            # canonical and dead simultaneously. Count drift (6/8/11/12) is
+            # resolved by naming each view, never by one blended number.
+            from datetime import datetime, timezone as _tz
+            from pathlib import Path as _P
+
+            _runtime_tools = None
+            _runtime_state = "UNWITNESSABLE"
+            try:
+                _runtime_tools = sorted(
+                    {
+                        k.split("@", 1)[0][len("tool:") :]
+                        for k in mcp._local_provider._components
+                        if k.startswith("tool:")
+                    }
+                )
+                _runtime_state = "WITNESSED"
+            except Exception:
+                pass  # fail-closed: runtime view reports unwitnessable
+
+            _probe_failed = {f.split(":", 1)[0] for f in probe_failures}
+            _tests_dir = _P(__file__).resolve().parents[2] / "tests"
+
+            _all_tools = sorted(
+                set(canonical_tools) | set(public_tools) | set(_runtime_tools or [])
+            )
+
+            def _lowest_state(t: str) -> dict:
+                declared = t in canonical_tools or t in public_tools
+                mounted = (
+                    t in _runtime_tools if _runtime_tools is not None else None
+                )
+                if not declared and mounted is True:
+                    state = "MOUNTED_UNDECLARED"
+                elif not declared:
+                    state = "RUNTIME_ONLY"
+                elif t in _probe_failed:
+                    state = "IMPORT_FAILED"
+                elif mounted is False:
+                    state = "NOT_REGISTERED"
+                else:
+                    state = "LIVE"  # declared + probe-passed + mounted (or mount unwitnessable)
+                return {
+                    "tool": t,
+                    "state": state,
+                    "declared": declared,
+                    "import_probe_passed": (
+                        (t not in _probe_failed) if t in public_tools else None
+                    ),
+                    "mounted": mounted,
+                    "validated": (_tests_dir / f"test_{t}.py").is_file(),
+                }
+
+            _per_tool = [_lowest_state(t) for t in _all_tools]
+
+            _ghosts = (
+                [t for t in _runtime_tools if t not in set(canonical_tools) | set(public_tools)]
+                if _runtime_tools is not None
+                else None
+            )
+            _missing = (
+                [t for t in public_tools if t not in _runtime_tools]
+                if _runtime_tools is not None
+                else None
+            )
+
+            if tool_name:
+                _match = next((e for e in _per_tool if e["tool"] == tool_name), None)
+                if _match is None:
+                    return wrap_result(
+                        tool_name="capital_registry",
+                        domain="meta",
+                        result={
+                            "status": "ERROR",
+                            "error_code": "UNKNOWN_TOOL",
+                            "message": f"Tool '{tool_name}' not found in any manifest.",
+                            "known_tools": _all_tools,
+                        },
+                        epistemic_tag=EpistemicTag.ASSUMED,
+                        evidence_quality=EvidenceQuality.MISSING,
+                        errors=[f"unknown tool_name '{tool_name}'"],
+                        session_id=session_id,
+                        trace_id=trace_id,
+                        actor_id=actor_id,
+                    )
+                _views = {
+                    "source": tool_name in canonical_tools,
+                    "public": tool_name in public_tools,
+                    "runtime": (
+                        tool_name in _runtime_tools
+                        if _runtime_tools is not None
+                        else None
+                    ),
+                    "build_probe_passed": (
+                        tool_name not in _probe_failed
+                        if tool_name in public_tools
+                        else None
+                    ),
+                }
+                return wrap_result(
+                    tool_name="capital_registry",
+                    domain="meta",
+                    result={
+                        "status": "OK",
+                        "mode": "manifests",
+                        "tool": tool_name,
+                        "views": _views,
+                        **_match,
+                    },
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
+
+            return wrap_result(
+                tool_name="capital_registry",
+                domain="meta",
+                result={
+                    "status": "OK",
+                    "mode": "manifests",
+                    "manifests": {
+                        "source": {
+                            "scope": "declared registrations in code (canonical.py + tools/ modules)",
+                            "tools": canonical_tools,
+                            "count": len(canonical_tools),
+                            "includes_deprecated": _deprecated_sweep(),
+                            "session_gate_surface": _session_gate_surface(),
+                            "session_gate_note": (
+                                "session-gate allowlist is a POLICY subset, not a tool "
+                                "census — this is the historical 8-vs-11 count layer"
+                            ),
+                        },
+                        "build": {
+                            "scope": "deployable tree state (git commit + working-tree seal + source digest)",
+                            **_build_plane(),
+                            "import_failed": sorted(_probe_failed),
+                            "truth": reg_truth,
+                        },
+                        "runtime": {
+                            "scope": "components mounted by THIS FastMCP server instance",
+                            "witness_state": _runtime_state,
+                            "tools": _runtime_tools,
+                            "count": (
+                                len(_runtime_tools)
+                                if _runtime_tools is not None
+                                else None
+                            ),
+                        },
+                        "public": {
+                            "scope": "advertised public MCP surface",
+                            "tools": public_tools,
+                            "count": len(public_tools),
+                        },
+                        "probe": {
+                            "scope": "last probe execution record",
+                            "executed_at": datetime.now(_tz.utc).isoformat(),
+                            "failures": probe_failures,
+                        },
+                    },
+                    "per_tool": _per_tool,
+                    "count_reconciliation": {
+                        "source": len(canonical_tools),
+                        "public": len(public_tools),
+                        "runtime": (
+                            len(_runtime_tools) if _runtime_tools is not None else None
+                        ),
+                        "ghosts_mounted_undeclared": _ghosts,
+                        "missing_advertised_unmounted": _missing,
+                        "note": "Counts differ by scope. Schema mode is a partial mode-map, not a tool census.",
+                    },
+                },
+                session_id=session_id,
+                trace_id=trace_id,
+                actor_id=actor_id,
+            )
 
         if m == "status":
             return wrap_result(
@@ -1585,6 +2109,18 @@ def register_canonical_tools(mcp):
                     "public_tool_count": len(public_tools),
                     "registry_truth": reg_truth,
                     "probe_failures": probe_failures,
+                    "manifest_summary": {
+                        "source": len(canonical_tools),
+                        "public": len(public_tools),
+                        "runtime": (lambda r: len(r) if r is not None else None)(_runtime_mounts()),
+                        "probe_failures": len(probe_failures),
+                        "build": _build_plane(),
+                        "note": (
+                            "Counts are per-view and may legitimately differ; "
+                            "per-tool lowest-state truth = capital_registry mode=manifests. "
+                            "A tool can be canonical and dead simultaneously."
+                        ),
+                    },
                     "legacy_dispatch": "direct_import",
                     "final_authority": "ARIF",
                     "read_only": True,
@@ -1676,20 +2212,60 @@ def register_canonical_tools(mcp):
                     ],
                     "description": "Thermodynamic power/consequence and metric-purpose drift",
                 },
+                "capital_claims": {
+                    "modes": ["validate"],
+                    "description": (
+                        "Named-entity claim gate — external citation + retrieval "
+                        "timestamp + CHECKED contradiction required for OBS_ELIGIBLE"
+                    ),
+                },
                 "wealth_judge_handoff": {
                     "modes": ["prepare", "submit"],
                     "description": "Sovereign 888_HOLD judge handoff envelope",
                 },
             }
+            # P1 scope disclosure (2026-09-16): this map is PARTIAL — it is
+            # a mode-map for schema lookup, never a census of public tools.
+            if tool_name:
+                if tool_name in tool_schemas:
+                    _schema_out = {tool_name: tool_schemas[tool_name]}
+                    _schema_err = None
+                else:
+                    _schema_out = {}
+                    _schema_err = (
+                        f"tool '{tool_name}' is not in the schema mode-map "
+                        "(map is partial — use mode=manifests for tool truth)"
+                    )
+                return wrap_result(
+                    tool_name="capital_registry",
+                    domain="meta",
+                    result={
+                        "version": WEALTH_VERSION,
+                        "architecture": architecture,
+                        "scope": "partial mode-map filtered by tool_name — not a tool census",
+                        "tools": _schema_out,
+                        "canonical_tool_count": len(canonical_tools),
+                        "public_tool_count": len(public_tools),
+                        "schema_map_count": len(tool_schemas),
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED if _schema_err else EpistemicTag.DERIVED,
+                    evidence_quality=EvidenceQuality.MISSING if _schema_err else EvidenceQuality.MODERATE,
+                    errors=[_schema_err] if _schema_err else [],
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
             return wrap_result(
                 tool_name="capital_registry",
                 domain="meta",
                 result={
                     "version": WEALTH_VERSION,
                     "architecture": architecture,
+                    "scope": "partial mode-map — NOT a census of all public tools (use mode=manifests)",
                     "tools": tool_schemas,
                     "canonical_tool_count": len(canonical_tools),
                     "public_tool_count": len(public_tools),
+                    "schema_map_count": len(tool_schemas),
                 },
                 session_id=session_id,
                 trace_id=trace_id,
@@ -1767,13 +2343,80 @@ def register_canonical_tools(mcp):
             result={
                 "status": "ERROR",
                 "error_code": "UNKNOWN_MODE",
-                "message": f"Unknown mode '{mode}'. Valid: status, schema, domains, health",
+                "message": f"Unknown mode '{mode}'. Valid: status, manifests, schema, domains, health",
             },
             epistemic_tag=EpistemicTag.ASSUMED,
             evidence_quality=EvidenceQuality.MISSING,
             claim_state=ClaimState.VOID,
-            errors=[f"Unknown mode '{mode}'. Valid: status, schema, domains, health"],
+            errors=[f"Unknown mode '{mode}'. Valid: status, manifests, schema, domains, health"],
             session_id=session_id,
+            actor_id=actor_id,
+        )
+
+    # ═══════════════════════════════════════════════════════════════════
+    # 8b. capital_claims — Named-entity claim gate (P1 2026-09-16)
+    # The gate that would have blocked the false "zero independent NEDs"
+    # claim before publication: named-entity OBS claims require an
+    # EXTERNAL citation — engine output never counts as source.
+    # ═══════════════════════════════════════════════════════════════════
+
+    @mcp.tool(
+        name="capital_claims",
+        output_schema=WEALTH_OUTPUT_SCHEMA,
+        description=(
+            "Named-entity claim gate — validates claims about real "
+            "institutions/persons before publication. OBS_ELIGIBLE requires "
+            "external source_uri + ISO retrieval timestamp + CHECKED "
+            "contradiction with external second source; person-trait claims "
+            "rejected (structures, not people); any HOLD/REJECT blocks the "
+            "batch. SIDE EFFECT: writes a vault receipt."
+        ),
+        tags={"domain": "evidence", "kind": "deductive", "canonical": "v1"},
+    )
+    async def capital_claims(
+        claims: CoercedDictListStrict = None,
+        session_id: str | None = None,
+        trace_id: str | None = None,
+        actor_id: str | None = None,
+    ) -> dict:
+        if not claims:
+            return wrap_result(
+                tool_name="capital_claims",
+                domain="evidence",
+                result={
+                    "status": "ERROR",
+                    "error_code": "MISSING_DATA",
+                    "message": (
+                        "capital_claims requires claims: list of "
+                        "{claim_text, about_entities, source_uri, "
+                        "retrieved_at, contradiction_check} dicts."
+                    ),
+                },
+                epistemic_tag=EpistemicTag.ASSUMED,
+                evidence_quality=EvidenceQuality.MISSING,
+                errors=["claims list missing or empty"],
+                session_id=session_id,
+                trace_id=trace_id,
+                actor_id=actor_id,
+            )
+        from wealth_core.evidence.claim_gate import validate_claims
+
+        result = validate_claims(claims)
+        blocked = [
+            f"{c['verdict']}: {c['claim_text'][:60]} — {'; '.join(c['reasons'])}"
+            for c in result["claims"]
+            if c["verdict"] in ("HOLD", "REJECT")
+        ]
+        return wrap_result(
+            tool_name="capital_claims",
+            domain="evidence",
+            result=result,
+            epistemic_tag=EpistemicTag.DERIVED,
+            evidence_quality=EvidenceQuality.MODERATE,
+            source_attribution=["wealth_core.evidence.claim_gate"],
+            errors=blocked,
+            session_id=session_id,
+            trace_id=trace_id,
             actor_id=actor_id,
         )
 
@@ -2045,6 +2688,8 @@ def register_canonical_tools(mcp):
                 )
 
             if m == "metric_purpose_audit":
+                from wealth_mcp.tools import rasa_bridge as _rb
+
                 # Zen Phase 3: keyword overlap is not semantic analysis.
                 # This tool computes token-set Jaccard similarity only.
                 # Output tagged SPECULATED/MISSING to prevent false precision.
@@ -2069,6 +2714,10 @@ def register_canonical_tools(mcp):
                         "kpi_alignment": raw_result.get("kpi_alignment", []),
                         "purpose_fidelity": raw_result.get("purpose_fidelity"),
                         "gaming_signals": raw_result.get("gaming_signals", []),
+                        "declared_vs_revealed": _rb.declared_revealed_block(
+                            declared_purpose=declared_purpose or "",
+                            gaming_signals=raw_result.get("gaming_signals", []),
+                        ),
                         "externality_count": raw_result.get("externality_count", 0),
                         "excluded_outcomes": raw_result.get("excluded_outcomes", []),
                         "reflection": raw_result.get("reflection", []),
@@ -2161,11 +2810,16 @@ def register_canonical_tools(mcp):
         reversibility: str = "REVERSIBLE",
         blast_radius: str = "low",
         actor_id: str | None = None,
-        # C10 2026-08-06: This flag is CALLER-DECLARED. WEALTH has no independent
-        # cryptographic verification of actor identity. Gate policy (blast_radius=
-        # critical → 888_HOLD) is enforceable only when this flag is externally
-        # verified (e.g., via SCT token validation in the governance wrapper).
-        # Until C10 hardening, do not treat this as a security boundary.
+        # C10 HARDENED 2026-09-16 (F13 go): this argument is ACCEPTED FOR
+        # BACKWARD COMPAT ONLY and has ZERO authority effect. The former
+        # behaviour — `auth_verified = bool(caller_flag or payload_flag)` —
+        # let any caller clear an 888_HOLD on blast_radius=critical by typing
+        # True (proven live: receipts b06020e3 / de238ed7, and the INADMISSIBLE_
+        # INTENT case where the boolean beat an erroring validator).
+        # Authority is now resolved from the arifOS kernel session record only
+        # (wealth_arifos_bridge.validate_session_at_arifos → standing.actor.verified),
+        # fail-closed. The param is kept so legacy callers get an IGNORED warning
+        # instead of a hard schema rejection.
         actor_cryptographically_verified: bool = False,
         payload: CoercedDict = None,
         session_id: str | None = None,
@@ -2174,6 +2828,28 @@ def register_canonical_tools(mcp):
         """Validate and prepare handoff envelope for arifOS governance."""
         m = str(mode).lower().strip()
         p = payload or {}
+
+        # ── U1/U6 RASA spine (2026-09-16): claims entering the handoff carry
+        # provenance; authority may not increase by rephrasing alone. ─────────
+        from wealth_mcp.tools import rasa_bridge
+
+        claim_chain = p.get("claim_chain") or p.get("claims")
+        rasa_spine: dict = {}
+        if claim_chain:
+            chain_violations = rasa_bridge.validate_authority_chain(claim_chain)
+            envelopes = [
+                rasa_bridge.assess_claim_envelope(c, writer=actor_id or "wealth")
+                for c in claim_chain
+                if isinstance(c, dict)
+            ]
+            rasa_spine = {
+                "authority_chain_violations": chain_violations,
+                "claim_envelopes": envelopes,
+                "canonical_eligible": bool(envelopes)
+                and all(e["storage_class"] == "CANONICAL_ELIGIBLE" for e in envelopes)
+                and not chain_violations,
+                "law": "Authority(C_t+1) > Authority(C_t) ⇒ ∃E_new ∧ E_new ≢ rephrasing(C_t)",
+            }
 
         # 0. Unknown mode gate — never silently accept invalid modes (loop 10 fix)
         if m not in ("prepare", "submit"):
@@ -2218,16 +2894,60 @@ def register_canonical_tools(mcp):
         # 3. Blast radius & authentication check
         blast = str(blast_radius or p.get("blast_radius", "low")).lower().strip()
         is_critical = blast == "critical"
-        auth_verified = bool(
-            actor_cryptographically_verified
-            or p.get("actor_cryptographically_verified")
-        )
+
+        # ── C10 HARDENED 2026-09-16 (F13 go) ────────────────────────────────
+        # BEFORE: auth_verified = bool(caller_flag or payload_flag) — a caller
+        #   could clear 888_HOLD on blast_radius=critical by typing True.
+        #   Proof on the live organ: receipts b06020e3 (flag → requires_888_hold
+        #   False, warnings empty) and de238ed7 (flag cleared 888 while
+        #   INADMISSIBLE_INTENT was still erroring).
+        # AFTER: authority is resolved from the arifOS kernel session record
+        #   (wealth_arifos_bridge.validate_session_at_arifos → arif_init
+        #   mode=validate → standing.actor.verified). Caller-supplied flags have
+        #   ZERO effect and are reported as IGNORED. Fail-closed: unreachable or
+        #   rejected kernel → auth_verified False → 888_HOLD stands.
+        auth_verified = False
+        auth_source = "UNRESOLVED"
+        auth_reason = ""
+        try:
+            from wealth_arifos_bridge import validate_session_at_arifos
+
+            _kernel_auth = await validate_session_at_arifos(
+                session_id=session_id,
+                actor_id=actor_id,
+            )
+            if _kernel_auth.get("valid") is True:
+                auth_verified = True
+                auth_source = "ARIFOS_KERNEL_SESSION"
+            else:
+                auth_source = (
+                    "ARIFOS_UNREACHABLE"
+                    if _kernel_auth.get("reason") == "ARIFOS_UNREACHABLE"
+                    else "ARIFOS_KERNEL_REJECTED"
+                )
+                auth_reason = str(_kernel_auth.get("reason") or "session not verified")
+        except Exception as _auth_exc:  # fail-closed, never open
+            auth_source = "ARIFOS_UNREACHABLE"
+            auth_reason = f"{type(_auth_exc).__name__}: {_auth_exc}"
 
         # Rule: blast_radius=critical without cryptographic actor verification requires 888_HOLD
         requires_888 = is_critical and not auth_verified
 
         errors = []
         warnings = []
+        if actor_cryptographically_verified or p.get("actor_cryptographically_verified"):
+            warnings.append(
+                "SELF_ATTESTED_VERIFICATION_IGNORED: actor_cryptographically_verified "
+                "is caller-declared and carries no authority (C10 hardening 2026-09-16). "
+                f"Verification resolved from kernel instead: source={auth_source}."
+            )
+        if is_critical and not auth_verified:
+            warnings.append(
+                f"AUTH_UNRESOLVED: blast_radius=critical but kernel verification "
+                f"unavailable ({auth_source}: {auth_reason or 'no reason'}). "
+                "888_HOLD enforced — fail-closed."
+            )
+
         if is_unbounded:
             errors.append(
                 f"INADMISSIBLE_INTENT: Intent '{intent_clean}' is unbounded/vague. Provide bounded, specific intent."
@@ -2240,6 +2960,8 @@ def register_canonical_tools(mcp):
             warnings.append(
                 "888_HOLD_REQUIRED: Critical blast radius requires 888_HOLD or cryptographic actor verification."
             )
+        if rasa_spine.get("authority_chain_violations"):
+            errors.extend(rasa_spine["authority_chain_violations"])
 
         if m == "submit" and (errors or requires_888):
             # Submission forbidden if validation errors exist or 888_HOLD required
@@ -2253,6 +2975,7 @@ def register_canonical_tools(mcp):
                 "action": "PREPARE_ONLY",
                 "validation_errors": errors,
                 "warnings": warnings,
+                "rasa_spine": rasa_spine,
             }
             return wrap_result(
                 tool_name="wealth_judge_handoff",
@@ -2279,9 +3002,12 @@ def register_canonical_tools(mcp):
             "blast_radius": blast,
             "actor_id": actor_id or "unverified",
             "actor_cryptographically_verified": auth_verified,
+            "actor_verification_source": auth_source,
+            "actor_verification_reason": auth_reason,
             "requires_888_hold": requires_888,
             "validation_errors": errors,
             "warnings": warnings,
+            "rasa_spine": rasa_spine,
         }
         return wrap_result(
             tool_name="wealth_judge_handoff",
@@ -3120,7 +3846,7 @@ def register_canonical_tools(mcp):
                 )
 
             # Convert to OHLCV list for the backtest engine
-            from signals.scanner import OHLCV as _OHLCV
+            from trading.signals.scanner import OHLCV as _OHLCV
 
             candles = []
             for idx, row in hist.iterrows():
@@ -3200,7 +3926,7 @@ def register_canonical_tools(mcp):
                     "status": "ERROR",
                     "error_code": "IMPORT_FAILED",
                     "message": f"Trading engine import failed: {e}",
-                    "traceback": _tb.format_exc(),
+                    "traceback": _tb.format_exc().replace("/root/WEALTH/", ""),
                 },
                 epistemic_tag=EpistemicTag.ASSUMED,
                 evidence_quality=EvidenceQuality.MISSING,
@@ -3491,6 +4217,36 @@ def register_canonical_tools(mcp):
         rr_1 = round(reward_1 / risk, 2) if risk > 0 else 0.0
         rr_2 = round(reward_2 / risk, 2) if risk > 0 else 0.0
 
+        # ── P1 freshness contract (2026-09-16): a plan must carry its data's
+        # age, and zones entirely on one side of price are historical, not
+        # actionable levels. This responds to the all-zones-below-price
+        # finding from the 2026-09-16 agentic test. ──
+        import datetime as _dtmod
+
+        _MAX_AGE_S = {
+            "15m": 86400, "30m": 172800, "1h": 172800,
+            "4h": 345600, "1d": 604800,
+        }
+        _last_bar = hist.index[-1]
+        try:
+            _last_dt = _last_bar.to_pydatetime()
+            _last_age_s = max(
+                0, int((_dtmod.datetime.now(_last_dt.tzinfo) - _last_dt).total_seconds())
+            )
+        except Exception:
+            _last_age_s = -1
+        _max_age = _MAX_AGE_S.get(interval, 172800)
+        _fresh = 0 <= _last_age_s <= _max_age
+        zone_warning = None
+        if resistance_zones and all(z[0] < current_price for z in resistance_zones[:3]):
+            zone_warning = (
+                "ALL_RESISTANCE_BELOW_PRICE — zones predate the current level; "
+                "treat as historical reference, not actionable resistance"
+            )
+        decision_eligibility = (
+            "ELIGIBLE" if _fresh and not zone_warning and rr_1 >= 1.0 else "NO_ACTION"
+        )
+
         return wrap_result(
             tool_name="capital_entry_plan",
             domain="market",
@@ -3512,6 +4268,11 @@ def register_canonical_tools(mcp):
                 "support_zones": support_zones[:3],
                 "resistance_zones": resistance_zones[:3],
                 "ema200_data_warning": ema200_data_warning,
+                "market_data_timestamp": str(_last_bar),
+                "market_data_age_s": _last_age_s,
+                "freshness_policy": f"max_age_s={_max_age}",
+                "zone_warning": zone_warning,
+                "decision_eligibility": decision_eligibility,
             },
             epistemic_tag=EpistemicTag.DERIVED,
             evidence_quality=EvidenceQuality.OBSERVED,

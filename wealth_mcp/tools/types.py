@@ -7,10 +7,96 @@ DITEMPA BUKAN DIBERI — Forged from the SVB backtest, not given.
 
 from __future__ import annotations
 
+import datetime as _dt
 import json
+from enum import Enum
 from typing import Annotated, Any
 
 from pydantic import BeforeValidator
+
+
+# ── L1 Market Signal Typing (2026-09-16) ──────────────────────────────
+# Every market data point carries a signal_state that tells the consumer
+# exactly what kind of evidence they're looking at.
+# Brent/gold incident proof: a number without state is theatre.
+class SignalState(str, Enum):
+    """Market signal freshness/state classification.
+
+    LIVE:              Fresh from source, observed right now.
+    HISTORICAL_STALE:  Data exists but exceeds freshness window.
+    UNAVAILABLE:       Source returned no data.
+    CONFLICTED:        Multiple sources disagree beyond threshold.
+    DERIVED:           Computed from other data, not directly observed.
+    ASSUMED:           Filled with default/assumption, not sourced.
+    """
+    LIVE = "LIVE"
+    HISTORICAL_STALE = "HISTORICAL_STALE"
+    UNAVAILABLE = "UNAVAILABLE"
+    CONFLICTED = "CONFLICTED"
+    DERIVED = "DERIVED"
+    ASSUMED = "ASSUMED"
+
+
+def classify_signal_state(
+    data: Any,
+    source_available: bool = True,
+    is_cached: bool = False,
+    cache_age_seconds: float | None = None,
+    max_fresh_seconds: float = 300,  # 5 min default freshness window
+    sources_agree: bool = True,
+    is_derived: bool = False,
+    is_assumed: bool = False,
+) -> dict[str, Any]:
+    """Classify a market signal's freshness/state.
+
+    Returns dict with signal_state, signal_state_reason, and data_age_seconds.
+    The four-truth T_semantic uses this to determine if output is decision-eligible.
+    """
+    reasons = []
+    age = cache_age_seconds
+
+    # Priority order: UNAVAILABLE > CONFLICTED > ASSUMED > STALE > DERIVED > LIVE
+    if not source_available or data is None:
+        return {
+            "signal_state": SignalState.UNAVAILABLE.value,
+            "signal_state_reason": "source returned no data",
+            "data_age_seconds": None,
+        }
+
+    if not sources_agree:
+        reasons.append("multiple sources disagree")
+        return {
+            "signal_state": SignalState.CONFLICTED.value,
+            "signal_state_reason": "; ".join(reasons),
+            "data_age_seconds": age,
+        }
+
+    if is_assumed:
+        return {
+            "signal_state": SignalState.ASSUMED.value,
+            "signal_state_reason": "filled with default/assumption",
+            "data_age_seconds": age,
+        }
+
+    if is_cached and age is not None and age > max_fresh_seconds:
+        return {
+            "signal_state": SignalState.HISTORICAL_STALE.value,
+            "signal_state_reason": f"cache age {age:.0f}s > max {max_fresh_seconds:.0f}s",
+            "data_age_seconds": age,
+        }
+
+    if is_derived:
+        return {
+            "signal_state": SignalState.DERIVED.value,
+            "signal_state_reason": "computed from other data, not directly observed",
+            "data_age_seconds": age,
+        }
+
+    return {
+        "signal_state": SignalState.LIVE.value,
+        "signal_state_reason": "fresh from source",
+        "data_age_seconds": age or 0,
+    }
 
 
 def _coerce_json_string(v: Any) -> Any:

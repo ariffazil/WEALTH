@@ -21,6 +21,10 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 _CONFIDENCE_CAP = 0.90
+# P0 2026-09-16 (WEALTH-RECONCILIATION-20260916): no advisory output below
+# this evidence threshold. Zero-confidence "emergency appointment" advice
+# from thin input is the fail-open this floor closes.
+_ADVISORY_FLOOR = 0.30
 
 
 def _clamp(v: float, lo: float = 0.0, hi: float = 1.0) -> float:
@@ -309,6 +313,49 @@ def compute_governance_capacity(
       - recommendations: list of actionable strings
       - confidence: capped at 0.90
     """
+    # ── P0 input-fidelity gates (WEALTH-RECONCILIATION-20260916) ──
+    # Engine-level fail-closed complement to the tool-layer gate: catches
+    # (a) explicit empty boards and (b) unlabeled rosters, both of which
+    # silently computed a false "zero independent NEDs" verdict. A board
+    # that reaches this engine must be non-empty and classifiable.
+    _CLASSIFICATION_KEYS = ("type", "role", "category", "independent", "executive")
+    if not isinstance(board_members, list) or not board_members:
+        return {
+            "status": "ERROR",
+            "error_code": "MISSING_DATA",
+            "message": (
+                "board_members is empty or not a list — an absent board is "
+                "missing input, not an observed empty institution. No "
+                "governance capacity is computed."
+            ),
+            "recommendations": [],
+            "advisory_suppressed": True,
+            "confidence": 0.0,
+        }
+    _unlabeled = [
+        i
+        for i, m in enumerate(board_members)
+        if not (
+            isinstance(m, dict)
+            and any(k in m for k in _CLASSIFICATION_KEYS)
+        )
+    ]
+    if _unlabeled:
+        return {
+            "status": "ERROR",
+            "error_code": "INPUT_FIDELITY_FAIL",
+            "message": (
+                f"{len(_unlabeled)}/{len(board_members)} board_members carry "
+                f"no classification field ({', '.join(_CLASSIFICATION_KEYS)}). "
+                "Independence cannot be computed from an unlabeled roster — "
+                "it silently scores zero independent NEDs."
+            ),
+            "unlabeled_member_indices": _unlabeled,
+            "recommendations": [],
+            "advisory_suppressed": True,
+            "confidence": 0.0,
+        }
+
     composition = _score_board_composition(board_members)
     committee_analysis = _score_committees(committees, board_members)
 
@@ -343,12 +390,25 @@ def compute_governance_capacity(
     committee_richness = min(1.0, len(committees) / 3.0)
     confidence = min(_CONFIDENCE_CAP, (data_richness + committee_richness) / 2.0)
 
+    # P0 2026-09-16: advisory floor — scores and gaps remain diagnostic,
+    # but recommendations are suppressed when evidence is too thin to advise.
+    advisory_suppressed = confidence < _ADVISORY_FLOOR
+    if advisory_suppressed:
+        recommendations = []
+
     return {
         "capacity_score": round(capacity_score, 4),
         "quorum_status": quorum_status,
         "key_gaps": gaps,
         "stress_capacity_gap": stress_capacity_gap,
         "recommendations": recommendations,
+        "advisory_suppressed": advisory_suppressed,
+        "suppression_reason": (
+            f"confidence {round(confidence, 2)} below advisory floor "
+            f"{_ADVISORY_FLOOR} — evidence insufficient for advice"
+            if advisory_suppressed
+            else None
+        ),
         "board_composition": composition,
         "committee_analysis": committee_analysis,
         "confidence": round(confidence, 4),
