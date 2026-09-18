@@ -397,6 +397,11 @@ def create_mcp_server() -> FastMCP:
         ),
         # MCP logging: SEP-2577 deprecated — maintenance only; default min warning.
         client_log_level="warning",
+        # MCP spec 2026-07-28 compliance: declare listChanged capabilities
+        experimental_capabilities={
+            "resources": {"listChanged": True},
+            "prompts": {"listChanged": True},
+        },
         instructions=(
             "WEALTH — Capital Intelligence for arifOS federation. "
             "Computes capital, risk, wisdom, and power metrics. "
