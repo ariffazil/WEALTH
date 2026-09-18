@@ -54,7 +54,7 @@ def register_polix_civx(mcp):
                     "error_code": "UNKNOWN_SEED_CASE",
                     "message": f"Unknown seed case '{seed_case}'. Available: malaysia_fiscal, petronas_glc",
                 },
-                epistemic_tag=EpistemicTag.INTERPRETATION,
+                epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.WEAK,
                 errors=[f"Unknown seed case: {seed_case}"],
             )
@@ -100,7 +100,7 @@ def register_polix_civx(mcp):
                     "error_code": "UNKNOWN_MODE",
                     "message": f"Unknown mode '{mode}'. Available: topology, capture, rents, asymmetry",
                 },
-                epistemic_tag=EpistemicTag.INTERPRETATION,
+                epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.WEAK,
                 errors=[f"Unknown mode: {mode}"],
             )
@@ -111,7 +111,7 @@ def register_polix_civx(mcp):
             tool_name="capital_polix",
             domain="political_economy",
             result=result,
-            epistemic_tag=EpistemicTag.INTERPRETATION,
+            epistemic_tag=EpistemicTag.INTERPRETED,
             evidence_quality=EvidenceQuality.MODERATE,
             source_attribution=[f"polix:seed:{sc}"],
         )
@@ -150,7 +150,7 @@ def register_polix_civx(mcp):
                     "error_code": "UNKNOWN_SEED_CASE",
                     "message": f"Unknown seed case '{seed_case}'. Available: malaysia_fiscal_2027_2040",
                 },
-                epistemic_tag=EpistemicTag.INTERPRETATION,
+                epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.WEAK,
                 errors=[f"Unknown seed case: {seed_case}"],
             )
@@ -197,7 +197,7 @@ def register_polix_civx(mcp):
                     "error_code": "UNKNOWN_MODE",
                     "message": f"Unknown mode '{mode}'. Available: scenario, resilience, risks, assumptions",
                 },
-                epistemic_tag=EpistemicTag.INTERPRETATION,
+                epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.WEAK,
                 errors=[f"Unknown mode: {mode}"],
             )
@@ -210,7 +210,7 @@ def register_polix_civx(mcp):
             tool_name="capital_civx",
             domain="civilizational",
             result=result,
-            epistemic_tag=EpistemicTag.INTERPRETATION,
+            epistemic_tag=EpistemicTag.INTERPRETED,
             evidence_quality=EvidenceQuality.WEAK,  # Scenario, not observed
             source_attribution=[f"civx:seed:{sc}"],
         )
