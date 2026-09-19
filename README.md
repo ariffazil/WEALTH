@@ -118,3 +118,9 @@ It is capital-intelligence infrastructure — months-to-years consequence horizo
 
 Full technical README: [docs/README-FULL.md](./docs/README-FULL.md) ·
 MCP door: [wealth.arif-fazil.com/mcp](https://wealth.arif-fazil.com/mcp)
+
+## fastMCP
+
+- **Version:** `fastmcp==4.0.5` (pinned; `fastmcp[tasks]==4.0.5` in `pyproject.toml`)
+- **Bumped:** 2026-09-19 (from `3.4.6` / `>=3.2.4`)
+- **Note:** v4 reattaches middleware at the ASGI app layer on every task/stream restart — restart `wealth-organ.service` once after upgrade so the new middleware chain binds before request load.
