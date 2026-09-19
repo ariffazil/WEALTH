@@ -65,6 +65,151 @@ _INTERNAL_LEGACY_ALIASES = {
 }
 
 
+# ── Tuas 2 — shared federation invocation telemetry (measurement only) ──────
+# WHY: the 2026-09-19 federation cycle audit found WEALTH had no invocation
+# telemetry at all, so the asabiyyah instrument's CER denominator had to rest
+# on a labelled PROXY (PASS receipts read out of the VAULT999 receipt stream).
+# This records ONE receipt per dispatched MCP tool call so the numerator
+# `exercised_capabilities` becomes a measurement instead of a stand-in.
+#
+# PRIVACY BOUNDARY: tool NAME + actor id only. Arguments are NEVER logged —
+# financial payloads (amount, tx_type, positions, balances) must never land in
+# a metrics log. The shared contract's `extra` is counters only.
+#
+# SAFETY: telemetry must never break the thing it measures. Every path below is
+# wrapped; a failure returns False and the tool call proceeds untouched.
+# Standard library only, and no arifosmcp import (WEALTH coupling rule).
+_TELEMETRY_MODULE: Any = None
+_TELEMETRY_RESOLVED = False
+_TELEMETRY_LIB_DIR = "/root/AAA/lib"
+
+# Test-only sink override. Production default is the contract's shared path,
+# /var/lib/arifos/metrics/tool_invocations.jsonl.
+_TELEMETRY_PATH_ENV = "WEALTH_INVOCATION_LOG_PATH"
+
+
+def _load_invocation_log() -> Any:
+    """Lazily resolve the shared telemetry contract. Returns None on failure.
+
+    Lazy so a missing /root/AAA/lib can never stop the organ from starting.
+    """
+    global _TELEMETRY_MODULE, _TELEMETRY_RESOLVED
+    if _TELEMETRY_RESOLVED:
+        return _TELEMETRY_MODULE
+    _TELEMETRY_RESOLVED = True
+    try:
+        import sys as _sys
+
+        if _TELEMETRY_LIB_DIR not in _sys.path:
+            _sys.path.insert(0, _TELEMETRY_LIB_DIR)
+        import invocation_log as _invocation_log
+
+        _TELEMETRY_MODULE = _invocation_log
+    except Exception as exc:
+        print(f"[TELEMETRY] invocation_log unavailable: {type(exc).__name__}: {exc}")
+        _TELEMETRY_MODULE = None
+    return _TELEMETRY_MODULE
+
+
+def _caller_actor_id(arguments: Any, kwargs: Any) -> str | None:
+    """Best-effort caller identity, mirroring the dispatch's own precedence.
+
+    WEALTH's request path carries NO verified caller identity: FastMCP's
+    ``call_tool(name, arguments)`` exposes no client principal, so this is at
+    best a self-reported string and None when the caller says nothing (the
+    dispatch then falls back to the constant "wealth-mcp"). It is logged as an
+    identifier, never promoted to a verified claim.
+    """
+    if isinstance(kwargs, dict) and kwargs.get("actor_id"):
+        return str(kwargs["actor_id"])
+    if isinstance(arguments, dict):
+        if arguments.get("actor_id"):
+            return str(arguments["actor_id"])
+        meta = arguments.get("_meta")
+        if isinstance(meta, dict) and meta.get("actor_id"):
+            return str(meta["actor_id"])
+    return None
+
+
+def _log_tool_invocation(
+    tool_name: str,
+    actor_id: str | None,
+    *,
+    ok: bool = True,
+    duration_ms: float | None = None,
+    error: str | None = None,
+    inner_pass: bool = False,
+) -> bool:
+    """Emit ONE Tuas-2 invocation receipt. Never raises, never blocks a call."""
+    try:
+        mod = _load_invocation_log()
+        if mod is None:
+            return False
+        sink = os.environ.get(_TELEMETRY_PATH_ENV) or None
+        return bool(
+            mod.log_invocation(
+                "WEALTH",
+                str(tool_name),
+                actor_id=actor_id,
+                ok=bool(ok),
+                duration_ms=duration_ms,
+                error=error,
+                extra={"inner_pass": bool(inner_pass)},
+                path=sink,
+            )
+        )
+    except Exception:
+        return False
+
+
+def _telemetry_wrapped(inner: Any) -> Any:
+    """Wrap an MCP ``call_tool`` coroutine so every dispatched call is receipted.
+
+    Applied once, at the single dispatch chokepoint in ``create_mcp_server``
+    (``mcp.call_tool = ...``), which every MCP tool call passes through.
+
+    ``ok`` is derived from the returned ToolResult's ``is_error``, so a call
+    blocked by a governance / session / semantic gate receipts as ok=False
+    instead of as a success. A raising call receipts ok=False and the exception
+    is re-raised unchanged — the instrument never changes the outcome.
+
+    ``inner_pass``: FastMCP's own ``call_tool`` re-enters ``self.call_tool(...,
+    run_middleware=False)`` to drive its middleware chain, so the patched
+    attribute is entered TWICE per wire call. Both entries are receipted (the
+    re-entry is marked, not hidden) — a suppressed receipt would be a silent
+    gap, and a silent gap is the exact defect this telemetry exists to catch.
+    Readers counting *distinct tools* are unaffected; readers summing ``total``
+    must discount entries where ``extra.inner_pass`` is true.
+    """
+    import time as _time
+
+    async def wrapper(name, arguments=None, **kwargs):
+        start = _time.perf_counter()
+        inner_pass = kwargs.get("run_middleware") is False
+        try:
+            result = await inner(name, arguments, **kwargs)
+        except BaseException as exc:
+            _log_tool_invocation(
+                name,
+                _caller_actor_id(arguments, kwargs),
+                ok=False,
+                duration_ms=(_time.perf_counter() - start) * 1000.0,
+                error=type(exc).__name__,
+                inner_pass=inner_pass,
+            )
+            raise
+        _log_tool_invocation(
+            name,
+            _caller_actor_id(arguments, kwargs),
+            ok=not bool(getattr(result, "is_error", False)),
+            duration_ms=(_time.perf_counter() - start) * 1000.0,
+            inner_pass=inner_pass,
+        )
+        return result
+
+    return wrapper
+
+
 def _append_existing_jsonl(path: str, payload: dict[str, Any]) -> dict[str, Any]:
     """Append to a provisioned JSONL target without creating files or directories."""
     target = Path(path)
@@ -1276,7 +1421,9 @@ def create_mcp_server() -> FastMCP:
                 )
             return _finalize(result, verdict, is_err=False)
 
-        mcp.call_tool = _governance_call_tool
+        # Tuas 2 (2026-09-19): every dispatched tool call emits one invocation
+        # receipt to the shared federation telemetry. Wrapped, never raising.
+        mcp.call_tool = _telemetry_wrapped(_governance_call_tool)
 
         # ── read_resource tracking REMOVED (2026-07-07) ──────────────────
         # Preload mechanism decommissioned. Resources are direct URIs.

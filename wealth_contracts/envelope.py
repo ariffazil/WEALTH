@@ -502,6 +502,7 @@ def wrap_result(
     epistemic_tag: EpistemicTag = EpistemicTag.DERIVED,
     evidence_quality: EvidenceQuality = EvidenceQuality.MODERATE,
     source_attribution: Optional[List[str]] = None,
+    claim_class: Optional[str] = None,
     **kwargs,
 ) -> dict:
     """
@@ -523,11 +524,14 @@ def wrap_result(
     # mention real named entities carry their external-evidence binding state.
     # Labels publication eligibility; never blocks computation (COMPUTE_ONLY).
     # Fail-closed: gate error -> treat-as-unbound.
+    # 2026-09-19: the same call also enforces the explanatory-class axis
+    # (claim_kernel). Pass claim_class= to declare MEASURED/MECHANISM/PATTERN;
+    # undeclared stays not-publishable, by design.
     if domain == "institutional" and isinstance(result, dict):
         try:
             from wealth_contracts.claim_gate import evaluate_dict_result as _ne_gate
 
-            _gate_block = _ne_gate(result, source_attribution, tool_name)
+            _gate_block = _ne_gate(result, source_attribution, tool_name, claim_class)
             if _gate_block.get("state") != "NO_NAMED_ENTITIES":
                 result = dict(result)
                 result["named_entity_claim_gate"] = _gate_block
@@ -540,6 +544,9 @@ def wrap_result(
                 "error": str(_ne_exc)[:160],
                 "publication_eligibility": "UNKNOWN_TREAT_AS_UNBOUND",
                 "origin": "0-independent-NEDs public-page incident, 2026-09-16",
+                # additive 2026-09-19: second axis unreachable => fail closed
+                "publication_decision": "BLOCKED_GATE_ERROR",
+                "publishable": False,
             }
 
     # Auto-attach constitutional fields if not provided
