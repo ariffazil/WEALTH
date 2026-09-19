@@ -146,10 +146,22 @@ def check_governance(
     actor_id: str = "wealth-mcp",
     session_id: Optional[str] = None,
 ) -> Tuple[str, Optional[dict], dict]:
-    """
-    Main entry point. Returns (verdict, error_response, floor_verdict).
+    """Main entry point. Returns (verdict, error_response, floor_verdict).
 
-    - verdict = "READONLY" or "C1_PASS" if tool should proceed
+    Vocabulary law (2026-09-18, F2 cross-vocabulary separation).
+    Evidence: /root/forge_work/2026-09-18/SKILL-DRIFT-REPORT-2026-09-18.md finding D-4
+    (key `effective_verdict` carrying the RiskTier "READONLY" — 96 emissions in
+    /root/arifOS/VAULT999/wealth/receipts.jsonl); audit receipt
+    /root/forge_work/2026-09-18/W3-verdict-leak-receipt.json.
+
+      * `verdict` (return slot 1) is the GOVERNANCE TIER — READONLY / C1 / C2 /
+        SEAL / HOLD / VOID. It lands in the receipt's `governance_status` field,
+        which is the correct home for a RiskTier.
+      * `floor_verdict["effective_verdict"]` is the CONSTITUTIONAL VERDICT and
+        must only ever hold a member of CANONICAL_VERDICTS
+        (OBSERVE_ONLY|SEAL|SABAR|VOID|HOLD|888_HOLD), or None when no judge was
+        consulted. A RiskTier must never appear there.
+
     - error_response = not None if execution should be BLOCKED
     - floor_verdict = dict with effective_verdict, failed_floors, reason_code
     """
@@ -160,9 +172,23 @@ def check_governance(
     ):
         risk = "readonly"
 
-    # READONLY tools: execute without governance check
+    # READONLY tools: execute without governance check.
+    # No judge is consulted, therefore NO verdict exists. Say so explicitly
+    # (verdict_issued=False) instead of borrowing the risk tier as a verdict.
     if risk == "readonly":
-        return "READONLY", None, {"effective_verdict": "READONLY", "failed_floors": [], "reason_code": None, "floors_checked": [], "hold_required": False}
+        return (
+            "READONLY",
+            None,
+            {
+                "effective_verdict": None,
+                "verdict_issued": False,
+                "verdict_source": "NOT_ADJUDICATED_READONLY_TIER",
+                "failed_floors": [],
+                "reason_code": None,
+                "floors_checked": [],
+                "hold_required": False,
+            },
+        )
 
     # C1 tools: arifOS pre-check, proceed regardless
     if risk == "c1":

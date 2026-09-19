@@ -64,6 +64,19 @@ def detect_regime(ema_20: float, ema_50: float, ema_200: float) -> tuple[Regime,
     Returns (regime, confidence).
     Confidence based on how cleanly EMAs are aligned.
     """
+    # If ema_200 is unavailable (e.g. fewer than 200 candles), fallback to 20/50
+    if ema_200 <= 0:
+        if ema_50 <= 0 or ema_20 <= 0:
+            return Regime.SIDEWAYS, 0.50
+        spread_20_50 = (ema_20 - ema_50) / ema_50 * 100
+        if ema_20 > ema_50:
+            confidence = min(0.85, 0.5 + abs(spread_20_50) * 0.5)
+            return Regime.UPTREND, round(confidence, 2)
+        elif ema_20 < ema_50:
+            confidence = min(0.85, 0.5 + abs(spread_20_50) * 0.5)
+            return Regime.DOWNTREND, round(confidence, 2)
+        return Regime.SIDEWAYS, 0.50
+
     # Perfect alignment
     if ema_20 > ema_50 > ema_200:
         # How clean is the alignment?
@@ -81,9 +94,9 @@ def detect_regime(ema_20: float, ema_50: float, ema_200: float) -> tuple[Regime,
     # EMAs tangled = sideways
     # Calculate how tangled
     spreads = [
-        abs(ema_20 - ema_50) / ema_50 * 100,
-        abs(ema_50 - ema_200) / ema_200 * 100,
-        abs(ema_20 - ema_200) / ema_200 * 100,
+        abs(ema_20 - ema_50) / ema_50 * 100 if ema_50 > 0 else 0.0,
+        abs(ema_50 - ema_200) / ema_200 * 100 if ema_200 > 0 else 0.0,
+        abs(ema_20 - ema_200) / ema_200 * 100 if ema_200 > 0 else 0.0,
     ]
     avg_spread = sum(spreads) / 3
     # Smaller spreads = more sideways
