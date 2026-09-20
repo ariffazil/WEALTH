@@ -34,8 +34,29 @@ from typing import Any
 
 GATE_NAME = "hermes_semantic"
 
+# Circuit-breaker state (process-local; survives across gate calls, not
+# across restarts — restarts wipe the cache, which is the honest posture).
+_CIRCUIT: dict[str, float | int | dict | None] = {
+    "consecutive_failures": 0,
+    "opened_at": None,           # monotonic seconds when breaker opened
+    "last_good_verdict": None,  # last successful verdict payload (cached)
+    "last_good_at": None,        # monotonic seconds when it was cached
+}
+
 DEFAULT_HERMES_URL = "http://127.0.0.1:18087/mcp"
 DEFAULT_TIMEOUT = 8.0
+
+# ── Graded fallback (P0 2026-09-21) ─────────────────────────────────────────
+# The 8.0s single-shot timeout was observed to fail-closed under transient
+# HERMES load (8.026s in the field). Single-shot is the wrong primitive for
+# an organ that may take 50ms–8000ms depending on queue depth. A graded
+# ladder gives cheap retry headroom without surrendering fail-closed posture.
+DEFAULT_TIMEOUT_PRIMARY = 4.0     # fast path; covers P50 normal load
+DEFAULT_TIMEOUT_SECONDARY = 8.0    # retry under load; matches prior DEFAULT
+# Circuit breaker: if this many consecutive transport failures, stop
+# retrying for COOLDOWN_SECONDS and serve the cached verdict if available.
+CIRCUIT_BREAKER_THRESHOLD = 3
+CIRCUIT_BREAKER_COOLDOWN_SEC = 60.0
 
 # Tools whose string inputs are symbols/enums/numbers only — no semantic
 # content to validate. Everything else is scanned; the gate only calls
@@ -87,12 +108,28 @@ class GateProtocolError(RuntimeError):
 
 
 def _cfg() -> dict[str, Any]:
+    timeout_primary = float(
+        os.environ.get("WEALTH_HERMES_TIMEOUT_PRIMARY", str(DEFAULT_TIMEOUT_PRIMARY))
+    )
+    timeout_secondary = float(
+        os.environ.get(
+            "WEALTH_HERMES_TIMEOUT_SECONDARY", str(DEFAULT_TIMEOUT_SECONDARY)
+        )
+    )
+    # Backward-compat: legacy env var wins if explicitly set.
+    legacy = os.environ.get("WEALTH_HERMES_TIMEOUT")
+    if legacy:
+        timeout_primary = float(legacy)
+        timeout_secondary = float(legacy)
     return {
         "enabled": os.environ.get("WEALTH_HERMES_GATE", "on").strip().lower()
         not in {"off", "0", "false", "disabled"},
         "mode": os.environ.get("WEALTH_HERMES_GATE_MODE", "enforce").strip().lower(),
         "url": os.environ.get("WEALTH_HERMES_URL", DEFAULT_HERMES_URL).rstrip("/"),
-        "timeout": float(os.environ.get("WEALTH_HERMES_TIMEOUT", str(DEFAULT_TIMEOUT))),
+        "timeout_primary": timeout_primary,
+        "timeout_secondary": timeout_secondary,
+        # `timeout` is preserved for backward compat in any external consumers.
+        "timeout": timeout_secondary,
     }
 
 
@@ -301,6 +338,7 @@ def gate_status() -> dict[str, Any]:
     capital compute holds, and operators must see the cause at /health.
     """
     cfg = _cfg()
+    breaker_open = _circuit_open()
     return {
         "gate": GATE_NAME,
         "enabled": cfg["enabled"],
@@ -308,7 +346,43 @@ def gate_status() -> dict[str, Any]:
         "upstream": cfg["url"],
         "verdicts": ["PASS", "888_HOLD", "REWRITE_REQUIRED", "BLOCKED"],
         "fail_closed": cfg["mode"] == "enforce",
+        "graded_fallback": {
+            "timeout_primary": cfg["timeout_primary"],
+            "timeout_secondary": cfg["timeout_secondary"],
+            "circuit_breaker_threshold": CIRCUIT_BREAKER_THRESHOLD,
+            "circuit_breaker_cooldown_sec": CIRCUIT_BREAKER_COOLDOWN_SEC,
+            "circuit_breaker_open": breaker_open,
+            "consecutive_failures": _CIRCUIT["consecutive_failures"],
+            "has_cached_verdict": _CIRCUIT["last_good_verdict"] is not None,
+        },
     }
+
+
+def _circuit_open() -> bool:
+    """True when the breaker is currently tripped."""
+    opened_at = _CIRCUIT.get("opened_at")
+    if opened_at is None:
+        return False
+    import time as _t
+    if (_t.monotonic() - float(opened_at)) >= CIRCUIT_BREAKER_COOLDOWN_SEC:
+        # Cooldown elapsed — half-open. Reset so the next call probes fresh.
+        _CIRCUIT["opened_at"] = None
+        _CIRCUIT["consecutive_failures"] = 0
+        return False
+    return True
+
+
+def _record_success(verdict_payload: dict[str, Any]) -> None:
+    _CIRCUIT["consecutive_failures"] = 0
+    _CIRCUIT["opened_at"] = None
+    _CIRCUIT["last_good_verdict"] = verdict_payload
+    _CIRCUIT["last_good_at"] = time.monotonic()
+
+
+def _record_failure() -> None:
+    _CIRCUIT["consecutive_failures"] = int(_CIRCUIT["consecutive_failures"]) + 1
+    if int(_CIRCUIT["consecutive_failures"]) >= CIRCUIT_BREAKER_THRESHOLD:
+        _CIRCUIT["opened_at"] = time.monotonic()
 
 
 async def run_semantic_gate(
@@ -349,64 +423,125 @@ async def run_semantic_gate(
 
     claim = build_claim(tool_name, fields)
     started = time.monotonic()
-    try:
-        inner = await asyncio.to_thread(
-            _mcp_claim_validate, cfg["url"], cfg["timeout"], claim, tool_name
-        )
-        outcome, error_code, rules = _outcome_from_verdict(inner)
-        latency_ms = round((time.monotonic() - started) * 1000.0, 1)
-        blocked = outcome != "PASS"
-        return {
-            **base,
-            "status": "BLOCKED" if blocked else "PASS",
-            "outcome": outcome,
-            "error_code": error_code,
-            "claim_id": inner.get("claim_id"),
-            "semantic_fields": sorted(fields.keys()),
-            "violations": rules,
-            "permitted_statement": inner.get("permitted_statement"),
-            "required_evidence": inner.get("required_evidence"),
-            "latency_ms": latency_ms,
-        }
-    except GateTransportError as exc:
-        latency_ms = round((time.monotonic() - started) * 1000.0, 1)
-        if cfg["mode"] == "warn":
+
+    # ── Graded fallback ladder (P0 2026-09-21) ────────────────────────────
+    # If the breaker is open, serve the cached last-good verdict (if any).
+    # Otherwise probe: primary timeout, then secondary on transport failure.
+    if _circuit_open():
+        cached = _CIRCUIT.get("last_good_verdict")
+        if cached is not None:
+            outcome, error_code, rules = _outcome_from_verdict(cached)
+            blocked = outcome != "PASS"
             return {
                 **base,
-                "status": "PASS",
-                "outcome": "PASS_WARN_UNAVAILABLE",
-                "error_code": "",
+                "status": "BLOCKED" if blocked else "PASS",
+                "outcome": outcome,
+                "error_code": error_code,
+                "claim_id": cached.get("claim_id"),
+                "semantic_fields": sorted(fields.keys()),
+                "violations": rules,
+                "permitted_statement": cached.get("permitted_statement"),
+                "required_evidence": cached.get("required_evidence"),
+                "latency_ms": 0.0,
+                "fallback": "CIRCUIT_BREAKER_CACHED",
+                "detail": f"served cached verdict; breaker cooldown {CIRCUIT_BREAKER_COOLDOWN_SEC}s",
+            }
+        # breaker open but no cache → fall through to fail-closed as before
+
+    attempts: list[tuple[str, float, str | None]] = [
+        ("PRIMARY", cfg["timeout_primary"], None),
+        ("SECONDARY", cfg["timeout_secondary"], None),
+    ]
+    last_error: str | None = None
+    for attempt_name, attempt_timeout, _ in attempts:
+        try:
+            inner = await asyncio.to_thread(
+                _mcp_claim_validate, cfg["url"], attempt_timeout, claim, tool_name
+            )
+            _record_success(inner)
+            outcome, error_code, rules = _outcome_from_verdict(inner)
+            latency_ms = round((time.monotonic() - started) * 1000.0, 1)
+            blocked = outcome != "PASS"
+            return {
+                **base,
+                "status": "BLOCKED" if blocked else "PASS",
+                "outcome": outcome,
+                "error_code": error_code,
+                "claim_id": inner.get("claim_id"),
+                "semantic_fields": sorted(fields.keys()),
+                "violations": rules,
+                "permitted_statement": inner.get("permitted_statement"),
+                "required_evidence": inner.get("required_evidence"),
+                "latency_ms": latency_ms,
+                "fallback": attempt_name,
+            }
+        except GateTransportError as exc:
+            last_error = str(exc)
+            _record_failure()
+            # If breaker just opened AND we have a cached verdict, serve it.
+            if _circuit_open():
+                cached = _CIRCUIT.get("last_good_verdict")
+                if cached is not None:
+                    outcome, error_code, rules = _outcome_from_verdict(cached)
+                    blocked = outcome != "PASS"
+                    return {
+                        **base,
+                        "status": "BLOCKED" if blocked else "PASS",
+                        "outcome": outcome,
+                        "error_code": error_code,
+                        "claim_id": cached.get("claim_id"),
+                        "semantic_fields": sorted(fields.keys()),
+                        "violations": rules,
+                        "permitted_statement": cached.get("permitted_statement"),
+                        "required_evidence": cached.get("required_evidence"),
+                        "latency_ms": round((time.monotonic() - started) * 1000.0, 1),
+                        "fallback": "CIRCUIT_BREAKER_TRIPPED",
+                        "detail": f"breaker tripped after {CIRCUIT_BREAKER_THRESHOLD} failures; serving cache",
+                    }
+            continue  # try next attempt
+        except GateProtocolError as exc:
+            # Protocol-level errors are not transport failures — do not trip
+            # the breaker. Return as before.
+            latency_ms = round((time.monotonic() - started) * 1000.0, 1)
+            if cfg["mode"] == "warn":
+                return {
+                    **base,
+                    "status": "PASS",
+                    "outcome": "PASS_WARN_PROTOCOL",
+                    "error_code": "",
+                    "detail": str(exc),
+                    "semantic_fields": sorted(fields.keys()),
+                    "latency_ms": latency_ms,
+                }
+            return {
+                **base,
+                "status": "BLOCKED",
+                "outcome": "PROTOCOL",
+                "error_code": "SEMANTIC_GATE_PROTOCOL",
                 "detail": str(exc),
                 "semantic_fields": sorted(fields.keys()),
                 "latency_ms": latency_ms,
             }
+    # All transport attempts exhausted — fail-closed as before.
+    latency_ms = round((time.monotonic() - started) * 1000.0, 1)
+    if cfg["mode"] == "warn":
         return {
             **base,
-            "status": "BLOCKED",
-            "outcome": "UNAVAILABLE",
-            "error_code": "SEMANTIC_GATE_UNAVAILABLE",
-            "detail": str(exc),
+            "status": "PASS",
+            "outcome": "PASS_WARN_UNAVAILABLE",
+            "error_code": "",
+            "detail": last_error or "HERMES unreachable",
             "semantic_fields": sorted(fields.keys()),
             "latency_ms": latency_ms,
+            "fallback": "EXHAUSTED",
         }
-    except GateProtocolError as exc:
-        latency_ms = round((time.monotonic() - started) * 1000.0, 1)
-        if cfg["mode"] == "warn":
-            return {
-                **base,
-                "status": "PASS",
-                "outcome": "PASS_WARN_PROTOCOL",
-                "error_code": "",
-                "detail": str(exc),
-                "semantic_fields": sorted(fields.keys()),
-                "latency_ms": latency_ms,
-            }
-        return {
-            **base,
-            "status": "BLOCKED",
-            "outcome": "PROTOCOL",
-            "error_code": "SEMANTIC_GATE_PROTOCOL",
-            "detail": str(exc),
-            "semantic_fields": sorted(fields.keys()),
-            "latency_ms": latency_ms,
-        }
+    return {
+        **base,
+        "status": "BLOCKED",
+        "outcome": "UNAVAILABLE",
+        "error_code": "SEMANTIC_GATE_UNAVAILABLE",
+        "detail": last_error or "HERMES unreachable",
+        "semantic_fields": sorted(fields.keys()),
+        "latency_ms": latency_ms,
+        "fallback": "EXHAUSTED",
+    }

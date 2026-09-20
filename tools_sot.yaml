@@ -282,3 +282,71 @@ tools:
       kind: derived
       canonical: v1
       eureka: trade-master-reward-design
+
+# ═══ IEQ EXTENSION SURFACE (NOT canonical, NOT counted in 15) ═══
+# Declared 2026-09-21 per F13 directive:
+#   "CanonicalTool ≠ Convenience/ExtensionSurface. Declare the difference."
+# These two tools are exposed via the WEALTH external connector (mcp.tools.list)
+# but are NOT in the canonical 15-tool SOT. They are institutional-equity
+# extensions serving the Six-Graph Federation Model (WEALTH = consequence
+# middleware, inequality/role-scarcity as consequence-class concerns, not
+# capital-arithmetic). A-FORGE audits (A-FORGE/dist/src/infrastructure/bridges/
+# wealthBridge.ts) see 15 — this list declares the +2 explicitly so the gap
+# is not ambiguity but a stated surface class.
+extension_surface:
+  - name: wealth_inequality_kernel
+    access: public
+    surface_class: ieq_extension
+    canonical: false
+    description: >
+      Distribution / fairness / concentration kernel (W3 — consequence class).
+      Measures Gini and concentration gradients across civilization / firm /
+      household domains. Implemented in wealth_core/governance/ as a layered
+      inequality/equity diagnostic. NOT in the 15-tool canonical SOT because
+      it serves the Six-Graph consequence domain, not the capital arithmetic
+      domain. Surface class is IEQ extension by intent.
+    source: wealth_core/governance/inequality_kernel.py
+    tags:
+      domain: consequence
+      kind: diagnostic
+      canonical: false
+      surface_class: ieq_extension
+
+  - name: wealth_role_scarcity_risk
+    access: public
+    surface_class: ieq_extension
+    canonical: false
+    description: >
+      Role-scarcity & status-bottleneck risk model (W3 — consequence class).
+      Surfaces youth unemployment, housing unaffordability, delayed family
+      formation, weak social mobility, low trust, civic disengagement,
+      status bottleneck, future-orientation collapse. Implemented in
+      wealth_core/governance/role_scarcity.py. NOT in the 15-tool canonical
+      SOT for the same reason as wealth_inequality_kernel — consequence
+      middleware, not capital arithmetic.
+    source: wealth_core/governance/role_scarcity.py
+    tags:
+      domain: consequence
+      kind: diagnostic
+      canonical: false
+      surface_class: ieq_extension
+
+# ═══ SURFACE TAXONOMY DECLARATION ═══
+surface_taxonomy:
+  declared_by: F13
+  ratified_chat: 2026-09-21
+  canonical_count: 15
+  extension_count: 2
+  total_external: 17
+  source_of_truth: tools_sot.yaml (this file)
+  audit_consumer: A-FORGE surface audit (registry==affordance==15 verified CLEAN)
+  extension_intent: >
+    IEQ extensions live in wealth_core/governance/ and serve the
+    consequence-class domain per the Six-Graph Federation Model.
+    They are intentionally NOT in the canonical capital-arithmetic SOT.
+  why_not_bump_canonical_to_17: >
+    The 15-tool canonical set is the A-FORGE federation contract surface.
+    Adding IEQ to it would conflate consequence middleware with capital
+    arithmetic — a doctrine violation under apifed doctrine §14. The
+    extension declaration is the correct surface treatment.
+  law_cited: "CanonicalTool ≠ Convenience/ExtensionSurface." (F13 2026-09-21)

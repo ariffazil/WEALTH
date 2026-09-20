@@ -9,6 +9,7 @@ const { execFile } = require('child_process');
 const crypto = require('crypto');
 const path = require('path');
 const url = require('url');
+const { buildSnapshot } = require('../snapshot_builder.cjs');
 
 const PORT = 3457;
 const PYTHON = '/root/WEALTH/.venv/bin/python3';
@@ -77,42 +78,7 @@ const handlers = {
     ]);
     if (!ticker || ticker.error) throw new Error('snapshot: ticker unavailable');
     const observed_at = new Date().toISOString();
-    const unsigned = {
-      schema: 'wealth.snapshot.v1',
-      asset: 'oil',
-      observed_at,
-      source: 'yfinance + technical analysis (WEALTH commodity engine)',
-      ticker: {
-        symbol: ticker.symbol, price: ticker.price, change: ticker.change,
-        changePct: ticker.changePct, rsi: ticker.rsi, rsiState: ticker.rsiState,
-        signal: ticker.signal, confidence: ticker.confidence,
-        ema20: ticker.ema20, ema50: ticker.ema50, ema200: ticker.ema200,
-        emaTrend: ticker.emaTrend, pivot: ticker.pivot,
-        stale: ticker.stale || false, stale_age_s: ticker.stale_age_s || 0,
-      },
-      levels: levels && !levels.error ? {
-        support: levels.support_1h || [], resistance: levels.resistance_1h || [],
-        support_daily: levels.support_daily || [], resistance_daily: levels.resistance_daily || [],
-        pivot: levels.pivot,
-      } : { support: ticker.support || [], resistance: ticker.resistance || [] },
-      macro: macro && !macro.error ? {
-        dxy: macro.dxy, us10y: macro.us10y, vix: macro.vix,
-        silver: macro.silver, gsr: macro.gold_silver_ratio,
-        usmyr: macro.usmyr,
-      } : {},
-    };
-    // Deep-sort for deterministic hash matching Python json.dumps(sort_keys=True)
-    const deepSort = (obj) => {
-      if (Array.isArray(obj)) return obj.map(deepSort);
-      if (obj !== null && typeof obj === 'object') {
-        const s = {};
-        Object.keys(obj).sort().forEach(k => { s[k] = deepSort(obj[k]); });
-        return s;
-      }
-      return obj;
-    };
-    const canonical = JSON.stringify(deepSort(unsigned));
-    unsigned.coherence_id = crypto.createHash('sha256').update(canonical).digest('hex');
+    const unsigned = buildSnapshot({ asset: 'oil', ticker, levels, macro, observedAt: observed_at });
     setCache('snapshot', unsigned); return unsigned;
   },
   // Short aliases
