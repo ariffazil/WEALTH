@@ -19,7 +19,8 @@ from wealth_mcp.server import create_mcp_server
 import sys
 
 sys.path.insert(0, "/root/WEALTH/tests")
-from test_differential import normalize, _tool_fn
+from test_differential import normalize
+from test_monotonicity import _tool_fn
 
 
 def _ingestion_test(
