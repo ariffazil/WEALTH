@@ -24,20 +24,55 @@ def register_polix_civx(mcp):
     @mcp.tool(
         name="capital_polix",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description="Power topology intelligence — incentive mapping, capture detection, rent extraction analysis, rule asymmetry. MODES: topology (full power map), capture (capture risk), rents (rent flows), asymmetry (rule asymmetries). SEED CASES: malaysia_fiscal, petronas_glc. SIDE EFFECT: writes a vault receipt.",
+        description="Power topology intelligence — incentive mapping, capture detection, rent extraction analysis, rule asymmetry. MODES: topology (full power map), capture (capture risk), rents (rent flows), asymmetry (rule asymmetries). SEED CASES: malaysia_fiscal, petronas_glc (DEPRECATED for non-archival use — call with seed_case=None to refuse a static seed and require caller-supplied material fields). SIDE EFFECT: writes a vault receipt.",
         tags={"domain": "political_economy", "kind": "interpretive", "canonical": "v1"},
     )
     async def capital_polix(
         mode: str = "topology",
-        seed_case: str = "malaysia_fiscal",
+        seed_case: str | None = None,
         session_id: str | None = None,
         trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
-        """Power topology analysis for a domain/sector/regime."""
+        """Power topology analysis for a domain/sector/regime.
+
+        P0 2026-09-21 sovereign directive: drop the static seed-mode default.
+        Static seeds returned the same PETRONAS/MoF/BNM actor list regardless
+        of what happened this week — zero insight gain on today's news.
+        seed_case is now optional; if not provided, the tool returns
+        UNMEASURED + REQUIRED_MATERIAL_FIELDS so the caller knows what to
+        supply. The seed cases remain available for archival/calibration use
+        but are no longer the implicit default.
+        """
         from wealth_core.polix import seed_malaysia_fiscal, seed_petronas_glc
 
         m = mode.lower()
+
+        # ── Seed mode deprecated (P0 2026-09-21) ─────────────────────────
+        # If no seed_case is supplied, refuse the static default and return
+        # the material fields the caller must populate.
+        if not seed_case:
+            return wrap_result(
+                tool_name="capital_polix",
+                domain="political_economy",
+                result={
+                    "status": "UNMEASURED",
+                    "error_code": "REQUIRED_MATERIAL_FIELDS",
+                    "message": (
+                        "capital_polix no longer accepts a static seed_case default. "
+                        "Caller must supply seed_case + material_fields (actor_list, "
+                        "rule_set, decision_anchors) so the topology reflects current "
+                        "substrate, not last-week's seed."
+                    ),
+                    "required_inputs": ["seed_case", "material_fields"],
+                    "available_seed_cases": ["malaysia_fiscal", "petronas_glc"],
+                    "deprecation_note": "seed-mode default removed per F13 'Drop' directive 2026-09-21",
+                },
+                epistemic_tag=EpistemicTag.UNKNOWN,
+                evidence_quality=EvidenceQuality.UNMEASURED,
+                errors=["seed_case is required (static seed mode deprecated)"],
+            )
+
         sc = seed_case.lower()
 
         # Load seed case
