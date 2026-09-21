@@ -12,7 +12,7 @@ asyncpg>=0.29.0
 # AUTHORITY: pyproject.toml + uv.lock remain the resolver authority
 # (.github/dependabot.yml, ci-uv-lock-invariant.yml); this file is informational.
 pydantic==2.13.4
-fastmcp==3.4.5
+fastmcp==4.0.5
 mcp==1.29.0
 httpx>=0.25.0
 psycopg[binary]>=3.3.4
