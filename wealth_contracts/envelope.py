@@ -509,7 +509,21 @@ def wrap_result(
     Convenience wrapper: take a raw result and wrap it in WealthEnvelope.
     Returns dict for direct MCP tool return.
     Automatically computes shadow flag and attaches kappar/psile/qdf.
+
+    P1 2026-09-21 (WEALTH-IDENTITY-PIVOT-P1): when tool_name is in
+    OMEGA_FIELD_TOOLS (Ω08 Field / Ω09 Signal), mandatory freshness
+    metadata is injected into result before envelope wrapping:
+    source, timestamp, cache_age_seconds, staleness_class, _freshness.
+    Without these, the output is NOT admissible as Ω08/Ω09 evidence.
     """
+    # P1 2026-09-21 — Ω08/Ω09 freshness enforcement
+    if isinstance(result, dict):
+        try:
+            from wealth_mcp.freshness import OMEGA_FIELD_TOOLS, enforce_freshness
+            if tool_name in OMEGA_FIELD_TOOLS:
+                result = enforce_freshness(tool_name, result)
+        except ImportError:
+            pass  # wealth_mcp.freshness not in path — skip enforcement
     # Auto-compute shadow flag from violations/holds in result
     # BUG FIX (2026-08-08): respect explicit shadow kwarg (caller intent).
     # shadow only exists in kwargs (constructor param), not as wrap_result arg.
