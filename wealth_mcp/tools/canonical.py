@@ -4281,9 +4281,224 @@ def register_canonical_tools(mcp):
             actor_id=actor_id,
         )
 
+    # ═══════════════════════════════════════════════════════════════════
+    # Ω00 wealth_synthesize — Cross-dimensional synthesis
+    # ═══════════════════════════════════════════════════════════════════
+    # P1 2026-09-21 (WEALTH-IDENTITY-PIVOT-P1):
+    #   This tool synthesises the 12 Ω-invariants into a DOMAIN ASSESSMENT.
+    #   It NEVER emits a constitutional verdict (SEAL/HOLD/SABAR/VOID).
+    #   Those verdicts belong to arifOS.arif_judge, NOT to WEALTH.
+    #
+    #   Doctrine: WEALTH models capital consequences under uncertainty.
+    #             arifOS judges authority. WEALTH is the analyst;
+    #             arifOS is the judge. Analyst ≠ Judge.
+    #
+    #   Output contract:
+    #     domain_assessment : FAVORABLE | CAUTION | INSUFFICIENT_EVIDENCE
+    #                       | CONSTRAINT_VIOLATION
+    #     execution_authority: ADVISORY_ONLY  (always — no exception)
+    #     handoff            : "arifOS.arif_judge"
+    #
+    #   The four domain_assessment values are WEALTH's own vocabulary;
+    #   they describe what the evidence shows, not what should be done.
+    #   Action follows ONLY after arifOS.arif_judge issues its verdict.
+
+    @mcp.tool(
+        name="wealth_synthesize",
+        output_schema={
+            "type": "object",
+            "properties": {
+                "tool_name": {"type": "string"},
+                "domain": {"type": "string"},
+                "domain_assessment": {
+                    "type": "string",
+                    "enum": [
+                        "FAVORABLE",
+                        "CAUTION",
+                        "INSUFFICIENT_EVIDENCE",
+                        "CONSTRAINT_VIOLATION",
+                    ],
+                },
+                "execution_authority": {
+                    "type": "string",
+                    "const": "ADVISORY_ONLY",
+                },
+                "handoff": {
+                    "type": "string",
+                    "const": "arifOS.arif_judge",
+                },
+                "result": {"type": "object"},
+                "evidence_basis": {"type": "array", "items": {"type": "string"}},
+                "session_id": {"type": "string"},
+                "trace_id": {"type": "string"},
+                "actor_id": {"type": "string"},
+                "computation_timestamp": {"type": "string"},
+            },
+            "required": [
+                "tool_name",
+                "domain",
+                "domain_assessment",
+                "execution_authority",
+                "handoff",
+                "result",
+                "evidence_basis",
+                "computation_timestamp",
+            ],
+            "additionalProperties": True,
+        },
+        description=(
+            "Ω00 Cross-dimensional synthesis — collapses the 12 Ω-invariants "
+            "(Ω01 conservation, Ω02 flow, Ω03 gradient, Ω04 entropy, "
+            "Ω05 energy, Ω06 time, Ω07 inertia, Ω08 field, Ω09 signal, "
+            "Ω10 game, Ω11 boundary, Ω12 hysteresis) into a domain_assessment. "
+            "Returns FAVORABLE | CAUTION | INSUFFICIENT_EVIDENCE | "
+            "CONSTRAINT_VIOLATION — NEVER a constitutional verdict "
+            "(SEAL/HOLD/SABAR/VOID). execution_authority is fixed at "
+            "ADVISORY_ONLY; handoff is fixed at arifOS.arif_judge. "
+            "Doctrine: Analyst (WEALTH) ≠ Judge (arifOS)."
+        ),
+        tags={
+            "domain": "capital",
+            "kind": "synthesis",
+            "canonical": "omega_00",
+            "omega_invariant": "Ω00",
+            "authority_ceiling": "ADVISORY_ONLY",
+            "handoff": "arifOS.arif_judge",
+        },
+    )
+    async def wealth_synthesize(
+        omega_invariants: dict,
+        domain: str = "capital",
+        session_id: str | None = None,
+        trace_id: str | None = None,
+        actor_id: str | None = None,
+    ) -> dict:
+        """Ω00 synthesis — collapses 12 Ω-invariants → domain_assessment.
+
+        The synthesis is intentionally DETERMINISTIC: each Ω-invariant
+        contributes to the final domain_assessment via fixed rules, never
+        via model inference. This is the inverse of capital_diagnose —
+        capital_diagnose runs individual Ω-invariants; wealth_synthesize
+        rolls them up.
+
+        The 12 Ω-invariants are expected in `omega_invariants` as keys
+        omega_01..omega_12, each carrying:
+            { domain_assessment: str, evidence_basis: [str] }
+
+        Roll-up rules:
+          CONSTRAINT_VIOLATION > FAVORABLE
+            (any boundary violation downgrades the synthesis)
+          INSUFFICIENT_EVIDENCE > any positive assessment
+            (any Ω-invariant reporting insufficient evidence downgrades)
+          FAVORABLE + any CAUTION  → CAUTION
+            (lowest positive + any caution → caution)
+          all FAVORABLE            → FAVORABLE
+        """
+        import datetime as _dt
+
+        _VALID = {
+            "FAVORABLE",
+            "CAUTION",
+            "INSUFFICIENT_EVIDENCE",
+            "CONSTRAINT_VIOLATION",
+        }
+        # Hard-coded roll-up: ordered by precedence (highest first).
+        _PRECEDENCE = [
+            "CONSTRAINT_VIOLATION",
+            "INSUFFICIENT_EVIDENCE",
+            "CAUTION",
+            "FAVORABLE",
+        ]
+
+        assessments = []
+        evidence_basis = []
+        for k in (
+            "omega_01_conservation",
+            "omega_02_flow",
+            "omega_03_gradient",
+            "omega_04_entropy",
+            "omega_05_energy",
+            "omega_06_time",
+            "omega_07_inertia",
+            "omega_08_field",
+            "omega_09_signal",
+            "omega_10_game",
+            "omega_11_boundary",
+            "omega_12_hysteresis",
+        ):
+            slot = omega_invariants.get(k) or {}
+            a = slot.get("domain_assessment", "INSUFFICIENT_EVIDENCE")
+            if a not in _VALID:
+                a = "INSUFFICIENT_EVIDENCE"
+            assessments.append(a)
+            evidence_basis.extend(slot.get("evidence_basis") or [f"{k}:{a}"])
+
+        # Roll-up (precedence-ordered; first match wins)
+        if not assessments:
+            rolled = "INSUFFICIENT_EVIDENCE"
+        else:
+            rolled = "INSUFFICIENT_EVIDENCE"  # safe default
+            for p in _PRECEDENCE:
+                if p in assessments:
+                    rolled = p
+                    break
+
+        # Constitutional invariant: this tool NEVER issues a verdict
+        # in {SEAL, HOLD, SABAR, VOID}. domain_assessment is the only
+        # assessment field it may set. execution_authority is fixed.
+        return {
+            "tool_name": "wealth_synthesize",
+            "domain": domain,
+            "domain_assessment": rolled,
+            # Hard-coded institutional contract — non-negotiable.
+            "execution_authority": "ADVISORY_ONLY",
+            "handoff": "arifOS.arif_judge",
+            "result": {
+                "omega_assessments": dict(
+                    zip(
+                        [
+                            "omega_01_conservation",
+                            "omega_02_flow",
+                            "omega_03_gradient",
+                            "omega_04_entropy",
+                            "omega_05_energy",
+                            "omega_06_time",
+                            "omega_07_inertia",
+                            "omega_08_field",
+                            "omega_09_signal",
+                            "omega_10_game",
+                            "omega_11_boundary",
+                            "omega_12_hysteresis",
+                        ],
+                        assessments,
+                    )
+                ),
+                "rolled": rolled,
+                "omega_invariants_provided": list(
+                    (omega_invariants or {}).keys()
+                ),
+            },
+            "evidence_basis": evidence_basis,
+            "session_id": session_id,
+            "trace_id": trace_id,
+            "actor_id": actor_id,
+            "computation_timestamp": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+            # Explicit doctrine block — for downstream auditors.
+            "_doctrine": {
+                "analyst_not_judge": True,
+                "execution_authority_ceiling": "ADVISORY_ONLY",
+                "constitutional_verdicts_issued": [],
+                "handoff_target": "arifOS.arif_judge",
+                "irreducible_question": (
+                    "If capital moves this way, what follows — and how "
+                    "sure are we?"
+                ),
+            },
+        }
+
     return {
         "capital_primitive": capital_primitive,
-        "capital_health": capital_health,
+        "capital_health": capital_diagnose,
         "capital_diagnose": capital_diagnose,
         "capital_market": capital_market,
         "capital_ledger": capital_ledger,
@@ -4293,6 +4508,7 @@ def register_canonical_tools(mcp):
         "capital_indicator": capital_indicator,
         "capital_backtest": capital_backtest,
         "capital_entry_plan": capital_entry_plan,
+        "wealth_synthesize": wealth_synthesize,  # Ω00 synthesis (P1 2026-09-21)
         # Zen Phase 2: capital_wisdom DELETED 2026-08-06 — normative synthesis
         # violates 'WEALTH computes, arifOS frames'. M0 audit confirmed.
         # F13 directive: DELETE, not REGISTER. arifOS owns framing.

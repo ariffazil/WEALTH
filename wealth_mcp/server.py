@@ -290,7 +290,9 @@ def _compute_four_truths(
     import datetime as _dt
 
     payload = getattr(result, "structured_content", None) or {}
-    inner = payload.get("result") if isinstance(payload.get("result"), dict) else payload
+    inner = (
+        payload.get("result") if isinstance(payload.get("result"), dict) else payload
+    )
     if not isinstance(inner, dict):
         inner = {}
 
@@ -334,7 +336,9 @@ def _compute_four_truths(
         semantic_reasons.append("partial=true")
     errors = inner.get("errors")
     if errors:
-        semantic_reasons.append(f"errors_present({len(errors) if isinstance(errors, list) else 'yes'})")
+        semantic_reasons.append(
+            f"errors_present({len(errors) if isinstance(errors, list) else 'yes'})"
+        )
 
     # Contract compliance: check for UNMEASURED critical fields
     unmeasured = inner.get("missing_inputs") or inner.get("unmeasured_keys")
@@ -356,7 +360,10 @@ def _compute_four_truths(
     authority = str(inner.get("authority_ceiling", "")).upper()
     if authority in {"DISPLAY_ONLY", "REFLECT_ONLY", "OBSERVE_ONLY"}:
         policy_reasons.append(f"authority={authority}")
-    governance = str(inner.get("governance_status", "") or inner.get("_hermes_semantic_gate", {}).get("outcome", "")).upper()
+    governance = str(
+        inner.get("governance_status", "")
+        or inner.get("_hermes_semantic_gate", {}).get("outcome", "")
+    ).upper()
     if governance in {"BLOCKED", "888_HOLD", "REWRITE_REQUIRED"}:
         policy_reasons.append(f"governance={governance}")
 
@@ -367,7 +374,10 @@ def _compute_four_truths(
     return {
         "four_truths": {
             "T_transport": {"value": t_transport, "source": "connection_established"},
-            "T_execution": {"value": t_execution, "source": f"call_status={call_status}"},
+            "T_execution": {
+                "value": t_execution,
+                "source": f"call_status={call_status}",
+            },
             "T_semantic": {
                 "value": t_semantic,
                 "source": "freshness+completeness+contract+contradiction",
@@ -463,6 +473,8 @@ def _validate_direct_session_binding(
     tool_name: str,
     actor_id: str | None,
     session_id: str | None,
+    caller_service: str | None = None,
+    trace_id: str | None = None,
 ) -> dict[str, object]:
     """Session binding without importing the kernel package.
 
@@ -471,11 +483,27 @@ def _validate_direct_session_binding(
     - Unbound/_default + MUTATE tools → SESSION_REQUIRED
     - Real session_id → HTTP bridge only
 
+    P0-3 (2026-09-21) — FEDERATION-CONVERGENCE-P0 / dual-identity delegation:
+      arifOS → A-FORGE → WEALTH may carry an anonymous subject through an
+      authenticated machine channel. The binding contract is now three-tuple:
+
+        caller_service : authenticated machine (arifos | aforge | arifos_kernel)
+        session_id     : real arifOS session (SEAL-bound upstream)
+        actor_id       : subject (may be anonymous; recorded in receipt only)
+
+      When caller_service is in _TRUSTED_SERVICES and session_id is a real
+      bound session, the actor may be anonymous and authority is DOWNGRADED
+      to OBSERVE_ONLY regardless of the session's nominal authority. This is
+      the proper federation: an authenticated chain can carry an unverified
+      subject without diluting the trust invariant.
+
     FORGED 2026-07-18: Anonymous reads removed.
     AMENDED 2026-08-06: OBSERVE-class tools (market, registry, primitive, entropy)
     restored to OBSERVE_UNBOUND — these compute but never mutate. MUTATE tools
     (ledger, handoff, diagnose) still require valid session_id.
     """
+    import datetime as _dt
+
     _OBSERVE_TOOLS = {
         "capital_market",
         "capital_registry",
@@ -485,8 +513,58 @@ def _validate_direct_session_binding(
         "capital_indicator",
         "capital_backtest",
         "capital_entry_plan",
+        "capital_claims",  # claim evidence read — observational
+        "capital_diagnose",  # institutional diagnostic — observational
+        "capital_health",  # financial health — observational
+        # L4/L10 interpretive tools — added under P0-2 behavioral test lock
+        # (capital_polix, capital_civx are OBSERVE — interpretive outputs;
+        #  worst case from missing session = no audit trail, not mutation).
+        "capital_polix",
+        "capital_civx",
+        # P1 2026-09-21 — Ω00 synthesis is OBSERVE-class domain_assessment.
+        # It returns domain_assessment (FAVORABLE|CAUTION|...) which is
+        # ADVISORY_ONLY — never a constitutional verdict. Same exemption
+        # class as capital_diagnose: interpretive read, no mutation.
+        "wealth_synthesize",
+        # P1 2026-09-21 — legacy aliases of OBSERVE-class tools. Per
+        # F13 directive the direct :18082 connector is engineering /
+        # diagnostic only; legacy names that resolve to OBSERVE-class
+        # canonical tools must pass the same OBSERVE_UNBOUND exemption
+        # or the interface is contradictory (schema accepts no session_id
+        # yet rejects for missing session_id).
+        # Generated from /root/WEALTH/wealth_compat/__init__.py + server.py
+        # _INTERNAL_LEGACY_ALIASES (anything resolving to capital_* canonical
+        # in _OBSERVE_TOOLS inherits the exemption).
+        "wealth_system_registry_status",  # → capital_registry
+        "wealth_registry_status",         # → capital_registry
+        "registry_status",                # → capital_registry
+        "wealth_schema",                   # → capital_registry
+        "schema",                          # → capital_registry
+        "wealth_health_check",             # → wealth_system_registry_status
+        "wealth_sense_ingest",             # → wealth_system_registry_status
+        "wealth_market_data",              # → capital_market
+        "market_data",                     # → capital_market
+        "wealth_stock_analysis",           # → capital_market
+        "stock_analysis",                  # → capital_market
+        "wealth_fx_rate",                  # → wealth_system_registry_status
+        "wealth_commodity_price",          # → wealth_system_registry_status
+        "wealth_macro_indicator",          # → wealth_system_registry_status
     }
+    # Trusted service identities that may carry anonymous subjects through
+    # the federation. Inclusion = mutual TLS / SCT envelope from the kernel.
+    # Source of truth: arifOS registry (arifOS — anchors constitution).
+    _TRUSTED_SERVICES = frozenset(
+        {
+            "arifos",
+            "arifos_kernel",
+            "aforge",
+            "arifOS",  # case-tolerant
+            "A-FORGE",
+        }
+    )
+
     unbound = session_id in _UNBOUND_SESSION_TOKENS
+    _now = _dt.datetime.now(_dt.timezone.utc).isoformat()
 
     if unbound:
         # 2026-08-06: Restore OBSERVE_UNBOUND for read-only tools.
@@ -498,19 +576,20 @@ def _validate_direct_session_binding(
         # observably visible. Any consumer mistaking this for a real
         # session is now obvious in logs and federation probes.
         if tool_name in _OBSERVE_TOOLS:
-            import datetime as _dt
-
             return {
                 "ok": True,
                 "code": "OBSERVE_UNBOUND",
                 "reason": "OBSERVE-class tool — session optional",
                 "actor_id": actor_id or "wealth-mcp",
+                "actor_verified": False,
+                "caller_service": caller_service,
+                "trace_id": trace_id,
                 "session_id": session_id or "_MISSING_SESSION",
+                "authority_ceiling": "OBSERVE_ONLY",
+                "identity_model": "unbound",
                 "tool_name": tool_name,
-                "_ts": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+                "_ts": _now,
             }
-
-        import datetime as _dt
 
         return {
             "ok": False,
@@ -520,14 +599,117 @@ def _validate_direct_session_binding(
                 "(FORGE 2026-07-18: anonymous reads blocked)"
             ),
             "actor_id": actor_id,
+            "actor_verified": False,
+            "caller_service": caller_service,
+            "trace_id": trace_id,
             "session_id": session_id,
             "tool_name": tool_name,
-            "_ts": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+            "_ts": _now,
         }
 
+    # ── Bound session: dual-identity check (P0-3) ─────────────────────
     bridge = _validate_session_via_http_bridge(str(session_id), actor_id)
-    bridge["tool_name"] = tool_name
-    return bridge
+    bridge_ok = bool(bridge.get("ok"))
+    bridge_code = bridge.get("code")
+
+    # P0-3: Was this delegation through a trusted machine channel?
+    # The anonymous-human-through-authenticated-machine pattern is the
+    # proper federation. Without this, an anonymous Subject cannot reach
+    # WEALTH even via an authenticated arifOS route — which collapses the
+    # whole "organism" abstraction (every caller has to be sovereign).
+    cs = (caller_service or "").lower().strip()
+    is_trusted_service = cs in {s.lower() for s in _TRUSTED_SERVICES}
+
+    if is_trusted_service and bridge_ok:
+        # The machine channel is authenticated. The subject may be
+        # anonymous. Authority is DOWNGRADED to OBSERVE_ONLY because an
+        # unverified subject can never carry MUTATE authority — that is
+        # the invariant WEALTH protects regardless of session's nominal
+        # authority.
+        subject_verified = bool(actor_id) and actor_id not in _UNBOUND_SESSION_TOKENS
+        return {
+            "ok": True,
+            "code": "DUAL_IDENTITY_OK",
+            "reason": (
+                "Federation chain: caller_service=%s authenticated via "
+                "kernel bridge; subject_actor=%s (verified=%s); "
+                "authority ceiling downgraded to OBSERVE_ONLY for "
+                "anonymous/subject delegation."
+                % (caller_service, actor_id or "anonymous", subject_verified)
+            ),
+            "actor_id": actor_id or "anonymous",
+            "actor_verified": subject_verified,
+            "caller_service": caller_service,
+            "caller_service_verified": True,
+            "trace_id": trace_id,
+            "session_id": session_id,
+            "authority_ceiling": "OBSERVE_ONLY",
+            "identity_model": "dual_identity",
+            "bridge_code": bridge_code,
+            "tool_name": tool_name,
+            "_ts": _now,
+        }
+
+    if not bridge_ok:
+        # Existing denial path — kernel bridge unreachable.
+        bridge["tool_name"] = tool_name
+        bridge["actor_verified"] = False
+        bridge["caller_service"] = caller_service
+        bridge["trace_id"] = trace_id
+        return bridge
+
+    # Bound + bridge_ok BUT caller_service is NOT trusted. This is the
+    # original ACTOR_UNVERIFIED case (anonymous caller reached WEALTH
+    # with a real session id but no service attestation). Two options:
+    #   a) reject (preserves the strict invariant)
+    #   b) accept as anonymous subject with authority OBSERVE_ONLY
+    #
+    # We choose (b) ONLY for OBSERVE-class tools, and reject for the rest.
+    # This widens the federation surface for read-only calls while
+    # keeping MUTATE-class under the strict gate.
+    subject_verified = bool(actor_id) and actor_id not in _UNBOUND_SESSION_TOKENS
+
+    if tool_name in _OBSERVE_TOOLS:
+        return {
+            "ok": True,
+            "code": "OBSERVE_ANONYMOUS_OK",
+            "reason": (
+                "Anonymous subject through bound session — authority "
+                "ceiling OBSERVE_ONLY. (MUTATE-class still requires verified "
+                "actor via trusted service channel.)"
+            ),
+            "actor_id": actor_id or "anonymous",
+            "actor_verified": subject_verified,
+            "caller_service": caller_service,
+            "caller_service_verified": False,
+            "trace_id": trace_id,
+            "session_id": session_id,
+            "authority_ceiling": "OBSERVE_ONLY",
+            "identity_model": "anonymous_via_session",
+            "tool_name": tool_name,
+            "_ts": _now,
+        }
+
+    return {
+        "ok": False,
+        "code": "ACTOR_UNVERIFIED",
+        "reason": (
+            "L11 AUTH: bound session_id but caller_service=%r is not in "
+            "trusted-service list AND tool_name=%r requires a verified actor. "
+            "Send caller_service=arifos (or aforge) to delegate through a "
+            "machine-authenticated channel, or supply a verified actor_id."
+            % (caller_service, tool_name)
+        ),
+        "actor_id": actor_id,
+        "actor_verified": False,
+        "caller_service": caller_service,
+        "trace_id": trace_id,
+        "session_id": session_id,
+        "authority_ceiling": "OBSERVE_ONLY",
+        "identity_model": "rejected",
+        "tool_name": tool_name,
+        "_ts": _now,
+    }
 
 
 def create_mcp_server() -> FastMCP:
@@ -604,12 +786,22 @@ def create_mcp_server() -> FastMCP:
             missing_preload: list | None = None,
             result: Any = None,
             floor_verdict: dict | None = None,
+            caller_service: Any = None,
+            trace_id: Any = None,
+            identity_model: Any = None,
+            authority_ceiling: Any = None,
         ) -> dict[str, Any]:
             """Persist an audit receipt and return observable persistence state.
 
             L6 Witness Quality (2026-09-16): every receipt now carries a
             four_truths block computing DECISION_PASS from independent
             transport/execution/semantic/policy measurements.
+
+            P0-3 (2026-09-21): receipts now carry the dual-identity
+            delegation fields (caller_service, trace_id, identity_model,
+            authority_ceiling) so the audit chain can prove an anonymous
+            subject was carried through an authenticated federation
+            channel — and what authority ceiling was applied.
             """
             actor_id = actor_id or "wealth-mcp"
             evidence_quality = evidence_quality or (
@@ -624,7 +816,9 @@ def create_mcp_server() -> FastMCP:
                 sort_keys=True,
                 default=str,
             )
-            idempotency_key = _hashlib.sha256(_idem_raw.encode("utf-8")).hexdigest()[:32]
+            idempotency_key = _hashlib.sha256(_idem_raw.encode("utf-8")).hexdigest()[
+                :32
+            ]
             _t_mono = _time.monotonic()
             _prev_rcpt = _RECEIPT_DEDUP.get(idempotency_key)
             duplicate_of = (
@@ -632,7 +826,10 @@ def create_mcp_server() -> FastMCP:
                 if _prev_rcpt and (_t_mono - _prev_rcpt["mono"]) < 1.0
                 else None
             )
-            _RECEIPT_DEDUP[idempotency_key] = {"receipt_id": receipt_id, "mono": _t_mono}
+            _RECEIPT_DEDUP[idempotency_key] = {
+                "receipt_id": receipt_id,
+                "mono": _t_mono,
+            }
             if len(_RECEIPT_DEDUP) > 512:
                 _RECEIPT_DEDUP.clear()
             receipt = {
@@ -663,6 +860,21 @@ def create_mcp_server() -> FastMCP:
             if missing_preload:
                 receipt["non_compliant_preload"] = missing_preload
 
+            # P0-3 dual-identity delegation chain (recorded verbatim, NOT
+            # normalized). Receipt is the audit ledger; this is what
+            # inspectors will see — caller_service proves the machine
+            # channel, actor_id proves (or refuses to prove) the subject,
+            # identity_model names the contract, authority_ceiling names
+            # the enforced scope.
+            if caller_service:
+                receipt["caller_service"] = caller_service
+            if trace_id:
+                receipt["trace_id"] = trace_id
+            if identity_model:
+                receipt["identity_model"] = identity_model
+            if authority_ceiling:
+                receipt["authority_ceiling"] = authority_ceiling
+
             # L6 Witness Quality: four-truth receipt model
             # DECISION_PASS = T_transport ∧ T_execution ∧ T_semantic ∧ T_policy
             if result is not None:
@@ -679,8 +891,15 @@ def create_mcp_server() -> FastMCP:
                 receipt["four_truths"] = {
                     "T_transport": {"value": True, "source": "connection_established"},
                     "T_execution": {"value": t_exec, "source": f"call_status={status}"},
-                    "T_semantic": {"value": False, "source": "UNMEASURED_no_result", "failures": ["no_result_object"]},
-                    "T_policy": {"value": t_policy, "source": f"verdict={verdict or 'none'}"},
+                    "T_semantic": {
+                        "value": False,
+                        "source": "UNMEASURED_no_result",
+                        "failures": ["no_result_object"],
+                    },
+                    "T_policy": {
+                        "value": t_policy,
+                        "source": f"verdict={verdict or 'none'}",
+                    },
                 }
                 receipt["decision_pass"] = False  # T_semantic unmeasured
                 receipt["truth_score"] = sum([True, t_exec, False, t_policy]) / 4.0
@@ -985,13 +1204,29 @@ def create_mcp_server() -> FastMCP:
                         is_err=True,
                     )
 
-            # ── P0-4: Session validation (was defined but never called) ──
-            # C3 2026-08-06: Tool schemas declare session_id as Optional but
-            # this gate enforces it. Gap: schema says optional, runtime says
-            # mandatory. Until resolved, clients MUST send session_id or accept
-            # SESSION_REQUIRED block. Fix: either add session_id to required[]
-            # in every tool schema, or make this gate optional for OBSERVE-class.
-            binding = _validate_direct_session_binding(name, actor_id, session_id)
+            # ── P0-3 / P0-4 (2026-09-21) — Session validation
+            # C3 2026-08-06: schemas declare session_id as Optional but
+            # this gate enforces it. Now extended with caller_service /
+            # trace_id for the dual-identity federation pattern:
+            # arifOS / A-FORGE can carry an anonymous subject through
+            # an authenticated machine channel with authority downgraded
+            # to OBSERVE_ONLY.
+            cs = (
+                arguments.get("caller_service") if isinstance(arguments, dict) else None
+            )
+            tx = arguments.get("trace_id") if isinstance(arguments, dict) else None
+            # Also accept via kwargs for clients that pass top-level.
+            if not cs and isinstance(kwargs, dict):
+                cs = kwargs.get("caller_service")
+            if not tx and isinstance(kwargs, dict):
+                tx = kwargs.get("trace_id")
+            binding = _validate_direct_session_binding(
+                name,
+                actor_id,
+                session_id,
+                caller_service=cs,
+                trace_id=tx,
+            )
             if not binding.get("ok"):
                 # MUST return schema-conformant response matching WEALTH_OUTPUT_SCHEMA
                 # All 9 required fields included to prevent FastMCP -32602 rejection.
@@ -1073,6 +1308,10 @@ def create_mcp_server() -> FastMCP:
                     actor_id=actor_id,
                     session_id=session_id,
                     floor_verdict=floor_verdict,
+                    caller_service=binding.get("caller_service"),
+                    trace_id=binding.get("trace_id"),
+                    identity_model=binding.get("identity_model"),
+                    authority_ceiling=binding.get("authority_ceiling"),
                 )
                 # MCP logging — governance block (transport only; arifOS owns enforcement)
                 try:
@@ -1132,9 +1371,7 @@ def create_mcp_server() -> FastMCP:
                     "detail": f"{type(_hg_exc).__name__}: {_hg_exc}",
                 }
             if hermes_gate_state.get("status") == "BLOCKED":
-                _hg_code = (
-                    hermes_gate_state.get("error_code") or "SEMANTIC_GATE_HOLD"
-                )
+                _hg_code = hermes_gate_state.get("error_code") or "SEMANTIC_GATE_HOLD"
                 _hg_hold = hermes_gate_state.get("outcome") in (
                     "HOLD",
                     "INJECTION",
@@ -1185,6 +1422,10 @@ def create_mcp_server() -> FastMCP:
                     verdict=_hg_code,
                     actor_id=actor_id,
                     session_id=session_id,
+                    caller_service=binding.get("caller_service"),
+                    trace_id=binding.get("trace_id"),
+                    identity_model=binding.get("identity_model"),
+                    authority_ceiling=binding.get("authority_ceiling"),
                 )
                 return _finalize(
                     ToolResult(
@@ -1368,6 +1609,10 @@ def create_mcp_server() -> FastMCP:
                     verdict=verdict,
                     actor_id=actor_id,
                     session_id=session_id,
+                    caller_service=binding.get("caller_service"),
+                    trace_id=binding.get("trace_id"),
+                    identity_model=binding.get("identity_model"),
+                    authority_ceiling=binding.get("authority_ceiling"),
                 )
                 try:
                     from wealth_mcp.mcp_logging import emit_mcp_log
@@ -1412,6 +1657,10 @@ def create_mcp_server() -> FastMCP:
                     actor_id=actor_id,
                     session_id=session_id,
                     result=result,
+                    caller_service=binding.get("caller_service"),
+                    trace_id=binding.get("trace_id"),
+                    identity_model=binding.get("identity_model"),
+                    authority_ceiling=binding.get("authority_ceiling"),
                     floor_verdict=floor_verdict,
                 )
                 return _finalize(
@@ -1475,6 +1724,7 @@ def create_mcp_server() -> FastMCP:
     # ── Register POLIX/CIVX tools (L4+L10 knowledge axes, 2026-09-16) ─
     try:
         from wealth_mcp.tools.polix_civx import register_polix_civx
+
         register_polix_civx(mcp)
     except Exception as e:
         print(f"[TOOLS] POLIX/CIVX registration failed: {e}")

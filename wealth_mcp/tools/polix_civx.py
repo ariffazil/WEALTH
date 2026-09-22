@@ -33,6 +33,7 @@ def register_polix_civx(mcp):
         session_id: str | None = None,
         trace_id: str | None = None,
         actor_id: str | None = None,
+        caller_service: str | None = None,
     ) -> dict:
         """Power topology analysis for a domain/sector/regime.
 
@@ -43,6 +44,14 @@ def register_polix_civx(mcp):
         UNMEASURED + REQUIRED_MATERIAL_FIELDS so the caller knows what to
         supply. The seed cases remain available for archival/calibration use
         but are no longer the implicit default.
+
+        FEDERATION-CONVERGENCE-P0 / P0-3 (2026-09-21) — caller_service:
+        the authenticated machine channel that delegated this call
+        (arifos / aforge / arifos_kernel). When supplied + a bound session
+        is present, the dual-identity gate grants OBSERVE_ONLY authority
+        to an anonymous subject. The argument is accepted but the
+        canonical dual-identity validation lives in the session-binding
+        layer (this function itself does not gate on it).
         """
         from wealth_core.polix import seed_malaysia_fiscal, seed_petronas_glc
 
@@ -105,7 +114,11 @@ def register_polix_civx(mcp):
                 "domain": d["domain"],
                 "capture_score": d["capture_score"],
                 "actors": [
-                    {"name": a["name"], "capture_risk": a["capture_risk"], "opacity_score": a["opacity_score"]}
+                    {
+                        "name": a["name"],
+                        "capture_risk": a["capture_risk"],
+                        "opacity_score": a["opacity_score"],
+                    }
                     for a in d["actors"]
                 ],
                 "coercion_signals": d["coercion_signals"],
@@ -167,8 +180,13 @@ def register_polix_civx(mcp):
         session_id: str | None = None,
         trace_id: str | None = None,
         actor_id: str | None = None,
+        caller_service: str | None = None,
     ) -> dict:
-        """Civilizational scenario analysis. SAFE_TO_STUDY only."""
+        """Civilizational scenario analysis. SAFE_TO_STUDY only.
+
+        FEDERATION-CONVERGENCE-P0 / P0-3 (2026-09-21): caller_service
+        mirrors the dual-identity delegation chain (see capital_polix).
+        """
         from wealth_core.civx import seed_malaysia_fiscal_2027_2040
 
         m = mode.lower()
@@ -199,7 +217,11 @@ def register_polix_civx(mcp):
                 "domain": d["domain"],
                 "status": d["status"],
                 "paths": [
-                    {"path_id": p["path_id"], "name": p["name"], "resilience_scores": p["resilience_scores"]}
+                    {
+                        "path_id": p["path_id"],
+                        "name": p["name"],
+                        "resilience_scores": p["resilience_scores"],
+                    }
                     for p in d["paths"]
                 ],
                 "schema_version": d["schema_version"],
@@ -209,7 +231,12 @@ def register_polix_civx(mcp):
                 "domain": d["domain"],
                 "status": d["status"],
                 "paths": [
-                    {"path_id": p["path_id"], "name": p["name"], "key_risks": p["key_risks"], "irreversibility": p["irreversibility"]}
+                    {
+                        "path_id": p["path_id"],
+                        "name": p["name"],
+                        "key_risks": p["key_risks"],
+                        "irreversibility": p["irreversibility"],
+                    }
                     for p in d["paths"]
                 ],
                 "schema_version": d["schema_version"],
@@ -238,9 +265,13 @@ def register_polix_civx(mcp):
             )
 
         result["signal_state"] = "DERIVED"
-        result["signal_state_reason"] = "CIVX output is scenario/interpretive, not observed"
+        result["signal_state_reason"] = (
+            "CIVX output is scenario/interpretive, not observed"
+        )
         result["civx_status"] = d["status"]
-        result["civx_warning"] = "SAFE_TO_STUDY — not decision authority until calibrated"
+        result["civx_warning"] = (
+            "SAFE_TO_STUDY — not decision authority until calibrated"
+        )
         return wrap_result(
             tool_name="capital_civx",
             domain="civilizational",

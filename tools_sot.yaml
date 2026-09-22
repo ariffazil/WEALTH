@@ -146,6 +146,82 @@ tools:
       kind: handoff
       canonical: v1
 
+  - name: capital_polix
+    access: public
+    description: >
+      Power topology intelligence — incentive mapping, capture detection,
+      rent extraction analysis, rule asymmetry.
+
+      Modes: topology | capture | rents | asymmetry
+
+      SEED CASES (archival/calibration only, P0 2026-09-21):
+      malaysia_fiscal | petronas_glc. Static seed-mode default REMOVED per
+      F13 'Drop' directive 2026-09-21 — caller MUST supply seed_case (or
+      use material_fields for live substrate). Calling without seed_case
+      returns UNMEASURED + REQUIRED_MATERIAL_FIELDS.
+
+      Schema (6 args, session-bound; OBSERVE_ONLY authority by default):
+        mode            : str  default "topology"  enum [topology, capture, rents, asymmetry]
+        seed_case       : str|None  default None  BEHAVIOR-REQUIRED — None returns UNMEASURED
+        session_id      : str|None  optional
+        trace_id        : str|None  optional
+        actor_id        : str|None  optional (subject; may be anonymous through
+                                      authenticated machine channel per P0-3)
+        caller_service  : str|None  optional, default via bridge (arifos | aforge |
+                                      arifos_kernel). Authority ceiling OBSERVE_ONLY
+                                      when subject is anonymous.
+
+      Risk tier: READONLY (interpretive; OBSERVE-class). SIDE EFFECT:
+      writes a vault receipt carrying caller_service, identity_model, and
+      authority_ceiling so audit chain proves the delegation model.
+
+      Behavioural contract (locked by FEDERATION-E2E-CANARY, P0-2 / 2026-09-21):
+        capital_polix()              → UNMEASURED + REQUIRED_MATERIAL_FIELDS
+        capital_polix(seed_case=...)  → mode-specific result (5 args, session-bound)
+    input_schema:
+      mode:            {type: string,  default: "topology", required: false,
+                        enum: [topology, capture, rents, asymmetry]}
+      seed_case:       {type: [string, "null"], default: null, required: false,
+                        behavior: "BEHAVIOR-REQUIRED — None returns UNMEASURED + REQUIRED_MATERIAL_FIELDS"}
+      session_id:      {type: [string, "null"], required: false}
+      trace_id:        {type: [string, "null"], required: false}
+      actor_id:        {type: [string, "null"], required: false}
+      caller_service:  {type: [string, "null"], required: false,
+                        enum_pattern: ["^arifos(_kernel)?$", "^aforge$"]}
+    tags:
+      domain: political_economy
+      kind: interpretive
+      canonical: v1
+      action_class: OBSERVE
+      risk_tier: READONLY
+      governance_session_required: false    # OBSERVE-only via dual-identity bridge
+
+  - name: capital_civx
+    access: public
+    description: >
+      Civilizational scenario intelligence — long-horizon resilience,
+      sovereignty, intergenerational burden.
+
+      Modes: scenario | resilience | risks | assumptions
+
+      SEED CASES: malaysia_fiscal_2027_2040 (default).
+      Status: SAFE_TO_STUDY — never decision authority until calibrated.
+
+      Schema (5 args, session-bound):
+        mode       : str   default "scenario"
+        seed_case  : str   default "malaysia_fiscal_2027_2040"
+        session_id : str|None
+        trace_id   : str|None
+        actor_id   : str|None
+
+      Risk tier: READONLY (scenario). SIDE EFFECT: writes a vault receipt.
+    tags:
+      domain: civilizational
+      kind: scenario
+      canonical: v1
+      action_class: OBSERVE
+      risk_tier: READONLY
+
   # ═══ NEW MODES — TradeMaster Distillation (2026-08-18) ═══
   # All new modes are additive to existing canonical tools.
   # No new tools created. DITEMPA BUKAN DIBERI.
@@ -335,18 +411,191 @@ extension_surface:
 surface_taxonomy:
   declared_by: F13
   ratified_chat: 2026-09-21
-  canonical_count: 15
+  # P1 2026-09-21 — WEALTH-IDENTITY-PIVOT-P1 — pivot to Ω architecture.
+  # The 17-tool raw count is replaced with semantic classes:
+  #   13 canonical primitives (Ω00 + Ω01-Ω12)
+  #   2 societal extensions (inequality, role scarcity)
+  #   2 infrastructure tools (health, registry)
+  #   N compatibility aliases (capital_* legacy names)
+  canonical_count: 13
   extension_count: 2
-  total_external: 17
+  infrastructure_count: 2
+  compatibility_alias_count: 14   # capital_* legacy names — excluded from canonical
+  total_external_visible: 17      # canonical + extensions + infrastructure (aliases excluded)
   source_of_truth: tools_sot.yaml (this file)
-  audit_consumer: A-FORGE surface audit (registry==affordance==15 verified CLEAN)
+  audit_consumer: A-FORGE surface audit (registry==affordance verified CLEAN)
+
+  p0_2026_09_21_addendum: |
+    P0 2026-09-21 (FEDERATION-CONVERGENCE-P0): capital_polix and capital_civx
+    promoted from mode-extension to canonical. canonical_count: 15 → 17.
+
+  p1_2026_09_21_pivot: |
+    P1 2026-09-21 (WEALTH-IDENTITY-PIVOT-P1): the raw 17-tool count is
+    reorganized into the 12-invariant Ω architecture. The 12 Ω-invariants
+    represent the fundamental dimensions of capital reality (mass, flow,
+    gradient, entropy, energy, time, inertia, field, signal, game,
+    boundary, hysteresis) plus Ω00 synthesis. capital_* names become
+    compatibility aliases pointing to canonical Ω tools. canonical_count
+    is reset from 17 to 13 because each Ω-invariant collapses multiple
+    capital_* aliases into one canonical primitive.
+
   extension_intent: >
-    IEQ extensions live in wealth_core/governance/ and serve the
-    consequence-class domain per the Six-Graph Federation Model.
-    They are intentionally NOT in the canonical capital-arithmetic SOT.
-  why_not_bump_canonical_to_17: >
-    The 15-tool canonical set is the A-FORGE federation contract surface.
-    Adding IEQ to it would conflate consequence middleware with capital
-    arithmetic — a doctrine violation under apifed doctrine §14. The
-    extension declaration is the correct surface treatment.
-  law_cited: "CanonicalTool ≠ Convenience/ExtensionSurface." (F13 2026-09-21)
+    IEQ extensions (inequality, role scarcity) live in wealth_core/governance/
+    and serve the consequence-class domain per the Six-Graph Federation Model.
+    They are intentionally NOT in the canonical Ω-invariant SOT.
+
+  infrastructure_intent: >
+    capital_registry + capital_health are meta/diagnostic tools, NOT
+    Ω-invariants. They support the Ω surface (introspection, observability)
+    but are not themselves primitive capital computations.
+
+  compatibility_alias_intent: >
+    capital_* names are legacy FastMCP tool names retained for backward
+    compatibility. They resolve to canonical Ω tools via the alias
+    dispatcher (wealth_mcp/server.py:_INTERNAL_LEGACY_ALIASES).
+    New clients SHOULD use the canonical Ω names. The aliases remain
+    in PUBLIC_TOOL_NAMES until the v3 cutover (F13 schedule).
+
+  why_omega_architecture: >
+    Capital reality is best described as 12 invariants + synthesis. NPV,
+    RSI, Monte Carlo, backtest, ledger — these are IMPLEMENTATIONS
+    underneath those invariants, not the identity. The Ω model makes
+    WEALTH's identity: Capital Consequence Intelligence (Ω-invariant
+    primitives) — not "AI financial decision engine" (capability list).
+
+  law_cited: "WEALTH = Capital Consequence Intelligence, not decision engine. (F13 2026-09-21)"
+
+# ═══ Ω-INVARIANT REGISTRY ═══
+# The 12 fundamental dimensions of capital reality. Each Ω-invariant
+# is a primitive that takes world state → capital consequence evidence.
+# These names are CANONICAL. capital_* names are aliases.
+omega_invariants:
+  omega_00_synthesis:
+    number: "Ω00"
+    invariant: "Cross-dimensional synthesis"
+    canonical_name: wealth_synthesize   # pending rename
+    alias: capital_diagnose(mode=synthesize)  # current alias
+    status: planned
+    description: >
+      Synthesizes all 12 Ω-invariants into a domain assessment.
+      Returns domain_assessment (FAVORABLE|CAUTION|INSUFFICIENT_EVIDENCE|
+      CONSTRAINT_VIOLATION), NEVER a constitutional verdict (no SEAL/HOLD/
+      SABAR/VOID — those are arifOS's, not WEALTH's).
+    question: "If capital moves this way, what follows — and how sure are we?"
+
+  omega_01_conservation:
+    number: "Ω01"
+    invariant: "Mass"
+    question: "What exists?"
+    canonical_name: wealth_conservation_capital
+    alias: capital_primitive(mode=conservation), capital_ledger(read)
+    status: declared
+    internal_implementation: wealth_core/institutional/
+
+  omega_02_flow:
+    number: "Ω02"
+    invariant: "Flow"
+    question: "Where is money moving?"
+    canonical_name: wealth_flow_liquidity
+    alias: capital_health(mode=flow), capital_health(mode=runway)
+    status: declared
+    internal_implementation: wealth_core/institutional/
+
+  omega_03_gradient:
+    number: "Ω03"
+    invariant: "Gradient"
+    question: "What differential drives movement?"
+    canonical_name: wealth_gradient_price
+    alias: capital_market(mode=gradient)
+    status: declared
+    internal_implementation: wealth_core/commodity_engines.py
+
+  omega_04_entropy:
+    number: "Ω04"
+    invariant: "Entropy"
+    question: "How uncertain / disordered is it?"
+    canonical_name: wealth_entropy_risk
+    alias: capital_entropy, capital_diagnose(mode=stress_index)
+    status: declared
+    internal_implementation: wealth_core/risk/
+
+  omega_05_energy:
+    number: "Ω05"
+    invariant: "Energy"
+    question: "What output does capital produce?"
+    canonical_name: wealth_energy_productivity
+    alias: capital_primitive(mode=energy_productivity)
+    status: declared
+    internal_implementation: wealth_core/institutional/
+
+  omega_06_time:
+    number: "Ω06"
+    invariant: "Time"
+    question: "What is future value worth now?"
+    canonical_name: wealth_time_discount
+    alias: capital_primitive(mode=npv,irr,payback), capital_health(mode=time_discount)
+    status: declared
+    internal_implementation: wealth_core/institutional/
+
+  omega_07_inertia:
+    number: "Ω07"
+    invariant: "Inertia"
+    question: "What makes the system hard to change?"
+    canonical_name: wealth_inertia_leverage
+    alias: capital_diagnose(mode=cascade_model), capital_health(mode=asymmetric_risk)
+    status: declared
+    internal_implementation: wealth_core/risk/
+
+  omega_08_field:
+    number: "Ω08"
+    invariant: "Field"
+    question: "What macro regime surrounds it?"
+    canonical_name: wealth_field_macro
+    alias: capital_market(mode=fx,oil,gas,gold,indicator)
+    status: declared
+    internal_implementation: wealth_core/macro/
+
+  omega_09_signal:
+    number: "Ω09"
+    invariant: "Signal"
+    question: "What information deserves belief?"
+    canonical_name: wealth_signal_information
+    alias: capital_indicator, capital_diagnose(mode=exploitation_detect)
+    status: declared
+    internal_implementation: wealth_core/evidence/
+
+  omega_10_game:
+    number: "Ω10"
+    invariant: "Game"
+    question: "What incentives shape behaviour?"
+    canonical_name: wealth_game_coordination
+    alias: capital_diagnose(mode=power_audit), capital_polix(topology)
+    status: declared
+    internal_implementation: wealth_core/game/
+
+  omega_11_boundary:
+    number: "Ω11"
+    invariant: "Boundary"
+    question: "What constraints cannot be crossed?"
+    canonical_name: wealth_boundary_governance
+    alias: capital_diagnose(mode=governance_capacity), capital_diagnose(mode=optimize_mwc)
+    status: declared
+    internal_implementation: wealth_core/governance/
+
+  omega_12_hysteresis:
+    number: "Ω12"
+    invariant: "Hysteresis"
+    question: "How does history constrain the future?"
+    canonical_name: wealth_hysteresis_ledger
+    alias: capital_ledger(read), capital_diagnose(mode=collapse_signature)
+    status: declared
+    internal_implementation: wealth_core/institutional/
+
+  # P1-5: freshness/provenance mandatory on every market/macro output.
+  # All Ω08 (Field) outputs MUST carry source + timestamp + cache_age +
+  # staleness metadata. LatestAvailable ≠ RealTime.
+  omega_field_provenance:
+    applies_to: [omega_08_field, omega_09_signal]
+    required_metadata: [source, timestamp, cache_age_seconds, staleness_class]
+    staleness_classes: [LIVE, RECENT, STALE, ARCHIVAL]
+    doctrine: "Freshness ≠ Truth. LatestAvailable ≠ RealTime."
