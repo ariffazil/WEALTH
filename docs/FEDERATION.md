@@ -1,1 +1,1 @@
-/root/AAA/docs/FEDERATION_CONTRACT.md
+../FEDERATION.md
