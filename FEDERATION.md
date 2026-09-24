@@ -6,7 +6,11 @@
 >
 > **Canonical source:** [`arifOS/docs/FEDERATION.md`](https://github.com/ariffazil/arifOS/blob/main/docs/FEDERATION.md)
 >
-> Last updated: 2026-09-14
+> role: CAPITAL
+> layer: L5
+> mcp: capital_*
+>
+> Last updated: 2026-09-25
 
 WEALTH is the **Capital Intelligence** organ of the arifOS federation. It researches risk, capital, and economic evidence. It never moves money.
 
