@@ -19,9 +19,10 @@ from __future__ import annotations
 import asyncio
 import sys
 import os
+from pathlib import Path
 import traceback
 
-sys.path.insert(0, "/root/WEALTH")
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ.setdefault("WEALTH_BINANCE_ENABLED", "true")
 
 

@@ -1025,6 +1025,49 @@ def _forecast_log_append(record: dict) -> None:
         pass
 
 
+# ── Cone-engine tuning knobs (mirrored from harness.py, 2026-09-25) ──
+# These defaults are intentionally aligned with
+# /root/WEALTH/forecast/calibration/harness.py so the live engine and the
+# backtest replica stay in lock-step. Tightened from the engine's historic
+# implicit 1.0 default after the 2026-09 calibration audit showed real XAUUSD
+# bands were too wide (coverage ~0.77, nominal 0.80, pinball skill negative
+# on 729d walk-forward).
+DEFAULT_ATR_MULTIPLIER: float = 0.6
+DEFAULT_MOMENTUM_BIAS_ENABLED: bool = True
+DEFAULT_MOMENTUM_BIAS_THRESHOLD: float = 0.025  # 2.5% 5-day return trigger
+DEFAULT_MOMENTUM_BIAS_ATR_FRAC: float = 0.3    # 0.3·ATR shift on P50
+
+
+def _compute_momentum_bias(
+    close: pd.Series,
+    atr_val: float,
+    threshold_pct: float = DEFAULT_MOMENTUM_BIAS_THRESHOLD,
+    bias_atr_frac: float = DEFAULT_MOMENTUM_BIAS_ATR_FRAC,
+) -> float:
+    """Momentum mean-reversion bias (Δ in price units, applied to every P50 step).
+
+    Gold mean-reverts after extreme moves. If 5-day return > +threshold, bias the
+    P50 *down* by bias_atr_frac·ATR (expect reversion to the downside). If 5-day
+    return < -threshold, bias P50 *up* by the same amount. Otherwise 0.0.
+
+    Direction anti-correlates with the 5-day move — that is the point. This
+    converts noise-on-direction into a small, biased mean-reversion tilt.
+
+    Mirrors the replica in /root/WEALTH/forecast/calibration/harness.py
+    (lines 292-300). Kept identical so live engine and backtest stay aligned.
+    """
+    if len(close) < 6 or atr_val <= 0:
+        return 0.0
+    ret_5d = float(close.iloc[-1] / close.iloc[-6] - 1.0)
+    if not np.isfinite(ret_5d):
+        return 0.0
+    if ret_5d > threshold_pct:
+        return -bias_atr_frac * atr_val   # fade the pop
+    if ret_5d < -threshold_pct:
+        return +bias_atr_frac * atr_val   # fade the drop
+    return 0.0
+
+
 def cmd_forecast(args):
     horizon = int(args.get("horizon", 30))
     if horizon not in (30, 60, 90):
@@ -1055,14 +1098,37 @@ def cmd_forecast(args):
     else:
         regime = "SIDEWAYS"
 
-    # 3. Cone — p50 drifts, blends toward EMA200; bands are ATR·√t
+    # 3. Cone — p50 drifts, blends toward EMA200; bands are ATR·√t.
+    # Tunable knobs (mirrored from harness.py 2026-09-25):
+    #   atr_multiplier              — band width scalar (default 0.6, was implicit 1.0)
+    #   momentum_bias_enabled       — apply 5-day mean-reversion bias (default True)
+    #   momentum_bias_threshold_pct — |5d return| trigger (default 0.025)
+    #   momentum_bias_atr_frac      — P50 shift magnitude (default 0.3·ATR)
+    # Bias is computed once and applied to every step's p50 (and therefore to
+    # p10/p25/p75/p90 which are defined relative to p50 via ±quantile·sigma).
+    atr_multiplier = DEFAULT_ATR_MULTIPLIER
+    momentum_bias_enabled = DEFAULT_MOMENTUM_BIAS_ENABLED
+    momentum_bias_threshold_pct = DEFAULT_MOMENTUM_BIAS_THRESHOLD
+    momentum_bias_atr_frac = DEFAULT_MOMENTUM_BIAS_ATR_FRAC
+
+    momentum_bias = (
+        _compute_momentum_bias(
+            pd.Series(close) if not isinstance(close, pd.Series) else close,
+            atr_val,
+            threshold_pct=momentum_bias_threshold_pct,
+            bias_atr_frac=momentum_bias_atr_frac,
+        )
+        if momentum_bias_enabled
+        else 0.0
+    )
+
     blend_w = 0.2 if trending else 0.5
     last_date = df.index[-1].date()
     t_dates, p10, p25, p50, p75, p90 = [], [], [], [], [], []
     for t in range(1, horizon + 1):
-        mid = price + slope * t
+        mid = price + slope * t + momentum_bias
         mid += (ema200_val - mid) * (1 - np.exp(-t / 20)) * blend_w
-        sigma = atr_val * np.sqrt(t)
+        sigma = atr_val * atr_multiplier * np.sqrt(t)
         t_dates.append((last_date + timedelta(days=t)).isoformat())
         p10.append(round(mid - 1.282 * sigma, 2))
         p25.append(round(mid - 0.674 * sigma, 2))

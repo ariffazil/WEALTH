@@ -9,10 +9,11 @@ DITEMPA BUKAN DIBERI — Forged, not given.
 
 import math
 import sys
+from pathlib import Path
 import pytest
 import numpy as np
 
-sys.path.insert(0, "/root/WEALTH")
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from wealth_core.optimizers import (
     markowitz_frontier,

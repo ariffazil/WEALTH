@@ -17,8 +17,9 @@ from wealth_mcp.server import create_mcp_server
 
 # Reuse normalize from W-001
 import sys
+from pathlib import Path
 
-sys.path.insert(0, "/root/WEALTH/tests")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_differential import normalize
 from test_monotonicity import _tool_fn
 
