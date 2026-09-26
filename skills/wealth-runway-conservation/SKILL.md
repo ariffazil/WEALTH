@@ -2,7 +2,7 @@
 id: wealth-runway-conservation
 name: WEALTH Runway Conservation
 version: 1.0.0
-description: Capital health and runway conservation via capital_health + capital_diagnose + capital_entropy. USE WHEN: 'runway months', 'burn rate', 'financial health', 'survival mode', 'institutional entropy'. Covers: capital_health (personal_finance/survival submodes, conservative_factor 0.8) → capital_diagnose (abductive institutional diagnostics) → capital_entropy (information loss, consequence displacement, metric drift, trust events). Iron rules: survival math uses conservative factor — no optimistic-case runway claims; institutional entropy findings route to 888 with proposed constraints; never present upside scenarios without paired downside.
+description: "Capital health and runway conservation via capital_health + capital_diagnose + capital_entropy. USE WHEN: 'runway months', 'burn rate', 'financial health', 'survival mode', 'institutional entropy'. Covers: capital_health (personal_finance/survival submodes, conservative_factor 0.8) → capital_diagnose (abductive institutional diagnostics) → capital_entropy (information loss, consequence displacement, metric drift, trust events). Iron rules: survival math uses conservative factor — no optimistic-case runway claims; institutional entropy findings route to 888 with proposed constraints; never present upside scenarios without paired downside."
 owner: 333-AGI
 risk_tier: medium
 floor_scope: [F1, F2, F7, F11]

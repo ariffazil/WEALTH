@@ -1,0 +1,140 @@
+# .understandignore — patterns for files/dirs to exclude from analysis
+# Syntax: same as .gitignore (globs, # comments, ! negation, trailing / for dirs)
+# Lines below are suggestions — uncomment to activate.
+# Use ! prefix to force-include something excluded by defaults.
+#
+# Built-in defaults (always excluded unless negated):
+#   node_modules/, .git/, dist/, build/, obj/, *.lock, *.min.js, etc.
+#
+
+# --- From .gitignore (uncomment to exclude) ---
+
+# .DS_Store
+# Thumbs.db
+# *.swp
+# *.swo
+# *~
+# *.tmp
+# *.temp
+# *.backup-*
+# logs/
+# data/forecast_log.jsonl
+# data/forecast_log.jsonl.*
+# .env
+# *.bak*
+# *.backup*
+# .env.local
+# *.bak
+# *.backup
+# data/ingest_cache/
+# data/ingest_health.json
+# data/vault999.jsonl
+# *.pyc
+# *.pyo
+# entropy-report.json
+# reports/
+# scratch/__pycache__/
+# C:/
+# .kimi
+# identity.toml
+# .identity_hash
+# *.egg-info/
+# .coverage
+# coverage.xml
+# .memory/
+# .ci-venv/
+# .env
+# .env.local
+# .env.*.local
+# .mypy_cache/
+# Copilot/
+# site/
+# data/gold_alert_chart.png
+# CONTRIBUTING.md
+# .megamemory/
+# sessions/
+
+# --- Detected directories (uncomment to exclude) ---
+
+# docs/
+# scripts/
+# tests/
+
+# --- Test file patterns (uncomment to exclude) ---
+
+# JS / TS
+# *.test.*
+# *.spec.*
+# *.snap
+# C# / .NET
+# **/*Tests.cs
+# **/*Test.cs
+# **/*Fixture.cs
+# **/*.Tests.csproj
+# Java / Kotlin
+# **/src/test/**
+# **/*Test.java
+# **/*IT.java
+# **/*Spec.kt
+# Go
+# **/*_test.go
+# C++
+# **/*_test.cc
+# **/*_test.cpp
+# **/*_test.cxx
+# **/*Test.cc
+# **/*Test.cpp
+# **/*_unittest.cc
+# **/*_unittest.cpp
+# **/*_browsertest.cc
+# **/*_benchmark.cc
+# **/*Benchmark.cpp
+# Python
+# **/test_*.py
+# **/*_test.py
+# **/tests.py
+# **/conftest.py
+# Rust
+# **/tests.rs
+# **/test_*.rs
+# **/*_test.rs
+# **/bench_*.rs
+# **/*_bench.rs
+# Ruby
+# **/*_spec.rb
+# **/*_test.rb
+# **/test_*.rb
+# **/spec_helper.rb
+# **/test_helper.rb
+# **/rails_helper.rb
+# Swift
+# **/Tests/**/*.swift
+# **/Specs/**/*.swift
+
+# --- 333-AGI entropy patterns (2026-09-14, Q4 HOLD) ---
+**/pre-forged-*
+**/pre-helix-*
+**/.bak-*
+**/.quarantine-*
+**/.superseded-*
+**/.tombstoned-*
+**/.zen-archived-*
+**/.archive-*
+**/.hermes-archived-*
+*.bak-*
+
+# --- Q4 HOLD: aggressive excludes to bring WEALTH under 19.6M tokens ---
+# Original baseline: 69,879 files, 508K LOC → ~19.6M tokens at default
+# Goal: reduce to ~5-8M tokens by excluding fixtures, data files, generated artifacts
+**/fixtures/**
+**/__snapshots__/**
+**/test_data/**
+**/sample_data/**
+**/*.csv
+**/*.parquet
+**/*.pkl
+**/*.h5
+**/*.feather
+**/data/raw/**
+**/data/external/**
+**/migrations/**
