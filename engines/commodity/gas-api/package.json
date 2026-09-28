@@ -1,0 +1,7 @@
+{
+  "name": "wealth-gas-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "CJS engine wrapper — deliberately not ESM (SCAR-001 packaging truth)"
+}

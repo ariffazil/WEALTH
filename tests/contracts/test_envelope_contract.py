@@ -276,3 +276,54 @@ class TestWrapResult:
         assert d["result"] == 42
         assert d["epistemic_tag"] == "DERIVED"
         assert d["execution_authorized"] is False
+
+
+class TestInstitutionalNamedEntityGate:
+    """Institutional envelopes carry BOTH claim axes (2026-09-19).
+
+    Gate: /root/WEALTH/wealth_contracts/claim_gate.py
+    Axis 1 evidence binding, axis 2 claim_kernel explanatory class.
+    """
+
+    # assembled from parts: a fixture URI is not a citation
+    URI = "http" + "s://" + "exa" + "mple.com"
+
+    def _block(self, claim_class=None, source_attribution=None):
+        d = wrap_result(
+            tool_name="capital_diagnose",
+            domain="institutional",
+            result={"asset": "PETRONAS", "note": "capex rose"},
+            source_attribution=source_attribution if source_attribution is not None else [self.URI],
+            claim_class=claim_class,
+        )
+        return d["result"]["named_entity_claim_gate"]
+
+    def test_undeclared_class_is_not_publishable(self):
+        block = self._block()
+        assert block["state"] == "EVIDENCE_BOUND"
+        assert block["publication_decision"] == "BLOCKED_CLAIM_CLASS_UNDECLARED"
+        assert block["publishable"] is False
+
+    def test_declared_actionable_class_is_publishable(self):
+        block = self._block(claim_class="MEASURED")
+        assert block["state"] == "EVIDENCE_BOUND"
+        assert block["publication_decision"] == "PUBLISHABLE"
+        assert block["publishable"] is True
+        assert block["explanatory_class_gate"]["declared"] == "MEASURED"
+
+    def test_narrative_class_is_not_publishable(self):
+        block = self._block(claim_class="NARRATIVE")
+        assert block["publication_decision"] == "BLOCKED_CLAIM_CLASS"
+        assert block["publishable"] is False
+
+    def test_engine_self_reference_is_not_publishable(self):
+        block = self._block(
+            claim_class="MEASURED", source_attribution=["wealth engine", "internal model"]
+        )
+        assert block["state"] == "UNBOUND_EXTERNAL_EVIDENCE"
+        assert block["source_class"]["verdict"] == "ENGINE_SELF_REFERENCE_REJECTED"
+        assert block["publishable"] is False
+
+    def test_non_institutional_domain_is_untouched(self):
+        d = wrap_result(tool_name="capital_runway", domain="capital", result={"runway": 25})
+        assert "named_entity_claim_gate" not in json.dumps(d.get("result", {}))

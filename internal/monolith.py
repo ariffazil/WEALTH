@@ -5313,6 +5313,9 @@ async def wealth_survival_engine(
     conservative_factor: float = 0.8,
     legacy_compat: bool = False,
     scar_history: list[dict] | None = None,
+    actor_id: str | None = None,
+    session_id: str | None = None,
+    trace_id: str | None = None,
 ) -> dict:
     """
     Ω-SURVIVAL-ENGINE: Unified survival intelligence — cashflow, runway, burn, liquidity.
@@ -5388,6 +5391,7 @@ async def wealth_survival_engine(
             [],
             [],
             epistemic="OBSERVED",
+            governance_args={"actor_id": actor_id, "session_id": session_id, "trace_id": trace_id},
         )
         dimensional_verdicts = {
             "conservation": "NEUTRAL",
@@ -5436,6 +5440,7 @@ async def wealth_survival_engine(
             flags,
             [],
             epistemic="OBSERVED",
+            governance_args={"actor_id": actor_id, "session_id": session_id, "trace_id": trace_id},
         )
         dimensional_verdicts = {
             "conservation": "CRITICAL"
@@ -5476,6 +5481,7 @@ async def wealth_survival_engine(
             flags,
             [],
             epistemic="OBSERVED",
+            governance_args={"actor_id": actor_id, "session_id": session_id, "trace_id": trace_id},
         )
         dimensional_verdicts = {
             "conservation": "CRITICAL" if liquidity_state == "DEFICIT" else "ADEQUATE",
@@ -5565,6 +5571,7 @@ async def wealth_survival_engine(
             flags,
             [],
             epistemic="ASSUMED" if is_empty_baseline else "OBSERVED",
+            governance_args={"actor_id": actor_id, "session_id": session_id, "trace_id": trace_id},
         )
         dimensional_verdicts = {
             "conservation": "UNCERTAIN" if is_empty_baseline else ("CRITICAL" if survival_verdict == "SURVIVAL_CRITICAL" else "ADEQUATE"),

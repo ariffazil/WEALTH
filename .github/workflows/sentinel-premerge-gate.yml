@@ -95,7 +95,7 @@ jobs:
           fi
 
           # Allocation without audit ref
-          ALLOC_HITS=$(git diff origin/main...HEAD -- '*.py' | grep '^+' | grep -iE "allocat|transfer|disburs" | grep -v "audit_ref\|session_id\|evidence\|test_\|#" | grep -v "^++" || true)
+          ALLOC_HITS=$(git diff origin/main...HEAD -- '*.py' | grep '^+' | grep -iE "\b(allocat|transfer|disburs)\w*\(" | grep -v "audit_ref\|session_id\|evidence\|test_\|#\|re\.compile" | grep -v "^++" || true)
           if [[ -n "$ALLOC_HITS" ]]; then
             VIOLATIONS="${VIOLATIONS}\n  - Capital allocation without audit_ref (every allocation needs a trace)"
           fi

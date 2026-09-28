@@ -89,6 +89,59 @@ def register_ledger(mcp):
                     actor_id=actor_id,
                     warnings=["No ledger mutation was attempted."],
                 )
+            # ── P6 alpha-zen conformance: duplicate-payment guard (2026-09-22) ──
+            # payment_hash MUST make retries idempotent: a second write carrying a
+            # payment_hash already present is a DUPLICATE replay and is blocked.
+            import json as _json
+
+            seen_path = "/root/VAULT999/wealth/payment_hashes.seen.jsonl"
+            if payment_hash and len(str(payment_hash).strip()) >= 8:
+                dup_ref = None
+                # belt 1: local seen-sidecar (deterministic, storage-independent)
+                try:
+                    with open(seen_path, "r", encoding="utf-8") as _fh:
+                        for _i, _ln in enumerate(_fh, 1):
+                            if str(payment_hash) in _ln:
+                                dup_ref = f"payment_hashes.seen.jsonl:{_i}"
+                                break
+                except OSError:
+                    pass
+                # belt 2: VAULT999 full-record search
+                if dup_ref is None:
+                    _probe = await _call_legacy_tool(
+                        "wealth_vault_query",
+                        {"query": str(payment_hash), "limit": 5, "session_id": session_id},
+                    )
+                    if isinstance(_probe, dict):
+                        try:
+                            if int(_probe.get("count") or 0) >= 1:
+                                dup_ref = f"vault999_search_count={_probe.get('count')}"
+                        except (TypeError, ValueError):
+                            pass
+                if dup_ref is not None:
+                    return wrap_result(
+                        tool_name="capital_ledger",
+                        domain="vault",
+                        result={
+                            "status": "DUPLICATE",
+                            "error_code": "DUPLICATE_PAYMENT_HASH",
+                            "duplicate_payment_hash": payment_hash,
+                            "duplicate_evidence": dup_ref,
+                            "message": (
+                                "Duplicate payment blocked: payment_hash already recorded "
+                                f"({dup_ref}). Idempotent replay — no new ledger write performed."
+                            ),
+                        },
+                        epistemic_tag=EpistemicTag.OBSERVED,
+                        evidence_quality=EvidenceQuality.OBSERVED,
+                        execution_authority=ExecutionAuthority.BLOCKED,
+                        requires_888_hold=False,
+                        source_attribution=["ledger_duplicate_guard_p6"],
+                        session_id=session_id,
+                        trace_id=trace_id,
+                        actor_id=actor_id,
+                        warnings=["Retry suppressed: duplicate payment_hash."],
+                    )
             raw = await _call_legacy_tool(
                 "wealth_vault_write",
                 {
@@ -104,6 +157,14 @@ def register_ledger(mcp):
                     "actor_id": actor_id,
                 },
             )
+            if raw.get("status") == "APPENDED" and payment_hash and len(str(payment_hash).strip()) >= 8:
+                try:
+                    with open(seen_path, "a", encoding="utf-8") as _fh:
+                        _fh.write(
+                            _json.dumps({"payment_hash": str(payment_hash), "tx_type": tx_type}) + "\n"
+                        )
+                except OSError:
+                    pass
             persisted = raw.get("status") == "APPENDED"
             return wrap_result(
                 tool_name="capital_ledger",
