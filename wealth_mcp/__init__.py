@@ -12,19 +12,15 @@ CAPITAL_TOOL_NAMES = (
     "capital_market",
     "capital_ledger",
     "capital_registry",
+    "capital_claims",
     "capital_entropy",
     "wealth_judge_handoff",
     "capital_indicator",
     "capital_backtest",
     "capital_entry_plan",
-    "capital_claims",
+    "wealth_synthesize",
     "capital_polix",
     "capital_civx",
-    # P1 2026-09-21 — Ω00 cross-dimensional synthesis (P1-IDENTITY-PIVOT).
-    # Returns domain_assessment, NEVER a constitutional verdict.
-    # WEALTH computes. arifOS judges. wealth_synthesize is the analyst;
-    # arifOS.arif_judge is the judge. Analyst ≠ Judge.
-    "wealth_synthesize",
 )
 
 # Zen Phase 1a: shadow tools removed from MCP surface.
