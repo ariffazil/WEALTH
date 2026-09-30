@@ -91,6 +91,20 @@ if __name__ == "__main__":
     from starlette.routing import Mount, Route
     from starlette.responses import JSONResponse
 
+    # HERMES semantic gate plane — honest degradation if the module
+    # cannot load: /health must say so, never silently claim "off".
+    try:
+        from wealth_mcp.hermes_gate import gate_status as _gate_status
+    except Exception as _gate_import_exc:
+
+        def _gate_status() -> dict:
+            return {
+                "gate": "hermes_semantic",
+                "enabled": False,
+                "mode": "IMPORT_FAILED",
+                "error": f"{type(_gate_import_exc).__name__}: {_gate_import_exc}",
+            }
+
     async def health(request):
         # FEDERATION HANDSHAKE (canonical: arifOS/arifosmcp/schemas/federation_enums.py)
         # See: /root/AAA/governance/FEDERATION_HANDSHAKE.md
@@ -123,12 +137,26 @@ if __name__ == "__main__":
 
         commit_identity = _resolve_source_commit(base_dir)
 
+        # Five-manifest health plane (P1 2026-09-16): a patch on disk is not
+        # a patch in service — surface working-tree seal state so disk/runtime
+        # drift is visible at the health endpoint.
+        try:
+            _wt = subprocess.run(
+                ["/usr/bin/git", "-C", str(base_dir), "status", "--porcelain"],
+                capture_output=True, text=True, timeout=3, check=False,
+            )
+            working_tree = "DIRTY" if _wt.stdout.strip() else ("CLEAN" if _wt.returncode == 0 else "UNKNOWN")
+        except Exception:
+            working_tree = "UNKNOWN"
+
         return JSONResponse(
             {
                 "status": "healthy",
                 "identity": identity_hash,
                 "identity_hash": identity_hash,
                 **commit_identity,
+                "working_tree": working_tree,
+                "runtime_seal_state": "UNSEALED" if working_tree == "DIRTY" else "SEALED",
                 "tools_loaded": public_tools_live,
                 "public_tools": public_tools_live,
                 "public_tools_declared": len(PUBLIC_TOOL_NAMES),
@@ -153,6 +181,10 @@ if __name__ == "__main__":
                 # F2-fidelity fix (MCP-PROBE-2026-08-08): declare authority_ceiling.
                 # Per ORGAN.md, WEALTH = COMPUTE_ONLY (555).
                 "authority_ceiling": "555_COMPUTE_ONLY",
+                # HERMES semantic precondition (F13 directive 2026-09-16):
+                # meaning gates money — surface gate state so a fail-closed
+                # hold is observable, never silent.
+                "hermes_semantic_gate": _gate_status(),
                 "version": (
                     f"v{WEALTH_VERSION}"
                     if WEALTH_VERSION != "UNAVAILABLE"

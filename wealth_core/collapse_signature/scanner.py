@@ -426,7 +426,7 @@ def compute_collapse_risk(
         for prior in historical_priors:
             prior_comparison[prior] = {"included": True, "name": prior}
 
-    return {
+    _result = {
         "profile": profile,
         "risk": risk,
         "two_d_risk_map": two_d_risk_map,
@@ -436,6 +436,16 @@ def compute_collapse_risk(
         "priors_used": priors_used,
         "prior_comparison": prior_comparison,
     }
+
+    # Calibrated layer v2 (LAW-WEALTH-01 release 1, 2026-09-16): quantitative
+    # triggers + semantic mechanisms + coverage discipline. Additive overlay;
+    # never lowers risk; forbids confident negatives on thin evidence. Born
+    # from the v1 false-negative: an adversarial extraction paraphrase scored
+    # MINIMAL because "sovereign extraction" was not in the phrase lists.
+    from .calibrated import analyze as _cal_analyze, calibrated_overlay as _cal_overlay
+
+    _result = _cal_overlay(_result, _cal_analyze(scenario))
+    return _result
 
 
 def _assign_quadrant(acemoglu_label: str, calhoun_label: str) -> str:

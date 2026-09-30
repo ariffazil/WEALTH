@@ -1,0 +1,18 @@
+{
+  "schema": "wealth.tune.validation.v1",
+  "best_params": {
+    "drift_scale": 0.965424565037675,
+    "atr_multiplier": 0.5127417533168497,
+    "horizon_weights": [
+      1.6951179547984405,
+      1.9405481307854038,
+      0.7750681587398169
+    ]
+  },
+  "validation_metrics": {
+    "pinball_skill": 0.2781578207502087,
+    "model_coverage": 0.8126361655773421,
+    "brier_skill": 0.31840317368974014
+  },
+  "notes": "Honest-validation slice (last 30 % of windows). Tuning slice never saw validation."
+}

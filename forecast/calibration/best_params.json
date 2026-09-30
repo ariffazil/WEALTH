@@ -1,0 +1,605 @@
+{
+  "schema": "wealth.tune.gold.v1",
+  "horizon_days": 30,
+  "windows": [
+    30,
+    60,
+    90
+  ],
+  "best_params": {
+    "drift_scale": 0.965424565037675,
+    "atr_multiplier": 0.5127417533168497,
+    "horizon_weights": [
+      1.6951179547984405,
+      1.9405481307854038,
+      0.7750681587398169
+    ]
+  },
+  "tuning_metrics": {
+    "pinball_skill": 0.2380872743834609,
+    "model_coverage": 0.7855979146301727,
+    "brier_skill": 0.2839095591258164
+  },
+  "validation_metrics": {
+    "pinball_skill": 0.2781578207502087,
+    "model_coverage": 0.8126361655773421,
+    "brier_skill": 0.31840317368974014
+  },
+  "tuning_window_split": "first_70pct=[30, 60]",
+  "validation_window_split": "last_30pct=[90]",
+  "trials": [
+    {
+      "trial": 0,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 0.23148552582677873,
+        "atr_multiplier": 0.7518511610752184,
+        "horizon_weights": [
+          0.6834743950353028,
+          0.9915818005225439,
+          1.796742465610124
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.03091434415035088,
+        "model_coverage": 0.8636363636363635,
+        "brier_skill": 0.06405230081283758
+      },
+      "score": 0.09496664496318846
+    },
+    {
+      "trial": 1,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 0.012917238399046127,
+        "atr_multiplier": 0.7956349071065274,
+        "horizon_weights": [
+          1.5873099048122141,
+          0.8285734356122223,
+          0.16762880624019183
+        ]
+      },
+      "tuning": {
+        "pinball_skill": -0.022683514906387092,
+        "model_coverage": 0.8888888888888888,
+        "brier_skill": -0.04092840731882247
+      },
+      "score": -0.06361192222520956
+    },
+    {
+      "trial": 2,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 0.7841912711814549,
+        "atr_multiplier": 0.9414425947494309,
+        "horizon_weights": [
+          0.044604933475244524,
+          1.780876631875653,
+          0.04773936535167467
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.10371995034322867,
+        "model_coverage": 0.9690452916259368,
+        "brier_skill": 0.29964972994466943
+      },
+      "score": 0.058143222158214325
+    },
+    {
+      "trial": 3,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 1.6716406431063169,
+        "atr_multiplier": 1.0974779401650485,
+        "horizon_weights": [
+          0.08086338587643671,
+          1.6259806067692426,
+          1.5527073062499612
+        ]
+      },
+      "tuning": {
+        "pinball_skill": -0.036412785787184654,
+        "model_coverage": 0.9657869012707723,
+        "brier_skill": 0.24492473690950767
+      },
+      "score": -0.12042255523153822
+    },
+    {
+      "trial": 4,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 1.4342576435094778,
+        "atr_multiplier": 0.5850423342731618,
+        "horizon_weights": [
+          1.2575802783110634,
+          1.9723592987101888,
+          1.5426279063376214
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.19746335802093884,
+        "model_coverage": 0.8022157054415119,
+        "brier_skill": 0.25761331458120307
+      },
+      "score": 0.4550766726021419
+    },
+    {
+      "trial": 5,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 0.42816059494019343,
+        "atr_multiplier": 0.6116356372810727,
+        "horizon_weights": [
+          1.9472627975379673,
+          1.4809826185750212,
+          1.9575346859655611
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.09242323505813815,
+        "model_coverage": 0.7618116650374714,
+        "brier_skill": 0.12876815421420917
+      },
+      "score": 0.22119138927234733
+    },
+    {
+      "trial": 6,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 1.57234292038711,
+        "atr_multiplier": 0.6736237826783907,
+        "horizon_weights": [
+          0.23878042013844047,
+          0.4438166191311075,
+          1.2518021047202794
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.12376720556137671,
+        "model_coverage": 0.8277940697295536,
+        "brier_skill": 0.25505209882730356
+      },
+      "score": 0.3788193043886803
+    },
+    {
+      "trial": 7,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 1.4013066724815029,
+        "atr_multiplier": 1.5005467521113147,
+        "horizon_weights": [
+          0.810424639563913,
+          0.7020252292621403,
+          1.8024247445227282
+        ]
+      },
+      "tuning": {
+        "pinball_skill": -0.19484826664245547,
+        "model_coverage": 0.9863147605083089,
+        "brier_skill": 0.25600983790521376
+      },
+      "score": -0.37041223127878614
+    },
+    {
+      "trial": 8,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 0.1842784455322588,
+        "atr_multiplier": 0.766763092989863,
+        "horizon_weights": [
+          0.648558563855256,
+          1.615110855094029,
+          0.9261911531109353
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.029359749305904626,
+        "model_coverage": 0.8859563375692407,
+        "brier_skill": 0.07360202451266712
+      },
+      "score": 0.10296177381857174
+    },
+    {
+      "trial": 9,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 1.7080966129668655,
+        "atr_multiplier": 1.6912950392555193,
+        "horizon_weights": [
+          0.5637060174428405,
+          0.6239917054571349,
+          0.23553263612065645
+        ]
+      },
+      "tuning": {
+        "pinball_skill": -0.3810210513274257,
+        "model_coverage": 0.9863147605083089,
+        "brier_skill": 0.2505953449875169
+      },
+      "score": -0.5619995088814532
+    },
+    {
+      "trial": 10,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 0.2828576802009002,
+        "atr_multiplier": 1.5600504729063445,
+        "horizon_weights": [
+          0.5080194335672459,
+          0.16654663518271606,
+          1.7634619505832794
+        ]
+      },
+      "tuning": {
+        "pinball_skill": -0.31685023468152385,
+        "model_coverage": 0.9931573802541545,
+        "brier_skill": 0.11384578159807346
+      },
+      "score": -0.6687913543542225
+    },
+    {
+      "trial": 11,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 0.6055460157649315,
+        "atr_multiplier": 1.5551563534925636,
+        "horizon_weights": [
+          0.1269532909751776,
+          1.3564987117991352,
+          0.15568105604093008
+        ]
+      },
+      "tuning": {
+        "pinball_skill": -0.2070574443925164,
+        "model_coverage": 0.9863147605083089,
+        "brier_skill": 0.28952003715679125
+      },
+      "score": -0.34911120977726956
+    },
+    {
+      "trial": 12,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 0.8898392460697113,
+        "atr_multiplier": 0.992676362703767,
+        "horizon_weights": [
+          0.5104970003044171,
+          0.5896176122024803,
+          0.4568106011624009
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.08328903190675713,
+        "model_coverage": 0.9708374063212772,
+        "brier_skill": 0.30238633955941024
+      },
+      "score": 0.03148833985978128
+    },
+    {
+      "trial": 13,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 1.4243405248587078,
+        "atr_multiplier": 0.6789616730664683,
+        "horizon_weights": [
+          1.240335356353581,
+          0.31837561337850073,
+          1.93331879152499
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.17236252159828158,
+        "model_coverage": 0.8787878787878788,
+        "brier_skill": 0.25131454777173134
+      },
+      "score": 0.4236770693700129
+    },
+    {
+      "trial": 14,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 1.1836074438524167,
+        "atr_multiplier": 1.167505798059254,
+        "horizon_weights": [
+          1.2575954420604396,
+          0.8205299770065522,
+          1.4877821857686249
+        ]
+      },
+      "tuning": {
+        "pinball_skill": -0.014872465568331772,
+        "model_coverage": 0.9794721407624634,
+        "brier_skill": 0.2716456257280039
+      },
+      "score": -0.1405875436526446
+    },
+    {
+      "trial": 15,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 0.9355618411022577,
+        "atr_multiplier": 1.3464830652558677,
+        "horizon_weights": [
+          0.28272130766912973,
+          1.495852415305053,
+          1.0157203039593772
+        ]
+      },
+      "tuning": {
+        "pinball_skill": -0.09604733059296633,
+        "model_coverage": 0.9863147605083089,
+        "brier_skill": 0.2848518538207888
+      },
+      "score": -0.24276927931372194
+    },
+    {
+      "trial": 16,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 0.35248404402406486,
+        "atr_multiplier": 1.0165083520643854,
+        "horizon_weights": [
+          1.1122828072706406,
+          0.04500705688331519,
+          1.8117389388806757
+        ]
+      },
+      "tuning": {
+        "pinball_skill": -0.038010492597340184,
+        "model_coverage": 0.9773541870316064,
+        "brier_skill": 0.13999606165977851
+      },
+      "score": -0.2847853660955934
+    },
+    {
+      "trial": 17,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 1.0858579797165067,
+        "atr_multiplier": 0.8886580088568168,
+        "horizon_weights": [
+          1.2896581066252932,
+          0.043732521248822875,
+          0.34740000341523025
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.12513830344086146,
+        "model_coverage": 0.9586184424894102,
+        "brier_skill": 0.29561009578784936
+      },
+      "score": 0.12765618678165996
+    },
+    {
+      "trial": 18,
+      "phase": "random",
+      "hp": {
+        "drift_scale": 1.2043883175061247,
+        "atr_multiplier": 0.6716730447478653,
+        "horizon_weights": [
+          1.9402924907599337,
+          1.8193109608359246,
+          0.7875100276654474
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.20422517501056853,
+        "model_coverage": 0.8636363636363635,
+        "brier_skill": 0.27932816425589574
+      },
+      "score": 0.48355333926646427
+    },
+    {
+      "trial": 19,
+      "phase": "greedy",
+      "hp": {
+        "drift_scale": 0.9875856105468266,
+        "atr_multiplier": 0.8462179517890647,
+        "horizon_weights": [
+          1.9452453473764915,
+          1.9213761962155775,
+          0.8072097159537661
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.14814631763146047,
+        "model_coverage": 0.9362984685565331,
+        "brier_skill": 0.2822370347490661
+      },
+      "score": 0.2488910095978612
+    },
+    {
+      "trial": 20,
+      "phase": "greedy",
+      "hp": {
+        "drift_scale": 1.0702483322170313,
+        "atr_multiplier": 0.5852485730375072,
+        "horizon_weights": [
+          1.8896880430134375,
+          1.6698280978273043,
+          0.7932104533293516
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.2330482686715678,
+        "model_coverage": 0.8391984359726296,
+        "brier_skill": 0.2846488122074406
+      },
+      "score": 0.5176970808790085
+    },
+    {
+      "trial": 21,
+      "phase": "greedy",
+      "hp": {
+        "drift_scale": 0.9409646522766414,
+        "atr_multiplier": 0.5971107436891901,
+        "horizon_weights": [
+          1.7040670366653896,
+          1.5067638423915783,
+          0.921753019254115
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.22713826205107013,
+        "model_coverage": 0.84099055066797,
+        "brier_skill": 0.28435272263231454
+      },
+      "score": 0.5114909846833846
+    },
+    {
+      "trial": 22,
+      "phase": "greedy",
+      "hp": {
+        "drift_scale": 1.1367282295379093,
+        "atr_multiplier": 0.729121781959776,
+        "horizon_weights": [
+          1.855492238794035,
+          1.731636456816047,
+          1.0824129576398362
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.1909345345246728,
+        "model_coverage": 0.8999674160964484,
+        "brier_skill": 0.2774829885620944
+      },
+      "score": 0.4684175230867672
+    },
+    {
+      "trial": 23,
+      "phase": "greedy",
+      "hp": {
+        "drift_scale": 1.137125093771941,
+        "atr_multiplier": 0.5,
+        "horizon_weights": [
+          1.9796434680715354,
+          1.960712742913438,
+          0.7045438477317195
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.23196236960970595,
+        "model_coverage": 0.738514173998045,
+        "brier_skill": 0.2817553767439397
+      },
+      "score": 0.5137177463536456
+    },
+    {
+      "trial": 24,
+      "phase": "greedy",
+      "hp": {
+        "drift_scale": 1.2788419678711551,
+        "atr_multiplier": 0.513471546614554,
+        "horizon_weights": [
+          1.8191083285660665,
+          1.4355518008404973,
+          0.8636356282234816
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.21684598483310563,
+        "model_coverage": 0.7619745845552297,
+        "brier_skill": 0.276856939821455
+      },
+      "score": 0.4937029246545606
+    },
+    {
+      "trial": 25,
+      "phase": "greedy",
+      "hp": {
+        "drift_scale": 1.345299295515232,
+        "atr_multiplier": 0.5,
+        "horizon_weights": [
+          2.0,
+          1.8412368327992736,
+          0.5520929660201642
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.186769290218953,
+        "model_coverage": 0.7152166829586184,
+        "brier_skill": 0.2739208859288118
+      },
+      "score": 0.4606901761477648
+    },
+    {
+      "trial": 26,
+      "phase": "greedy",
+      "hp": {
+        "drift_scale": 0.7997196025978563,
+        "atr_multiplier": 0.5437192045279653,
+        "horizon_weights": [
+          2.0,
+          1.8540917061305786,
+          0.5430774595286313
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.22807178035320974,
+        "model_coverage": 0.7859237536656891,
+        "brier_skill": 0.2813287671203473
+      },
+      "score": 0.509400547473557
+    },
+    {
+      "trial": 27,
+      "phase": "greedy",
+      "hp": {
+        "drift_scale": 0.965424565037675,
+        "atr_multiplier": 0.5127417533168497,
+        "horizon_weights": [
+          1.6951179547984405,
+          1.9405481307854038,
+          0.7750681587398169
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.2380872743834609,
+        "model_coverage": 0.7855979146301727,
+        "brier_skill": 0.2839095591258164
+      },
+      "score": 0.5219968335092773
+    },
+    {
+      "trial": 28,
+      "phase": "greedy",
+      "hp": {
+        "drift_scale": 0.9603433897877482,
+        "atr_multiplier": 0.5,
+        "horizon_weights": [
+          1.8436010367083817,
+          2.0,
+          0.8795382167884337
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.2352186920137712,
+        "model_coverage": 0.744216357119583,
+        "brier_skill": 0.279909561324232
+      },
+      "score": 0.5151282533380033
+    },
+    {
+      "trial": 29,
+      "phase": "greedy",
+      "hp": {
+        "drift_scale": 1.2021795601546212,
+        "atr_multiplier": 0.5,
+        "horizon_weights": [
+          1.765879532267172,
+          1.784757212424728,
+          0.5074307004617593
+        ]
+      },
+      "tuning": {
+        "pinball_skill": 0.22088697016622644,
+        "model_coverage": 0.7274356467904854,
+        "brier_skill": 0.2836892547578159
+      },
+      "score": 0.5045762249240424
+    }
+  ],
+  "elapsed_seconds": 1.41,
+  "tuning_better_than_baseline": true,
+  "honest_validation_coverage": 0.8126361655773421
+}
