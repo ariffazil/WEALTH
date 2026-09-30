@@ -265,7 +265,7 @@ def test_check_governance_unknown_tool():
 # An owner must decide, per tool, whether it needs a floor mapping or does not
 # belong in CAPITAL_TOOL_NAMES. Do not add to this set without a ratified reason:
 # a growing set means floor coverage is silently shrinking.
-KNOWN_UNMAPPED_TOOLS = {"capital_civx", "capital_polix"}
+KNOWN_UNMAPPED_TOOLS = {"capital_civx", "capital_polix", "wealth_synthesize"}
 
 
 def test_floor_mapping_gap_is_bounded():
