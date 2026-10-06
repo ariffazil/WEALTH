@@ -1,2 +1,4 @@
-# This file is superseded by: /root/AAA/organ.yaml
-# Status: DERIVED — do not update this copy.
+# This file is superseded by: /root/AAA/federation/organs.yaml (machine SOT)
+# Status: TOMBSTONE — do not update this copy.
+# Reconciled 2026-10-05 11:22 MYT: pointer target corrected (was /root/AAA/organ.yaml, which does not exist).
+# Authority: /root/AAA/federation/organs.yaml (port 18082, unit wealth-organ.service, class CORE, authority_ceiling COMPUTE_ONLY)
