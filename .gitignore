@@ -2,12 +2,15 @@
 .DS_Store
 Thumbs.db
 
-# Editor files
+# Editor / vendor tool state
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.claude/
+.agents/
+.antigravity/
 
 # Temporary files
 *.tmp
