@@ -52,7 +52,11 @@ def _get_tool(register_fn, name):
 
 
 def _run(coro_fn, **kwargs):
-    return asyncio.get_event_loop().run_until_complete(coro_fn(**kwargs))
+    # WEALTH-TESTPOLLUTION-20261007: get_event_loop() raised "no current event
+    # loop" whenever an earlier test left the thread without one, so this file
+    # failed only in full-suite order. asyncio.run() owns its loop and is
+    # order-independent.
+    return asyncio.run(coro_fn(**kwargs))
 
 
 # ── helper to obtain both implementations ────────────────────────────────
