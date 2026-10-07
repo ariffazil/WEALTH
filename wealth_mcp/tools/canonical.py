@@ -1585,10 +1585,14 @@ def register_canonical_tools(mcp):
             import os as _os
             from pathlib import Path as _P
 
+            # WEALTH-RECONCILIATION-20261007: the writer (server.py:757) reads
+            # WEALTH_RECEIPT_PATH (singular). Accept both names, writer first,
+            # so setting one variable can never silently split the write path
+            # from the query path.
             _receipts_path = _P(
-                _os.environ.get(
-                    "WEALTH_RECEIPTS_PATH", "/root/VAULT999/wealth/receipts.jsonl"
-                )
+                _os.environ.get("WEALTH_RECEIPT_PATH")
+                or _os.environ.get("WEALTH_RECEIPTS_PATH")
+                or "/root/VAULT999/wealth/receipts.jsonl"
             )
             if not _receipts_path.is_file():
                 return wrap_result(

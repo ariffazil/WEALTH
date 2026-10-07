@@ -786,6 +786,7 @@ def create_mcp_server() -> FastMCP:
             missing_preload: list | None = None,
             result: Any = None,
             floor_verdict: dict | None = None,
+            semantic_gate: dict | None = None,
             caller_service: Any = None,
             trace_id: Any = None,
             identity_model: Any = None,
@@ -855,6 +856,20 @@ def create_mcp_server() -> FastMCP:
             }
             if floor_verdict:
                 receipt["floor_verdict"] = floor_verdict
+            if semantic_gate:
+                # WEALTH-AUDIT-20261007: persist the HERMES semantic gate
+                # outcome on the PASS path too. Previously only BLOCKED left
+                # a trace, so "gate ran and allowed this" was unprovable —
+                # absence of evidence was unfalsifiable in the permissive
+                # direction. Witnesses must be able to witness permission,
+                # not only refusal.
+                receipt["semantic_gate"] = {
+                    "gate": "hermes_semantic",
+                    "tool": tool_name,
+                    "status": semantic_gate.get("status"),
+                    "outcome": semantic_gate.get("outcome"),
+                    "error_code": semantic_gate.get("error_code", ""),
+                }
             if duplicate_of:
                 receipt["duplicate_of"] = duplicate_of
             if missing_preload:
@@ -1662,6 +1677,7 @@ def create_mcp_server() -> FastMCP:
                     identity_model=binding.get("identity_model"),
                     authority_ceiling=binding.get("authority_ceiling"),
                     floor_verdict=floor_verdict,
+                    semantic_gate=hermes_gate_state,
                 )
                 return _finalize(
                     _attach_receipt_meta(result, receipt_state),
