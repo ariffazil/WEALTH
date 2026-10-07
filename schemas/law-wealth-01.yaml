@@ -1,0 +1,129 @@
+---
+# LAW-WEALTH-01 — Reality-Bound Capability Promotion
+# Ratified 2026-09-16. F13 SOVEREIGN.
+# Machine-readable companion to docs/LAW-WEALTH-01.md.
+id: LAW-WEALTH-01
+title: "Reality-Bound Capability Promotion"
+ratified_on: "2026-09-16"
+ratified_by: "F13 SOVEREIGN (Arif Fazil)"
+status: ACTIVE
+preamble: |
+  WEALTH computes. arifOS judges. Human decides.
+  No WEALTH capability may be promoted above SPECULATED
+  unless it passes all 10 clauses below. Each clause is
+  testable in CI; prose is not enforcement.
+
+clauses:
+  - id: 1
+    title: "schema_validity"
+    rule: |
+      Inputs and outputs must validate against declared JSON Schema
+      contracts. Schema presence alone is insufficient evidence of
+      capability — it is necessary but not sufficient.
+    enforcement: "JSON Schema 2020-12 validator; checked at middleware entry."
+    fails_state: "DEAD if cold-import fails; DEGRADED if runtime schema rejects."
+
+  - id: 2
+    title: "input_fidelity"
+    rule: |
+      Every material input must be consumed and reflected in the output.
+      A supplied material input that is unrecognized, ignored, or
+      unreflected is a blocking semantic failure.
+    enforcement: "wealth_contracts.input_fidelity_v1.evaluate_input_fidelity."
+    fails_state: "INPUT_FIDELITY_FAIL; verdict HOLD or FAIL; recommendation null."
+
+  - id: 3
+    title: "evidence_binding"
+    rule: |
+      Material claims must carry source references or be labelled
+      ASSUMED, INTERPRETED, SPECULATED, UNMEASURED, or CONFLICTED.
+    enforcement: "wealth_contracts.epistemic + claim_gate."
+    fails_state: "Verdict HOLD if no source and no epistemic label."
+
+  - id: 4
+    title: "temporal_validity"
+    rule: |
+      Current-state outputs require observation time, source, freshness
+      evaluation, and decision-eligibility state.
+    enforcement: "ReceiptV2.transport/execution/semantic/policy."
+    fails_state: "SemanticState.STALE → decision_eligibility=INELIGIBLE."
+
+  - id: 5
+    title: "runtime_proof"
+    rule: |
+      A claimed tool capability cannot be promoted based only on schema
+      presence. It requires an independent runtime probe.
+    enforcement: "wealth_contracts.manifest_v1.ProbeManifest."
+    fails_state: "Probe state UNAVAILABLE or DEAD → EffectiveState not LIVE."
+
+  - id: 6
+    title: "four_truth_receipt"
+    rule: |
+      A PASS verdict requires transport, execution, semantic, and
+      policy truth to pass.
+    enforcement: |
+      compute_verdict(transport, execution, semantic, policy)
+      == PASS iff transport=RESPONDED
+              AND execution=SUCCESS
+              AND semantic=VALID
+              AND policy IN {OBSERVATION_ONLY, PERMITTED}.
+    fails_state: "Any other combination → DEGRADED, HOLD, or FAIL."
+
+  - id: 7
+    title: "failure_injection"
+    rule: |
+      A capability must have controlled failure tests before promotion.
+    enforcement: "tests/test_phase_c_fault_injection.py (14 scenarios)."
+    fails_state: "Missing test → cannot promote above DECLARED."
+
+  - id: 8
+    title: "calibration"
+    rule: |
+      Interpretive capabilities remain at or below SPECULATED until
+      they have documented calibration cases, negative controls,
+      limitations, and abstention conditions.
+    enforcement: "Phase D graph contract + Phase A POLIX v0.1."
+    fails_state: "PromotionState ≤ SPECULATED until calibrated."
+
+  - id: 9
+    title: "authority_boundary"
+    rule: |
+      WEALTH cannot self-authorize execution, capital allocation,
+      constitutional judgment, publication, or irreversible action.
+    enforcement: "wealth_contracts.authority.validate_authority + ExecutionAuthority."
+    fails_state: "execution_authorized=True → CONFLICTED; arifOS escalation."
+
+  - id: 10
+    title: "named_entity_discipline"
+    rule: |
+      A public claim concerning a named institution/person requires
+      independently source-bound, time-bound, contradiction-checked
+      evidence. Engine output is not a source for claims about real
+      named entities.
+    enforcement: "wealth_contracts.claim_gate.evaluate / evaluate_dict_result."
+    fails_state: "Publication eligibility BLOCKED_AS_EXTERNALLY_VERIFIED."
+
+promotion_states:
+  - DECLARED
+  - IMPORTABLE
+  - INVOKABLE
+  - VALIDATED
+  - LIVE
+  - DEGRADED
+  - HELD
+  - UNAVAILABLE
+  - DEAD
+
+federation_invariants:
+  - "WEALTH computes; arifOS judges; Human decides."
+  - "POLIX = bounded political-economy evidence, not public accusation."
+  - "Capability promotion ≤ SPECULATED until all 10 clauses pass."
+  - "No tool promotes its own conclusion into allocation or action."
+
+related:
+  receipt_v2: "wealth_contracts/receipt_v2.py"
+  envelope_v2: "wealth_contracts/envelope.py (legacy v1 + Phase 2 migration notes)"
+  input_fidelity_v1: "wealth_contracts/input_fidelity_v1.py"
+  manifest_v1: "wealth_contracts/manifest_v1.py"
+  doctrine_doc: "docs/LAW-WEALTH-01.md"
+  phase_c_overview: "docs/PHASE_C_WITNESS_QUALITY.md"

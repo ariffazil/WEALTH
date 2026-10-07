@@ -1,0 +1,8 @@
+{
+  "liveness_status": "ALIVE",
+  "last_invoked": null,
+  "invocation_count": 0,
+  "outcome_delta_total": 0.0,
+  "sessions_since_invoked": 1,
+  "sessions_with_zero_outcome": 0
+}

@@ -8,7 +8,7 @@ from typing import Any
 
 from wealth_contracts.envelope import WEALTH_OUTPUT_SCHEMA, wrap_result
 from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality
-from wealth_mcp.tools.types import CoercedDict, _call_legacy_tool
+from wealth_mcp.tools.types import CoercedDict, _call_legacy_tool, classify_signal_state, SignalState
 
 
 def register_market(mcp):
@@ -111,6 +111,17 @@ def register_market(mcp):
             # Phase 1c: direct import, bypass legacy dispatcher
             from internal.monolith import wealth_fx_rate
             raw = wealth_fx_rate(base=base, targets=targets)
+            # L1 signal typing: FX from Frankfurter API = LIVE if rates present
+            _rates = raw.get("rates", {}) if isinstance(raw, dict) else {}
+            _sig = classify_signal_state(
+                data=_rates if _rates else None,
+                source_available=bool(_rates),
+                is_derived=False,
+            )
+            if isinstance(raw, dict):
+                raw["signal_state"] = _sig["signal_state"]
+                raw["signal_state_reason"] = _sig["signal_state_reason"]
+                raw["data_age_seconds"] = _sig["data_age_seconds"]
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         if m == "commodity":
@@ -141,6 +152,19 @@ def register_market(mcp):
                     "witness_status": "SINGLE_SOURCE",
                     "note": "Cross-witness requires second independent source. Delta > 3% would raise WITNESS_DIVERGENCE.",
                 }
+                # L1 signal typing: commodity from live engine = LIVE, else CACHED → HISTORICAL_STALE
+                _is_live = bool(engine_name)
+                _has_data = bool(raw.get("price") or raw.get("value") or raw.get("rates"))
+                _sig = classify_signal_state(
+                    data=raw if _has_data else None,
+                    source_available=_has_data,
+                    is_cached=not _is_live,
+                    cache_age_seconds=raw.get("cache_age_seconds"),
+                    is_derived=not _is_live,
+                )
+                raw["signal_state"] = _sig["signal_state"]
+                raw["signal_state_reason"] = _sig["signal_state_reason"]
+                raw["data_age_seconds"] = _sig["data_age_seconds"]
             return wrap_result(
                 tool_name="capital_market",
                 domain="capital",
@@ -157,6 +181,17 @@ def register_market(mcp):
             # Phase 1c: direct import, bypass legacy dispatcher
             from internal.monolith import wealth_macro_indicator
             raw = wealth_macro_indicator(indicator=indicator, country=country)
+            # L1 signal typing: macro indicators from BNM/gov APIs = LIVE
+            _has_data = isinstance(raw, dict) and not raw.get("error")
+            _sig = classify_signal_state(
+                data=raw if _has_data else None,
+                source_available=_has_data,
+                is_derived=True,  # macro indicators are derived/aggregated
+            )
+            if isinstance(raw, dict):
+                raw["signal_state"] = _sig["signal_state"]
+                raw["signal_state_reason"] = _sig["signal_state_reason"]
+                raw["data_age_seconds"] = _sig["data_age_seconds"]
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         if m == "stock":
@@ -173,6 +208,17 @@ def register_market(mcp):
                 direction=sp.get("direction") or "long",
                 factors=sp.get("factors"),
             )
+            # L1 signal typing: stock analysis = DERIVED (computed from market data)
+            _has_data = isinstance(raw, dict) and not raw.get("error")
+            _sig = classify_signal_state(
+                data=raw if _has_data else None,
+                source_available=_has_data,
+                is_derived=True,  # stock analysis is always derived
+            )
+            if isinstance(raw, dict):
+                raw["signal_state"] = _sig["signal_state"]
+                raw["signal_state_reason"] = _sig["signal_state_reason"]
+                raw["data_age_seconds"] = _sig["data_age_seconds"]
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         # ── Internal engine modes: gold, oil, gas ─────────────────────────
@@ -224,6 +270,19 @@ def register_market(mcp):
                     "_note": "FLAME interpretation is ADVISORY only. "
                     "Verify with governed cascade before any capital decision.",
                 }
+
+            # L1 signal typing: commodity engines = LIVE for snapshot, DERIVED for signal/daily
+            _has_data = isinstance(result, dict) and not result.get("error")
+            _is_snapshot = engine_op == "snapshot"
+            _sig = classify_signal_state(
+                data=result if _has_data else None,
+                source_available=_has_data,
+                is_derived=not _is_snapshot,  # signal_v2/daily_brief are derived
+            )
+            if isinstance(result, dict):
+                result["signal_state"] = _sig["signal_state"]
+                result["signal_state_reason"] = _sig["signal_state_reason"]
+                result["data_age_seconds"] = _sig["data_age_seconds"]
 
             return wrap_result(
                 tool_name="capital_market",

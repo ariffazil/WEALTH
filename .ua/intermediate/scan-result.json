@@ -1,0 +1,4740 @@
+{
+  "scriptCompleted": true,
+  "contentDigest": "9438aff71ffa1e4a3e6d2c37ec7cb119cf0ff5b1eab28b21593c9571b0e57b74",
+  "files": [
+    {
+      "path": ".agents/rules/WEALTH.md",
+      "language": "markdown",
+      "sizeLines": 19,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".antigravity/rules.md",
+      "language": "markdown",
+      "sizeLines": 19,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".dockerignore",
+      "language": "unknown",
+      "sizeLines": 12,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".env.example",
+      "language": "config",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".git_commit",
+      "language": "unknown",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".github/CODEOWNERS",
+      "language": "unknown",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/cadangan-ciri.md",
+      "language": "markdown",
+      "sizeLines": 23,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/config.yml",
+      "language": "yaml",
+      "sizeLines": 8,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/kebimbangan-etika.md",
+      "language": "markdown",
+      "sizeLines": 19,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/laporan-keselamatan.md",
+      "language": "markdown",
+      "sizeLines": 17,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/pepijat.md",
+      "language": "markdown",
+      "sizeLines": 26,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/repo-hygiene.md",
+      "language": "markdown",
+      "sizeLines": 16,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "language": "markdown",
+      "sizeLines": 49,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".github/dependabot.yml",
+      "language": "yaml",
+      "sizeLines": 110,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".github/pull_request_template.md",
+      "language": "markdown",
+      "sizeLines": 18,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".github/repo-policy.yml",
+      "language": "yaml",
+      "sizeLines": 49,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".github/workflows.CANONICAL.yml",
+      "language": "yaml",
+      "sizeLines": 23,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".github/workflows/agentic-ci.yml",
+      "language": "yaml",
+      "sizeLines": 124,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/auto-merge-dependabot.yml",
+      "language": "yaml",
+      "sizeLines": 128,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/auto-tag-date.yml",
+      "language": "yaml",
+      "sizeLines": 44,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/ci-uv-lock-invariant.yml",
+      "language": "yaml",
+      "sizeLines": 85,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/copilot-setup-steps.yml",
+      "language": "yaml",
+      "sizeLines": 35,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/dependabot-ci.yml",
+      "language": "yaml",
+      "sizeLines": 153,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/governance-gate.yml",
+      "language": "yaml",
+      "sizeLines": 106,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/publish-image.yml",
+      "language": "yaml",
+      "sizeLines": 40,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/repo-hygiene-weekly.yml",
+      "language": "yaml",
+      "sizeLines": 93,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/repo-routing-validation.yml",
+      "language": "yaml",
+      "sizeLines": 81,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/sentinel-premerge-gate.yml",
+      "language": "yaml",
+      "sizeLines": 169,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".memory/index.sqlite",
+      "language": "sqlite",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".openclaw/workspace-state.json",
+      "language": "json",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".opencode.json",
+      "language": "json",
+      "sizeLines": 53,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".well-known/agent.json",
+      "language": "json",
+      "sizeLines": 97,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".well-known/mcp.json",
+      "language": "json",
+      "sizeLines": 77,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".well-known/mcp/server.json",
+      "language": "json",
+      "sizeLines": 20,
+      "fileCategory": "config"
+    },
+    {
+      "path": "999_vault/archive/INDEX.json",
+      "language": "json",
+      "sizeLines": 592,
+      "fileCategory": "config"
+    },
+    {
+      "path": "999_vault/archive/seals/2026-06-12-bursa-global-forge.md",
+      "language": "markdown",
+      "sizeLines": 17,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "999_vault/archive/seals/2026-06-12-fff-999-engine.md",
+      "language": "markdown",
+      "sizeLines": 15,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "999_vault/audit.jsonl",
+      "language": "jsonl",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 5,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "language": "markdown",
+      "sizeLines": 30,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "CNAME",
+      "language": "unknown",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "CODEOWNERS",
+      "language": "unknown",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "CONTEXT.md",
+      "language": "markdown",
+      "sizeLines": 17,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "language": "markdown",
+      "sizeLines": 49,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "DEPLOYMENT.md",
+      "language": "markdown",
+      "sizeLines": 45,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "Dockerfile",
+      "language": "dockerfile",
+      "sizeLines": 48,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "FEDERATION.md",
+      "language": "markdown",
+      "sizeLines": 22,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "FEDERATION_CONTRACT.md",
+      "language": "markdown",
+      "sizeLines": 10,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "FEDERATION_MAP.md",
+      "language": "markdown",
+      "sizeLines": 2,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "GENESIS/011_WEALTH_MANDATE.md",
+      "language": "markdown",
+      "sizeLines": 30,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "GENESIS/README-archive-2026-06-27.md",
+      "language": "markdown",
+      "sizeLines": 1282,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "GENESIS/README.md",
+      "language": "markdown",
+      "sizeLines": 43,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "Makefile",
+      "language": "makefile",
+      "sizeLines": 47,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "NOTICE",
+      "language": "unknown",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "OPENCODE_TASK.md",
+      "language": "markdown",
+      "sizeLines": 89,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "PETRONAS_INTERNAL_ANALYTICAL_GRAPH.md",
+      "language": "markdown",
+      "sizeLines": 211,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "PROTOCOL_CONFORMANCE.md",
+      "language": "markdown",
+      "sizeLines": 49,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "sizeLines": 208,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "RUNBOOK.md",
+      "language": "markdown",
+      "sizeLines": 33,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "SECURITY.md",
+      "language": "markdown",
+      "sizeLines": 46,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "UPGRADE_STAGES.md",
+      "language": "markdown",
+      "sizeLines": 162,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "VOIDX_BENCHMARK.md",
+      "language": "markdown",
+      "sizeLines": 201,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent-cards/README.md",
+      "language": "markdown",
+      "sizeLines": 38,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent-cards/makcikgpt.json",
+      "language": "json",
+      "sizeLines": 434,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agents/INGEST_GUIDE.md",
+      "language": "markdown",
+      "sizeLines": 64,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "api/columns/index.json",
+      "language": "json",
+      "sizeLines": 157,
+      "fileCategory": "config"
+    },
+    {
+      "path": "api/docs/index.json",
+      "language": "json",
+      "sizeLines": 80,
+      "fileCategory": "config"
+    },
+    {
+      "path": "api/schemas/article.json",
+      "language": "json",
+      "sizeLines": 102,
+      "fileCategory": "config"
+    },
+    {
+      "path": "api/schemas/waw-envelope.json",
+      "language": "json",
+      "sizeLines": 127,
+      "fileCategory": "config"
+    },
+    {
+      "path": "api/schemas/wealth-basis.json",
+      "language": "json",
+      "sizeLines": 123,
+      "fileCategory": "config"
+    },
+    {
+      "path": "apps/capital-judge/index.html",
+      "language": "html",
+      "sizeLines": 1918,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "apps/capital-judge/manifest.json",
+      "language": "json",
+      "sizeLines": 110,
+      "fileCategory": "config"
+    },
+    {
+      "path": "apps/portfolio/index.html",
+      "language": "html",
+      "sizeLines": 454,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "apps/portfolio/manifest.json",
+      "language": "json",
+      "sizeLines": 21,
+      "fileCategory": "config"
+    },
+    {
+      "path": "assets/DESIGN_BRIEF.md",
+      "language": "markdown",
+      "sizeLines": 132,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/001_CAPITAL_MANIFEST.md",
+      "language": "markdown",
+      "sizeLines": 123,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/002_HUMAN_LAW.md",
+      "language": "markdown",
+      "sizeLines": 246,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/002a_LAW_SHADOW.md",
+      "language": "markdown",
+      "sizeLines": 177,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/015_LAW_MANIFEST.md",
+      "language": "markdown",
+      "sizeLines": 247,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/CAPITALX_SPEC.md",
+      "language": "markdown",
+      "sizeLines": 92,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/CASE_STUDIES.md",
+      "language": "markdown",
+      "sizeLines": 79,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/COSMOLOGY.md",
+      "language": "markdown",
+      "sizeLines": 95,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/ECONOMIC_MODEL.md",
+      "language": "markdown",
+      "sizeLines": 109,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/GLOSSARY.md",
+      "language": "markdown",
+      "sizeLines": 28,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/GOVERNANCE.md",
+      "language": "markdown",
+      "sizeLines": 95,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/NODE_SPEC.md",
+      "language": "markdown",
+      "sizeLines": 115,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/README.md",
+      "language": "markdown",
+      "sizeLines": 48,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/ROADMAP.md",
+      "language": "markdown",
+      "sizeLines": 114,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/STRESS_TESTS.md",
+      "language": "markdown",
+      "sizeLines": 79,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/TELEMETRY_SCHEMA.md",
+      "language": "markdown",
+      "sizeLines": 101,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/THREAT_MODEL.md",
+      "language": "markdown",
+      "sizeLines": 79,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "canon/WEALTH_HARNESS.md",
+      "language": "markdown",
+      "sizeLines": 90,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "capitalx/DESIGN.md",
+      "language": "markdown",
+      "sizeLines": 157,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "civilizational/boundary_monitor.js",
+      "language": "javascript",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "civilizational/cascade_detector.js",
+      "language": "javascript",
+      "sizeLines": 5,
+      "fileCategory": "code"
+    },
+    {
+      "path": "civilizational/prosperity_index.js",
+      "language": "javascript",
+      "sizeLines": 42,
+      "fileCategory": "code"
+    },
+    {
+      "path": "config/cashflow_defaults.json",
+      "language": "json",
+      "sizeLines": 48,
+      "fileCategory": "config"
+    },
+    {
+      "path": "contracts/__init__.py",
+      "language": "python",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "contracts/affordance-contract.schema.json",
+      "language": "json",
+      "sizeLines": 53,
+      "fileCategory": "config"
+    },
+    {
+      "path": "contracts/archive/tools.yaml.monolith-legacy-2026-05-19",
+      "language": "monolith-legacy-2026-05-19",
+      "sizeLines": 481,
+      "fileCategory": "code"
+    },
+    {
+      "path": "contracts/capability_manifest.json",
+      "language": "json",
+      "sizeLines": 541,
+      "fileCategory": "config"
+    },
+    {
+      "path": "contracts/context-capsule.schema.json",
+      "language": "json",
+      "sizeLines": 69,
+      "fileCategory": "config"
+    },
+    {
+      "path": "contracts/domain-translation-card.schema.json",
+      "language": "json",
+      "sizeLines": 38,
+      "fileCategory": "config"
+    },
+    {
+      "path": "contracts/enrich_wealth.py",
+      "language": "python",
+      "sizeLines": 317,
+      "fileCategory": "code"
+    },
+    {
+      "path": "contracts/federation-envelope.schema.json",
+      "language": "json",
+      "sizeLines": 73,
+      "fileCategory": "config"
+    },
+    {
+      "path": "contracts/mcp_surface.yaml",
+      "language": "yaml",
+      "sizeLines": 113,
+      "fileCategory": "config"
+    },
+    {
+      "path": "contracts/replay-receipt.schema.json",
+      "language": "json",
+      "sizeLines": 63,
+      "fileCategory": "config"
+    },
+    {
+      "path": "contracts/schemas/metabolic.py",
+      "language": "python",
+      "sizeLines": 818,
+      "fileCategory": "code"
+    },
+    {
+      "path": "contracts/tools.yaml",
+      "language": "yaml",
+      "sizeLines": 73,
+      "fileCategory": "config"
+    },
+    {
+      "path": "data/law_ontology.yaml",
+      "language": "yaml",
+      "sizeLines": 29,
+      "fileCategory": "config"
+    },
+    {
+      "path": "data/law_pack/MANIFEST.md",
+      "language": "markdown",
+      "sizeLines": 60,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "data/legal_ontology.yaml",
+      "language": "yaml",
+      "sizeLines": 840,
+      "fileCategory": "config"
+    },
+    {
+      "path": "data/sample-state.json",
+      "language": "json",
+      "sizeLines": 79,
+      "fileCategory": "config"
+    },
+    {
+      "path": "data/schema.json",
+      "language": "json",
+      "sizeLines": 170,
+      "fileCategory": "config"
+    },
+    {
+      "path": "datasources/README.md",
+      "language": "markdown",
+      "sizeLines": 30,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/00-niat-dan-amanah.md",
+      "language": "markdown",
+      "sizeLines": 62,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/02-batas-penolakan.md",
+      "language": "markdown",
+      "sizeLines": 68,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/04-glosari-nusantara.md",
+      "language": "markdown",
+      "sizeLines": 64,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/888_ACTIVE.md",
+      "language": "markdown",
+      "sizeLines": 33,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/AGENTIC_ROUTING.md",
+      "language": "markdown",
+      "sizeLines": 242,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/AGENT_LAYOUT_CONTRACT.md",
+      "language": "markdown",
+      "sizeLines": 110,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/BOUNDARY.md",
+      "language": "markdown",
+      "sizeLines": 64,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/BRANCH_UNIFICATION.md",
+      "language": "markdown",
+      "sizeLines": 18,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/CHANGELOG.md",
+      "language": "markdown",
+      "sizeLines": 83,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/CODE_OF_CONDUCT.md",
+      "language": "markdown",
+      "sizeLines": 37,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/CONTEXT.md",
+      "language": "markdown",
+      "sizeLines": 49,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/CONTRIBUTING.md",
+      "language": "markdown",
+      "sizeLines": 25,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/CRYPTO_SENSOR_EXTENSION_PROPOSAL_v1.md",
+      "language": "markdown",
+      "sizeLines": 230,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/ENTRYPOINTS.md",
+      "language": "markdown",
+      "sizeLines": 89,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/FEDERATION_CONTRACT.md",
+      "language": "markdown",
+      "sizeLines": 24,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/FEDERATION_LOOP_WEALTH_SPACE.md",
+      "language": "markdown",
+      "sizeLines": 154,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/FEDERATION_TRANSPORT.md",
+      "language": "markdown",
+      "sizeLines": 220,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/INGESTION_MAP.md",
+      "language": "markdown",
+      "sizeLines": 196,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/MODE_INVENTORY.md",
+      "language": "markdown",
+      "sizeLines": 162,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/MODULE_MAP.md",
+      "language": "markdown",
+      "sizeLines": 146,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/POST_AGI_ECONOMICS_MANIFESTO.md",
+      "language": "markdown",
+      "sizeLines": 46,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/PROTOCOL_CONFORMANCE.md",
+      "language": "markdown",
+      "sizeLines": 40,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/QUICKSTART.md",
+      "language": "markdown",
+      "sizeLines": 70,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/README-FULL.md",
+      "language": "markdown",
+      "sizeLines": 330,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/RELEASE_NOTES_v2026.05.01.md",
+      "language": "markdown",
+      "sizeLines": 28,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/REPO_ROUTING_CONSTITUTION.md",
+      "language": "markdown",
+      "sizeLines": 81,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "language": "markdown",
+      "sizeLines": 143,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/RUNBOOK.md",
+      "language": "markdown",
+      "sizeLines": 57,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/SECURITY.md",
+      "language": "markdown",
+      "sizeLines": 25,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/SECURITY_MINIMAL.md",
+      "language": "markdown",
+      "sizeLines": 197,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/SOUL.md",
+      "language": "markdown",
+      "sizeLines": 14,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/SOVEREIGN_WEALTH_SPEC.md",
+      "language": "markdown",
+      "sizeLines": 209,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/SPEC.md",
+      "language": "markdown",
+      "sizeLines": 213,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/THERMODYNAMIC-METABOLIZER.md",
+      "language": "markdown",
+      "sizeLines": 699,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/TOMBSTONE.json",
+      "language": "json",
+      "sizeLines": 89,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/TOOL_MODE_MAP.md",
+      "language": "markdown",
+      "sizeLines": 65,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/TOOL_SURFACE.md",
+      "language": "markdown",
+      "sizeLines": 142,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/WEALTH_CONTRAST_ANALYSIS.md",
+      "language": "markdown",
+      "sizeLines": 213,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/WEALTH_FEDERATED_AGI_DOMAIN_FIX_SPEC.md",
+      "language": "markdown",
+      "sizeLines": 1011,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/WEALTH_MCP_ARCHITECTURE.md",
+      "language": "markdown",
+      "sizeLines": 557,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/WEALTH_SNAPSHOT.yaml",
+      "language": "yaml",
+      "sizeLines": 36,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/WEALTH_SOT.md",
+      "language": "markdown",
+      "sizeLines": 54,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/WEALTH_TERMINAL_BLUEPRINT.md",
+      "language": "markdown",
+      "sizeLines": 228,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/WEALTH_TERMINAL_SITEMAP_WIREFRAME.md",
+      "language": "markdown",
+      "sizeLines": 348,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/WEALTH_UNIFIED_ARCHITECTURE.md",
+      "language": "markdown",
+      "sizeLines": 422,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/ZEN_OF_WEALTH.md",
+      "language": "markdown",
+      "sizeLines": 241,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/01-suara-makcikgpt.md",
+      "language": "markdown",
+      "sizeLines": 61,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/03-ujian-keselamatan.md",
+      "language": "markdown",
+      "sizeLines": 90,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/888-hold-log.md",
+      "language": "markdown",
+      "sizeLines": 32,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/RELEASE_NOTES_2026.05.16.md",
+      "language": "markdown",
+      "sizeLines": 28,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/RELEASE_NOTES_2026.05.22.md",
+      "language": "markdown",
+      "sizeLines": 39,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/REPO_HYGIENE_AUDIT_2026-05-21.md",
+      "language": "markdown",
+      "sizeLines": 55,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/SPLIT_PLAN.md",
+      "language": "markdown",
+      "sizeLines": 171,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/TODO.md",
+      "language": "markdown",
+      "sizeLines": 97,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/VAULT999_WEALTH_MCP_FIX.md",
+      "language": "markdown",
+      "sizeLines": 124,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/WEALTH_NEXT_HORIZON.md",
+      "language": "markdown",
+      "sizeLines": 270,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/WEALTH_NEXT_HORIZON_BLUEPRINT_FINAL.md",
+      "language": "markdown",
+      "sizeLines": 83,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/WEALTH_NEXT_HORIZON_BLUEPRINT_v2026.05.07.md",
+      "language": "markdown",
+      "sizeLines": 578,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/first-loop-checklist.md",
+      "language": "markdown",
+      "sizeLines": 76,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/repo-role-boundary.md",
+      "language": "markdown",
+      "sizeLines": 37,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/waw-envelope-spec.md",
+      "language": "markdown",
+      "sizeLines": 132,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/entropy-2026-07-15/wealth-basis-spec.md",
+      "language": "markdown",
+      "sizeLines": 120,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/memory/2026-02-26.md",
+      "language": "markdown",
+      "sizeLines": 17,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/memory/2026-02-28-archive-agent-main-main.md",
+      "language": "markdown",
+      "sizeLines": 6,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/memory/2026-02-28-boot-check.md",
+      "language": "markdown",
+      "sizeLines": 253,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/memory/2026-02-28.md",
+      "language": "markdown",
+      "sizeLines": 59,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/memory/2026-03-01.md",
+      "language": "markdown",
+      "sizeLines": 13,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/raw/ARCHITECTURE.md",
+      "language": "markdown",
+      "sizeLines": 265,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/raw/CANON.md",
+      "language": "markdown",
+      "sizeLines": 117,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/raw/CANON_LAW.md",
+      "language": "markdown",
+      "sizeLines": 129,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/raw/COSMOLOGY.md",
+      "language": "markdown",
+      "sizeLines": 253,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/raw/POST_AGI_ECONOMICS_MANIFESTO.md",
+      "language": "markdown",
+      "sizeLines": 51,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/raw/STRATEGY.md",
+      "language": "markdown",
+      "sizeLines": 30,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/raw/TRINITY.md",
+      "language": "markdown",
+      "sizeLines": 516,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/raw/WAW_WEALTH_OVERVIEW.md",
+      "language": "markdown",
+      "sizeLines": 194,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/capitalx-risk-pricing-engine.md",
+      "language": "markdown",
+      "sizeLines": 84,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/civilizational-mcp-architecture.md",
+      "language": "markdown",
+      "sizeLines": 67,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/concept-12-foundations.md",
+      "language": "markdown",
+      "sizeLines": 51,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/concept-888-hold.md",
+      "language": "markdown",
+      "sizeLines": 47,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/concept-999-seal.md",
+      "language": "markdown",
+      "sizeLines": 53,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/concept-contextual-vitality.md",
+      "language": "markdown",
+      "sizeLines": 52,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/concept-cooling-prosperity.md",
+      "language": "markdown",
+      "sizeLines": 45,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/concept-maruah.md",
+      "language": "markdown",
+      "sizeLines": 52,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/concept-post-agi-economics.md",
+      "language": "markdown",
+      "sizeLines": 46,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/concept-proxy-efficiency-test.md",
+      "language": "markdown",
+      "sizeLines": 43,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/concept-stewardship-shift.md",
+      "language": "markdown",
+      "sizeLines": 42,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/concept-thermodynamic-ethics.md",
+      "language": "markdown",
+      "sizeLines": 48,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/cosmology.md",
+      "language": "markdown",
+      "sizeLines": 58,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/entity-arifos.md",
+      "language": "markdown",
+      "sizeLines": 67,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/entity-waw-federation.md",
+      "language": "markdown",
+      "sizeLines": 57,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/entity-wealth.md",
+      "language": "markdown",
+      "sizeLines": 63,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/index.md",
+      "language": "markdown",
+      "sizeLines": 93,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/knowledge-spine.md",
+      "language": "markdown",
+      "sizeLines": 62,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/layered-architecture.md",
+      "language": "markdown",
+      "sizeLines": 84,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/log.md",
+      "language": "markdown",
+      "sizeLines": 76,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/mcp-server-packaging.md",
+      "language": "markdown",
+      "sizeLines": 64,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/source-architecture.md",
+      "language": "markdown",
+      "sizeLines": 29,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/source-cosmology.md",
+      "language": "markdown",
+      "sizeLines": 27,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/source-post-agi-manifesto.md",
+      "language": "markdown",
+      "sizeLines": 27,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/source-strategy.md",
+      "language": "markdown",
+      "sizeLines": 28,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/source-trinity.md",
+      "language": "markdown",
+      "sizeLines": 27,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/source-waw-wealth-overview.md",
+      "language": "markdown",
+      "sizeLines": 28,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/archive/wiki/synthesis-foundations-of-wealth.md",
+      "language": "markdown",
+      "sizeLines": 182,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/audits/decorator-audit-2026-06-03.md",
+      "language": "markdown",
+      "sizeLines": 332,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/datasources/README.md",
+      "language": "markdown",
+      "sizeLines": 30,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/doctrine/market-intelligence.md",
+      "language": "markdown",
+      "sizeLines": 184,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/epistemic-tags.md",
+      "language": "markdown",
+      "sizeLines": 43,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/floors-spec.md",
+      "language": "markdown",
+      "sizeLines": 41,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/glic_glc_research.md",
+      "language": "markdown",
+      "sizeLines": 141,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/index.md",
+      "language": "markdown",
+      "sizeLines": 42,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/integration/FEDERATION_NOTES.md",
+      "language": "markdown",
+      "sizeLines": 48,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/integration/WEALTH_PATCH_REVIEW_2026-05-02.md",
+      "language": "markdown",
+      "sizeLines": 130,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/mcp-tool-families-spec.md",
+      "language": "markdown",
+      "sizeLines": 64,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/operations/repo-mcp-stabilization.md",
+      "language": "markdown",
+      "sizeLines": 105,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/seals/TOMBSTONE.md",
+      "language": "markdown",
+      "sizeLines": 1,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "domains/contracts/README.md",
+      "language": "markdown",
+      "sizeLines": 34,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "domains/energy/README.md",
+      "language": "markdown",
+      "sizeLines": 49,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "domains/energy/TODO_epistemic_collapse_scan.md",
+      "language": "markdown",
+      "sizeLines": 116,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "domains/energy/crisis_assess.js",
+      "language": "javascript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "domains/energy/kinabalu_depth_convert.py",
+      "language": "python",
+      "sizeLines": 512,
+      "fileCategory": "code"
+    },
+    {
+      "path": "domains/energy/kinabalu_falsification_framework_2026-07-03.md",
+      "language": "markdown",
+      "sizeLines": 118,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "domains/energy/kinabalu_institutional_pattern_2026-07-03.md",
+      "language": "markdown",
+      "sizeLines": 138,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "domains/energy/kinabalu_post_subduction_review_2026-07-03.md",
+      "language": "markdown",
+      "sizeLines": 210,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "domains/food/security_index.js",
+      "language": "javascript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "domains/inheritance/README.md",
+      "language": "markdown",
+      "sizeLines": 46,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "domains/land-law/README.md",
+      "language": "markdown",
+      "sizeLines": 36,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "domains/law/ONTOLOGY.yaml",
+      "language": "yaml",
+      "sizeLines": 777,
+      "fileCategory": "config"
+    },
+    {
+      "path": "domains/law/README.md",
+      "language": "markdown",
+      "sizeLines": 82,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "domains/law/TOOL_ROADMAP.md",
+      "language": "markdown",
+      "sizeLines": 81,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "domains/markets/analysis.js",
+      "language": "javascript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "domains/regulatory/README.md",
+      "language": "markdown",
+      "sizeLines": 34,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "engines/commodity/gas-api/fetch_gas.py",
+      "language": "python",
+      "sizeLines": 1333,
+      "fileCategory": "code"
+    },
+    {
+      "path": "engines/commodity/gas-api/server.js",
+      "language": "javascript",
+      "sizeLines": 215,
+      "fileCategory": "code"
+    },
+    {
+      "path": "engines/commodity/gold-api/fetch_gold.py",
+      "language": "python",
+      "sizeLines": 1345,
+      "fileCategory": "code"
+    },
+    {
+      "path": "engines/commodity/gold-api/server.js",
+      "language": "javascript",
+      "sizeLines": 228,
+      "fileCategory": "code"
+    },
+    {
+      "path": "engines/commodity/gold-api/signal_v2.json",
+      "language": "json",
+      "sizeLines": 39,
+      "fileCategory": "config"
+    },
+    {
+      "path": "engines/commodity/oil-api/fetch_oil.py",
+      "language": "python",
+      "sizeLines": 1294,
+      "fileCategory": "code"
+    },
+    {
+      "path": "engines/commodity/oil-api/server.js",
+      "language": "javascript",
+      "sizeLines": 215,
+      "fileCategory": "code"
+    },
+    {
+      "path": "engines/crypto/binance/fetch_binance.py",
+      "language": "python",
+      "sizeLines": 211,
+      "fileCategory": "code"
+    },
+    {
+      "path": "engines/crypto/coingecko/fetch_coingecko.py",
+      "language": "python",
+      "sizeLines": 164,
+      "fileCategory": "code"
+    },
+    {
+      "path": "engines/crypto/defillama/fetch_defillama.py",
+      "language": "python",
+      "sizeLines": 153,
+      "fileCategory": "code"
+    },
+    {
+      "path": "engines/sync-to-live.sh",
+      "language": "shell",
+      "sizeLines": 48,
+      "fileCategory": "script"
+    },
+    {
+      "path": "entropy-integrity/CROSS_DISCIPLINARY_MAPPING.md",
+      "language": "markdown",
+      "sizeLines": 74,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "entropy-integrity/README.md",
+      "language": "markdown",
+      "sizeLines": 102,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "entropy-integrity/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/a2a/agent-cards/aforge-entropy-agent.json",
+      "language": "json",
+      "sizeLines": 55,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/a2a/agent-cards/aforge.yaml",
+      "language": "yaml",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/a2a/agent-cards/geox-entropy-agent.json",
+      "language": "json",
+      "sizeLines": 55,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/a2a/agent-cards/geox.yaml",
+      "language": "yaml",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/a2a/agent-cards/kernel-entropy-agent.json",
+      "language": "json",
+      "sizeLines": 56,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/a2a/agent-cards/kernel.yaml",
+      "language": "yaml",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/a2a/agent-cards/wealth-entropy-agent.json",
+      "language": "json",
+      "sizeLines": 55,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/a2a/agent-cards/wealth.yaml",
+      "language": "yaml",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/a2a/agent-cards/well-entropy-agent.json",
+      "language": "json",
+      "sizeLines": 55,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/a2a/agent-cards/well.yaml",
+      "language": "yaml",
+      "sizeLines": 13,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/a2a/conformance/conformance_check.py",
+      "language": "python",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/a2a/conformance/test-plan.md",
+      "language": "markdown",
+      "sizeLines": 35,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "entropy-integrity/a2a/task-artifacts/investigation-template.json",
+      "language": "json",
+      "sizeLines": 47,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/a2a/task-artifacts/investigation_artifact_template.json",
+      "language": "json",
+      "sizeLines": 75,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/detectors/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/detectors/certainty_creep.py",
+      "language": "python",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/detectors/niat_impact_substitution.py",
+      "language": "python",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/detectors/responsibility_diffusion.py",
+      "language": "python",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/detectors/trajectory.py",
+      "language": "python",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/docs/APEX_FEDERATION_INTEGRATION.md",
+      "language": "markdown",
+      "sizeLines": 61,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "entropy-integrity/mcp/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/aforge/forge-dark-geometry-detector.ts",
+      "language": "typescript",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/aforge/forge-detector-test-corpus.ts",
+      "language": "typescript",
+      "sizeLines": 135,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/aforge/forge-entropy-schema.ts",
+      "language": "typescript",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/aforge/index.ts",
+      "language": "typescript",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/aforge/server.py",
+      "language": "python",
+      "sizeLines": 250,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/__init__.py",
+      "language": "python",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/consequence_trace.py",
+      "language": "python",
+      "sizeLines": 100,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/correction_probe.py",
+      "language": "python",
+      "sizeLines": 175,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/entropy_observe.py",
+      "language": "python",
+      "sizeLines": 183,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/entropy_route.py",
+      "language": "python",
+      "sizeLines": 140,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/j_gate.py",
+      "language": "python",
+      "sizeLines": 153,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/j_state_assess.py",
+      "language": "python",
+      "sizeLines": 192,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/observations.json",
+      "language": "json",
+      "sizeLines": 58,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/prompts/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/prompts/entropy_integrity_review.py",
+      "language": "python",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/prompts/niat_without_seizure.py",
+      "language": "python",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/prompts/red_team_moral_order.py",
+      "language": "python",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/prompts/void_or_hold.py",
+      "language": "python",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/register.py",
+      "language": "python",
+      "sizeLines": 157,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/entropy_kernel/server.py",
+      "language": "python",
+      "sizeLines": 455,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/geox/__init__.py",
+      "language": "python",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/geox/cascade_pathway.py",
+      "language": "python",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/geox/consequence_footprint.py",
+      "language": "python",
+      "sizeLines": 99,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/geox/feedback_integrity.py",
+      "language": "python",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/geox/material_truth_challenge.py",
+      "language": "python",
+      "sizeLines": 98,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/geox/optionality_loss.py",
+      "language": "python",
+      "sizeLines": 67,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/geox/server.py",
+      "language": "python",
+      "sizeLines": 215,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/wealth/__init__.py",
+      "language": "python",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/wealth/coercive_order_cost.py",
+      "language": "python",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/wealth/entropy_externality.py",
+      "language": "python",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/wealth/metric_purpose_audit.py",
+      "language": "python",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/wealth/power_consequence_map.py",
+      "language": "python",
+      "sizeLines": 265,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/wealth/responsibility_ledger.py",
+      "language": "python",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/wealth/server.py",
+      "language": "python",
+      "sizeLines": 287,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/wealth/trust_capital_decay.py",
+      "language": "python",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/well/__init__.py",
+      "language": "python",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/well/correction_capacity.py",
+      "language": "python",
+      "sizeLines": 91,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/well/dark_geometry_mirror.py",
+      "language": "python",
+      "sizeLines": 132,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/well/niat_impact_mirror.py",
+      "language": "python",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/well/regulation_recovery.py",
+      "language": "python",
+      "sizeLines": 90,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/well/sabar_latency.py",
+      "language": "python",
+      "sizeLines": 129,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/well/server.py",
+      "language": "python",
+      "sizeLines": 348,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/mcp/well/trust_compression.py",
+      "language": "python",
+      "sizeLines": 116,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/policies/axioms.yaml",
+      "language": "yaml",
+      "sizeLines": 35,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/policies/contest_decay.yaml",
+      "language": "yaml",
+      "sizeLines": 31,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/policies/prohibited_inferences.yaml",
+      "language": "yaml",
+      "sizeLines": 54,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/policies/routing_policy.yaml",
+      "language": "yaml",
+      "sizeLines": 45,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/policies/state_trait_boundary.yaml",
+      "language": "yaml",
+      "sizeLines": 42,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/resources/alternative_explanations.yaml",
+      "language": "yaml",
+      "sizeLines": 32,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/resources/case_library.yaml",
+      "language": "yaml",
+      "sizeLines": 20,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/resources/correction_response_taxonomy.yaml",
+      "language": "yaml",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/resources/dark_modes.yaml",
+      "language": "yaml",
+      "sizeLines": 64,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/resources/entropy_mirror_format.yaml",
+      "language": "yaml",
+      "sizeLines": 87,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/resources/j_state.yaml",
+      "language": "yaml",
+      "sizeLines": 26,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/resources/ontology.yaml",
+      "language": "yaml",
+      "sizeLines": 17,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/resources/organ_routing.yaml",
+      "language": "yaml",
+      "sizeLines": 19,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/resources/prohibited_inferences.yaml",
+      "language": "yaml",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/resources/prompts.yaml",
+      "language": "yaml",
+      "sizeLines": 82,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/resources/reflection_prompts.yaml",
+      "language": "yaml",
+      "sizeLines": 31,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/resources/threshold_policy.yaml",
+      "language": "yaml",
+      "sizeLines": 25,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/schemas/consequence_trace.schema.json",
+      "language": "json",
+      "sizeLines": 69,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/schemas/investigation_artifact.schema.json",
+      "language": "json",
+      "sizeLines": 54,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/schemas/j_state.schema.json",
+      "language": "json",
+      "sizeLines": 64,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/schemas/observation.schema.json",
+      "language": "json",
+      "sizeLines": 179,
+      "fileCategory": "config"
+    },
+    {
+      "path": "entropy-integrity/tests/adversarial_evaluation.py",
+      "language": "python",
+      "sizeLines": 457,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/tests/run_tests.py",
+      "language": "python",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "entropy-integrity/tests/simulate_j_state.py",
+      "language": "python",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "eureka_signals/awesome-systematic-trading-mapping.md",
+      "language": "markdown",
+      "sizeLines": 338,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "eureka_signals/commodity-signal-upgrade-evaluation.md",
+      "language": "markdown",
+      "sizeLines": 275,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "fastmcp.json",
+      "language": "json",
+      "sizeLines": 29,
+      "fileCategory": "config"
+    },
+    {
+      "path": "federation-manifests/manifest.json",
+      "language": "json",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": "forge_work/2026-06-30-wealth-mcp-zen-receipt.md",
+      "language": "markdown",
+      "sizeLines": 48,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "forge_work/2026-07-24/KT7-H4-DISCRIMINATION.json",
+      "language": "json",
+      "sizeLines": 222,
+      "fileCategory": "config"
+    },
+    {
+      "path": "forge_work/faisal_dossier/PETRONAS_INSTITUTIONAL_DECAY_2026-06-25.md",
+      "language": "markdown",
+      "sizeLines": 260,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "forge_work/vault999-seal-wealth-critical-fix-2026-06-25.md",
+      "language": "markdown",
+      "sizeLines": 79,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "forge_work/wealth-improvement-plan-2026-06-25.md",
+      "language": "markdown",
+      "sizeLines": 233,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "forge_work/zen-wealth-audit-2026-06-25.md",
+      "language": "markdown",
+      "sizeLines": 105,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "host/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/civilizational/boundary_monitor.js",
+      "language": "javascript",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/civilizational/cascade_detector.js",
+      "language": "javascript",
+      "sizeLines": 5,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/civilizational/prosperity_index.js",
+      "language": "javascript",
+      "sizeLines": 42,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/coordination/__init__.py",
+      "language": "python",
+      "sizeLines": 3,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/coordination/commons.py",
+      "language": "python",
+      "sizeLines": 61,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/coordination/cooperative.py",
+      "language": "python",
+      "sizeLines": 130,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/coordination/lp_allocator.py",
+      "language": "python",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/coordination/strategic.py",
+      "language": "python",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/epistemic/__init__.py",
+      "language": "python",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/epistemic/correlation_guard.py",
+      "language": "python",
+      "sizeLines": 154,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/epistemic/evoi.py",
+      "language": "python",
+      "sizeLines": 205,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/epistemic/schema_validator.py",
+      "language": "python",
+      "sizeLines": 290,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/governance/__init__.py",
+      "language": "python",
+      "sizeLines": 3,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/governance/floors.py",
+      "language": "python",
+      "sizeLines": 135,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/governance/harness_alarm.py",
+      "language": "python",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/governance/policy_engine.py",
+      "language": "python",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/governance/vault.py",
+      "language": "python",
+      "sizeLines": 473,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/governance/vault_supabase.py",
+      "language": "python",
+      "sizeLines": 679,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/ingest/__init__.py",
+      "language": "python",
+      "sizeLines": 3,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/ingest/adapters/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/ingest/adapters/ecb.py",
+      "language": "python",
+      "sizeLines": 100,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/ingest/adapters/ember.py",
+      "language": "python",
+      "sizeLines": 100,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/ingest/adapters/fred.py",
+      "language": "python",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/ingest/adapters/owid.py",
+      "language": "python",
+      "sizeLines": 98,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/ingest/adapters/worldbank.py",
+      "language": "python",
+      "sizeLines": 134,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/ingest/health.py",
+      "language": "python",
+      "sizeLines": 174,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/ingest/registry.py",
+      "language": "python",
+      "sizeLines": 462,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/ingest/schema.py",
+      "language": "python",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/kernel/capitalx.js",
+      "language": "javascript",
+      "sizeLines": 92,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/kernel/finance.js",
+      "language": "javascript",
+      "sizeLines": 671,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/kernel/floors.js",
+      "language": "javascript",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/kernel/seal.js",
+      "language": "javascript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/kernel/telemetry.js",
+      "language": "javascript",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/kernel/vault999.js",
+      "language": "javascript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/skills/SHARED_SKILL_SOURCE.md",
+      "language": "markdown",
+      "sizeLines": 8,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "host/skills/aaa-agentic-governance/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 288,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "host/skills/aaa-agentic-governance/agents/openai.yaml",
+      "language": "yaml",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "host/skills/aaa-agentic-governance/references/aaa-operating-model.md",
+      "language": "markdown",
+      "sizeLines": 97,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "host/skills/aaa-agentic-governance/references/agentic-workflows.md",
+      "language": "markdown",
+      "sizeLines": 142,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "host/skills/aaa-agentic-governance/references/constitutional-operating-model.md",
+      "language": "markdown",
+      "sizeLines": 70,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "host/skills/aaa-agentic-governance/references/federation-map.md",
+      "language": "markdown",
+      "sizeLines": 37,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "host/skills/aaa-agentic-governance/references/governance-gates.md",
+      "language": "markdown",
+      "sizeLines": 55,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "host/skills/aaa-agentic-governance/references/repo-working-rules.md",
+      "language": "markdown",
+      "sizeLines": 102,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "host/skills/aaa-agentic-governance/scripts/aaa_router.py",
+      "language": "python",
+      "sizeLines": 332,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/skills/aaa-agentic-governance/scripts/bounded_explain.py",
+      "language": "python",
+      "sizeLines": 269,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/skills/aaa-agentic-governance/scripts/compose_federation_receipt.py",
+      "language": "python",
+      "sizeLines": 196,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/skills/aaa-agentic-governance/scripts/floor_check.py",
+      "language": "python",
+      "sizeLines": 327,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/skills/aaa-agentic-governance/scripts/orthogonality_test.py",
+      "language": "python",
+      "sizeLines": 274,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/wealth/cashflow.js",
+      "language": "javascript",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/wealth/maruah-score.js",
+      "language": "javascript",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/wealth/networth.js",
+      "language": "javascript",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "host/wealth/projection.js",
+      "language": "javascript",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "identity.toml",
+      "language": "toml",
+      "sizeLines": 29,
+      "fileCategory": "config"
+    },
+    {
+      "path": "internal/__init__.py",
+      "language": "python",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/apex_envelope_wealth.py",
+      "language": "python",
+      "sizeLines": 99,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/bursa/__init__.py",
+      "language": "python",
+      "sizeLines": 59,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/bursa/evidence.py",
+      "language": "python",
+      "sizeLines": 287,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/bursa/klse_adapter.py",
+      "language": "python",
+      "sizeLines": 480,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/bursa/schemas.py",
+      "language": "python",
+      "sizeLines": 302,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/db_schema.py",
+      "language": "python",
+      "sizeLines": 531,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/domains/PLAN.md",
+      "language": "markdown",
+      "sizeLines": 117,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "internal/domains/capital/__init__.py",
+      "language": "python",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/domains/time/__init__.py",
+      "language": "python",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/engines/advisory.py",
+      "language": "python",
+      "sizeLines": 206,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/engines/canonical_tools.py",
+      "language": "python",
+      "sizeLines": 3264,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/engines/compatibility_map.py",
+      "language": "python",
+      "sizeLines": 340,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/engines/exergy.py",
+      "language": "python",
+      "sizeLines": 172,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/engines/five_seals.py",
+      "language": "python",
+      "sizeLines": 424,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/federation_memory.py",
+      "language": "python",
+      "sizeLines": 221,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/governance.py",
+      "language": "python",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/inequality_panel.json",
+      "language": "json",
+      "sizeLines": 194,
+      "fileCategory": "config"
+    },
+    {
+      "path": "internal/ingest/__init__.py",
+      "language": "python",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/ingest/facts/malaysia_policy.json",
+      "language": "json",
+      "sizeLines": 87,
+      "fileCategory": "config"
+    },
+    {
+      "path": "internal/ingest/market_daily.py",
+      "language": "python",
+      "sizeLines": 381,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/ingest/refresh_briefing.py",
+      "language": "python",
+      "sizeLines": 396,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/invariants.py",
+      "language": "python",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/kernel_math.py",
+      "language": "python",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/market_data.py",
+      "language": "python",
+      "sizeLines": 379,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/monolith.py",
+      "language": "python",
+      "sizeLines": 18227,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/organ_governance.py",
+      "language": "python",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/pai_receipt.py",
+      "language": "python",
+      "sizeLines": 334,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/personal_finance.py",
+      "language": "python",
+      "sizeLines": 463,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/prompts/__init__.py",
+      "language": "python",
+      "sizeLines": 239,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/shared/__init__.py",
+      "language": "python",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/shared/base.py",
+      "language": "python",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/__init__.py",
+      "language": "python",
+      "sizeLines": 59,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/backtest.py",
+      "language": "python",
+      "sizeLines": 383,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/behavior_tools.py",
+      "language": "python",
+      "sizeLines": 326,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/calhoun_guard.py",
+      "language": "python",
+      "sizeLines": 687,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/contrast.py",
+      "language": "python",
+      "sizeLines": 397,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/engine_888.py",
+      "language": "python",
+      "sizeLines": 740,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/engine_999.py",
+      "language": "python",
+      "sizeLines": 1269,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/fundamentals.py",
+      "language": "python",
+      "sizeLines": 501,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/governance_singularity.py",
+      "language": "python",
+      "sizeLines": 355,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/indicators.py",
+      "language": "python",
+      "sizeLines": 626,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/market_intelligence.py",
+      "language": "python",
+      "sizeLines": 800,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/math_tools.py",
+      "language": "python",
+      "sizeLines": 365,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/risk_tools.py",
+      "language": "python",
+      "sizeLines": 251,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/screener_9.py",
+      "language": "python",
+      "sizeLines": 374,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/stock/technical.py",
+      "language": "python",
+      "sizeLines": 432,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/vps_metrics.py",
+      "language": "python",
+      "sizeLines": 133,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_adapters/__init__.py",
+      "language": "python",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_adapters/langgraph_workflow.py",
+      "language": "python",
+      "sizeLines": 127,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_adapters/mesa_adapter.py",
+      "language": "python",
+      "sizeLines": 114,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_adapters/openlineage_adapter.py",
+      "language": "python",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_adapters/pymc_adapter.py",
+      "language": "python",
+      "sizeLines": 98,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_adapters/pyportfolioopt_adapter.py",
+      "language": "python",
+      "sizeLines": 98,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_adapters/quantlib_adapter.py",
+      "language": "python",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_adapters/riskfolio_adapter.py",
+      "language": "python",
+      "sizeLines": 92,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_civilization/__init__.py",
+      "language": "python",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_civilization/inequality_stress.py",
+      "language": "python",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_civilization/policy_counterfactual.py",
+      "language": "python",
+      "sizeLines": 116,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_contracts/__init__.py",
+      "language": "python",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_contracts/envelopes.py",
+      "language": "python",
+      "sizeLines": 188,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_contracts/epistemic.py",
+      "language": "python",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_contracts/lineage.py",
+      "language": "python",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_contracts/money.py",
+      "language": "python",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_contracts/units.py",
+      "language": "python",
+      "sizeLines": 122,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_contracts/verdicts.py",
+      "language": "python",
+      "sizeLines": 41,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_gates.py",
+      "language": "python",
+      "sizeLines": 829,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_observability/__init__.py",
+      "language": "python",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_observability/otel_tracer.py",
+      "language": "python",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_security/__init__.py",
+      "language": "python",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_security/mcp_description_linter.py",
+      "language": "python",
+      "sizeLines": 91,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_security/opa_wiring.py",
+      "language": "python",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_security/policy_inputs.py",
+      "language": "python",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_security/source_scorecard.py",
+      "language": "python",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/wealth_security/tool_manifest.py",
+      "language": "python",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "internal/world/__init__.py",
+      "language": "python",
+      "sizeLines": 246,
+      "fileCategory": "code"
+    },
+    {
+      "path": "kernels/MAKCIKGPT_KERNEL_MS.md",
+      "language": "markdown",
+      "sizeLines": 217,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "kernels/README.md",
+      "language": "markdown",
+      "sizeLines": 23,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "llms.txt",
+      "language": "txt",
+      "sizeLines": 94,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "mcp.json",
+      "language": "json",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    },
+    {
+      "path": "mcp/README.md",
+      "language": "markdown",
+      "sizeLines": 48,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "mcp/manifests/wealth-energy.json",
+      "language": "json",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "mcp/manifests/wealth-food.json",
+      "language": "json",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "mcp/manifests/wealth-markets.json",
+      "language": "json",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "mcp/server.py",
+      "language": "python",
+      "sizeLines": 359,
+      "fileCategory": "code"
+    },
+    {
+      "path": "memory/inbox.md",
+      "language": "markdown",
+      "sizeLines": 433,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "memory_tools/README.md",
+      "language": "markdown",
+      "sizeLines": 73,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "memory_tools/memory_pipeline.py",
+      "language": "python",
+      "sizeLines": 917,
+      "fileCategory": "code"
+    },
+    {
+      "path": "memory_tools/run_cycle.sh",
+      "language": "shell",
+      "sizeLines": 28,
+      "fileCategory": "script"
+    },
+    {
+      "path": "migration/alias_registry.json",
+      "language": "json",
+      "sizeLines": 98,
+      "fileCategory": "config"
+    },
+    {
+      "path": "migration/deprecation_plan.md",
+      "language": "markdown",
+      "sizeLines": 171,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "migration/rename_map.json",
+      "language": "json",
+      "sizeLines": 74,
+      "fileCategory": "config"
+    },
+    {
+      "path": "okf/wealth.md",
+      "language": "markdown",
+      "sizeLines": 61,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "organ.yaml",
+      "language": "yaml",
+      "sizeLines": 2,
+      "fileCategory": "config"
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "sizeLines": 36,
+      "fileCategory": "config"
+    },
+    {
+      "path": "public/index.html",
+      "language": "html",
+      "sizeLines": 520,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "public/llms.txt",
+      "language": "txt",
+      "sizeLines": 126,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "public/robots.txt",
+      "language": "txt",
+      "sizeLines": 77,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "public/script.js",
+      "language": "javascript",
+      "sizeLines": 104,
+      "fileCategory": "code"
+    },
+    {
+      "path": "public/sitemap.xml",
+      "language": "xml",
+      "sizeLines": 97,
+      "fileCategory": "config"
+    },
+    {
+      "path": "public/styles.css",
+      "language": "css",
+      "sizeLines": 152,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "pyproject.toml",
+      "language": "toml",
+      "sizeLines": 66,
+      "fileCategory": "config"
+    },
+    {
+      "path": "pyrightconfig.json",
+      "language": "json",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    },
+    {
+      "path": "raw/TOMBSTONE.md",
+      "language": "markdown",
+      "sizeLines": 1,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "reality_contracts/ISA_MAP.md",
+      "language": "markdown",
+      "sizeLines": 253,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "reality_contracts/arifos_kernel_sdk.py",
+      "language": "python",
+      "sizeLines": 590,
+      "fileCategory": "code"
+    },
+    {
+      "path": "reality_contracts/federation_call_graph.yaml",
+      "language": "yaml",
+      "sizeLines": 297,
+      "fileCategory": "config"
+    },
+    {
+      "path": "reality_contracts/per_call_envelope.schema.json",
+      "language": "json",
+      "sizeLines": 203,
+      "fileCategory": "config"
+    },
+    {
+      "path": "reality_contracts/wealth_reality_contract.yaml",
+      "language": "yaml",
+      "sizeLines": 676,
+      "fileCategory": "config"
+    },
+    {
+      "path": "reality_contracts/wire_contract.yaml",
+      "language": "yaml",
+      "sizeLines": 352,
+      "fileCategory": "config"
+    },
+    {
+      "path": "requirements.txt",
+      "language": "txt",
+      "sizeLines": 10,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "scripts/.manifest_state.json",
+      "language": "json",
+      "sizeLines": 43,
+      "fileCategory": "config"
+    },
+    {
+      "path": "scripts/README.md",
+      "language": "markdown",
+      "sizeLines": 78,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "scripts/baseline_probe.py",
+      "language": "python",
+      "sizeLines": 421,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/build_archive_index.py",
+      "language": "python",
+      "sizeLines": 240,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/cli.js",
+      "language": "javascript",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/dependency_probes.py",
+      "language": "python",
+      "sizeLines": 629,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/deploy-vps.sh",
+      "language": "shell",
+      "sizeLines": 150,
+      "fileCategory": "script"
+    },
+    {
+      "path": "scripts/entrypoint.sh",
+      "language": "shell",
+      "sizeLines": 3,
+      "fileCategory": "script"
+    },
+    {
+      "path": "scripts/governance-gate.sh",
+      "language": "shell",
+      "sizeLines": 189,
+      "fileCategory": "script"
+    },
+    {
+      "path": "scripts/hooks/install_hooks.sh",
+      "language": "shell",
+      "sizeLines": 17,
+      "fileCategory": "script"
+    },
+    {
+      "path": "scripts/hooks/pre-push/pre-push.sh",
+      "language": "shell",
+      "sizeLines": 15,
+      "fileCategory": "script"
+    },
+    {
+      "path": "scripts/hooks/pre-push/repo_guard.py",
+      "language": "python",
+      "sizeLines": 264,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/invoke_tool.js",
+      "language": "javascript",
+      "sizeLines": 266,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/run-first-loop.js",
+      "language": "javascript",
+      "sizeLines": 291,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/split_monolith.sh",
+      "language": "shell",
+      "sizeLines": 141,
+      "fileCategory": "script"
+    },
+    {
+      "path": "scripts/sync_manifest.py",
+      "language": "python",
+      "sizeLines": 218,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/test-mcp-loop.js",
+      "language": "javascript",
+      "sizeLines": 108,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/verify_receipt.py",
+      "language": "python",
+      "sizeLines": 518,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/wealth_health_standard.py",
+      "language": "python",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server_federated.py",
+      "language": "python",
+      "sizeLines": 398,
+      "fileCategory": "code"
+    },
+    {
+      "path": "skills/wealth-capital-primitives/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 20,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "skills/wealth-ledger-discipline/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 20,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "skills/wealth-market-pulse/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 20,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "skills/wealth-runway-conservation/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 20,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "tests/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/bridge/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/cases/enron_2000_panel.json",
+      "language": "json",
+      "sizeLines": 326,
+      "fileCategory": "config"
+    },
+    {
+      "path": "tests/cases/petronas_noc_panel.json",
+      "language": "json",
+      "sizeLines": 350,
+      "fileCategory": "config"
+    },
+    {
+      "path": "tests/compat/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/contracts/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/contracts/test_envelope_contract.py",
+      "language": "python",
+      "sizeLines": 278,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/coordination.test.js",
+      "language": "javascript",
+      "sizeLines": 157,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core.test.js",
+      "language": "javascript",
+      "sizeLines": 97,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core/test_capital.py",
+      "language": "python",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core/test_math.py",
+      "language": "python",
+      "sizeLines": 131,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core/test_optimize_mwc.py",
+      "language": "python",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core/test_power.py",
+      "language": "python",
+      "sizeLines": 218,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core/test_risk.py",
+      "language": "python",
+      "sizeLines": 151,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core/test_wisdom.py",
+      "language": "python",
+      "sizeLines": 193,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/finance.test.js",
+      "language": "javascript",
+      "sizeLines": 297,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/golden/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/golden/test_math_primitives.py",
+      "language": "python",
+      "sizeLines": 296,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/governance.test.js",
+      "language": "javascript",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/governed_loop.js",
+      "language": "javascript",
+      "sizeLines": 59,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/ingest.test.js",
+      "language": "javascript",
+      "sizeLines": 134,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/integration/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/mcp/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/mcp/test_direct_session_gate.py",
+      "language": "python",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/mcp/test_registry_truth.py",
+      "language": "python",
+      "sizeLines": 209,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/mcp/test_session_propagation.py",
+      "language": "python",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_a2a_card_consolidation.py",
+      "language": "python",
+      "sizeLines": 346,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_advisory_boundary.py",
+      "language": "python",
+      "sizeLines": 292,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_archive_index.py",
+      "language": "python",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_bid_surface_mwc.py",
+      "language": "python",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_capital_backtest.py",
+      "language": "python",
+      "sizeLines": 328,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_capital_entropy_bugfixes.py",
+      "language": "python",
+      "sizeLines": 146,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_capital_entry_plan.py",
+      "language": "python",
+      "sizeLines": 452,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_capital_indicator.py",
+      "language": "python",
+      "sizeLines": 445,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_commodity_engines.py",
+      "language": "python",
+      "sizeLines": 264,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_conservation.py",
+      "language": "python",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_crypto_router_smoke.py",
+      "language": "python",
+      "sizeLines": 267,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_differential.py",
+      "language": "python",
+      "sizeLines": 572,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_entropy.py",
+      "language": "python",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_exergy_gate.py",
+      "language": "python",
+      "sizeLines": 116,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_federation_memory.py",
+      "language": "python",
+      "sizeLines": 193,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_flow.py",
+      "language": "python",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_ghost_retirement.py",
+      "language": "python",
+      "sizeLines": 176,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_gradient.py",
+      "language": "python",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_imports.py",
+      "language": "python",
+      "sizeLines": 59,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_ingestion_map.py",
+      "language": "python",
+      "sizeLines": 323,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_internal_imports.py",
+      "language": "python",
+      "sizeLines": 140,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_market_data.py",
+      "language": "python",
+      "sizeLines": 160,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_metabolic_contract.py",
+      "language": "python",
+      "sizeLines": 294,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_monotonicity.py",
+      "language": "python",
+      "sizeLines": 268,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_omni_wisdom.py",
+      "language": "python",
+      "sizeLines": 192,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_optimizers.py",
+      "language": "python",
+      "sizeLines": 566,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_organ_governance.py",
+      "language": "python",
+      "sizeLines": 200,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_personal_finance.py",
+      "language": "python",
+      "sizeLines": 168,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_prompt1_c3_session_delegation.py",
+      "language": "python",
+      "sizeLines": 240,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_public_discovery.py",
+      "language": "python",
+      "sizeLines": 227,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_session_contract.py",
+      "language": "python",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_simulative_tools.py",
+      "language": "python",
+      "sizeLines": 326,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_smoke.py",
+      "language": "python",
+      "sizeLines": 327,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_step9_canonical_e2e.py",
+      "language": "python",
+      "sizeLines": 226,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_stock_analysis.py",
+      "language": "python",
+      "sizeLines": 553,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_survival_engine.py",
+      "language": "python",
+      "sizeLines": 429,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_time.py",
+      "language": "python",
+      "sizeLines": 115,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_vault_supabase_sync.py",
+      "language": "python",
+      "sizeLines": 117,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_wealth_gates.py",
+      "language": "python",
+      "sizeLines": 426,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/unit/test_stress_index_p0.py",
+      "language": "python",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/v2_systemic_intelligence_test.py",
+      "language": "python",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/wealth_import_smoke.py",
+      "language": "python",
+      "sizeLines": 132,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/flame_client.py",
+      "language": "python",
+      "sizeLines": 341,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/gold_alert.py",
+      "language": "python",
+      "sizeLines": 488,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/wealth_finance_serpapi.py",
+      "language": "python",
+      "sizeLines": 208,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools_sot.yaml",
+      "language": "yaml",
+      "sizeLines": 284,
+      "fileCategory": "config"
+    },
+    {
+      "path": "trading/ARCHITECTURE.md",
+      "language": "markdown",
+      "sizeLines": 137,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "trading/FEDERATION_REGISTRATION.md",
+      "language": "markdown",
+      "sizeLines": 61,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "trading/MIGRATION.md",
+      "language": "markdown",
+      "sizeLines": 35,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "trading/README.md",
+      "language": "markdown",
+      "sizeLines": 107,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "trading/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/apex/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/apex/apex_predictor.py",
+      "language": "python",
+      "sizeLines": 400,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/apex/regime.py",
+      "language": "python",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/apex/scanner.py",
+      "language": "python",
+      "sizeLines": 290,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/backtest/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/backtest/engine.py",
+      "language": "python",
+      "sizeLines": 819,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/backtest/engine_v2.py",
+      "language": "python",
+      "sizeLines": 777,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/backtest/metrics_enhanced.py",
+      "language": "python",
+      "sizeLines": 348,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/config/trading_spec.json",
+      "language": "json",
+      "sizeLines": 53,
+      "fileCategory": "config"
+    },
+    {
+      "path": "trading/core/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/core/config.py",
+      "language": "python",
+      "sizeLines": 97,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/core/journal.py",
+      "language": "python",
+      "sizeLines": 329,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/core/models.py",
+      "language": "python",
+      "sizeLines": 248,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/cron/hourly_scan.py",
+      "language": "python",
+      "sizeLines": 375,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/cron/refresh_market_digests.py",
+      "language": "python",
+      "sizeLines": 237,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/cron/weekly_report.py",
+      "language": "python",
+      "sizeLines": 225,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/governance/GoldConstitutionalInvariants.md",
+      "language": "markdown",
+      "sizeLines": 278,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "trading/governance/gate.py",
+      "language": "python",
+      "sizeLines": 154,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/reference/red-news-impact.md",
+      "language": "markdown",
+      "sizeLines": 38,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "trading/risk/manager.py",
+      "language": "python",
+      "sizeLines": 133,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/risk/position_sizer.py",
+      "language": "python",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "trading/signals/__init__.py",
+      "language": "python",
+      "sizeLines": 5,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth-mcp-architecture/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 90,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wealth_arifos_bridge/__init__.py",
+      "language": "python",
+      "sizeLines": 274,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_arifos_bridge/judge_handoff.py",
+      "language": "python",
+      "sizeLines": 276,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_compat/__init__.py",
+      "language": "python",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_contracts/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_contracts/authority.py",
+      "language": "python",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_contracts/envelope.py",
+      "language": "python",
+      "sizeLines": 722,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_contracts/epistemic.py",
+      "language": "python",
+      "sizeLines": 306,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_contracts/schemas/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/alpha158.py",
+      "language": "python",
+      "sizeLines": 339,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/asymmetric_risk.py",
+      "language": "python",
+      "sizeLines": 295,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/capital/__init__.py",
+      "language": "python",
+      "sizeLines": 187,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/collapse_signature/__init__.py",
+      "language": "python",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/collapse_signature/beautiful_mouse.py",
+      "language": "python",
+      "sizeLines": 302,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/collapse_signature/corpus/MALAYSIAN_GLC_NOC_PATTERNS.md",
+      "language": "markdown",
+      "sizeLines": 103,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wealth_core/collapse_signature/corpus/enron_1999_ar.txt",
+      "language": "txt",
+      "sizeLines": 10337,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wealth_core/collapse_signature/corpus/enron_2000_ar.txt",
+      "language": "txt",
+      "sizeLines": 8955,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wealth_core/collapse_signature/historical.py",
+      "language": "python",
+      "sizeLines": 188,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/collapse_signature/patterns.py",
+      "language": "python",
+      "sizeLines": 1430,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/collapse_signature/scanner.py",
+      "language": "python",
+      "sizeLines": 478,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/commodity_engines.py",
+      "language": "python",
+      "sizeLines": 251,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/compass.py",
+      "language": "python",
+      "sizeLines": 446,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/counterfactual.py",
+      "language": "python",
+      "sizeLines": 333,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/ensemble.py",
+      "language": "python",
+      "sizeLines": 570,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/epistemic/__init__.py",
+      "language": "python",
+      "sizeLines": 158,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/epistemic/analog_anchoring.py",
+      "language": "python",
+      "sizeLines": 123,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/epistemic/contradiction_density.py",
+      "language": "python",
+      "sizeLines": 132,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/epistemic/governance_constraint.py",
+      "language": "python",
+      "sizeLines": 156,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/epistemic/model_ownership.py",
+      "language": "python",
+      "sizeLines": 144,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/epistemic/pipeline_inertia.py",
+      "language": "python",
+      "sizeLines": 121,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/epistemic/signal_demotion.py",
+      "language": "python",
+      "sizeLines": 137,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/epistemic/zweig_mapping.py",
+      "language": "python",
+      "sizeLines": 219,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/game/__init__.py",
+      "language": "python",
+      "sizeLines": 41,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/governance/__init__.py",
+      "language": "python",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/governance/pipeline.py",
+      "language": "python",
+      "sizeLines": 125,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/governance/tri_witness.py",
+      "language": "python",
+      "sizeLines": 86,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/http_retry.py",
+      "language": "python",
+      "sizeLines": 245,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/ingest/__init__.py",
+      "language": "python",
+      "sizeLines": 5,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/ingest/crypto/__init__.py",
+      "language": "python",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/ingest/crypto/adapters/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/ingest/crypto/adapters/registry.py",
+      "language": "python",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/ingest/crypto/provider_config.py",
+      "language": "python",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/ingest/crypto/router.py",
+      "language": "python",
+      "sizeLines": 211,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/institutional/__init__.py",
+      "language": "python",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/institutional/_utils.py",
+      "language": "python",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/institutional/cadence.py",
+      "language": "python",
+      "sizeLines": 548,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/institutional/cascade.py",
+      "language": "python",
+      "sizeLines": 320,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/institutional/crisis_reflex.py",
+      "language": "python",
+      "sizeLines": 830,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/institutional/exploitation.py",
+      "language": "python",
+      "sizeLines": 272,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/institutional/governance.py",
+      "language": "python",
+      "sizeLines": 356,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/institutional/stress_index.py",
+      "language": "python",
+      "sizeLines": 524,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/macro/__init__.py",
+      "language": "python",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/macro_diagnosis.py",
+      "language": "python",
+      "sizeLines": 289,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/market_data_fallback.py",
+      "language": "python",
+      "sizeLines": 326,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/math/__init__.py",
+      "language": "python",
+      "sizeLines": 168,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/optimizers/__init__.py",
+      "language": "python",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/optimizers/_utils.py",
+      "language": "python",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/optimizers/apex_mapping.py",
+      "language": "python",
+      "sizeLines": 356,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/optimizers/chance_constrained.py",
+      "language": "python",
+      "sizeLines": 302,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/optimizers/kelly.py",
+      "language": "python",
+      "sizeLines": 261,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/optimizers/markowitz.py",
+      "language": "python",
+      "sizeLines": 290,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/optimizers/robust.py",
+      "language": "python",
+      "sizeLines": 313,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/optimizers/two_stage.py",
+      "language": "python",
+      "sizeLines": 402,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/personal/__init__.py",
+      "language": "python",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/petronas_vitals.py",
+      "language": "python",
+      "sizeLines": 369,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/power/__init__.py",
+      "language": "python",
+      "sizeLines": 209,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/power/capture_detector.py",
+      "language": "python",
+      "sizeLines": 216,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/power/coercion_detector.py",
+      "language": "python",
+      "sizeLines": 99,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/power/incentive_map.py",
+      "language": "python",
+      "sizeLines": 86,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/power/opacity_scorer.py",
+      "language": "python",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/power/rent_extraction.py",
+      "language": "python",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/power/rule_asymmetry.py",
+      "language": "python",
+      "sizeLines": 90,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/regime_map.py",
+      "language": "python",
+      "sizeLines": 407,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/reward_design.py",
+      "language": "python",
+      "sizeLines": 320,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/risk/__init__.py",
+      "language": "python",
+      "sizeLines": 369,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/stock/__init__.py",
+      "language": "python",
+      "sizeLines": 100,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/stress_test.py",
+      "language": "python",
+      "sizeLines": 361,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/transport.py",
+      "language": "python",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/volatility_features.py",
+      "language": "python",
+      "sizeLines": 420,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/wisdom/__init__.py",
+      "language": "python",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/wisdom/dignity_impact.py",
+      "language": "python",
+      "sizeLines": 97,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/wisdom/ecological_cost.py",
+      "language": "python",
+      "sizeLines": 92,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/wisdom/inequality_effect.py",
+      "language": "python",
+      "sizeLines": 92,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/wisdom/optionality_preserve.py",
+      "language": "python",
+      "sizeLines": 92,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/wisdom/resilience_score.py",
+      "language": "python",
+      "sizeLines": 92,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/wisdom/signal_state.py",
+      "language": "python",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_core/wisdom/sovereignty_risk.py",
+      "language": "python",
+      "sizeLines": 115,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/__init__.py",
+      "language": "python",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/federation_safety.py",
+      "language": "python",
+      "sizeLines": 416,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/governance_metadata.py",
+      "language": "python",
+      "sizeLines": 134,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/mcp_logging.py",
+      "language": "python",
+      "sizeLines": 238,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/middleware/__init__.py",
+      "language": "python",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/middleware/evidence_middleware.py",
+      "language": "python",
+      "sizeLines": 309,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/prompts/__init__.py",
+      "language": "python",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/prompts/wealth_allocation_judgment.md",
+      "language": "markdown",
+      "sizeLines": 115,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wealth_mcp/prompts/wealth_arifos_handoff.md",
+      "language": "markdown",
+      "sizeLines": 109,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wealth_mcp/prompts/wealth_capital_diagnosis.md",
+      "language": "markdown",
+      "sizeLines": 96,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wealth_mcp/prompts/wealth_institutional_power.md",
+      "language": "markdown",
+      "sizeLines": 113,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wealth_mcp/prompts/wealth_intake.md",
+      "language": "markdown",
+      "sizeLines": 122,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wealth_mcp/prompts/wealth_market_reality.md",
+      "language": "markdown",
+      "sizeLines": 120,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wealth_mcp/prompts/wealth_risk_downside.md",
+      "language": "markdown",
+      "sizeLines": 104,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wealth_mcp/resources/__init__.py",
+      "language": "python",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/resources/examples/geox-to-wealth.json",
+      "language": "json",
+      "sizeLines": 67,
+      "fileCategory": "config"
+    },
+    {
+      "path": "wealth_mcp/resources/examples/wealth-to-arifos.json",
+      "language": "json",
+      "sizeLines": 70,
+      "fileCategory": "config"
+    },
+    {
+      "path": "wealth_mcp/resources/policy/action-boundaries.md",
+      "language": "markdown",
+      "sizeLines": 106,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wealth_mcp/resources/policy/epistemic-ladder.md",
+      "language": "markdown",
+      "sizeLines": 73,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wealth_mcp/resources/registry/prompts.schema.json",
+      "language": "json",
+      "sizeLines": 28,
+      "fileCategory": "config"
+    },
+    {
+      "path": "wealth_mcp/resources/registry/tools.schema.json",
+      "language": "json",
+      "sizeLines": 51,
+      "fileCategory": "config"
+    },
+    {
+      "path": "wealth_mcp/resources/sot/manifest.schema.json",
+      "language": "json",
+      "sizeLines": 55,
+      "fileCategory": "config"
+    },
+    {
+      "path": "wealth_mcp/resources/sources/catalog.json",
+      "language": "json",
+      "sizeLines": 184,
+      "fileCategory": "config"
+    },
+    {
+      "path": "wealth_mcp/resources/sources/catalog.schema.json",
+      "language": "json",
+      "sizeLines": 69,
+      "fileCategory": "config"
+    },
+    {
+      "path": "wealth_mcp/resources/translation/geox-to-wealth/prospect.json",
+      "language": "json",
+      "sizeLines": 65,
+      "fileCategory": "config"
+    },
+    {
+      "path": "wealth_mcp/resources/translation/geox-to-wealth/prospect.schema.json",
+      "language": "json",
+      "sizeLines": 55,
+      "fileCategory": "config"
+    },
+    {
+      "path": "wealth_mcp/resources/translation/geox-to-well/field-risk.json",
+      "language": "json",
+      "sizeLines": 41,
+      "fileCategory": "config"
+    },
+    {
+      "path": "wealth_mcp/resources/translation/wealth-to-arifos/allocation.json",
+      "language": "json",
+      "sizeLines": 49,
+      "fileCategory": "config"
+    },
+    {
+      "path": "wealth_mcp/resources/translation/well-to-wealth/readiness.json",
+      "language": "json",
+      "sizeLines": 49,
+      "fileCategory": "config"
+    },
+    {
+      "path": "wealth_mcp/server.py",
+      "language": "python",
+      "sizeLines": 2800,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/__init__.py",
+      "language": "python",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/backtest.py",
+      "language": "python",
+      "sizeLines": 345,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/bid_surface.py",
+      "language": "python",
+      "sizeLines": 214,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/canonical.py",
+      "language": "python",
+      "sizeLines": 3509,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/diagnose.py",
+      "language": "python",
+      "sizeLines": 406,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/entropy.py",
+      "language": "python",
+      "sizeLines": 249,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/entry_plan.py",
+      "language": "python",
+      "sizeLines": 307,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/health.py",
+      "language": "python",
+      "sizeLines": 393,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/indicator.py",
+      "language": "python",
+      "sizeLines": 600,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/institutional.py",
+      "language": "python",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/judge_handoff.py",
+      "language": "python",
+      "sizeLines": 170,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/ledger.py",
+      "language": "python",
+      "sizeLines": 131,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/market.py",
+      "language": "python",
+      "sizeLines": 233,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/optimize_mwc.py",
+      "language": "python",
+      "sizeLines": 414,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/primitive.py",
+      "language": "python",
+      "sizeLines": 329,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/registry.py",
+      "language": "python",
+      "sizeLines": 283,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wealth_mcp/tools/types.py",
+      "language": "python",
+      "sizeLines": 191,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wiki/TOMBSTONE.md",
+      "language": "markdown",
+      "sizeLines": 1,
+      "fileCategory": "docs"
+    }
+  ],
+  "totalFiles": 783,
+  "filteredByIgnore": 56,
+  "estimatedComplexity": "very-large",
+  "failures": [],
+  "stats": {
+    "filesScanned": 783,
+    "byCategory": {
+      "docs": 235,
+      "infra": 14,
+      "config": 109,
+      "code": 413,
+      "markup": 4,
+      "script": 8
+    },
+    "byLanguage": {
+      "markdown": 229,
+      "unknown": 6,
+      "config": 1,
+      "yaml": 49,
+      "sqlite": 1,
+      "json": 67,
+      "jsonl": 1,
+      "dockerfile": 1,
+      "makefile": 1,
+      "html": 3,
+      "javascript": 33,
+      "python": 368,
+      "monolith-legacy-2026-05-19": 1,
+      "shell": 8,
+      "typescript": 4,
+      "toml": 2,
+      "txt": 6,
+      "xml": 1,
+      "css": 1
+    }
+  }
+}

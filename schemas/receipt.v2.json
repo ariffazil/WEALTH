@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wealth.arif-fazil.com/schemas/receipt.v2.json",
+  "title": "WEALTH Receipt v2",
+  "description": "Four-truth witness receipt. PASS iff transport=RESPONDED AND execution=SUCCESS AND semantic=VALID AND policy IN {OBSERVATION_ONLY, PERMITTED}.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "receipt_id",
+    "tool_name",
+    "tool_version",
+    "transport",
+    "execution",
+    "semantic",
+    "policy",
+    "verdict",
+    "decision_eligibility"
+  ],
+  "properties": {
+    "receipt_id": {"type": "string", "minLength": 1},
+    "tool_name": {"type": "string", "minLength": 1},
+    "tool_version": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string"},
+    "request_id": {"type": "string"},
+    "idempotency_key": {"type": "string"},
+    "source_revision": {"type": "string"},
+    "build_digest": {"type": "string"},
+    "transport": {
+      "type": "string",
+      "enum": ["NOT_ATTEMPTED", "RESPONDED", "TIMEOUT", "NETWORK_ERROR"]
+    },
+    "execution": {
+      "type": "string",
+      "enum": ["NOT_STARTED", "SUCCESS", "FAILED", "CRASHED", "CANCELLED"]
+    },
+    "semantic": {
+      "type": "string",
+      "enum": [
+        "NOT_EVALUATED",
+        "VALID",
+        "STALE",
+        "INCOMPLETE",
+        "INPUT_FIDELITY_FAIL",
+        "CONTRACT_INVALID",
+        "CONFLICTED",
+        "UNMEASURED"
+      ]
+    },
+    "policy": {
+      "type": "string",
+      "enum": ["NOT_EVALUATED", "OBSERVATION_ONLY", "PERMITTED", "HOLD", "BLOCKED"]
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["PASS", "DEGRADED", "HOLD", "FAIL"]
+    },
+    "decision_eligibility": {
+      "type": "string",
+      "enum": ["ELIGIBLE", "INELIGIBLE"]
+    },
+    "input_hash": {"type": "string"},
+    "output_hash": {"type": "string"},
+    "parent_receipt_hash": {"type": "string"},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "runtime_attestation": {"type": "object"},
+    "sanitized_error": {"type": "string"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "_invariant": {"type": "string"}
+  }
+}
