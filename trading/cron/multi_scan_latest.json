@@ -1,0 +1,311 @@
+{
+  "schema": "multi_scan_v1",
+  "version": "1.0.0",
+  "scanned_at": "2026-09-18T17:06:04.084305+00:00",
+  "lookback_days": 180,
+  "instruments_requested": [
+    "XAUUSD",
+    "OIL",
+    "GAS",
+    "KLCI",
+    "USMYR"
+  ],
+  "results": {
+    "XAUUSD": {
+      "instrument": "XAUUSD",
+      "status": "OK",
+      "config": {
+        "yfinance_ticker": "GC=F",
+        "instrument_class": "metal",
+        "volatility_class": "medium",
+        "session": "continuous",
+        "atr_stop_multiplier": 2.0,
+        "decimal_places": 2
+      },
+      "indicators": {
+        "timestamp": "2026-09-18T00:00:00+00:00",
+        "close": 4420.2,
+        "ema_20": 4429.1,
+        "ema_50": 4391.79,
+        "ema_200": 0.0,
+        "rsi_14": 49.9,
+        "macd_line": -1.7154,
+        "macd_signal": 19.436,
+        "macd_histogram": -21.1514,
+        "atr_14": 108.68,
+        "support": 3963.0,
+        "resistance": 4755.0,
+        "bb_upper": 4728.99,
+        "bb_mid": 4491.85,
+        "bb_lower": 4254.72,
+        "psar": 4446.46,
+        "psar_trend": "BEAR",
+        "pivot": 4359.0,
+        "trend": "FLAT"
+      },
+      "regime": {
+        "regime": "UPTREND",
+        "regime_confidence": 0.85,
+        "description": "\ud83d\udcc8 UPTREND \u2014 Buy the dips near 4363.50",
+        "buy_zone": {
+          "price": 4363.5,
+          "strength": 1,
+          "type": "buy_zone"
+        },
+        "sell_zone": {
+          "price": 4627.1,
+          "strength": 1,
+          "type": "sell_zone"
+        },
+        "last_swing_high": 4917.7,
+        "last_swing_low": 3955.4
+      },
+      "trade_plan": {
+        "suggested_entry": 4363.5,
+        "suggested_stop": 4146.14,
+        "suggested_target": 4798.22,
+        "atr_used": 108.68,
+        "stop_distance": 217.36,
+        "rr_ratio": 2.0
+      }
+    },
+    "OIL": {
+      "instrument": "OIL",
+      "status": "OK",
+      "config": {
+        "yfinance_ticker": "CL=F",
+        "instrument_class": "energy",
+        "volatility_class": "medium",
+        "session": "continuous",
+        "atr_stop_multiplier": 2.5,
+        "decimal_places": 2
+      },
+      "indicators": {
+        "timestamp": "2026-09-18T00:00:00+00:00",
+        "close": 95.94,
+        "ema_20": 94.39,
+        "ema_50": 89.11,
+        "ema_200": 0.0,
+        "rsi_14": 55.6,
+        "macd_line": 4.7701,
+        "macd_signal": 4.2694,
+        "macd_histogram": 0.5007,
+        "atr_14": 4.46,
+        "support": 74.24,
+        "resistance": 106.75,
+        "bb_upper": 107.71,
+        "bb_mid": 92.62,
+        "bb_lower": 77.54,
+        "psar": 106.6,
+        "psar_trend": "BEAR",
+        "pivot": 90.49,
+        "trend": "BUY"
+      },
+      "regime": {
+        "regime": "UPTREND",
+        "regime_confidence": 0.85,
+        "description": "\ud83d\udcc8 UPTREND \u2014 Buy the dips near 88.66",
+        "buy_zone": {
+          "price": 88.66,
+          "strength": 1,
+          "type": "buy_zone"
+        },
+        "sell_zone": {
+          "price": 97.0,
+          "strength": 1,
+          "type": "sell_zone"
+        },
+        "last_swing_high": 117.63,
+        "last_swing_low": 67.04
+      },
+      "trade_plan": {
+        "suggested_entry": 88.66,
+        "suggested_stop": 77.51,
+        "suggested_target": 110.96,
+        "atr_used": 4.46,
+        "stop_distance": 11.15,
+        "rr_ratio": 2.0
+      }
+    },
+    "GAS": {
+      "instrument": "GAS",
+      "status": "OK",
+      "config": {
+        "yfinance_ticker": "NG=F",
+        "instrument_class": "energy",
+        "volatility_class": "high",
+        "session": "continuous",
+        "atr_stop_multiplier": 3.0,
+        "decimal_places": 3
+      },
+      "indicators": {
+        "timestamp": "2026-09-18T00:00:00+00:00",
+        "close": 2.907,
+        "ema_20": 2.87,
+        "ema_50": 2.87,
+        "ema_200": 0.0,
+        "rsi_14": 53.8,
+        "macd_line": 0.018,
+        "macd_signal": 0.0155,
+        "macd_histogram": 0.0025,
+        "atr_14": 0.1,
+        "support": 2.62,
+        "resistance": 3.03,
+        "bb_upper": 2.99,
+        "bb_mid": 2.88,
+        "bb_lower": 2.76,
+        "psar": 2.98,
+        "psar_trend": "BEAR",
+        "pivot": 2.82,
+        "trend": "FLAT"
+      },
+      "regime": {
+        "regime": "SIDEWAYS",
+        "regime_confidence": 0.5,
+        "description": "\ud83d\udcca SIDEWAYS \u2014 Buy 2.86, Sell 2.99",
+        "buy_zone": {
+          "price": 2.86,
+          "strength": 1,
+          "type": "buy_zone"
+        },
+        "sell_zone": {
+          "price": 2.99,
+          "strength": 1,
+          "type": "sell_zone"
+        },
+        "last_swing_high": 3.44,
+        "last_swing_low": 2.48
+      },
+      "trade_plan": {
+        "suggested_entry": 2.86,
+        "suggested_stop": 2.56,
+        "suggested_target": 3.46,
+        "atr_used": 0.1,
+        "stop_distance": 0.3,
+        "rr_ratio": 2.0
+      }
+    },
+    "KLCI": {
+      "instrument": "KLCI",
+      "status": "OK",
+      "config": {
+        "yfinance_ticker": "^KLSE",
+        "instrument_class": "equity_index",
+        "volatility_class": "low",
+        "session": "asia",
+        "atr_stop_multiplier": 1.5,
+        "decimal_places": 2
+      },
+      "indicators": {
+        "timestamp": "2026-09-17T00:00:00+00:00",
+        "close": 1674.74,
+        "ema_20": 1708.05,
+        "ema_50": 1712.5,
+        "ema_200": 0.0,
+        "rsi_14": 33.4,
+        "macd_line": -10.0326,
+        "macd_signal": -4.7321,
+        "macd_histogram": -5.3004,
+        "atr_14": 13.49,
+        "support": 1676.18,
+        "resistance": 1753.22,
+        "bb_upper": 1756.32,
+        "bb_mid": 1715.53,
+        "bb_lower": 1674.74,
+        "psar": 1717.58,
+        "psar_trend": "BEAR",
+        "pivot": 1714.7,
+        "trend": "FLAT"
+      },
+      "regime": {
+        "regime": "DOWNTREND",
+        "regime_confidence": 0.63,
+        "description": "\ud83d\udcc9 DOWNTREND \u2014 Sell the rallies near 1698.53",
+        "buy_zone": {
+          "price": 1672.94,
+          "strength": 2,
+          "type": "buy_zone"
+        },
+        "sell_zone": {
+          "price": 1698.53,
+          "strength": 1,
+          "type": "sell_zone"
+        },
+        "last_swing_high": 1768.46,
+        "last_swing_low": 1655.28
+      },
+      "trade_plan": {
+        "suggested_entry": 1672.94,
+        "suggested_stop": 1652.71,
+        "suggested_target": 1713.41,
+        "atr_used": 13.49,
+        "stop_distance": 20.23,
+        "rr_ratio": 2.0
+      }
+    },
+    "USMYR": {
+      "instrument": "USMYR",
+      "status": "OK",
+      "config": {
+        "yfinance_ticker": "MYR=X",
+        "instrument_class": "fx",
+        "volatility_class": "very_low",
+        "session": "continuous",
+        "atr_stop_multiplier": 1.5,
+        "decimal_places": 4
+      },
+      "indicators": {
+        "timestamp": "2026-09-18T00:00:00+00:00",
+        "close": 4.076,
+        "ema_20": 4.05,
+        "ema_50": 4.06,
+        "ema_200": 0.0,
+        "rsi_14": 61.1,
+        "macd_line": 0.0001,
+        "macd_signal": -0.0045,
+        "macd_histogram": 0.0046,
+        "atr_14": 0.02,
+        "support": 4.02,
+        "resistance": 4.1,
+        "bb_upper": 4.07,
+        "bb_mid": 4.04,
+        "bb_lower": 4.01,
+        "psar": 4.04,
+        "psar_trend": "BULL",
+        "pivot": 4.06,
+        "trend": "FLAT"
+      },
+      "regime": {
+        "regime": "DOWNTREND",
+        "regime_confidence": 0.62,
+        "description": "\ud83d\udcc9 DOWNTREND \u2014 Sell the rallies near 4.10",
+        "buy_zone": {
+          "price": 4.07,
+          "strength": 1,
+          "type": "buy_zone"
+        },
+        "sell_zone": {
+          "price": 4.1,
+          "strength": 2,
+          "type": "sell_zone"
+        },
+        "last_swing_high": 4.15,
+        "last_swing_low": 3.9
+      },
+      "trade_plan": {
+        "suggested_entry": 4.07,
+        "suggested_stop": 4.04,
+        "suggested_target": 4.13,
+        "atr_used": 0.02,
+        "stop_distance": 0.03,
+        "rr_ratio": 2.0
+      }
+    }
+  },
+  "errors": {},
+  "summary": {
+    "total_requested": 5,
+    "scanned_ok": 5,
+    "errors": 0
+  }
+}

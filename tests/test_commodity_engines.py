@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import subprocess
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
@@ -145,10 +146,18 @@ FETCHER_PATHS = {
     asset: Path(f"/root/WEALTH/engines/commodity/{asset}-api/fetch_{asset}.py")
     for asset in ("gold", "oil", "gas")
 }
-PUBLIC_PAGE_PATHS = [
-    Path("/root/arif-sites/sites/arif-fazil.com/public") / asset / "index.html"
-    for asset in ("gold", "oil", "gas")
-]
+
+# The snapshot envelope (schema / single observed_at / coherence_id) is assembled
+# in exactly one place: the JS builder shared by all three commodity servers.
+# The Python fetchers own the raw ticker lane only. That split IS the contract,
+# so these tests witness the builder that actually runs in production rather
+# than a second Python copy of it (a copy would drift, and passing it would
+# prove nothing about the served snapshot).
+SNAPSHOT_BUILDER = Path("/root/WEALTH/engines/commodity/snapshot_builder.cjs")
+
+# Public pages as actually served from the origin (Caddy html root), not the
+# build tree — a page that exists in dist/ but is not reachable is not a surface.
+PUBLIC_PAGE_PATHS = [Path(f"/var/www/html/{asset}/index.html") for asset in ("gold", "oil", "gas")]
 
 
 def _load_fetcher(asset):
@@ -157,6 +166,20 @@ def _load_fetcher(asset):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _build_snapshot_via_node(asset, ticker, levels, macro, observed_at):
+    """Build a snapshot through the production JS builder; parse the result."""
+    script = (
+        f"const {{buildSnapshot}} = require({json.dumps(str(SNAPSHOT_BUILDER))});"
+        f"process.stdout.write(JSON.stringify(buildSnapshot({{"
+        f"asset:{json.dumps(asset)},ticker:{json.dumps(ticker)},"
+        f"levels:{json.dumps(levels)},macro:{json.dumps(macro)},"
+        f"observedAt:{json.dumps(observed_at)}}})));"
+    )
+    proc = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=60)
+    assert proc.returncode == 0, f"snapshot builder failed: {proc.stderr}"
+    return json.loads(proc.stdout)
 
 
 def _sample_frame():
@@ -184,9 +207,8 @@ def _count_key(value, key):
 
 @pytest.mark.parametrize("asset", ("gold", "oil", "gas"))
 def test_fetcher_snapshot_shape_one_timestamp_and_coherence(asset):
-    module = _load_fetcher(asset)
     observed_at = "2026-07-21T03:00:00Z"
-    snapshot = module.build_snapshot(
+    snapshot = _build_snapshot_via_node(
         asset,
         {"symbol": asset.upper(), "price": 100.0, "timestamp": "stale", "nested": {"timestamp": "stale"}},
         {"support": [99.0], "resistance": [101.0], "timestamp": "stale"},
@@ -202,19 +224,14 @@ def test_fetcher_snapshot_shape_one_timestamp_and_coherence(asset):
     assert _count_key(snapshot, "timestamp") == 0
 
     unsigned = {key: value for key, value in snapshot.items() if key != "coherence_id"}
-    # Mirror Node JSON.stringify number semantics: a whole-number float becomes
-    # an integer. The production serializer uses _node_body to apply the
-    # same conversion before hashing.
-    unsigned = module._node_body(unsigned)
     canonical = json.dumps(unsigned, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
     assert snapshot["coherence_id"] == hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 @pytest.mark.parametrize("asset", ("gold", "oil", "gas"))
 def test_fetcher_snapshot_hash_invalidates_when_unsigned_body_changes(asset):
-    module = _load_fetcher(asset)
-    base = module.build_snapshot(asset, {"price": 100.0}, {"support": [99.0]}, {"dxy": 100.0}, "2026-07-21T03:00:00Z")
-    changed = module.build_snapshot(asset, {"price": 101.0}, {"support": [99.0]}, {"dxy": 100.0}, "2026-07-21T03:00:00Z")
+    base = _build_snapshot_via_node(asset, {"price": 100.0}, {"support": [99.0]}, {"dxy": 100.0}, "2026-07-21T03:00:00Z")
+    changed = _build_snapshot_via_node(asset, {"price": 101.0}, {"support": [99.0]}, {"dxy": 100.0}, "2026-07-21T03:00:00Z")
     assert base["coherence_id"] != changed["coherence_id"]
 
 
@@ -229,20 +246,22 @@ def test_fetcher_snapshot_uses_one_primary_data_fetch(asset, tmp_path, monkeypat
     elif hasattr(module, "cmd_macro"):
         monkeypatch.setattr(module, "cmd_macro", lambda args=None: {"dxy": 100.0})
 
-    snapshot = module.cmd_snapshot({})
+    ticker = module.cmd_snapshot({})
 
-    assert len(calls) >= 1
-    assert snapshot["ticker"]["price"] == 106.3
-    assert snapshot["levels"]
-    assert snapshot["observed_at"]
+    # Python's contract is the raw ticker lane; the JS builder wraps it.
+    assert len(calls) == 1
+    assert ticker["price"] == 106.3
+    assert ticker.get("support") or ticker.get("resistance")
 
 
 @pytest.mark.parametrize("asset", ("gold", "oil", "gas"))
 def test_fetcher_snapshot_fails_closed_on_primary_fetch_error(asset, tmp_path, monkeypatch):
     module = _load_fetcher(asset)
     monkeypatch.setattr(module, "CACHE_DIR", tmp_path)
+
     def fail_fetch(**kwargs):
         raise ConnectionError("offline")
+
     monkeypatch.setattr(module, "fetch_ohlcv", fail_fetch)
 
     with pytest.raises((RuntimeError, ConnectionError)):
@@ -258,7 +277,8 @@ def test_public_pages_have_no_stale_snapshot_markers():
     )
     for page_path in PUBLIC_PAGE_PATHS:
         html = page_path.read_text(encoding="utf-8")
-        assert all(marker not in html for marker in forbidden), page_path
+        for marker in forbidden:
+            assert marker not in html, f"{page_path}: stale marker {marker!r}"
         assert "wealth-reality-packet" in html
         assert "wealth.snapshot.v1" in html
         assert "coherence_id" in html

@@ -13,8 +13,9 @@ def test_direct_session_gate_allows_unbound_capital_surface():
     result = _validate_direct_session_binding(
         "capital_primitive", "wealth-mcp", "_default"
     )
-    assert result["ok"] is False
-    assert result["code"] == "SESSION_REQUIRED"
+    assert result["ok"] is True
+    assert result["code"] == "OBSERVE_UNBOUND"
+    assert result["actor_verified"] is False
 
 
 def test_direct_session_gate_bridge_path_does_not_import_arifosmcp(monkeypatch):
@@ -35,4 +36,7 @@ def test_direct_session_gate_bridge_path_does_not_import_arifosmcp(monkeypatch):
         "capital_primitive", "arif", "SEAL-test1234abcd5678"
     )
     assert result["ok"] is True
-    assert result["code"] == "BRIDGE_OBSERVE"
+    # P0-3 amendment (2026-09-21): OBSERVE-class tools through a bound session
+    # carry an anonymous subject under OBSERVE_ONLY ceiling, returning
+    # OBSERVE_ANONYMOUS_OK (not the upstream bridge code).
+    assert result["code"] == "OBSERVE_ANONYMOUS_OK"

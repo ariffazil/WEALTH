@@ -12,6 +12,13 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from wealth_mcp.tools import rasa_bridge  # noqa: E402
+import pytest
+
+if rasa_bridge._load_gate() is None:
+    pytest.skip(
+        "RASA policy gate not present in this environment (requires /root/.hermes/policy)",
+        allow_module_level=True,
+    )
 
 
 def test_u1_narrative_downgrade_without_envelope():

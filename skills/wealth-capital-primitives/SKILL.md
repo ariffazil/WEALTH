@@ -2,7 +2,7 @@
 id: wealth-capital-primitives
 name: WEALTH Capital Primitives Lane
 version: 1.0.0
-description: WEALTH compute lane — deductive capital math via capital_primitive. USE WHEN: 'NPV', 'IRR', 'EMV', 'Kelly', 'Markowitz', 'Monte Carlo', 'expected value'. Covers: capital_primitive modes (npv, irr, emv, mc, kelly, markowitz, robust budget) — pure computation, no inference. Iron rules: WEALTH computes, arifOS judges, Arif decides (authority ceiling COMPUTE_ONLY); every call writes a vault receipt — never suppress; probabilities must sum to 1 and outcomes must carry units; Kelly fraction caps at sovereign-set risk_aversion; Monte Carlo states seed for reproducibility.
+description: "WEALTH compute lane — deductive capital math via capital_primitive. USE WHEN: 'NPV', 'IRR', 'EMV', 'Kelly', 'Markowitz', 'Monte Carlo', 'expected value'. Covers: capital_primitive modes (npv, irr, emv, mc, kelly, markowitz, robust budget) — pure computation, no inference. Iron rules: WEALTH computes, arifOS judges, Arif decides (authority ceiling COMPUTE_ONLY); every call writes a vault receipt — never suppress; probabilities must sum to 1 and outcomes must carry units; Kelly fraction caps at sovereign-set risk_aversion; Monte Carlo states seed for reproducibility."
 owner: 333-AGI
 risk_tier: medium
 floor_scope: [F1, F2, F7, F11]

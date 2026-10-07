@@ -1,0 +1,143 @@
+{
+  "schema": "wealth.gold.m5.v1",
+  "status": "SHADOW_CHALLENGER",
+  "forecast_id": "m5-1790333166-17449",
+  "origin_time": "2026-09-25 10:00:00+00:00",
+  "issued_at": "2026-09-25T10:46:06.625036+00:00",
+  "asset": "XAUUSD",
+  "data_source": "LIVE",
+  "data_reason": "live_fetch_ohlcv_cascade_1h",
+  "data_is_synthetic": false,
+  "last_close": 4298.990234375,
+  "features": {
+    "log_return_1h": 0.0024874363126249173,
+    "log_return_24h": 0.010264289240416408,
+    "high_low_range_1h": 13.7099609375,
+    "true_range_1h": 13.7099609375,
+    "atr_24h": 14.498819986979166,
+    "realized_vol_6h": 0.09074567108276008,
+    "realized_vol_24h": 0.18082202930377253,
+    "realized_vol_72h": 0.1577297254769228,
+    "realized_vol_168h": 0.1417769605950471,
+    "semivariance_up_24h": 0.17948341009646598,
+    "semivariance_down_24h": 0.179417809006342,
+    "vol_of_vol_168h": 0.0640947382036432,
+    "gap_indicator": 0.0,
+    "trend_efficiency_24h": 0.19313570469349473,
+    "compression_percentile_168h": 0.6904761904761905,
+    "hour_of_day": 10,
+    "distance_from_ema_24h": 0.006339033783687632
+  },
+  "vol_candidate": {
+    "name": "HAR",
+    "params": {
+      "beta0": 4.082994775708226e-05,
+      "beta_d": 0.3882909110926377,
+      "beta_w": 0.27847298898265765,
+      "beta_m": 0.047637723741747025
+    },
+    "forecast_var_h1": 5.020268225051223e-06,
+    "forecast_sigma_h1": 0.0022405955067908226,
+    "qlike_calibration": 0.46488065018768554,
+    "notes": "har_rv_daily_aggregated"
+  },
+  "range_forecast": {
+    "expected_range": 35.72336828661022,
+    "expected_high": 4316.851918518305,
+    "expected_low": 4281.128550231695,
+    "range_multiplier_k": 2.617018702742176,
+    "n_calibration_horizons": 717,
+    "notes": "median_normalised_log_range"
+  },
+  "asymmetry": {
+    "asymmetry_score": 0.00018278313539251513,
+    "upper_half": 17.86494895793621,
+    "lower_half": 17.858419328674003,
+    "sv_up": 0.17948341009646598,
+    "sv_down": 0.179417809006342,
+    "notes": "semivariance_normalised_asymmetry"
+  },
+  "expansion": {
+    "p_vol_expansion": 0.3076923076923077,
+    "cusum_stat": 0.0021170078067209723,
+    "sigma_ratio_6h_168h": 0.577772853617249,
+    "raw_break_count_168h": 7,
+    "notes": "cusum_plus_sigma_ratio"
+  },
+  "touch_prob": {
+    "p_touch_upper_2sigma": 0.055744493167568104,
+    "p_touch_lower_2sigma": 0.055726214854028816,
+    "notes": "top_level_first_horizon"
+  },
+  "abstention": {
+    "abstain": false,
+    "regime": "RANGE",
+    "reasons": [
+      "calibration_insufficient"
+    ],
+    "notes": "measurement_quality_gate"
+  },
+  "horizons": [
+    {
+      "horizon_h": 1,
+      "p10": 4286.663653513397,
+      "p25": 4292.498254732283,
+      "p50": 4298.990234375,
+      "p75": 4305.492032495717,
+      "p90": 4311.352261123667,
+      "expected_high": 4311.622660928709,
+      "expected_low": 4286.362424966422,
+      "p_vol_expansion": 0.3076923076923077,
+      "p_touch_upper_2sigma": 0.055744493167568104,
+      "p_touch_lower_2sigma": 0.055726214854028816,
+      "sigma_h": 0.0022405955067908226,
+      "chosen_vol_model": "HAR"
+    },
+    {
+      "horizon_h": 6,
+      "p10": 4268.8591190896095,
+      "p25": 4283.105596872774,
+      "p50": 4298.990234375,
+      "p75": 4314.933782801289,
+      "p90": 4329.33402571341,
+      "expected_high": 4329.933233644771,
+      "expected_low": 4268.0585447548665,
+      "p_vol_expansion": 0.3076923076923077,
+      "p_touch_upper_2sigma": 0.5073274182634965,
+      "p_touch_lower_2sigma": 0.5073091399499571,
+      "sigma_h": 0.005488315711610197,
+      "chosen_vol_model": "HAR"
+    },
+    {
+      "horizon_h": 24,
+      "p10": 4238.939189235877,
+      "p25": 4267.279652620549,
+      "p50": 4298.990234375,
+      "p75": 4330.93646063299,
+      "p90": 4359.89199424753,
+      "expected_high": 4360.87623291454,
+      "expected_low": 4237.126855134733,
+      "p_vol_expansion": 0.3076923076923077,
+      "p_touch_upper_2sigma": 0.8366309650849417,
+      "p_touch_lower_2sigma": 0.8366126867714024,
+      "sigma_h": 0.010976631423220393,
+      "chosen_vol_model": "HAR"
+    },
+    {
+      "horizon_h": 72,
+      "p10": 4195.511237391006,
+      "p25": 4244.214284231489,
+      "p50": 4298.990234375,
+      "p75": 4354.473124487418,
+      "p90": 4405.021459731399,
+      "expected_high": 4406.179928122618,
+      "expected_low": 4191.839718402956,
+      "p_vol_expansion": 0.3076923076923077,
+      "p_touch_upper_2sigma": 0.95,
+      "p_touch_lower_2sigma": 0.95,
+      "sigma_h": 0.019012083320974798,
+      "chosen_vol_model": "HAR"
+    }
+  ],
+  "generated_at_utc": "2026-09-25T10:46:10.602876+00:00"
+}

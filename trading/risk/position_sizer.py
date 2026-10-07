@@ -94,6 +94,7 @@ def compute_position_size(
     signal,
     risk_state,
     cfg: TradingConfig | None = None,
+    mean_brier: float | None = None,
 ) -> tuple[float, float]:
     """
     Compute final position size for a signal.
@@ -103,7 +104,15 @@ def compute_position_size(
     1. Fixed risk % of equity
     2. Kelly criterion (if history available)
     3. Max lot cap for Syed
+
+    CHRON Calibration Gate (Synthesis gap 5):
+    If mean_brier > 0.25 (climatology threshold), system calibration is uncalibrated.
+    Fails closed to 0.0 lots (HOLD) to prevent risking capital during poor calibration regimes.
     """
+    # Calibration Gate check
+    if mean_brier is not None and mean_brier > 0.25:
+        return 0.0, 0.0
+
     if cfg is None:
         cfg = get_config()
 
