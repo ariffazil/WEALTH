@@ -1,126 +1,300 @@
 <!-- SOT-MANIFEST
 owner: Muhammad Arif bin Fazil (F13 SOVEREIGN)
-federation_release: v2026.08.25
-last_verified: 2026-08-25T04:30:00Z
-live_commit: f714140 (docs(readme): ZEN consequence-first rewrite)
-tools_live: 11 (canonical, live-witnessed 2026-08-25 via :18082/health)
-resources: 18
-prompts: 7
+federation_release: v2026.09.21 (P1 — WEALTH-IDENTITY-PIVOT)
+last_verified: 2026-09-21T02:01:00Z
+apex_zen: arifOS = ingress + authority · WEALTH = evidence · arifOS = judgment · F13 = decision
+
+surface:
+  canonical_primitives: 13        # Ω00 + Ω01-Ω12
+  societal_extensions: 2          # inequality, role scarcity
+  infrastructure_tools: 2         # health, registry
+  compatibility_aliases: 14       # capital_* legacy names (excluded from canonical)
+  total_external_visible: 17
+
 authority_ceiling: 555_COMPUTE_ONLY
 truth_rule: live :18082/health + tools/list beat any static count in prose
-owner_summary: GREEN (identity_present, service_healthy, receipts_persisting, 0_ghosts)
-receipt_chain: PERSISTING (/root/VAULT999/wealth/receipts.jsonl)
-infra_organs: arifFlow:7073 METABOLISM, FED:7074 ADVISORY, FLAME:18901 ADVISORY
-readme_note: ZEN consequence-first — full technical README preserved at docs/README-FULL.md
+
+doctrine:
+  - WEALTH models capital consequences under uncertainty
+  - Analyst (WEALTH) ≠ Judge (arifOS). WEALTH never issues constitutional verdicts.
+  - Direct :18082 is engineering/diagnostic. Recommended user path:
+    Client → arifOS → WEALTH → arifOS → Human.
+  - "Real-time" is misleading; WEALTH reports Live/LatestAvailable with
+    source, timestamp, cache_age_seconds, and staleness_class on every
+    market/macro output.
 -->
 
-# WEALTH — Capital Intelligence for Humans, Agents, and Institutions
+# WEALTH — Capital Consequence Intelligence
 
-## WEALTH is a Capital Intelligence Engine that makes incentives, risk, and long-term consequences visible before money moves.
+> **Capital consequence infrastructure, not investment advice.**
+>
+> WEALTH converts stocks, flows, prices, risk, productivity, time, leverage, macro conditions, information, incentives, governance, and path dependence into auditable capital evidence.
+>
+> *WEALTH computes. arifOS judges. A-FORGE executes approved actions. Humans remain sovereign.*
 
-Ask the questions that matter:
+**Identity (P1 2026-09-21):**
 
-- **Was Petronas Brazil a good investment?**
-- Which basin creates value — and which destroys it?
-- Where is institutional failure beginning?
-- What is the downside nobody is pricing?
-- Who benefits? Who pays?
-- What happens five years later?
+```text
+WEALTH : WorldState → CapitalConsequences        (not WorldState → InvestmentDecision)
+```
 
-WEALTH transforms capital flows, markets, incentives, and risk into auditable evidence.
-It computes.
-It never allocates.
-It never trades.
-It never decides.
-
-**WEALTH computes. arifOS judges. Humans decide.**
-
-> **DITEMPA BUKAN DIBERI — Forged, Not Given.**
+**The 12-invariant Ω architecture** is the spine. NPV, RSI, Monte Carlo, backtest, ledger — these are *implementations* underneath the invariants, not the identity.
 
 ---
 
-## Famous failures, replayed honestly
+## Irreducible question
 
-WEALTH can replay historical collapses using **only information available before the collapse**:
+> **If capital moves this way, what follows — and how sure are we?**
 
-| Case | Pre-collapse signal (measured) |
-|---|---|
-| **Enron** (2000) | Reality ↔ Narrative divergence — `collapse_signature` + `governance_capacity` elevated **before** bankruptcy |
-| **1MDB** (2014) | Power ↔ Incentive capture — `capture_scan` + `power_audit` elevated **before** public unraveling |
-| **Wirecard** | Reporting ↔ Reality divergence |
-| **FTX** | Custody ↔ Governance coupling |
-| **LTCM** | Leverage ↔ Liquidity concentration |
+WEALTH's job is to make the consequences of moving money *harder to hide*. It does not decide where money should go.
 
-The objective is not hindsight. The objective is measuring **whether risk signals existed before reality arrived**.
+---
 
-Full benchmark: [VOIDX_BENCHMARK.md](./VOIDX_BENCHMARK.md)
+## The 12 Ω-invariants
 
-## Why AI agents connect
+| Ω    | Invariant | Question | Canonical name | Implementation |
+|------|-----------|----------|----------------|----------------|
+| Ω00  | Synthesis | Cross-dimensional roll-up → domain_assessment | `wealth_synthesize` | 12→1 roll-up; ADVISORY_ONLY |
+| Ω01  | Mass      | What exists? | `wealth_conservation_capital` | assets / liabilities / reserves |
+| Ω02  | Flow      | Where is money moving? | `wealth_flow_liquidity` | cash flow / burn / runway |
+| Ω03  | Gradient  | What differential drives movement? | `wealth_gradient_price` | price pressure / spreads |
+| Ω04  | Entropy   | How uncertain / disordered is it? | `wealth_entropy_risk` | tail risk / disorder |
+| Ω05  | Energy    | What output does capital produce? | `wealth_energy_productivity` | output per capital input |
+| Ω06  | Time      | What is future value worth now? | `wealth_time_discount` | NPV / IRR / decay |
+| Ω07  | Inertia   | What makes the system hard to change? | `wealth_inertia_leverage` | leverage / fragility |
+| Ω08  | Field     | What macro regime surrounds it? | `wealth_field_macro` | rates / FX / energy |
+| Ω09  | Signal    | What information deserves belief? | `wealth_signal_information` | evidence quality / information value |
+| Ω10  | Game      | What incentives shape behaviour? | `wealth_game_coordination` | incentives / bargaining |
+| Ω11  | Boundary  | What constraints cannot be crossed? | `wealth_boundary_governance` | governance / stewardship |
+| Ω12  | Hysteresis | How does history constrain the future? | `wealth_hysteresis_ledger` | path dependence / capital memory |
 
-Most financial AI systems generate opinions. **WEALTH generates evidence.**
+The Ω invariants are the *fundamentals*. NPV, RSI, MACD, Bollinger, PSAR, ATR, ADX, backtest, and entry planning are market-microstructure implementations underneath Ω08 (Field) and Ω09 (Signal).
 
-Agents use WEALTH to:
+---
 
-- compute NPV, IRR, EMV
-- simulate downside scenarios
-- map incentive structures
-- detect institutional decay
-- identify hidden risk concentrations
-- evaluate long-term capital consequences
+## What WEALTH is becoming (vs what it was)
 
-Every output contains explicit provenance and reasoning boundaries.
+| Was | Becoming |
+|-----|----------|
+| "11 Tools · 18 Resources" | 13 canonical primitives + 2 extensions + 2 infrastructure |
+| "AI-driven financial decision engine" | Capital consequence infrastructure |
+| "Capital Diagnostics / Market Pulse / Entropy Modeling / Entry Planning / Backtest / Ledger" | Ω-invariant primitives (Mass / Flow / Gradient / Entropy / Energy / Time / Inertia / Field / Signal / Game / Boundary / Hysteresis) |
+| Direct :18082 for clients | Recommended path: `Client → arifOS → WEALTH → arifOS → Human` |
+| "Real-time FX, commodity, and stock indicators" | "Live and latest-available market/macro data through configured adapters, with source, timestamp, cache age, and staleness metadata" |
+| "structural rot" | structural deterioration, incentive misalignment, and accumulating fragility |
+| "WEALTH = truth about consequences" | WEALTH = evidence about capital consequences |
+| `arifFlow — Witness Plane` | `arifFlow — metabolic telemetry` (FRAME = independent witness; VAULT999 = immutable record) |
 
-**WEALTH supplies evidence. It never supplies authority.**
+---
 
-## Why institutions use WEALTH
+## Why hysteresis deserves more prominence
 
-Organizations rarely fail because they lack spreadsheets. They fail because:
+Most finance systems model:
 
-- risk accumulates unseen
-- incentives drift
-- governance erodes
-- reporting diverges from reality
-
-WEALTH was built to surface these failure gradients early — for sovereign wealth funds, national oil companies, investment committees, portfolio managers, and policy analysis.
-
-The goal is not prediction. The goal is **making consequences visible before they become expensive**.
-
-## One-minute demo
-
-```text
-User: "Was Petronas Brazil a good investment?"
-
-WEALTH:
-  CAPITAL INPUTS   acquisition cost · production profile · oil-price assumptions
-  COMPUTATION      NPV · IRR · scenario stress
-  INSTITUTIONAL    strategic fit · concentration risk · downside exposure
-
-  EVIDENCE        value creation uncertain
-  RISK            high commodity dependence
-  OPEN QUESTION   were incentive structures aligned with long-term returns?
-
-  → Candidate capital assessment.
-  → Awaiting judgment.
+```
+State_t
 ```
 
-## Not a finance tool
+WEALTH is starting to model:
 
-WEALTH is not a trading bot, a personal finance app, or a Bloomberg terminal.
-It is capital-intelligence infrastructure — months-to-years consequence horizons, not minutes-to-hours price ticks.
+```
+State_t = f(State_{t-1}, History)
+```
 
-## Federation triad
+Two institutions can have identical current balance sheets yet radically different future risk:
+- one survived repeated governance breaches;
+- one repeatedly refinanced;
+- one normalized exceptions;
+- one accumulated hidden obligations;
+- one has institutional trust;
+- another destroyed it.
 
-**GEOX = truth about reality · WEALTH = truth about consequences · WELL = truth about readiness**
+Therefore:
 
-**ARIF vetoes. arifOS judges. AAA routes. A-FORGE executes.**
+```
+CurrentState ≠ CompleteState
+CapitalReality = PresentState + PathDependence
+```
 
-11 tools live-witnessed via [tools/list](https://wealth.arif-fazil.com/mcp).
+That is much deeper than another trading indicator.
 
-Full technical README: [docs/README-FULL.md](./docs/README-FULL.md) ·
-MCP door: [wealth.arif-fazil.com/mcp](https://wealth.arif-fazil.com/mcp)
+---
 
-## fastMCP
+## Architecture (P1 corrected)
 
-- **Version:** `fastmcp==4.0.5` (pinned; `fastmcp[tasks]==4.0.5` in `pyproject.toml`)
-- **Bumped:** 2026-09-19 (from `3.4.6` / `>=3.2.4`)
-- **Note:** v4 reattaches middleware at the ASGI app layer on every task/stream restart — restart `wealth-organ.service` once after upgrade so the new middleware chain binds before request load.
+```
+                  ┌──────────────────────┐
+                  │      Client          │
+                  └──────────┬───────────┘
+                             │
+                             ▼
+                  ┌──────────────────────┐
+                  │       arifOS         │
+                  │  Authority Boundary  │
+                  └──────────┬───────────┘
+                             │
+                  bounded request
+                             │
+                             ▼
+                  ┌──────────────────────┐
+                  │       WEALTH         │
+                  │ Capital Evidence     │
+                  │ (Ω-invariants)       │
+                  └──────────┬───────────┘
+                             │
+                  evidence envelope
+                             │
+                             ▼
+                  ┌──────────────────────┐
+                  │       arifOS         │
+                  │      Judgment        │
+                  └──────────┬───────────┘
+                             │
+                             ▼
+                          Human
+```
+
+**WEALTH is an organ.** **arifOS is the ingress and authority boundary.**
+
+Direct `:18082` is engineering / diagnostic only. The recommended user interface is to connect to arifOS; arifOS invokes WEALTH internally under a delegated SCT/session envelope.
+
+---
+
+## Federation one-liner
+
+> WEALTH computes consequences. arifOS judges authority. A-FORGE executes approved actions. Humans remain sovereign.
+
+The data path:
+
+```
+Reality
+   ↓ evidence
+WEALTH
+   ↓ capital consequences
+arifOS
+   ↓ authority
+A-FORGE
+   ↓ action
+Reality
+```
+
+with FRAME / VAULT999 observing and preserving the loop, and arifFlow carrying metabolic telemetry.
+
+---
+
+## Tool surface (P1)
+
+```
+13 canonical primitives (Ω00 + Ω01-Ω12)
+  + 2 societal extensions (inequality, role scarcity)
+  + 2 infrastructure tools (health, registry)
+  + 14 compatibility aliases (capital_* legacy names — excluded from canonical count)
+  = 17 visible surface
+```
+
+The raw count is not the point. The semantic classes are. The tool count becomes meaningful: "13 canonical capital primitives · 2 societal extensions · 2 infrastructure tools · compatibility aliases excluded."
+
+### Ω00 wealth_synthesize — domain_assessment, NOT constitutional verdict
+
+```json
+{
+  "tool_name": "wealth_synthesize",
+  "domain_assessment": "FAVORABLE | CAUTION | INSUFFICIENT_EVIDENCE | CONSTRAINT_VIOLATION",
+  "execution_authority": "ADVISORY_ONLY",
+  "handoff": "arifOS.arif_judge",
+  "constitutional_verdicts_issued": []
+}
+```
+
+`WEALTH_ₐₛₛₑₛₛₘₑₙₜ ≠ arifOSᵥₑᵣᵈᵢcₜ`. WEALTH never returns SEAL / HOLD / SABAR / VOID. Those belong to arifOS.arif_judge.
+
+### Market/macro outputs (Ω08 / Ω09) carry mandatory freshness
+
+```json
+{
+  "source": "Frankfurter API | wealth://commodity | …",
+  "timestamp": "2026-09-21T02:01:24.866489+00:00",
+  "cache_age_seconds": 0,
+  "staleness_class": "LIVE | RECENT | STALE | ARCHIVAL"
+}
+```
+
+Doctrine: *Freshness ≠ Truth. LatestAvailable ≠ RealTime.*
+
+### L11 AUTH gate (P1 fix)
+
+Direct :18082 connector previously required `session_id` for every tool, including diagnostic reads. P1 restores OBSERVE-class exemptions:
+- `capital_market`, `capital_registry`, `capital_primitive`, `capital_entropy`, `capital_indicator`, `capital_backtest`, `capital_entry_plan`, `capital_claims`, `capital_diagnose`, `capital_health`, `capital_polix`, `capital_civx`, `wealth_synthesize` — and their legacy aliases — now pass without a session.
+- MUTATE tools (`capital_ledger`, `wealth_judge_handoff`) still require a verified session.
+
+---
+
+## CHRON × WEALTH — the prediction → outcome → calibration loop
+
+```
+WEALTH predicts   capital consequence / probability / risk band / falsifier
+CHRON records     what WEALTH believed / when / using what evidence
+Reality occurs
+CHRON verifies    vs predicted
+WEALTH recalibrates
+HERMES checks    narrative distortion
+arifOS governs    future use
+```
+
+This gives Prediction → Outcome → Calibration → ImprovedCapitalModel rather than endless investment commentary. That is where WEALTH becomes institutionally different.
+
+---
+
+## Historical collapse replay — discipline required
+
+Replay historical financial collapses using only information available before the collapse. The benchmark requires:
+- `case` (e.g., 2008 GFC, 1997 Asian crisis)
+- `cutoff_date` (cryptographic exclusion of post-cutoff evidence)
+- `allowed_sources` (only what was available before cutoff)
+- `forbidden_future_sources` (regression test against contamination)
+- `predicted_signal`, `actual_failure`
+- `false_positive_controls` (firms that looked bad but survived)
+- `score`
+
+The proper test is `Model(E_{t<collapse}) → RiskSignal_t` with all post-cutoff evidence cryptographically excluded. Without negative controls, the demonstration collapses into `FailedCompany → FindWarningSigns` which is much easier.
+
+CHRON's prediction ledger is the substrate for this benchmark.
+
+---
+
+## What I would execute next in WEALTH
+
+This packet (P1) executes 4 of 7 items Arif specified; the rest are deferred:
+
+- ✅ **1** Fix session-envelope interface so arifOS → WEALTH works end-to-end without losing identity/authority.
+- ✅ **2** Declare the Ω00-Ω12 surface canonical; move old capital_* names into an explicit compatibility layer.
+- ✅ **3** Remove constitutional verdict ownership from wealth_synthesize; make its output explicitly advisory/domain-level.
+- ⏭ **4** Repin and test the capital_polix schema drift (done in FEDERATION-CONVERGENCE-P0).
+- ✅ **5** Make freshness/provenance mandatory on every market/macro output.
+- 📋 **6** CHRON-linked forecast calibration before claiming predictive superiority (deferred).
+- 📋 **7** Historical-collapse replay as a proper pre-cutoff benchmark with negative controls (deferred).
+
+---
+
+## Identity, restated
+
+> arifOS's irreducible question is **"May this action happen?"**
+>
+> WEALTH's irreducible question is **"If capital moves this way, what follows — and how sure are we?"**
+>
+> HERMES asks **"What exactly are we claiming?"**
+>
+> CHRON asks **"What did we expect, and what actually happened?"**
+
+And the new WEALTH identity, restated:
+
+> **WEALTH — Capital Consequence Intelligence.**
+>
+> It does not decide where money should go.
+> It makes the consequences of moving it harder to hide.
+
+---
+
+**Licensed under AGPL-3.0.**
+
+**DITEMPA BUKAN DIBERI.**

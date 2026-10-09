@@ -89,18 +89,20 @@ OPTIMIZER_APEX_MAP: Dict[str, Dict[str, str]] = {
 
 @dataclass
 class APEXScore:
-    """G = A · P · E · X · Φ and C_dark = A · (1-P) · (1-X)."""
+    """G = (A · P · E · X)^(1/4) — V3 canonical geometric mean (F13 2026-07-28); Φ is a separate gate, not a dial. C_dark = A · (1-P) · (1-X)."""
 
     A: float = 0.0  # Adaptation — input quality
     P: float = 0.0  # Precision — measurement rigor
     E: float = 0.0  # Evidence — observable quantity
     X: float = 0.0  # Execution — solver convergence
-    Phi: float = 0.0  # Faithfulness — constraint satisfaction
+    Phi: float = (
+        0.0  # Faithfulness — separate scar gate (NOT a G dial since V3, 2026-07-28)
+    )
 
     @property
     def G(self) -> float:
-        """Nash bargaining product. G ≥ 0.80 for SEAL."""
-        return self.A * self.P * self.E * self.X * self.Phi
+        """V3 canonical geometric mean. G ≥ 0.80 for SEAL. Φ excluded — separate scar gate."""
+        return (self.A * self.P * self.E * self.X) ** 0.25
 
     @property
     def C_dark(self) -> float:

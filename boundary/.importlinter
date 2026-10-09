@@ -1,0 +1,16 @@
+[importlinter]
+root_packages =
+    wealth_contracts
+    wealth_mcp
+    wealth_core
+    internal
+
+[importlinter:contract:wealth-contract-001]
+name = WEALTH-CONTRACT-001: contracts layer is depended-upon, never depends down
+type = forbidden
+source_modules =
+    wealth_contracts
+forbidden_modules =
+    wealth_mcp
+    wealth_core
+    internal

@@ -502,13 +502,28 @@ def wrap_result(
     epistemic_tag: EpistemicTag = EpistemicTag.DERIVED,
     evidence_quality: EvidenceQuality = EvidenceQuality.MODERATE,
     source_attribution: Optional[List[str]] = None,
+    claim_class: Optional[str] = None,
     **kwargs,
 ) -> dict:
     """
     Convenience wrapper: take a raw result and wrap it in WealthEnvelope.
     Returns dict for direct MCP tool return.
     Automatically computes shadow flag and attaches kappar/psile/qdf.
+
+    P1 2026-09-21 (WEALTH-IDENTITY-PIVOT-P1): when tool_name is in
+    OMEGA_FIELD_TOOLS (Ω08 Field / Ω09 Signal), mandatory freshness
+    metadata is injected into result before envelope wrapping:
+    source, timestamp, cache_age_seconds, staleness_class, _freshness.
+    Without these, the output is NOT admissible as Ω08/Ω09 evidence.
     """
+    # P1 2026-09-21 — Ω08/Ω09 freshness enforcement
+    if isinstance(result, dict):
+        try:
+            from wealth_mcp.freshness import OMEGA_FIELD_TOOLS, enforce_freshness
+            if tool_name in OMEGA_FIELD_TOOLS:
+                result = enforce_freshness(tool_name, result)
+        except ImportError:
+            pass  # wealth_mcp.freshness not in path — skip enforcement
     # Auto-compute shadow flag from violations/holds in result
     # BUG FIX (2026-08-08): respect explicit shadow kwarg (caller intent).
     # shadow only exists in kwargs (constructor param), not as wrap_result arg.
@@ -518,6 +533,35 @@ def wrap_result(
         holds = result.get("holds", [])
         explicit_shadow = len(violations) > 0 or len(holds) > 0
     kwargs["shadow"] = explicit_shadow
+
+    # Named-entity claim gate (P1#1, 2026-09-16): institutional results that
+    # mention real named entities carry their external-evidence binding state.
+    # Labels publication eligibility; never blocks computation (COMPUTE_ONLY).
+    # Fail-closed: gate error -> treat-as-unbound.
+    # 2026-09-19: the same call also enforces the explanatory-class axis
+    # (claim_kernel). Pass claim_class= to declare MEASURED/MECHANISM/PATTERN;
+    # undeclared stays not-publishable, by design.
+    if domain == "institutional" and isinstance(result, dict):
+        try:
+            from wealth_contracts.claim_gate import evaluate_dict_result as _ne_gate
+
+            _gate_block = _ne_gate(result, source_attribution, tool_name, claim_class)
+            if _gate_block.get("state") != "NO_NAMED_ENTITIES":
+                result = dict(result)
+                result["named_entity_claim_gate"] = _gate_block
+        except Exception as _ne_exc:  # noqa: BLE001
+            result = dict(result)
+            result["named_entity_claim_gate"] = {
+                "gate": "named_entity_claim_gate",
+                "tool": tool_name,
+                "state": "GATE_ERROR",
+                "error": str(_ne_exc)[:160],
+                "publication_eligibility": "UNKNOWN_TREAT_AS_UNBOUND",
+                "origin": "0-independent-NEDs public-page incident, 2026-09-16",
+                # additive 2026-09-19: second axis unreachable => fail closed
+                "publication_decision": "BLOCKED_GATE_ERROR",
+                "publishable": False,
+            }
 
     # Auto-attach constitutional fields if not provided
     try:
