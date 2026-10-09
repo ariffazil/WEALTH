@@ -289,32 +289,33 @@ if __name__ == "__main__":
         Initialize requests are exempt (they bootstrap the session).
         """
 
-        _EXEMPT_METHODS = frozenset({"initialize", "notifications/initialized"})
+        _EXEMPT_METHODS = frozenset({"initialize", "notifications/initialized", "ping"})
 
         async def dispatch(self, request: StarletteRequest, call_next):
             if request.method == "POST" and request.url.path.startswith("/mcp"):
                 body = await request.body()
-                method = None
+                methods = []
                 if body:
                     try:
                         payload = json.loads(body)
-                        method = payload.get("method", "")
+                        if isinstance(payload, dict):
+                            methods.append(payload.get("method", ""))
+                        elif isinstance(payload, list):
+                            for item in payload:
+                                if isinstance(item, dict):
+                                    methods.append(item.get("method", ""))
                     except (json.JSONDecodeError, UnicodeDecodeError):
                         pass
 
-                # Initialize bootstraps the session — allow through
-                if method in self._EXEMPT_METHODS:
-                    # Generate and store session ID for initialize
-                    if method == "initialize":
+                # Initialize bootstraps the session — allow through if exempt
+                if any(m in self._EXEMPT_METHODS for m in methods):
+                    if "initialize" in methods:
                         new_sid = uuid.uuid4().hex
                         _valid_mcp_sessions.add(new_sid)
-                        # Rebuild request with new scope including session_key
                         scope = dict(request.scope)
                         scope["mcp_session_id"] = new_sid
-                        # Restore body for downstream
                         request._body = body
                         response = await call_next(request)
-                        # Inject Mcp-Session-Id header into the response
                         response.headers["Mcp-Session-Id"] = new_sid
                         return response
                     request._body = body
