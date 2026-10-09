@@ -93,7 +93,7 @@ def register_entropy(mcp):
                 domain="institutional",
                 result=result,
                 epistemic_tag=EpistemicTag.OBSERVED,
-                evidence_quality=EvidenceQuality.SPECULATED,
+                evidence_quality=EvidenceQuality.MISSING,
                 execution_authority=ExecutionAuthority.BLOCKED,
                 requires_888_hold=False,
                 source_attribution=["entropy_integrity_dependency_check"],

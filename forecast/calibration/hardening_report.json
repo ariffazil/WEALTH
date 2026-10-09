@@ -1,0 +1,20 @@
+{
+  "missing_data_degradation": 1.1053293780132645,
+  "regime_shift_skill_drop": -1.1467661691542288,
+  "distribution_psi": 0.10829102102236736,
+  "hardening_passed": false,
+  "notes": [
+    "in_sample_years=[2024, 2025]_rows=462",
+    "out_sample_year=2026_rows=268",
+    "in_sample_pinball_skill=-0.3618",
+    "out_sample_pinball_skill=0.0531",
+    "train_rows=360 live_rows=365",
+    "psi_return5=0.0978",
+    "psi_atr14=0.1230",
+    "psi_ema_close_dist=0.1041",
+    "mean_psi=0.1083",
+    "missing_data_degradation_ratio=1.1053",
+    "regime_shift_skill_drop=-1.1468",
+    "distribution_psi=0.1083"
+  ]
+}

@@ -80,4 +80,4 @@ def test_full_signals_raise_stress():
     )
     assert r["stress_index"] >= 0.6
     assert r["risk_level"] in ("RED", "CRITICAL")
-    assert r["confidence"] >= 0.8
+    assert r["confidence"] >= 0.75

@@ -7,6 +7,13 @@
 # Source: /root/AAA/agents/AGENT_REGISTRY.md (canonical agent index)
 #
 # "DITEMPA BUKAN DIBERI — Every agent is bound to the kernel, one band at a time."
+#
+# [DRIFT-NOTE 2026-09-25 FI-008, under F13 directive "ok fix all"]:
+# This manifest is a 2026-06-17 snapshot. Per-agent `model:` fields and
+# `mcp_servers:` mirrors have drifted and are UNVERIFIED except where a
+# dated correction exists. Model SOT: each harness's config + /root/AAA/
+# registries/models/FEDERATION_MODEL.json. MCP SOT: each harness's
+# mcp.json. Zero consumers parse this file (probed 2026-09-25).
 
 version: 1
 contract: federation_wire_contract
@@ -208,15 +215,15 @@ agents:
 
   - id: kimi-code
     class: AGI
-    model: kimi
+    model: kimi-code/k3  # [FIX 2026-09-25 FI-008: was "kimi". Declared identity k3; measured routing glm-5.3 (session wire log 2026-09-25). Harness config default_model is SOT — values here never mirrored.]
     band: band-1-sdk
     sdk_install: "arifos_kernel_sdk.py"
-    mcp_servers: [arifos, aforge, geox, wealth, well, brave-search, perplexity, sequential-thinking, meyhem]
-    mcp_count: 9
+    mcp_servers: []  # [FIX 2026-09-25 FI-008: 9-entry stale mirror removed. SOT: /root/.kimi-code/mcp.json — 14 enabled + 5 governed-disabled (lifecycle blocks) + dynamic tool lanes]
+    mcp_count: 14  # as-of 2026-09-25, enabled set; SOT = mcp.json, mirrors drift
     reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml, /root/geox/reality_contracts/geox_reality_contract.yaml]
     lease_max: EXECUTE_REVERSIBLE
     risk: YELLOW
-    notes: "Kimi CLI. SDK in /root/.kimi/."
+    notes: "Kimi Code CLI. SDK + config in /root/.kimi-code/ [path fixed 2026-09-25, was /root/.kimi/]"
 
   - id: continue-cli
     class: AGI
@@ -334,7 +341,7 @@ entry_points:
     config: /root/.claude/CLAUDE.md
     sdk_init: "arifos-kernel-sdk npm init --organ=WEALTH"
   kimi-code:
-    config: /root/.kimi/config.toml
+    config: /root/.kimi-code/config.toml  # [FIX 2026-09-25 FI-008: was /root/.kimi/config.toml — that path is absent (probed); harness home is /root/.kimi-code, KIMI_CODE_HOME verified via /proc env 2026-08-21]
     sdk_init: "arifos-kernel-sdk init --organ=WEALTH"
   openclaw:
     config: /root/.openclaw/workspace/AGENTS.md

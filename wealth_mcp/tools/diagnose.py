@@ -43,16 +43,36 @@ def register_diagnose(mcp):
         if m == "stress_index":
             from wealth_core.institutional import compute_stress_index
 
+            fin = dict(p.get("financial_signals") or {})
+            gov = dict(p.get("governance_signals") or {})
+            wrk = dict(p.get("workforce_signals") or {})
+            leg = dict(p.get("legal_signals") or {})
+            exp = dict(p.get("exploitation_signals") or {})
+
+            for k, v in p.items():
+                if "." in k:
+                    dim, field = k.split(".", 1)
+                    if dim == "financial":
+                        fin[field] = v
+                    elif dim == "governance":
+                        gov[field] = v
+                    elif dim == "workforce":
+                        wrk[field] = v
+                    elif dim == "legal":
+                        leg[field] = v
+                    elif dim == "exploitation":
+                        exp[field] = v
+
             return wrap_result(
                 tool_name="capital_diagnose",
                 domain="institutional",
                 result=compute_stress_index(
                     p.get("org_name") or "",
-                    p.get("financial_signals") or {},
-                    p.get("governance_signals") or {},
-                    p.get("workforce_signals") or {},
-                    p.get("legal_signals") or {},
-                    p.get("exploitation_signals") or {},
+                    fin,
+                    gov,
+                    wrk,
+                    leg,
+                    exp,
                 ),
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,

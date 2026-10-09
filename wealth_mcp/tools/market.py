@@ -8,7 +8,7 @@ from typing import Any
 
 from wealth_contracts.envelope import WEALTH_OUTPUT_SCHEMA, wrap_result
 from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality
-from wealth_mcp.tools.types import CoercedDict, _call_legacy_tool
+from wealth_mcp.tools.types import CoercedDict, _call_legacy_tool, classify_signal_state, SignalState
 
 
 def register_market(mcp):
@@ -20,7 +20,7 @@ def register_market(mcp):
     @mcp.tool(
         name="capital_market",
         output_schema=WEALTH_OUTPUT_SCHEMA,
-        description="Market data and commodity intelligence — observational with derived and interpreted fields. SIDE EFFECT: writes a vault receipt to /root/VAULT999/wealth/receipts.jsonl (per wealth-organ.service.d/receipts-write.conf). Receipts include call_status=PASS/FAIL and input hashes.",
+        description="Market data and commodity intelligence — observational with derived and interpreted fields. MODES: fundamentals (pass ticker=<BURSA_CODE> for the F1-F9 fundamental-invariant engine), fx, commodity, indicator, stock, gold, oil, gas. SIDE EFFECT: writes a vault receipt to /root/VAULT999/wealth/receipts.jsonl (per wealth-organ.service.d/receipts-write.conf). Receipts include call_status=PASS/FAIL and input hashes.",
         tags={"domain": "market", "kind": "observational", "canonical": "v1"},
     )
     async def capital_market(
@@ -31,16 +31,36 @@ def register_market(mcp):
         indicator: str = "usd_myr",
         country: str = "MYS",
         stock_payload: CoercedDict = None,
+        ticker: str = "",
         asset_class: str = "fx_commodity",
         session_id: str | None = None,
         trace_id: str | None = None,
         actor_id: str | None = None,
     ) -> dict:
-        """Market data (ZEN 2026-07-11 W4). Stock fields in stock_payload."""
+        """Market data (ZEN 2026-07-11 W4). Stock fields in stock_payload.
+
+        mode="fundamentals" is an alias for mode="stock" with
+        stock_mode="fundamentals" — pass ticker=<BURSA_CODE> at top level.
+        """
         # Coerce MCP transport string serialization
 
         m = mode.lower()
         sp: dict[str, Any] = dict(stock_payload or {})
+
+        # ━━━ Discoverability alias: mode="fundamentals" (2026-09-15) ━━━
+        # F2 TRUTH: `fundamentals` was ADVERTISED on this organ (wealth://tools/
+        # registry stock_safety examples + capital_diagnose examples) but NO
+        # handler existed, so callers got "Unknown mode 'fundamentals'" while
+        # the engine sat reachable only via mode="stock",
+        # stock_payload={"stock_mode": "fundamentals"}. Doc/reality drift.
+        # This alias closes the gap by routing the advertised name to the
+        # existing engine. Additive only — the stock contract is unchanged,
+        # and mode="stock" continues to behave exactly as before.
+        if m == "fundamentals":
+            m = "stock"
+            sp.setdefault("stock_mode", "fundamentals")
+            if ticker:
+                sp.setdefault("ticker", ticker)
 
         # ━━━ Step 9 (Phase 3 close): asset_class discriminator for crypto ━━━
         # Wires crypto_router to canonical surface. NO new tool created --
@@ -91,6 +111,17 @@ def register_market(mcp):
             # Phase 1c: direct import, bypass legacy dispatcher
             from internal.monolith import wealth_fx_rate
             raw = wealth_fx_rate(base=base, targets=targets)
+            # L1 signal typing: FX from Frankfurter API = LIVE if rates present
+            _rates = raw.get("rates", {}) if isinstance(raw, dict) else {}
+            _sig = classify_signal_state(
+                data=_rates if _rates else None,
+                source_available=bool(_rates),
+                is_derived=False,
+            )
+            if isinstance(raw, dict):
+                raw["signal_state"] = _sig["signal_state"]
+                raw["signal_state_reason"] = _sig["signal_state_reason"]
+                raw["data_age_seconds"] = _sig["data_age_seconds"]
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         if m == "commodity":
@@ -121,6 +152,19 @@ def register_market(mcp):
                     "witness_status": "SINGLE_SOURCE",
                     "note": "Cross-witness requires second independent source. Delta > 3% would raise WITNESS_DIVERGENCE.",
                 }
+                # L1 signal typing: commodity from live engine = LIVE, else CACHED → HISTORICAL_STALE
+                _is_live = bool(engine_name)
+                _has_data = bool(raw.get("price") or raw.get("value") or raw.get("rates"))
+                _sig = classify_signal_state(
+                    data=raw if _has_data else None,
+                    source_available=_has_data,
+                    is_cached=not _is_live,
+                    cache_age_seconds=raw.get("cache_age_seconds"),
+                    is_derived=not _is_live,
+                )
+                raw["signal_state"] = _sig["signal_state"]
+                raw["signal_state_reason"] = _sig["signal_state_reason"]
+                raw["data_age_seconds"] = _sig["data_age_seconds"]
             return wrap_result(
                 tool_name="capital_market",
                 domain="capital",
@@ -137,6 +181,17 @@ def register_market(mcp):
             # Phase 1c: direct import, bypass legacy dispatcher
             from internal.monolith import wealth_macro_indicator
             raw = wealth_macro_indicator(indicator=indicator, country=country)
+            # L1 signal typing: macro indicators from BNM/gov APIs = LIVE
+            _has_data = isinstance(raw, dict) and not raw.get("error")
+            _sig = classify_signal_state(
+                data=raw if _has_data else None,
+                source_available=_has_data,
+                is_derived=True,  # macro indicators are derived/aggregated
+            )
+            if isinstance(raw, dict):
+                raw["signal_state"] = _sig["signal_state"]
+                raw["signal_state_reason"] = _sig["signal_state_reason"]
+                raw["data_age_seconds"] = _sig["data_age_seconds"]
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         if m == "stock":
@@ -153,6 +208,17 @@ def register_market(mcp):
                 direction=sp.get("direction") or "long",
                 factors=sp.get("factors"),
             )
+            # L1 signal typing: stock analysis = DERIVED (computed from market data)
+            _has_data = isinstance(raw, dict) and not raw.get("error")
+            _sig = classify_signal_state(
+                data=raw if _has_data else None,
+                source_available=_has_data,
+                is_derived=True,  # stock analysis is always derived
+            )
+            if isinstance(raw, dict):
+                raw["signal_state"] = _sig["signal_state"]
+                raw["signal_state_reason"] = _sig["signal_state_reason"]
+                raw["data_age_seconds"] = _sig["data_age_seconds"]
             return wrap_result(tool_name="capital_market", domain="capital", result=raw)
 
         # ── Internal engine modes: gold, oil, gas ─────────────────────────
@@ -205,6 +271,19 @@ def register_market(mcp):
                     "Verify with governed cascade before any capital decision.",
                 }
 
+            # L1 signal typing: commodity engines = LIVE for snapshot, DERIVED for signal/daily
+            _has_data = isinstance(result, dict) and not result.get("error")
+            _is_snapshot = engine_op == "snapshot"
+            _sig = classify_signal_state(
+                data=result if _has_data else None,
+                source_available=_has_data,
+                is_derived=not _is_snapshot,  # signal_v2/daily_brief are derived
+            )
+            if isinstance(result, dict):
+                result["signal_state"] = _sig["signal_state"]
+                result["signal_state_reason"] = _sig["signal_state_reason"]
+                result["data_age_seconds"] = _sig["data_age_seconds"]
+
             return wrap_result(
                 tool_name="capital_market",
                 domain="capital",
@@ -223,7 +302,32 @@ def register_market(mcp):
             domain="market",
             result={
                 "error": f"Unknown mode '{mode}'.",
-                "valid_modes": ["fx", "commodity", "indicator", "stock", "gold", "oil", "gas"],
+                "valid_modes": [
+                    "fundamentals",
+                    "fx",
+                    "commodity",
+                    "indicator",
+                    "stock",
+                    "gold",
+                    "oil",
+                    "gas",
+                ],
+                "hint": "fundamentals: pass ticker=<BURSA_CODE> for the F1-F9 "
+                "fundamental-invariant engine.",
+                "stock_payload_modes": [
+                    "verify_math",
+                    "separate_pl",
+                    "position_size",
+                    "r_multiple",
+                    "exposure",
+                    "bursa_cost",
+                    "tamak",
+                    "pre_trade",
+                    "fundamentals",
+                    "tac9",
+                    "contrast",
+                    "confluence",
+                ],
             },
             epistemic_tag=EpistemicTag.DERIVED,
             evidence_quality=EvidenceQuality.WEAK,
