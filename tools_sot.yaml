@@ -222,6 +222,116 @@ tools:
       action_class: OBSERVE
       risk_tier: READONLY
 
+
+  # ═══ LIVE-SURFACE CONVERGENCE (2026-10-11, canary/2) ═══
+  # Bare tool entries for live MCP tools that were declared only at
+  # mode granularity or absent. Declared set must equal live set
+  # (test_capital_polix_schema.py convergence contract).
+
+  - name: capital_backtest
+    access: public
+    description: >
+      Strategy backtest on XAUUSD (indicator fusion: EMA alignment,
+      ATR-scaled stops, RSI pullback filter, S/R zones). Returns win rate,
+      profit factor, Sharpe, max drawdown, trade log. Mode extensions:
+      compass | stress_test | ensemble (see extension_surface).
+    tags:
+      domain: capital
+      kind: deductive
+      canonical: v1
+
+  - name: capital_claims
+    access: public
+    description: >
+      Named-entity claim gate — validates claims about real
+      institutions/persons before publication. OBS_ELIGIBLE requires external
+      source_uri + ISO retrieval timestamp + CHECKED contradiction with a
+      second source; person-trait claims rejected (structures, not people);
+      any HOLD/REJECT blocks the batch.
+    tags:
+      domain: institutional
+      kind: gate
+      canonical: v1
+
+  - name: capital_entry_plan
+    access: public
+    description: >
+      S/R-aware entry zone, stop loss and take-profit targets for XAUUSD.
+      Swing-point support/resistance clustering + ATR risk scaling. Returns
+      entry_zone, stop_loss, target_1, target_2, risk_reward_ratio.
+    tags:
+      domain: market
+      kind: derived
+      canonical: v1
+
+  - name: capital_indicator
+    access: public
+    description: >
+      Technical analysis indicators for any yfinance symbol: ema | sma | rsi |
+      macd | bb | psar | atr | adx. Pure numpy computation, no external TA
+      library. Indicator extension: alpha158 (see extension_surface).
+    tags:
+      domain: market
+      kind: deductive
+      canonical: v1
+
+  - name: wealth_synthesize
+    access: public
+    description: >
+      Ω00 cross-dimensional synthesis — collapses the 12 Ω-invariants into a
+      domain_assessment. Returns FAVORABLE | CAUTION | INSUFFICIENT_EVIDENCE |
+      CONSTRAINT_VIOLATION — NEVER a constitutional verdict (SEAL/HOLD/SABAR/
+      VOID). execution_authority ADVISORY_ONLY; handoff arifOS.arif_judge.
+    tags:
+      domain: synthesis
+      kind: advisory
+      canonical: v1
+
+extension_surface:
+  - name: wealth_inequality_kernel
+    access: public
+    surface_class: ieq_extension
+    canonical: false
+    description: >
+      Distribution / fairness / concentration kernel (W3 — consequence class).
+      Measures Gini and concentration gradients across civilization / firm /
+      household domains. Implemented in wealth_core/governance/ as a layered
+      inequality/equity diagnostic. NOT in the 15-tool canonical SOT because
+      it serves the Six-Graph consequence domain, not the capital arithmetic
+      domain. Surface class is IEQ extension by intent.
+    source: wealth_core/governance/inequality_kernel.py
+    tags:
+      domain: consequence
+      kind: diagnostic
+      canonical: false
+      surface_class: ieq_extension
+
+  - name: wealth_role_scarcity_risk
+    access: public
+    surface_class: ieq_extension
+    canonical: false
+    description: >
+      Role-scarcity & status-bottleneck risk model (W3 — consequence class).
+      Surfaces youth unemployment, housing unaffordability, delayed family
+      formation, weak social mobility, low trust, civic disengagement,
+      status bottleneck, future-orientation collapse. Implemented in
+      wealth_core/governance/role_scarcity.py. NOT in the 15-tool canonical
+      SOT for the same reason as wealth_inequality_kernel — consequence
+      middleware, not capital arithmetic.
+    source: wealth_core/governance/role_scarcity.py
+    tags:
+      domain: consequence
+      kind: diagnostic
+      canonical: false
+      surface_class: ieq_extension
+
+
+  # ═══ MODE EXTENSIONS (relocated from tools: 2026-10-11, canary/2) ═══
+  # These are modes additive to canonical tools ("No new tools created" —
+  # original section header). They are NOT tools and must not appear in the
+  # tools: namespace, whose declared set must equal the live MCP tool set.
+  # surface_class: mode_extension; parent tool carries canonical status.
+
   # ═══ NEW MODES — TradeMaster Distillation (2026-08-18) ═══
   # All new modes are additive to existing canonical tools.
   # No new tools created. DITEMPA BUKAN DIBERI.
@@ -369,44 +479,6 @@ tools:
 # capital-arithmetic). A-FORGE audits (A-FORGE/dist/src/infrastructure/bridges/
 # wealthBridge.ts) see 15 — this list declares the +2 explicitly so the gap
 # is not ambiguity but a stated surface class.
-extension_surface:
-  - name: wealth_inequality_kernel
-    access: public
-    surface_class: ieq_extension
-    canonical: false
-    description: >
-      Distribution / fairness / concentration kernel (W3 — consequence class).
-      Measures Gini and concentration gradients across civilization / firm /
-      household domains. Implemented in wealth_core/governance/ as a layered
-      inequality/equity diagnostic. NOT in the 15-tool canonical SOT because
-      it serves the Six-Graph consequence domain, not the capital arithmetic
-      domain. Surface class is IEQ extension by intent.
-    source: wealth_core/governance/inequality_kernel.py
-    tags:
-      domain: consequence
-      kind: diagnostic
-      canonical: false
-      surface_class: ieq_extension
-
-  - name: wealth_role_scarcity_risk
-    access: public
-    surface_class: ieq_extension
-    canonical: false
-    description: >
-      Role-scarcity & status-bottleneck risk model (W3 — consequence class).
-      Surfaces youth unemployment, housing unaffordability, delayed family
-      formation, weak social mobility, low trust, civic disengagement,
-      status bottleneck, future-orientation collapse. Implemented in
-      wealth_core/governance/role_scarcity.py. NOT in the 15-tool canonical
-      SOT for the same reason as wealth_inequality_kernel — consequence
-      middleware, not capital arithmetic.
-    source: wealth_core/governance/role_scarcity.py
-    tags:
-      domain: consequence
-      kind: diagnostic
-      canonical: false
-      surface_class: ieq_extension
-
 # ═══ SURFACE TAXONOMY DECLARATION ═══
 surface_taxonomy:
   declared_by: F13
