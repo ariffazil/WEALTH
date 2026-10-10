@@ -249,6 +249,8 @@ def fiscal_breakeven_oil_price(
     royalty_tax_effective_rate: float = 0.30,
     target_fiscal_deficit_pct: float = 0.035,
     gdp_nominal_rm_billion: float = 390.0,
+    petroleum_direct_revenue: float | None = None,
+    dividend_brent_sensitivity: float | None = None,
 ) -> dict:
     """
     HARDENING 2026-06-25: Fiscal breakeven oil price for Malaysia/Petronas.
@@ -274,9 +276,26 @@ def fiscal_breakeven_oil_price(
     # Annual oil production (boe)
     annual_production_boe = petronas_production_boe_per_day * 365
 
+    # FIX 2026-10-08 (receipt 45825c37): petroleum-direct-revenue term.
+    # Malaysia's federal oil income is NOT dividend-only — it includes direct
+    # petroleum revenue (income tax on PETRONAS, royalties, export duties,
+    # historically ~RM40-60B/yr). Omitting it overstated the deficit by that
+    # whole block. Default None = NOT_MODED (explicit warning, not silent 0).
+    warnings_out: list[str] = []
+    if petroleum_direct_revenue is None:
+        petroleum_direct_revenue = 0.0
+        warnings_out.append(
+            "petroleum_direct_revenue NOT_MODED — deficit excludes direct petroleum "
+            "revenue (PETRONAS income tax, royalties, export duties). Real deficit "
+            "is LOWER than reported here."
+        )
+
     # Current fiscal deficit
     current_deficit = (
-        total_government_expenditure - non_oil_revenue - petronas_dividend_base_rm
+        total_government_expenditure
+        - non_oil_revenue
+        - petronas_dividend_base_rm
+        - petroleum_direct_revenue
     )
     deficit_pct = current_deficit / gdp_nominal_rm_billion
 
@@ -324,6 +343,21 @@ def fiscal_breakeven_oil_price(
         / 1e9
     )
 
+    # FIX 2026-10-08: dividend response to Brent must be calibrated or the
+    # breakeven is false precision. When uncalibrated, we still compute the
+    # production-take-only breakeven but flag it NOT decision-grade.
+    if dividend_brent_sensitivity is None:
+        warnings_out.append(
+            "dividend response to Brent UNCALIBRATED — breakeven reflects "
+            "production-take response only (dividend held constant). "
+            "Breakeven is NOT decision-grade."
+        )
+    else:
+        # Calibrated: dividend moves with Brent; fold into sensitivity.
+        fiscal_sensitivity_rm_per_usd = (
+            government_take_per_usd + dividend_brent_sensitivity
+        )
+
     # Pressure flag: if breakeven price > current price, fiscal path needs correction
     if _breakeven_error:
         fiscal_pressure = "UNMEASURABLE"
@@ -346,11 +380,14 @@ def fiscal_breakeven_oil_price(
         "additional_oil_revenue_needed_rm_b": round(additional_oil_revenue_needed, 1),
         "fiscal_sensitivity_rm_b_per_usd": round(fiscal_sensitivity_rm_per_usd, 3),
         "petronas_dividend_base_rm_b": petronas_dividend_base_rm,
+        "petroleum_direct_revenue_rm_b": petroleum_direct_revenue,
+        "dividend_brent_sensitivity": dividend_brent_sensitivity,
         "non_oil_revenue_rm_b": non_oil_revenue,
         "total_govt_expenditure_rm_b": total_government_expenditure,
         "epistemic_tag": "CLAIM",
         "confidence_band": 0.70,
         "breakeven_error": _breakeven_error,
+        "warnings": warnings_out,
         "caveat": (
             "Breakeven price assumes constant production and no reserve depletion. "
             "In crisis (USD 50-), production also declines, worsening the fiscal gap. "

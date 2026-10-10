@@ -1376,7 +1376,9 @@ def create_mcp_server() -> FastMCP:
             try:
                 from wealth_mcp.hermes_gate import run_semantic_gate
 
-                hermes_gate_state = await run_semantic_gate(name, arguments)
+                hermes_gate_state = await run_semantic_gate(
+                    name, arguments, actor_id=arguments.get("actor_id")
+                )
             except Exception as _hg_exc:
                 hermes_gate_state = {
                     "gate": "hermes_semantic",

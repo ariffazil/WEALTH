@@ -43,6 +43,8 @@ def register_health(mcp):
         non_oil_revenue: float | None = None,
         petronas_dividend_base_rm: float | None = None,
         oil_price_assumption_usd: float | None = None,
+        petroleum_direct_revenue: float | None = None,
+        dividend_brent_sensitivity: float | None = None,
         # survival params
         monthly_income_v: float | None = None,
         monthly_expenses_v: float | None = None,
@@ -287,6 +289,8 @@ def register_health(mcp):
                     non_oil_revenue,
                     petronas_dividend_base_rm,
                     oil_price_assumption_usd,
+                    petroleum_direct_revenue=petroleum_direct_revenue,
+                    dividend_brent_sensitivity=dividend_brent_sensitivity,
                 ),
                 epistemic_tag=EpistemicTag.DERIVED,
                 evidence_quality=EvidenceQuality.MODERATE,

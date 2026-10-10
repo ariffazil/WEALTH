@@ -388,6 +388,7 @@ def _record_failure() -> None:
 async def run_semantic_gate(
     tool_name: str,
     arguments: dict[str, Any] | None,
+    actor_id: str | None = None,
 ) -> dict[str, Any]:
     """Run the HERMES semantic precondition for one tool call.
 
@@ -396,7 +397,8 @@ async def run_semantic_gate(
       status    "PASS" | "BLOCKED" | "SKIPPED"
       outcome   NO_SEMANTIC_CONTENT | PASS | PASS_WARN_UNAVAILABLE |
                 PASS_WARN_PROTOCOL | INJECTION | HOLD | REWRITE_REQUIRED |
-                BLOCKED | UNAVAILABLE | PROTOCOL | GATE_OFF | GATE_EXEMPT
+                BLOCKED | UNAVAILABLE | PROTOCOL | GATE_OFF | GATE_EXEMPT |
+                GATE_SELF_EXEMPT
       error_code  set when blocked (matches WEALTH block vocabulary)
     """
     cfg = _cfg()
@@ -410,6 +412,26 @@ async def run_semantic_gate(
         return {**base, "status": "SKIPPED", "outcome": "GATE_OFF", "error_code": ""}
     if tool_name in EXEMPT_TOOLS:
         return {**base, "status": "SKIPPED", "outcome": "GATE_EXEMPT", "error_code": ""}
+
+    # FIX 2026-10-08 (reentrancy deadlock, live VOID 2026-10-08T16:15:55Z):
+    # When HERMES itself is the calling actor, the loopback to
+    # hermes-mcp :18087 deadlocks — HERMES is busy serving THIS call and
+    # cannot answer its own validation request. Self-caller skips the
+    # loopback and degrades to the no-loopback path. All OTHER actors
+    # keep full fail-closed behavior.
+    _actor = (actor_id or "").strip()
+    if _actor.lower() == "hermes" or _actor.lower().startswith("hermes-"):
+        return {
+            **base,
+            "status": "SKIPPED",
+            "outcome": "GATE_SELF_EXEMPT",
+            "error_code": "",
+            "detail": (
+                "caller is HERMES — loopback to hermes-mcp would deadlock "
+                "(HERMES cannot validate its own in-flight call); "
+                "semantic validation deferred to the HERMES side of the session"
+            ),
+        }
 
     fields = extract_semantic_fields(arguments)
     if not fields:
