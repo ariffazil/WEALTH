@@ -11,7 +11,7 @@ asyncpg>=0.29.0
 # Pinned to the versions actually installed in /root/WEALTH/.venv.
 # AUTHORITY: pyproject.toml + uv.lock remain the resolver authority
 # (.github/dependabot.yml, ci-uv-lock-invariant.yml); this file is informational.
-pydantic==2.13.4
+pydantic==2.14.0
 fastmcp==4.0.10
 mcp==2.3.0
 httpx>=0.25.0
