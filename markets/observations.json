@@ -1,0 +1,173 @@
+{
+  "schema_version": "1.0",
+  "ledger_note": "Observation ledger for the WEALTH public markets surface. Source of truth for /api/markets/* and /markets/*. Edit observations here, then run build_markets_surface.py. No fabricated values: a market with no observation publishes UNKNOWN.",
+  "updated_by": "FI-003 (Qwen Code), 2026-10-14, F13 directive 'finish off this remaining task'",
+  "freshness_rule": {
+    "fresh_within_hours": 48,
+    "states": ["FRESH", "STALE", "UNKNOWN", "UNAVAILABLE"],
+    "semantics": {
+      "FRESH": "primary observation age <= fresh_within_hours at generation time",
+      "STALE": "primary observation exists but is older than fresh_within_hours",
+      "UNKNOWN": "no observation wired for this market — nothing fabricated",
+      "UNAVAILABLE": "generation-time fetch of the observation failed — retry, do not cache"
+    },
+    "state_computed_at": "generation time (baked into every artifact)"
+  },
+  "markets": [
+    {
+      "id": "gold",
+      "label": "Gold",
+      "symbol": "XAU/USD",
+      "unit": "USD/oz",
+      "world_url": "https://arif-fazil.com/world/economics/gold/",
+      "observations": [
+        {
+          "as_of": "2026-10-14T00:00:00+08:00",
+          "as_of_precision": "date",
+          "source": "Bloomberg via M+Global Market Buzz 14 Oct 2026 (relayed by F13)",
+          "evidence": "REPORTED",
+          "value": 4160.74,
+          "change": 1.03,
+          "change_pct": 0.02,
+          "resistance": 4310,
+          "support": 3990,
+          "levels_note": "Broker-reported levels. Not WEALTH forecasts and not trade signals."
+        }
+      ]
+    },
+    {
+      "id": "oil",
+      "label": "Crude Oil",
+      "symbol": "Brent",
+      "unit": "USD/bbl",
+      "world_url": "https://arif-fazil.com/world/economics/oil/",
+      "observations": [
+        {
+          "as_of": "2026-10-14T00:00:00+08:00",
+          "as_of_precision": "date",
+          "source": "Bloomberg via M+Global Market Buzz 14 Oct 2026 (relayed by F13)",
+          "evidence": "REPORTED",
+          "value": 105.69,
+          "change": -0.96,
+          "change_pct": -0.90,
+          "resistance": 109.50,
+          "support": 97.70,
+          "levels_note": "Broker-reported levels. Not WEALTH forecasts and not trade signals.",
+          "secondary": [
+            {
+              "as_of": "2026-10-14T07:19:00+08:00",
+              "source": "WEALTH capital_market live read, relayed via HERMES (SINGLE_SOURCE, unverified second source)",
+              "evidence": "REPORTED",
+              "value_range": [106.12, 106.19],
+              "note": "0.4% divergence vs M+ print — below 3% threshold, consistent."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gas",
+      "label": "Natural Gas",
+      "symbol": "HENRY HUB",
+      "unit": "USD/MMBtu",
+      "world_url": "https://arif-fazil.com/world/economics/gas/",
+      "observations": []
+    },
+    {
+      "id": "klci",
+      "label": "FBM KLCI",
+      "symbol": "^KLSE",
+      "unit": "index pts",
+      "world_url": "https://arif-fazil.com/world/economics/klci/",
+      "observations": [
+        {
+          "as_of": "2026-10-14T00:00:00+08:00",
+          "as_of_precision": "date",
+          "source": "Bloomberg via M+Global Market Buzz 14 Oct 2026 (relayed by F13)",
+          "evidence": "REPORTED",
+          "value": 1623.35,
+          "change": 5.34,
+          "change_pct": 0.33,
+          "resistance": 1670,
+          "support": 1570,
+          "levels_note": "Broker-reported levels. Not WEALTH forecasts and not trade signals.",
+          "secondary": [
+            {
+              "as_of": "2026-10-13T23:00:04+00:00",
+              "source": "arifOS WEALTH daily snapshot (yfinance) — prior session close",
+              "evidence": "OBSERVED",
+              "value": 1618.01,
+              "note": "Cross-source consistent: prior close 1618.01 + reported change 5.34 = 1623.35."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "usdmyr",
+      "label": "USD/MYR",
+      "symbol": "USD/MYR",
+      "unit": "MYR per USD",
+      "world_url": "https://arif-fazil.com/world/economics/usdmyr/",
+      "observations": [
+        {
+          "as_of": "2026-10-13T23:00:04+00:00",
+          "source": "arifOS WEALTH daily snapshot (yfinance), generated 2026-10-14T07:00+08:00",
+          "evidence": "OBSERVED",
+          "value": 4.0817,
+          "secondary": [
+            {
+              "as_of": "2026-10-14T07:19:00+08:00",
+              "source": "HERMES relay of WEALTH live read (SINGLE_SOURCE)",
+              "evidence": "REPORTED",
+              "value": 4.08,
+              "note": "Same pipeline class as primary — treat witness chain as single-source."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "watchlist": [
+    {
+      "id": "dow",
+      "label": "Dow Jones",
+      "as_of": "2026-10-14T00:00:00+08:00",
+      "as_of_precision": "date",
+      "source": "Bloomberg via M+Global Market Buzz 14 Oct 2026 (relayed by F13)",
+      "evidence": "REPORTED",
+      "value": 51670.10,
+      "change": -180.45,
+      "change_pct": -0.35,
+      "resistance": 53400,
+      "support": 49900
+    },
+    {
+      "id": "hsi",
+      "label": "Hang Seng",
+      "as_of": "2026-10-14T00:00:00+08:00",
+      "as_of_precision": "date",
+      "source": "Bloomberg via M+Global Market Buzz 14 Oct 2026 (relayed by F13)",
+      "evidence": "REPORTED",
+      "value": 24345.22,
+      "change": 74.02,
+      "change_pct": 0.30,
+      "resistance": 25000,
+      "support": 23300
+    },
+    {
+      "id": "cpo",
+      "label": "Crude Palm Oil",
+      "as_of": "2026-10-14T00:00:00+08:00",
+      "as_of_precision": "date",
+      "source": "Bloomberg via M+Global Market Buzz 14 Oct 2026 (relayed by F13)",
+      "evidence": "REPORTED",
+      "value": 4682,
+      "unit": "MYR/tonne",
+      "change": 52,
+      "change_pct": 1.11,
+      "resistance": 4860,
+      "support": 4420
+    }
+  ]
+}
