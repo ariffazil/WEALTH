@@ -34,10 +34,24 @@ WORLD_BASE = "https://arif-fazil.com"
 GENERATED_BY = "FI-003 (Qwen Code) — build_markets_surface.py"
 BOUNDARY = "World explains. WEALTH computes. arifOS judges. ARIF decides."
 AUTHORITY = "COMPUTE_ONLY"
-WORLD_LINK_STATUS = (
-    "world_terminal_lane: SEALED (.bak-reseal) — SPA route serves the shell; "
-    "World-side linkage pending F13 reversal ceremony (receipt 2026-10-14)"
-)
+# World surface policy — F13 SABAR / OPTION B verdict 2026-10-14 (fail-closed linking)
+WORLD_SURFACE: dict = {}  # loaded from ledger "world_surface" at build time
+
+
+def ws_verified() -> str:
+    return WORLD_SURFACE.get("verified_url", f"{WORLD_BASE}/world/economics/")
+
+
+def ws_status() -> str:
+    return WORLD_SURFACE.get("world_link_status", "UNKNOWN")
+
+
+def ws_policy() -> str:
+    return WORLD_SURFACE.get("link_policy", "HUB_FALLBACK")
+
+
+def ws_ticket() -> str:
+    return WORLD_SURFACE.get("reversal_ticket", "WORLD-TERMINAL-REVERSAL-001")
 
 CSS = """
 :root{--bg:#0B0B0F;--panel:#13131C;--panel2:#181826;--line:#262637;--tx:#E8E8F0;
@@ -222,7 +236,7 @@ def market_page(m: dict, state: str, gen: dt.datetime) -> str:
     title = f"{m['label']} ({m['symbol']}) — WEALTH Market Terminal"
     desc = (f"{m['label']} observation terminal: live witness card with provenance, freshness state "
             f"({state}), and machine endpoints. COMPUTE_ONLY — no trade signals.")
-    h = head_block(title, desc, wealth_url, m["world_url"], f"{BASE}/markets/{mid}/index.md")
+    h = head_block(title, desc, wealth_url, ws_verified(), f"{BASE}/markets/{mid}/index.md")
     nav = ' <a href="https://arif-fazil.com">arif-fazil.com</a>'.join([""])
     others = " ".join(
         f'<a href="/markets/{x["id"]}/">{esc(x["label"])}</a>' for x in MARKETS if x["id"] != mid
@@ -231,7 +245,7 @@ def market_page(m: dict, state: str, gen: dt.datetime) -> str:
 <header>
 <div class="kicker">WEALTH · Markets · <a href="/markets/">All markets</a></div>
 <h1>{esc(m['label'])} <span class="sub">{esc(m['symbol'])}</span></h1>
-<p class="sub">Observation, provenance and compute terminal — {esc(AUTHORITY)}. Narrative lives on <a href="{WORLD_BASE}/world/economics/{mid}/">World Economics</a>.</p>
+<p class="sub">Observation, provenance and compute terminal — {esc(AUTHORITY)}. Narrative lives on <a href="{ws_verified()}">World Economics</a>.</p>
 </header>
 {witness_card(m, state, gen)}
 {sources_block(m)}
@@ -245,10 +259,10 @@ def market_page(m: dict, state: str, gen: dt.datetime) -> str:
 </dl>
 </div>
 <div class="btns">
-<a class="btn ghost" href="{WORLD_BASE}/world/economics/{mid}/">Economic context and public analysis — World</a>
+<a class="btn ghost" href="{ws_verified()}">Economic context — World Economics hub</a>
 <a class="btn ghost" href="/markets/">All WEALTH markets</a>
 </div>
-<p class="note">{esc(WORLD_LINK_STATUS)}</p>
+<p class="note">World terminal lane sealed ({esc(ws_status())}) — instrument deep links are not shown as active; they serve a generic SPA shell. Policy: {esc(ws_policy())}. Reversal ticket: {esc(ws_ticket())} (F13 SABAR / Option B, 2026-10-14).</p>
 <nav class="mkts" style="margin-top:26px">{others}</nav>
 {footer(gen)}"""
 
@@ -284,7 +298,7 @@ def market_md(m: dict, state: str, gen: dt.datetime) -> str:
         "",
         f"{BOUNDARY} — authority ceiling {AUTHORITY}. No trade signals.",
         "",
-        f"World narrative pair: {m['world_url']} ({WORLD_LINK_STATUS})",
+        f"World narrative pair: {m['world_url']} — {ws_status()} (deep link not active; verified: {ws_verified()}; policy: {ws_policy()}; ticket: {ws_ticket()})",
         "",
         f"Generated {gen.isoformat()} by {GENERATED_BY}.",
     ]
@@ -305,7 +319,7 @@ def hub_page(states: dict, gen: dt.datetime) -> str:
 <h2 style="margin:0 0 6px"><a href="/markets/{m['id']}/">{esc(m['label'])}</a>
 <span class="sub">{esc(m['symbol'])}</span> <span class="chip {st}">{st}</span></h2>
 <div class="big">{esc(val)}</div>{chg}
-<p class="note">World pair: <a href="{esc(m['world_url'])}">{esc(m['world_url'].replace('https://',''))}</a></p>
+<p class="note">World context: <a href="{esc(ws_verified())}">World Economics hub</a> — {esc(ws_status())}</p>
 </div>"""
     watch = "".join(
         f"<tr><td>{esc(w['label'])}</td><td>{esc(fmt_num(w.get('value'), w.get('unit','MYR')))}</td>"
@@ -325,7 +339,7 @@ def hub_page(states: dict, gen: dt.datetime) -> str:
 <p class="sub">{esc(BOUNDARY)} · Authority ceiling <code>{AUTHORITY}</code></p>
 </header>
 <p>Paired with <a href="{WORLD_BASE}/world/economics/">arif-fazil.com World Economics</a>: World carries human narrative and context; this surface carries observations, provenance, computation and agent interfaces. Shared contract: <a href="{BASE}/api/markets/registry">/api/markets/registry</a>.</p>
-<p class="note">{esc(WORLD_LINK_STATUS)}</p>
+<p class="note">World terminal lane sealed ({esc(ws_status())}) — deep instrument routes serve a generic SPA shell, so this surface links to the verified hub only (policy {esc(ws_policy())}). Reversal ticket: {esc(ws_ticket())} — F13 SABAR / Option B, 2026-10-14.</p>
 {cards}
 <h2>Watchlist — reported, not paired terminals</h2>
 <div class="card" style="overflow-x:auto">
@@ -336,7 +350,7 @@ def hub_page(states: dict, gen: dt.datetime) -> str:
 <h2>Relationship</h2>
 <div class="card">
 <dl class="kv">
-<dt>World Economics</dt><dd><a href="{WORLD_BASE}/world/economics/">Human narrative, Malaysia & geopolitical context</a> (terminal lane sealed — see note above)</dd>
+<dt>World Economics</dt><dd><a href="{ws_verified()}">Human narrative, Malaysia & geopolitical context</a> ({esc(ws_status())} — see note above)</dd>
 <dt>WEALTH</dt><dd>Observations, provenance, computation, scenarios — this surface</dd>
 <dt>arifOS</dt><dd>Governance judgment — <a href="https://arifos.arif-fazil.com">arifos.arif-fazil.com</a></dd>
 <dt>ARIF</dt><dd>Final authority</dd>
@@ -351,7 +365,15 @@ def registry_doc(states: dict, gen: dt.datetime) -> dict:
         o = obs_value(m)
         mk.append({
             "id": m["id"], "label": m["label"], "symbol": m["symbol"], "unit": m.get("unit"),
-            "world_url": m["world_url"],
+            "world_url": ws_verified(),
+            "world": {
+                "desired_url": m["world_url"],
+                "verified_url": ws_verified(),
+                "surface_status": WORLD_SURFACE.get("surface_status", "UNKNOWN"),
+                "link_policy": ws_policy(),
+            },
+            "world_link_status": ws_status(),
+            "world_link_clickable": bool(WORLD_SURFACE.get("world_link_clickable", False)),
             "wealth_url": f"{BASE}/markets/{m['id']}/",
             "data_url": f"{BASE}/api/markets/{m['id']}/latest",
             "markdown_url": f"{BASE}/markets/{m['id']}/index.md",
@@ -359,7 +381,6 @@ def registry_doc(states: dict, gen: dt.datetime) -> dict:
             "state": states[m["id"]],
             "evidence": (o or {}).get("evidence") if o else None,
             "as_of": (o or {}).get("as_of") if o else None,
-            "world_link_status": WORLD_LINK_STATUS,
         })
     return {
         "schema_version": "1.0",
@@ -409,6 +430,7 @@ def main() -> int:
     args = ap.parse_args()
 
     LEDGER_DATA = json.loads(LEDGER.read_text())
+    WORLD_SURFACE.update(LEDGER_DATA.get("world_surface", {}))
     MARKETS = LEDGER_DATA["markets"]
     FRESH_H = LEDGER_DATA["freshness_rule"]["fresh_within_hours"]
     gen = now_my()

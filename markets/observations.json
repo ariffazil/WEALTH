@@ -4,7 +4,12 @@
   "updated_by": "FI-003 (Qwen Code), 2026-10-14, F13 directive 'finish off this remaining task'",
   "freshness_rule": {
     "fresh_within_hours": 48,
-    "states": ["FRESH", "STALE", "UNKNOWN", "UNAVAILABLE"],
+    "states": [
+      "FRESH",
+      "STALE",
+      "UNKNOWN",
+      "UNAVAILABLE"
+    ],
     "semantics": {
       "FRESH": "primary observation age <= fresh_within_hours at generation time",
       "STALE": "primary observation exists but is older than fresh_within_hours",
@@ -49,16 +54,19 @@
           "evidence": "REPORTED",
           "value": 105.69,
           "change": -0.96,
-          "change_pct": -0.90,
-          "resistance": 109.50,
-          "support": 97.70,
+          "change_pct": -0.9,
+          "resistance": 109.5,
+          "support": 97.7,
           "levels_note": "Broker-reported levels. Not WEALTH forecasts and not trade signals.",
           "secondary": [
             {
               "as_of": "2026-10-14T07:19:00+08:00",
               "source": "WEALTH capital_market live read, relayed via HERMES (SINGLE_SOURCE, unverified second source)",
               "evidence": "REPORTED",
-              "value_range": [106.12, 106.19],
+              "value_range": [
+                106.12,
+                106.19
+              ],
               "note": "0.4% divergence vs M+ print — below 3% threshold, consistent."
             }
           ]
@@ -136,7 +144,7 @@
       "as_of_precision": "date",
       "source": "Bloomberg via M+Global Market Buzz 14 Oct 2026 (relayed by F13)",
       "evidence": "REPORTED",
-      "value": 51670.10,
+      "value": 51670.1,
       "change": -180.45,
       "change_pct": -0.35,
       "resistance": 53400,
@@ -151,7 +159,7 @@
       "evidence": "REPORTED",
       "value": 24345.22,
       "change": 74.02,
-      "change_pct": 0.30,
+      "change_pct": 0.3,
       "resistance": 25000,
       "support": 23300
     },
@@ -169,5 +177,16 @@
       "resistance": 4860,
       "support": 4420
     }
-  ]
+  ],
+  "world_surface": {
+    "verdict": "F13 SABAR / OPTION B (2026-10-14)",
+    "surface_status": "SEALED",
+    "desired_route_pattern": "https://arif-fazil.com/world/economics/{id}/",
+    "verified_url": "https://arif-fazil.com/world/economics/",
+    "link_policy": "HUB_FALLBACK",
+    "world_link_status": "DEFERRED_SEALED",
+    "world_link_clickable": false,
+    "reversal_ticket": "WORLD-TERMINAL-REVERSAL-001",
+    "note": "Deep instrument routes serve a generic SPA shell; do not present them as active. World SPA publicly links root-level /oil/ /gas/ /gold/ /klci/ /usdmyr/ routes instead - route ownership is a reversal-ticket question."
+  }
 }
