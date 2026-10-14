@@ -62,27 +62,24 @@ _ADMIN_ARGS: frozenset[str] = frozenset(
 # These fields are consumed by the tool but produce NO observable output
 # difference. Supplying them is wasteful and misleading. SEP-1303: reject.
 # Updated: 2026-08-06 from live differential evidence.
-_KNOWN_DEAD_FIELDS: dict[str, dict[str, frozenset[str]]] = {
-    "capital_diagnose": {
-        "collapse_signature": frozenset({"domain_scope"}),
-        # domain_scope has no effect — _source_text always empty
-    },
-    "capital_health": {
-        # corporate_runway silently downgraded to personal_finance
-        # monthly_burn and survival_submode accepted but mode=personal_finance ignores them
-        "survival:coporate_runway": frozenset({"monthly_burn", "survival_submode"}),
-    },
-    "capital_entropy": {
-        # PRE-FIX: these were dead. NOW FIXED (v2.0.0-differential-safe).
-        # power_consequence_map: all fields now consumed — removed from dead list.
-    },
-}
+# 2026-10-15 (WEALTH_THREE_DEFECT_CLOSURE_20261014): all three entries below
+# REMOVED because the underlying product defects were fixed at the tool layer
+# (canonical.py) and are no longer dead/crashing:
+#   - capital_diagnose/collapse_signature.domain_scope  → now consumed
+#     (scenario chain + corpus-prior selection + output reflection).
+#   - capital_health/survival:corporate_runway (was typo'd "coporate")   →
+#     corporate branch consumes liquid_assets/monthly_burn; resolved mode
+#     reflected; foreign fields now explicitly rejected.
+#   - capital_health/survival:sovereign_fiscal → no longer crashes; returns
+#     structured MISSING_REQUIRED_PARAMS / full fiscal result.
+# The map itself REMAINS as the defense for any future dead field.
+_KNOWN_DEAD_FIELDS: dict[str, dict[str, frozenset[str]]] = {}
 
-# ── Known-crashing mode combinations (sovereign_fiscal) ───────────────────
-_KNOWN_CRASHING: dict[str, frozenset[str]] = {
-    "capital_health": frozenset({"survival:sovereign_fiscal"}),
-    # MCP_SCHEMA_VIOLATION (-32602) — tool crashes before returning
-}
+# ── Known-crashing mode combinations ──────────────────────────────────────
+# 2026-10-15: survival:sovereign_fiscal removed — fixed at product layer
+# (structured response since Loop 8 fix 52ff13c; canonical payload verified
+# 2026-10-15). Gate structure retained for any future crashing combination.
+_KNOWN_CRASHING: dict[str, frozenset[str]] = {}
 
 # ── Default sentinel values (not material input) ─────────────────────────
 _DEFAULT_VALS: tuple = (

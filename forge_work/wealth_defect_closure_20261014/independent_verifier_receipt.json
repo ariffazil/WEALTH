@@ -1,0 +1,59 @@
+{
+  "verifier": "independent-subagent",
+  "timestamp": "2026-10-15T00:00:00Z",
+  "checks": {
+    "R1_real_invocation_exists": {
+      "result": "PASS",
+      "evidence": "cd /root/WEALTH; git log -1 shows HEAD dbf4d4b2c6a2 ('markets: F13 SABAR / Option B', pre-closure); git status --porcelain shows all 7 claimed files changed in working tree: M wealth_mcp/tools/canonical.py, M wealth_mcp/middleware/evidence_middleware.py, M scripts/baseline_probe.py, M docs/INGESTION_MAP.md, M docs/MODE_INVENTORY.md, M tests/test_differential.py, ?? tests/test_defect_closure_20261014.py (new). Additional changed files (fixtures refresh, server.py, backtest.py, new fixtures incl. capital_health__survival__sovereign_fiscal.json) present but not contradictory."
+    },
+    "R2_raw_request_exists": {
+      "result": "PASS",
+      "evidence": "/tmp/opencode/wealth_defect_closure_20261014/adversarial/A10b_replay_canonical.json stores request.tool=capital_health with exact arguments (mode=survival, survival_submode=sovereign_fiscal, total_govt_expenditure=380.0, non_oil_revenue=260.0, petronas_dividend_base_rm=40.0, oil_price_assumption_usd=80.0, session_id=ADV, actor_id=ARIF). A06a_scope_enron2000.json stores request.tool=capital_diagnose with arguments (mode=collapse_signature, domain_scope=enron_2000, session_id=ADV, actor_id=ARIF)."
+    },
+    "R3_raw_response_or_structured_error": {
+      "result": "PASS",
+      "evidence": "Both files contain raw_response as a JSON-RPC 2.0 result with content[] (text) + structuredContent, isError=false. A10b observed block: is_error=false, mode=survival, survival_submode=sovereign_fiscal, computed breakeven_price_usd=1731.2 in result. A06a observed block: is_error=false, domain_scope=enron_2000, domain_scope_resolved=enron_2000_ar, source_text=enron_2000, priors_used=[enron_2000_ar] in structuredContent. Computed results present (not error codes) — satisfies the either/or contract."
+    },
+    "R4_fixture_hash_matches": {
+      "result": "PASS",
+      "evidence": "tests/fixtures/baseline/capital_health__survival__sovereign_fiscal.json: sha256(file)=a4ed10084d03b5cb18fdd57f3a32c89cf39b7f3aac701b2b037677c79b3a862c, size 7747 bytes (non-empty), error_class='ok'. Internal sha256 field=15f3590918f648d2a731fb7f4e5865bbf65145de1d1eba7b61a593acb01e91dd equals independently recomputed sha256(json.dumps(raw_response, sort_keys=True))=15f3590918f648d2a731fb7f4e5865bbf65145de1d1eba7b61a593acb01e91dd. Match: True."
+    },
+    "R5_test_reproducible": {
+      "result": "PASS",
+      "evidence": "Ran exact command: cd /root/WEALTH && .venv/bin/python -m pytest tests/test_differential.py tests/test_capital_entropy_bugfixes.py tests/test_wealth_gates.py tests/test_ingestion_map.py tests/test_monotonicity.py tests/test_collapse_calibration.py tests/test_receipt_truth.py tests/test_defect_closure_20261014.py tests/test_fiscal_breakeven_and_gate_fix_20261008.py -q --no-header. Result: '109 passed in 11.61s' — 109 passed, 0 failed. Matches expectation exactly."
+    },
+    "R6_all_claimed_modes_have_fixtures": {
+      "result": "PASS",
+      "evidence": "cd /root/WEALTH && .venv/bin/python scripts/verify_receipt.py --mode-inventory → verdict='ACCEPT', modes_without_fixtures=[], total_fixtures=64, reachable_claimed=19, degraded_claimed=1, crashed_claimed=0. tests/fixtures/baseline/capital_health__survival__sovereign_fiscal.json exists (confirmed via ls)."
+    },
+    "R7_claims_within_evidence": {
+      "result": "PASS",
+      "evidence": "root_cause_report.md + docs diffs claim D1/D2/D3 closed. Every closure claim maps to a live check I independently performed: (D1) structured fiscal result + resolved-mode reflection → A10b raw_response + live spot-check (breakeven_price_usd=1731.2, mode/survival_submode reflected); MISSING_REQUIRED_PARAMS on partial fiscal → test_d1_partial_fiscal_explicit_error (passed in R5); structured UNKNOWN_MODE never bare raise → test_d1_unknown_mode_structured_not_raised + test_d1_garbage_mode_structured (passed in R5); real fixture → R4/R6. (D2) corporate resolves corporate with mode reflection, fields consumed, no personal_finance downgrade, UNSUPPORTED_FIELDS rejection → test_d2_resolves_corporate_not_personal, test_d2_corporate_fields_survive (runway_months 12.0 vs 6.0), test_d2_personal_fields_rejected_not_dropped (all passed in R5); corporate fixture present in R6 inventory. (D3) top-level domain_scope consumed end-to-end (_source_text populated, priors_used=[enron_2000_ar], domain_scope/domain_scope_resolved reflected) → A06a raw_response + live spot-check; UNSUPPORTED_DOMAIN_SCOPE → test_d3_unsupported_scope_rejected; MISSING_REQUIRED_INPUT → test_d3_blank_scope_no_confident_negative (passed in R5). Historical claim 'crash fixed 2026-08-06 commit 52ff13c' verified: commit 52ff13c5d2b5f35d576a89cc6a28ace478b411d2 exists with message 'Loop 8: capital_health sovereign_fiscal missing params now returns structured MISSING_REQUIRED_PARAMS error instead of ValueError crash'. NEGATIVE CLAIM VERIFIED: wealth_mcp/middleware/evidence_middleware.py line 76 _KNOWN_DEAD_FIELDS: dict[...]={} (EMPTY) and line 82 _KNOWN_CRASHING: dict[...]={} (EMPTY); gate structure retained (lines 220-233 still consult the dicts). Doc dates '2026-10-15' vs session dir '20261014' are consistent (receipts UTC 2026-10-14T16:1xZ = 2026-10-15 ~00:1x MYT). No claim found exceeding performed evidence."
+    }
+  },
+  "live_spot_check": {
+    "endpoint": "http://localhost:18082/mcp",
+    "method": "python urllib; initialize → Mcp-Session-Id c613442e2ea747da82a12f1f4f71fe65 → notifications/initialized → tools/call",
+    "call_1": {
+      "tool": "capital_health",
+      "arguments": {"mode": "survival", "survival_submode": "sovereign_fiscal", "total_govt_expenditure": 380.0, "non_oil_revenue": 260.0, "petronas_dividend_base_rm": 40.0, "oil_price_assumption_usd": 80.0, "session_id": "VERIFY-R7", "actor_id": "VERIFIER"},
+      "isError": false,
+      "contains_survival_submode": true,
+      "contains_breakeven_figure": true,
+      "breakeven_price_usd": 1731.2,
+      "mode": "survival",
+      "survival_submode": "sovereign_fiscal"
+    },
+    "call_2": {
+      "tool": "capital_diagnose",
+      "arguments": {"mode": "collapse_signature", "domain_scope": "enron_2000", "session_id": "VERIFY-R7", "actor_id": "VERIFIER"},
+      "isError": false,
+      "contains_enron_2000_ar": true,
+      "domain_scope": "enron_2000",
+      "domain_scope_resolved": "enron_2000_ar",
+      "priors_used": ["enron_2000_ar"],
+      "profile._source_text": "enron_2000"
+    }
+  },
+  "verdict": "ACCEPT"
+}

@@ -1,0 +1,74 @@
+{
+  "receipt": "mutation_manifest.json",
+  "timestamp_utc": "2026-10-14T16:14:04.738965+00:00",
+  "repo_path": "/root/WEALTH",
+  "head_commit_before": "dbf4d4b2c6a2549bc019b9e0c4063c6753d404ab",
+  "service_restarted_at_utc": "2026-10-14T16:0x (wealth-organ.service, T2 announced) \u2014 health healthy, tools 15",
+  "sha256_before": {
+    "wealth_mcp/tools/canonical.py": "dfe1c7b2d53aa7b918042817c2978510337edb1b2e5654bd85132f9c9fe0bfb9",
+    "wealth_mcp/middleware/evidence_middleware.py": "e8c7995dc996f6c357c4130c1a34f124b0ba9fde1ca0746157e0f9fad169e512",
+    "scripts/baseline_probe.py": "c2060ca352d60a6914f29fd6554bd3f17bfed6f315965206d061a9654f3e5b94",
+    "docs/INGESTION_MAP.md": "acb7d21585b7e3a95e47f77bd8edcc1ada9168f3f16fa04c42f6057bfdb09428",
+    "docs/MODE_INVENTORY.md": "fcbe5dc0971d36443f2541e45d1ab2faba1db5ce2c08fa02c362d98405444794",
+    "tests/test_differential.py": "cd8ed084945078b2740308d2df5c3b0550a7c9b7b6637ff764f1aa98f75547bf"
+  },
+  "sha256_after": {
+    "wealth_mcp/tools/canonical.py": "6456de715f41911c31bd3c7d260f78e326e0d6a9b808cc44ec5e7a3818808519",
+    "wealth_mcp/middleware/evidence_middleware.py": "d8a8638229f89c8c7e2499d61b5b9ddf9a2cd2b99b0536446c26c621f62ca343",
+    "scripts/baseline_probe.py": "ac2a4098d2879cc58f2373f90b0c3d48a158d03f72ed4b40e2a6c2788190ebce",
+    "docs/INGESTION_MAP.md": "4704ef7e61e1715330d780e33ceb66ef235f5b87d79ca8361a8e0504cd1e0c91",
+    "docs/MODE_INVENTORY.md": "3684c89b26e75f2e6c3f12fee613b6764be42dcbb6ad4a990a56e7875bd52f8d",
+    "tests/test_differential.py": "f0398c8dcbab60456bf598532dc1e0d9dcf97c94d7e1771415919bf4c61d731c",
+    "tests/test_defect_closure_20261014.py": "fb1945861d0e31e8f9f9e2af39112bcc44f02d8095bde581869821f8fb17fcfb"
+  },
+  "files_changed": [
+    {
+      "file": "wealth_mcp/tools/canonical.py",
+      "change": "D1 sovereign mode-reflection; D2 corporate mode-reflection + UNSUPPORTED_FIELDS guard; D1 end-of-chain UNKNOWN_MODE structured error; D3 domain_scope full wiring (scenario chain + corpus prior + reflection + UNSUPPORTED_DOMAIN_SCOPE + MISSING_REQUIRED_INPUT)"
+    },
+    {
+      "file": "wealth_mcp/middleware/evidence_middleware.py",
+      "change": "removed 3 stale entries (dead collapse_signature.domain_scope, dead survival:coporate_runway [typo key], crashing survival:sovereign_fiscal); defense structures retained"
+    },
+    {
+      "file": "scripts/baseline_probe.py",
+      "change": "canonical per-submode payloads (engine units RM billions) + per-submode fixture persistence"
+    },
+    {
+      "file": "docs/INGESTION_MAP.md",
+      "change": "three defect rows + counts updated to closed state"
+    },
+    {
+      "file": "docs/MODE_INVENTORY.md",
+      "change": "sovereign_fiscal \u274c\u2192\u2705, corporate_runway degraded\u2192\u2705, collapse_signature row updated"
+    },
+    {
+      "file": "tests/test_differential.py",
+      "change": "two stale known_red flags cleared with updated prose"
+    },
+    {
+      "file": "tests/test_defect_closure_20261014.py",
+      "change": "NEW \u2014 17-test minimum regression contract for D1/D2/D3"
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__*.json (12 files incl. NEW __survival__sovereign_fiscal.json)",
+      "change": "probe refresh from real post-fix calls"
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__collapse_signature.json + __garbage_mode_test.json",
+      "change": "probe refresh"
+    },
+    {
+      "file": "forge_work/wealth_defect_closure_20261014/*",
+      "change": "10 mission receipts"
+    }
+  ],
+  "explicitly_not_touched": [
+    "wealth_mcp/server.py (pre-existing uncommitted WAVE6 work)",
+    "wealth_mcp/tools/backtest.py (pre-existing uncommitted work)",
+    "all other tools/modes/repos"
+  ],
+  "remaining_unknowns": [
+    "WealthEvidenceMiddleware class on_call_tool appears not to execute on live path (responses carry only server.py _w0_evidence_gate) \u2014 pre-existing observation, out of scope, unmodified"
+  ]
+}

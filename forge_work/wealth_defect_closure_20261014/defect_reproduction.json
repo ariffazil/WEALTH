@@ -1,0 +1,2712 @@
+{
+  "receipt": "defect_reproduction.json",
+  "session": "WEALTH_THREE_DEFECT_CLOSURE_20261014",
+  "timestamp_utc": "2026-10-14T15:56:56.698269+00:00",
+  "repo_path": "/root/WEALTH",
+  "head_commit_before": "dbf4d4b2c6a2549bc019b9e0c4063c6753d404ab",
+  "method": "live JSON-RPC tools/call against http://localhost:18082/mcp (streamable HTTP, initialize->tools/call), raw responses stored verbatim",
+  "evidence_dir": "/tmp/opencode/wealth_defect_closure_20261014/defect_reproduction (15 case files, copied into this receipt)",
+  "verdicts": {
+    "D1_sovereign_fiscal": {
+      "claim_under_test": "capital_health(mode='sovereign_fiscal') crashes -32602 MCP_SCHEMA_VIOLATION before any raw response",
+      "reproduced": false,
+      "finding": "NO -32602 on the live service for any tested shape (probe shape, full-fiscal, direct-mode, partial, extra-arg, string-typed-number). Historical crash was fixed 2026-08-06 by commit 52ff13c (Loop 8: structured MISSING_REQUIRED_PARAMS instead of ValueError). REMAINING live defects: (1) no stored fixture for sovereign_fiscal -> R6 REJECT 62/63; (2) scripts/baseline_probe.py sends NO canonical fiscal payload for the submode and saves submode calls under generic capital_health__survival.json (last-write-wins), so a real raw sovereign_fiscal fixture cannot be produced by the current probe; (3) unknown/invalid mode still raises bare ValueError at canonical.py end-of-chain -> classified INTERNAL_ERROR/FATAL/ESCALATE_TO_888_HOLD (client input error misreported as server bug; inconsistent with Zen Phase 2 structured-error convention used by capital_market/registry/diagnose); (4) MODE_INVENTORY.md still claims 'crash -32602' and middleware _KNOWN_CRASHING lists survival:sovereign_fiscal (stale claims).",
+      "cases": [
+        "D1a",
+        "D1b",
+        "D1c",
+        "D1d",
+        "D1e"
+      ]
+    },
+    "D2_corporate_runway": {
+      "claim_under_test": "capital_health(mode='survival', survival_submode='corporate_runway') silently downgrades to personal_finance; corporate fields accepted but income/expenses zeroed",
+      "reproduced": "PARTIAL \u2014 the silent downgrade NO LONGER reproduces (corporate branch live: D2a runway 12.0 vs D2b 6.0 months, materially different; missing fields -> explicit MISSING_REQUIRED_PARAMS). Historical evidence: tests/fixtures/baseline/capital_health__survival__corporate_runway.json (probed 2026-08-06, defect field 'SILENT_DOWNGRADE...', assumptions ['income=0, expenses=0']). REMAINING live defects: (1) resolved submode NOT reflected in output/metadata (result keys: interpretation/liquid_assets/monthly_burn/runway_months/verdict only); (2) foreign material fields (income, expenses, monthly_income_v, monthly_expenses_v) silently ignored when supplied with corporate_runway (D2d: income/expenses supplied, absent from output, no acknowledgment, no rejection) \u2014 violates field disposition law (eat/reflect/reject); (3) stale claims: INGESTION_MAP.md rows 50-52 still mark corporate fields DEGRADED/downgraded; evidence_middleware._KNOWN_DEAD_FIELDS['capital_health']['survival:coporate_runway'] (typo key, never matches, and claim now false); (4) stale Aug-6 fixture content still ships the downgraded response.",
+      "cases": [
+        "D2a",
+        "D2b",
+        "D2c",
+        "D2d",
+        "D2e"
+      ]
+    },
+    "D3_collapse_signature_domain_scope": {
+      "claim_under_test": "capital_diagnose(mode='collapse_signature') accepts domain_scope but it is dead; _source_text stays ''",
+      "reproduced": true,
+      "finding": "HARD PROOF. Top-level domain_scope param is never wired into compute_collapse_risk (canonical.py:916-934 reads only payload-embedded p.get('domain_scope')). Evidence: D3a(enron_2000) == D3b(lehman_2008) == D3e(planet_mars_2199) byte-identical after volatile-key strip; profile._source_text='' for all top-level shapes; D3c(payload.domain_scope='enron_2000') -> _source_text='enron_2000' (payload path works); unknown scope silently accepted (no rejection); engine exposes historical_priors + capital_type params that the tool layer never passes; corpus registry exists on disk (wealth_core/collapse_signature/corpus/*.txt) as the natural governed vocabulary; sibling modes cadence_monitor/crisis_reflex DO consume top-level domain_scope (org_name fallback) \u2014 only collapse_signature omits it.",
+      "cases": [
+        "D3a",
+        "D3b",
+        "D3c",
+        "D3d",
+        "D3e"
+      ]
+    }
+  },
+  "cases": {
+    "D1a_probe_shape_no_params": {
+      "case": "D1a_probe_shape_no_params",
+      "timestamp": "2026-10-14T15:48:52.614717+00:00",
+      "request": {
+        "tool": "capital_health",
+        "arguments": {
+          "mode": "survival",
+          "survival_submode": "sovereign_fiscal",
+          "session_id": "REPRO-D1",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_health\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"status\": \"ERROR\", \"error_code\": \"MISSING_REQUIRED_PARAMS\", \"message\": \"sovereign_fiscal requires: total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd\", \"missing_params\": [\"total_govt_expenditure\", \"non_oil_revenue\", \"petronas_dividend_base_rm\", \"oil_price_assumption_usd\"], \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"ASSUMED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MISSING\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [], \"computation_timestamp\": \"2026-10-14T15:48:52.629903+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.\"], \"errors\": [\"Missing required params for sovereign_fiscal: total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd\"], \"session_id\": \"REPRO-D1\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.35, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"ASSUMED\", \"quality\": \"MISSING\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"coverage_unmeasured\": false, \"material_args_count\": 1, \"material_args\": [\"survival_submode\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_health",
+            "tool_version": "2026.07.12",
+            "domain": "capital",
+            "result": {
+              "status": "ERROR",
+              "error_code": "MISSING_REQUIRED_PARAMS",
+              "message": "sovereign_fiscal requires: total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd",
+              "missing_params": [
+                "total_govt_expenditure",
+                "non_oil_revenue",
+                "petronas_dividend_base_rm",
+                "oil_price_assumption_usd"
+              ],
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              }
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "ASSUMED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MISSING",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [],
+            "computation_timestamp": "2026-10-14T15:48:52.629903+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [
+              "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.",
+              "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked."
+            ],
+            "errors": [
+              "Missing required params for sovereign_fiscal: total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd"
+            ],
+            "session_id": "REPRO-D1",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.35,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "coverage": {
+              "known": 0,
+              "total": 1,
+              "ratio": 0.0,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "ASSUMED",
+              "quality": "MISSING",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.0,
+              "coverage_unmeasured": false,
+              "material_args_count": 1,
+              "material_args": [
+                "survival_submode"
+              ],
+              "gate": "CAUTION",
+              "warnings": [
+                "INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked."
+              ]
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_health",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": ""
+          }
+        }
+      }
+    },
+    "D1b_probe_shape_full_fiscal": {
+      "case": "D1b_probe_shape_full_fiscal",
+      "timestamp": "2026-10-14T15:48:52.632292+00:00",
+      "request": {
+        "tool": "capital_health",
+        "arguments": {
+          "mode": "survival",
+          "survival_submode": "sovereign_fiscal",
+          "total_govt_expenditure": 380000000000.0,
+          "non_oil_revenue": 260000000000.0,
+          "petronas_dividend_base_rm": 40000000000.0,
+          "oil_price_assumption_usd": 80.0,
+          "session_id": "REPRO-D1",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_health\", \"tool_version\": \"2026.07.12\", \"domain\": \"risk\", \"result\": {\"breakeven_price_usd\": 2087410306232.2, \"current_oil_price_usd\": 80.0, \"fiscal_pressure\": \"UNSUSTAINABLE\", \"current_deficit_rm_b\": 80000000000.0, \"deficit_pct_of_gdp\": 20512820512.82, \"target_deficit_pct\": 3.5000000000000004, \"additional_oil_revenue_needed_rm_b\": 79999999986.4, \"fiscal_sensitivity_rm_b_per_usd\": 0.038, \"petronas_dividend_base_rm_b\": 40000000000.0, \"petroleum_direct_revenue_rm_b\": 0.0, \"dividend_brent_sensitivity\": null, \"non_oil_revenue_rm_b\": 260000000000.0, \"total_govt_expenditure_rm_b\": 380000000000.0, \"epistemic_tag\": \"CLAIM\", \"confidence_band\": 0.7, \"breakeven_error\": null, \"warnings\": [\"petroleum_direct_revenue NOT_MODED \\u2014 deficit excludes direct petroleum revenue (PETRONAS income tax, royalties, export duties). Real deficit is LOWER than reported here.\", \"dividend response to Brent UNCALIBRATED \\u2014 breakeven reflects production-take response only (dividend held constant). Breakeven is NOT decision-grade.\"], \"caveat\": \"Breakeven price assumes constant production and no reserve depletion. In crisis (USD 50-), production also declines, worsening the fiscal gap. Real breakeven is higher than calculated under tail scenarios.\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"fiscal_breakeven_model\"], \"computation_timestamp\": \"2026-10-14T15:48:52.649821+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [], \"errors\": [], \"session_id\": \"REPRO-D1\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 3, \"total\": 5, \"ratio\": 0.6, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.6, \"coverage_unmeasured\": false, \"material_args_count\": 5, \"material_args\": [\"non_oil_revenue\", \"oil_price_assumption_usd\", \"petronas_dividend_base_rm\", \"survival_submode\", \"total_govt_expenditure\"], \"gate\": \"PASS\", \"warnings\": []}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_health",
+            "tool_version": "2026.07.12",
+            "domain": "risk",
+            "result": {
+              "breakeven_price_usd": 2087410306232.2,
+              "current_oil_price_usd": 80.0,
+              "fiscal_pressure": "UNSUSTAINABLE",
+              "current_deficit_rm_b": 80000000000.0,
+              "deficit_pct_of_gdp": 20512820512.82,
+              "target_deficit_pct": 3.5000000000000004,
+              "additional_oil_revenue_needed_rm_b": 79999999986.4,
+              "fiscal_sensitivity_rm_b_per_usd": 0.038,
+              "petronas_dividend_base_rm_b": 40000000000.0,
+              "petroleum_direct_revenue_rm_b": 0.0,
+              "dividend_brent_sensitivity": null,
+              "non_oil_revenue_rm_b": 260000000000.0,
+              "total_govt_expenditure_rm_b": 380000000000.0,
+              "epistemic_tag": "CLAIM",
+              "confidence_band": 0.7,
+              "breakeven_error": null,
+              "warnings": [
+                "petroleum_direct_revenue NOT_MODED \u2014 deficit excludes direct petroleum revenue (PETRONAS income tax, royalties, export duties). Real deficit is LOWER than reported here.",
+                "dividend response to Brent UNCALIBRATED \u2014 breakeven reflects production-take response only (dividend held constant). Breakeven is NOT decision-grade."
+              ],
+              "caveat": "Breakeven price assumes constant production and no reserve depletion. In crisis (USD 50-), production also declines, worsening the fiscal gap. Real breakeven is higher than calculated under tail scenarios.",
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              }
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "DERIVED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MODERATE",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [
+              "fiscal_breakeven_model"
+            ],
+            "computation_timestamp": "2026-10-14T15:48:52.649821+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [],
+            "errors": [],
+            "session_id": "REPRO-D1",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.7,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "verdict": "PARTIAL",
+            "coverage": {
+              "known": 3,
+              "total": 5,
+              "ratio": 0.6,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "DERIVED",
+              "quality": "MODERATE",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.6,
+              "coverage_unmeasured": false,
+              "material_args_count": 5,
+              "material_args": [
+                "non_oil_revenue",
+                "oil_price_assumption_usd",
+                "petronas_dividend_base_rm",
+                "survival_submode",
+                "total_govt_expenditure"
+              ],
+              "gate": "PASS",
+              "warnings": []
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_health",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": ""
+          }
+        }
+      }
+    },
+    "D1c_direct_mode": {
+      "case": "D1c_direct_mode",
+      "timestamp": "2026-10-14T15:48:52.652488+00:00",
+      "request": {
+        "tool": "capital_health",
+        "arguments": {
+          "mode": "sovereign_fiscal",
+          "total_govt_expenditure": 380000000000.0,
+          "non_oil_revenue": 260000000000.0,
+          "petronas_dividend_base_rm": 40000000000.0,
+          "oil_price_assumption_usd": 80.0,
+          "session_id": "REPRO-D1",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "wealth_receipt": {
+              "persisted": true,
+              "path": "/root/VAULT999/wealth/receipts.jsonl",
+              "receipt_id": "a5b4e659-f11c-4585-a471-fa40c563cf84",
+              "call_status": "ERROR"
+            },
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"isError\": true, \"error_class\": \"INTERNAL_ERROR\", \"recoverability\": \"ESCALATE_TO_888_HOLD\", \"suspected_layer\": \"tool_execution\", \"severity\": \"FATAL\", \"message\": \"Error calling tool 'capital_health'\", \"next_action\": \"Log to VAULT999 and escalate \\u2014 server bug\", \"epistemic_label\": \"DER\", \"timestamp\": \"2026-10-14T15:48:52.707608+00:00\", \"source_tool\": \"capital_health\", \"source_organ\": \"wealth\", \"original_error\": \"ToolError: Error calling tool 'capital_health'\", \"session_id\": \"REPRO-D1\", \"actor_id\": \"ARIF\", \"trace_id\": \"\", \"execution_authorized\": false, \"human_final_authority\": \"Arif\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 4, \"ratio\": 0.0, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"coverage_unmeasured\": false, \"material_args_count\": 4, \"material_args\": [\"non_oil_revenue\", \"oil_price_assumption_usd\", \"petronas_dividend_base_rm\", \"total_govt_expenditure\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 4 material fields (['non_oil_revenue', 'oil_price_assumption_usd', 'petronas_dividend_base_rm', 'total_govt_expenditure']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 4 material fields (['non_oil_revenue', 'oil_price_assumption_usd', 'petronas_dividend_base_rm', 'total_govt_expenditure']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "isError": true,
+            "error_class": "INTERNAL_ERROR",
+            "recoverability": "ESCALATE_TO_888_HOLD",
+            "suspected_layer": "tool_execution",
+            "severity": "FATAL",
+            "message": "Error calling tool 'capital_health'",
+            "next_action": "Log to VAULT999 and escalate \u2014 server bug",
+            "epistemic_label": "DER",
+            "timestamp": "2026-10-14T15:48:52.707608+00:00",
+            "source_tool": "capital_health",
+            "source_organ": "wealth",
+            "original_error": "ToolError: Error calling tool 'capital_health'",
+            "session_id": "REPRO-D1",
+            "actor_id": "ARIF",
+            "trace_id": "",
+            "execution_authorized": false,
+            "human_final_authority": "Arif",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "coverage": {
+              "known": 0,
+              "total": 4,
+              "ratio": 0.0,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "DERIVED",
+              "quality": "MODERATE",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.0,
+              "coverage_unmeasured": false,
+              "material_args_count": 4,
+              "material_args": [
+                "non_oil_revenue",
+                "oil_price_assumption_usd",
+                "petronas_dividend_base_rm",
+                "total_govt_expenditure"
+              ],
+              "gate": "CAUTION",
+              "warnings": [
+                "INSUFFICIENT_EVIDENCE: 4 material fields (['non_oil_revenue', 'oil_price_assumption_usd', 'petronas_dividend_base_rm', 'total_govt_expenditure']) provided but ZERO reflected in result. Interpretation prose blocked."
+              ]
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_health",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "warnings": [
+              "[W0] INSUFFICIENT_EVIDENCE: 4 material fields (['non_oil_revenue', 'oil_price_assumption_usd', 'petronas_dividend_base_rm', 'total_govt_expenditure']) provided but ZERO reflected in result. Interpretation prose blocked."
+            ]
+          }
+        }
+      }
+    },
+    "D1d_fiscal_breakeven_mode": {
+      "case": "D1d_fiscal_breakeven_mode",
+      "timestamp": "2026-10-14T15:48:52.710446+00:00",
+      "request": {
+        "tool": "capital_health",
+        "arguments": {
+          "mode": "fiscal_breakeven",
+          "total_govt_expenditure": 380000000000.0,
+          "non_oil_revenue": 260000000000.0,
+          "petronas_dividend_base_rm": 40000000000.0,
+          "oil_price_assumption_usd": 80.0,
+          "session_id": "REPRO-D1",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_health\", \"tool_version\": \"2026.07.12\", \"domain\": \"risk\", \"result\": {\"breakeven_price_usd\": 2087410306232.2, \"current_oil_price_usd\": 80.0, \"fiscal_pressure\": \"UNSUSTAINABLE\", \"current_deficit_rm_b\": 80000000000.0, \"deficit_pct_of_gdp\": 20512820512.82, \"target_deficit_pct\": 3.5000000000000004, \"additional_oil_revenue_needed_rm_b\": 79999999986.4, \"fiscal_sensitivity_rm_b_per_usd\": 0.038, \"petronas_dividend_base_rm_b\": 40000000000.0, \"petroleum_direct_revenue_rm_b\": 0.0, \"dividend_brent_sensitivity\": null, \"non_oil_revenue_rm_b\": 260000000000.0, \"total_govt_expenditure_rm_b\": 380000000000.0, \"epistemic_tag\": \"CLAIM\", \"confidence_band\": 0.7, \"breakeven_error\": null, \"warnings\": [\"petroleum_direct_revenue NOT_MODED \\u2014 deficit excludes direct petroleum revenue (PETRONAS income tax, royalties, export duties). Real deficit is LOWER than reported here.\", \"dividend response to Brent UNCALIBRATED \\u2014 breakeven reflects production-take response only (dividend held constant). Breakeven is NOT decision-grade.\"], \"caveat\": \"Breakeven price assumes constant production and no reserve depletion. In crisis (USD 50-), production also declines, worsening the fiscal gap. Real breakeven is higher than calculated under tail scenarios.\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"fiscal_breakeven_model\"], \"computation_timestamp\": \"2026-10-14T15:48:52.722201+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [], \"errors\": [], \"session_id\": \"REPRO-D1\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 3, \"total\": 4, \"ratio\": 0.75, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.75, \"coverage_unmeasured\": false, \"material_args_count\": 4, \"material_args\": [\"non_oil_revenue\", \"oil_price_assumption_usd\", \"petronas_dividend_base_rm\", \"total_govt_expenditure\"], \"gate\": \"PASS\", \"warnings\": []}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_health",
+            "tool_version": "2026.07.12",
+            "domain": "risk",
+            "result": {
+              "breakeven_price_usd": 2087410306232.2,
+              "current_oil_price_usd": 80.0,
+              "fiscal_pressure": "UNSUSTAINABLE",
+              "current_deficit_rm_b": 80000000000.0,
+              "deficit_pct_of_gdp": 20512820512.82,
+              "target_deficit_pct": 3.5000000000000004,
+              "additional_oil_revenue_needed_rm_b": 79999999986.4,
+              "fiscal_sensitivity_rm_b_per_usd": 0.038,
+              "petronas_dividend_base_rm_b": 40000000000.0,
+              "petroleum_direct_revenue_rm_b": 0.0,
+              "dividend_brent_sensitivity": null,
+              "non_oil_revenue_rm_b": 260000000000.0,
+              "total_govt_expenditure_rm_b": 380000000000.0,
+              "epistemic_tag": "CLAIM",
+              "confidence_band": 0.7,
+              "breakeven_error": null,
+              "warnings": [
+                "petroleum_direct_revenue NOT_MODED \u2014 deficit excludes direct petroleum revenue (PETRONAS income tax, royalties, export duties). Real deficit is LOWER than reported here.",
+                "dividend response to Brent UNCALIBRATED \u2014 breakeven reflects production-take response only (dividend held constant). Breakeven is NOT decision-grade."
+              ],
+              "caveat": "Breakeven price assumes constant production and no reserve depletion. In crisis (USD 50-), production also declines, worsening the fiscal gap. Real breakeven is higher than calculated under tail scenarios.",
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              }
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "DERIVED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MODERATE",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [
+              "fiscal_breakeven_model"
+            ],
+            "computation_timestamp": "2026-10-14T15:48:52.722201+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [],
+            "errors": [],
+            "session_id": "REPRO-D1",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.7,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "verdict": "PARTIAL",
+            "coverage": {
+              "known": 3,
+              "total": 4,
+              "ratio": 0.75,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "DERIVED",
+              "quality": "MODERATE",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.75,
+              "coverage_unmeasured": false,
+              "material_args_count": 4,
+              "material_args": [
+                "non_oil_revenue",
+                "oil_price_assumption_usd",
+                "petronas_dividend_base_rm",
+                "total_govt_expenditure"
+              ],
+              "gate": "PASS",
+              "warnings": []
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_health",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": ""
+          }
+        }
+      }
+    },
+    "D1e_partial_fiscal": {
+      "case": "D1e_partial_fiscal",
+      "timestamp": "2026-10-14T15:48:52.724793+00:00",
+      "request": {
+        "tool": "capital_health",
+        "arguments": {
+          "mode": "survival",
+          "survival_submode": "sovereign_fiscal",
+          "total_govt_expenditure": 380000000000.0,
+          "petronas_dividend_base_rm": 40000000000.0,
+          "session_id": "REPRO-D1",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_health\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"status\": \"ERROR\", \"error_code\": \"MISSING_REQUIRED_PARAMS\", \"message\": \"sovereign_fiscal requires: total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd\", \"missing_params\": [\"non_oil_revenue\", \"oil_price_assumption_usd\"], \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}, \"verdict\": \"HOLD\"}, \"result_type\": \"scalar\", \"epistemic_tag\": \"ASSUMED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MISSING\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [], \"computation_timestamp\": \"2026-10-14T15:48:52.734640+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [], \"errors\": [\"Missing required params for sovereign_fiscal: non_oil_revenue, oil_price_assumption_usd\"], \"session_id\": \"REPRO-D1\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.35, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"HOLD\", \"coverage\": {\"known\": 2, \"total\": 3, \"ratio\": 0.67, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"ASSUMED\", \"quality\": \"MISSING\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.67, \"coverage_unmeasured\": false, \"material_args_count\": 3, \"material_args\": [\"petronas_dividend_base_rm\", \"survival_submode\", \"total_govt_expenditure\"], \"gate\": \"CAUTION\", \"warnings\": [\"EVIDENCE_QUALITY_MISMATCH: PASS gate but MISSING evidence and no reflection prose \\u2014 internal contradiction\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\", \"domain_verdict\": \"HOLD\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_health",
+            "tool_version": "2026.07.12",
+            "domain": "capital",
+            "result": {
+              "status": "ERROR",
+              "error_code": "MISSING_REQUIRED_PARAMS",
+              "message": "sovereign_fiscal requires: total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd",
+              "missing_params": [
+                "non_oil_revenue",
+                "oil_price_assumption_usd"
+              ],
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              },
+              "verdict": "HOLD"
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "ASSUMED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MISSING",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [],
+            "computation_timestamp": "2026-10-14T15:48:52.734640+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [],
+            "errors": [
+              "Missing required params for sovereign_fiscal: non_oil_revenue, oil_price_assumption_usd"
+            ],
+            "session_id": "REPRO-D1",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.35,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "verdict": "HOLD",
+            "coverage": {
+              "known": 2,
+              "total": 3,
+              "ratio": 0.67,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "ASSUMED",
+              "quality": "MISSING",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.67,
+              "coverage_unmeasured": false,
+              "material_args_count": 3,
+              "material_args": [
+                "petronas_dividend_base_rm",
+                "survival_submode",
+                "total_govt_expenditure"
+              ],
+              "gate": "CAUTION",
+              "warnings": [
+                "EVIDENCE_QUALITY_MISMATCH: PASS gate but MISSING evidence and no reflection prose \u2014 internal contradiction"
+              ]
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_health",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": "",
+            "domain_verdict": "HOLD"
+          }
+        }
+      }
+    },
+    "D2a_corporate_liquid_burn": {
+      "case": "D2a_corporate_liquid_burn",
+      "timestamp": "2026-10-14T15:48:52.736782+00:00",
+      "request": {
+        "tool": "capital_health",
+        "arguments": {
+          "mode": "survival",
+          "survival_submode": "corporate_runway",
+          "liquid_assets": 12000000.0,
+          "monthly_burn": 1000000.0,
+          "session_id": "REPRO-D2",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_health\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"runway_months\": 12.0, \"liquid_assets\": 12000000.0, \"monthly_burn\": 1000000.0, \"verdict\": \"CORPORATE_RUNWAY_ADEQUATE\", \"interpretation\": \"Corporate runway: 12.0 months at burn rate 1000000.0/month.\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"corporate_runway_computation\"], \"computation_timestamp\": \"2026-10-14T15:48:52.746219+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [], \"errors\": [], \"session_id\": \"REPRO-D2\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 2, \"total\": 3, \"ratio\": 0.67, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.67, \"coverage_unmeasured\": false, \"material_args_count\": 3, \"material_args\": [\"liquid_assets\", \"monthly_burn\", \"survival_submode\"], \"gate\": \"PASS\", \"warnings\": []}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_health",
+            "tool_version": "2026.07.12",
+            "domain": "capital",
+            "result": {
+              "runway_months": 12.0,
+              "liquid_assets": 12000000.0,
+              "monthly_burn": 1000000.0,
+              "verdict": "CORPORATE_RUNWAY_ADEQUATE",
+              "interpretation": "Corporate runway: 12.0 months at burn rate 1000000.0/month.",
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              }
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "DERIVED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MODERATE",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [
+              "corporate_runway_computation"
+            ],
+            "computation_timestamp": "2026-10-14T15:48:52.746219+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [],
+            "errors": [],
+            "session_id": "REPRO-D2",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.7,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "verdict": "PARTIAL",
+            "coverage": {
+              "known": 2,
+              "total": 3,
+              "ratio": 0.67,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "DERIVED",
+              "quality": "MODERATE",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.67,
+              "coverage_unmeasured": false,
+              "material_args_count": 3,
+              "material_args": [
+                "liquid_assets",
+                "monthly_burn",
+                "survival_submode"
+              ],
+              "gate": "PASS",
+              "warnings": []
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_health",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": ""
+          }
+        }
+      }
+    },
+    "D2b_corporate_A": {
+      "case": "D2b_corporate_A",
+      "timestamp": "2026-10-14T15:48:52.748297+00:00",
+      "request": {
+        "tool": "capital_health",
+        "arguments": {
+          "mode": "survival",
+          "survival_submode": "corporate_runway",
+          "liquid_assets": 12000000.0,
+          "monthly_burn": 2000000.0,
+          "session_id": "REPRO-D2",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_health\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"runway_months\": 6.0, \"liquid_assets\": 12000000.0, \"monthly_burn\": 2000000.0, \"verdict\": \"CORPORATE_RUNWAY_CRITICAL\", \"interpretation\": \"Corporate runway: 6.0 months at burn rate 2000000.0/month.\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"corporate_runway_computation\"], \"computation_timestamp\": \"2026-10-14T15:48:52.757385+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [], \"errors\": [], \"session_id\": \"REPRO-D2\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 2, \"total\": 3, \"ratio\": 0.67, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.67, \"coverage_unmeasured\": false, \"material_args_count\": 3, \"material_args\": [\"liquid_assets\", \"monthly_burn\", \"survival_submode\"], \"gate\": \"PASS\", \"warnings\": []}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_health",
+            "tool_version": "2026.07.12",
+            "domain": "capital",
+            "result": {
+              "runway_months": 6.0,
+              "liquid_assets": 12000000.0,
+              "monthly_burn": 2000000.0,
+              "verdict": "CORPORATE_RUNWAY_CRITICAL",
+              "interpretation": "Corporate runway: 6.0 months at burn rate 2000000.0/month.",
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              }
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "DERIVED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MODERATE",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [
+              "corporate_runway_computation"
+            ],
+            "computation_timestamp": "2026-10-14T15:48:52.757385+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [],
+            "errors": [],
+            "session_id": "REPRO-D2",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.7,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "verdict": "PARTIAL",
+            "coverage": {
+              "known": 2,
+              "total": 3,
+              "ratio": 0.67,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "DERIVED",
+              "quality": "MODERATE",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.67,
+              "coverage_unmeasured": false,
+              "material_args_count": 3,
+              "material_args": [
+                "liquid_assets",
+                "monthly_burn",
+                "survival_submode"
+              ],
+              "gate": "PASS",
+              "warnings": []
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_health",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": ""
+          }
+        }
+      }
+    },
+    "D2c_corporate_missing_fields": {
+      "case": "D2c_corporate_missing_fields",
+      "timestamp": "2026-10-14T15:48:52.759536+00:00",
+      "request": {
+        "tool": "capital_health",
+        "arguments": {
+          "mode": "survival",
+          "survival_submode": "corporate_runway",
+          "session_id": "REPRO-D2",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_health\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"status\": \"ERROR\", \"error_code\": \"MISSING_REQUIRED_PARAMS\", \"message\": \"corporate_runway requires liquid_assets and monthly_burn\", \"missing_params\": [\"liquid_assets\", \"monthly_burn\"], \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"ASSUMED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MISSING\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [], \"computation_timestamp\": \"2026-10-14T15:48:52.768939+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.\"], \"errors\": [\"corporate_runway requires liquid_assets and monthly_burn\"], \"session_id\": \"REPRO-D2\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.35, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"ASSUMED\", \"quality\": \"MISSING\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"coverage_unmeasured\": false, \"material_args_count\": 1, \"material_args\": [\"survival_submode\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_health",
+            "tool_version": "2026.07.12",
+            "domain": "capital",
+            "result": {
+              "status": "ERROR",
+              "error_code": "MISSING_REQUIRED_PARAMS",
+              "message": "corporate_runway requires liquid_assets and monthly_burn",
+              "missing_params": [
+                "liquid_assets",
+                "monthly_burn"
+              ],
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              }
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "ASSUMED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MISSING",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [],
+            "computation_timestamp": "2026-10-14T15:48:52.768939+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [
+              "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.",
+              "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked."
+            ],
+            "errors": [
+              "corporate_runway requires liquid_assets and monthly_burn"
+            ],
+            "session_id": "REPRO-D2",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.35,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "coverage": {
+              "known": 0,
+              "total": 1,
+              "ratio": 0.0,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "ASSUMED",
+              "quality": "MISSING",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.0,
+              "coverage_unmeasured": false,
+              "material_args_count": 1,
+              "material_args": [
+                "survival_submode"
+              ],
+              "gate": "CAUTION",
+              "warnings": [
+                "INSUFFICIENT_EVIDENCE: 1 material fields (['survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked."
+              ]
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_health",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": ""
+          }
+        }
+      }
+    },
+    "D2d_corporate_income_expenses_supplied": {
+      "case": "D2d_corporate_income_expenses_supplied",
+      "timestamp": "2026-10-14T15:48:52.771123+00:00",
+      "request": {
+        "tool": "capital_health",
+        "arguments": {
+          "mode": "survival",
+          "survival_submode": "corporate_runway",
+          "liquid_assets": 5000000.0,
+          "monthly_burn": 500000.0,
+          "income": [
+            {
+              "name": "rev",
+              "amount": 300000.0,
+              "monthly": true
+            }
+          ],
+          "expenses": [
+            {
+              "name": "opex",
+              "amount": 100000.0,
+              "monthly": true
+            }
+          ],
+          "session_id": "REPRO-D2",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_health\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"runway_months\": 10.0, \"liquid_assets\": 5000000.0, \"monthly_burn\": 500000.0, \"verdict\": \"CORPORATE_RUNWAY_CRITICAL\", \"interpretation\": \"Corporate runway: 10.0 months at burn rate 500000.0/month.\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"corporate_runway_computation\"], \"computation_timestamp\": \"2026-10-14T15:48:52.780629+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [], \"errors\": [], \"session_id\": \"REPRO-D2\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 2, \"total\": 5, \"ratio\": 0.4, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.4, \"coverage_unmeasured\": false, \"material_args_count\": 5, \"material_args\": [\"expenses\", \"income\", \"liquid_assets\", \"monthly_burn\", \"survival_submode\"], \"gate\": \"PASS\", \"warnings\": []}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_health",
+            "tool_version": "2026.07.12",
+            "domain": "capital",
+            "result": {
+              "runway_months": 10.0,
+              "liquid_assets": 5000000.0,
+              "monthly_burn": 500000.0,
+              "verdict": "CORPORATE_RUNWAY_CRITICAL",
+              "interpretation": "Corporate runway: 10.0 months at burn rate 500000.0/month.",
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              }
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "DERIVED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MODERATE",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [
+              "corporate_runway_computation"
+            ],
+            "computation_timestamp": "2026-10-14T15:48:52.780629+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [],
+            "errors": [],
+            "session_id": "REPRO-D2",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.7,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "verdict": "PARTIAL",
+            "coverage": {
+              "known": 2,
+              "total": 5,
+              "ratio": 0.4,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "DERIVED",
+              "quality": "MODERATE",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.4,
+              "coverage_unmeasured": false,
+              "material_args_count": 5,
+              "material_args": [
+                "expenses",
+                "income",
+                "liquid_assets",
+                "monthly_burn",
+                "survival_submode"
+              ],
+              "gate": "PASS",
+              "warnings": []
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_health",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": ""
+          }
+        }
+      }
+    },
+    "D2e_personal_shape_labelled_corporate": {
+      "case": "D2e_personal_shape_labelled_corporate",
+      "timestamp": "2026-10-14T15:48:52.783168+00:00",
+      "request": {
+        "tool": "capital_health",
+        "arguments": {
+          "mode": "survival",
+          "survival_submode": "corporate_runway",
+          "monthly_income_v": 9000.0,
+          "monthly_expenses_v": 4000.0,
+          "session_id": "REPRO-D2",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_health\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"status\": \"ERROR\", \"error_code\": \"MISSING_REQUIRED_PARAMS\", \"message\": \"corporate_runway requires liquid_assets and monthly_burn\", \"missing_params\": [\"liquid_assets\", \"monthly_burn\"], \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"ASSUMED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MISSING\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [], \"computation_timestamp\": \"2026-10-14T15:48:52.795139+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 3 material fields (['monthly_expenses_v', 'monthly_income_v', 'survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] INSUFFICIENT_EVIDENCE: 3 material fields (['monthly_expenses_v', 'monthly_income_v', 'survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.\"], \"errors\": [\"corporate_runway requires liquid_assets and monthly_burn\"], \"session_id\": \"REPRO-D2\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.35, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 3, \"ratio\": 0.0, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"ASSUMED\", \"quality\": \"MISSING\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"coverage_unmeasured\": false, \"material_args_count\": 3, \"material_args\": [\"monthly_expenses_v\", \"monthly_income_v\", \"survival_submode\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 3 material fields (['monthly_expenses_v', 'monthly_income_v', 'survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_health",
+            "tool_version": "2026.07.12",
+            "domain": "capital",
+            "result": {
+              "status": "ERROR",
+              "error_code": "MISSING_REQUIRED_PARAMS",
+              "message": "corporate_runway requires liquid_assets and monthly_burn",
+              "missing_params": [
+                "liquid_assets",
+                "monthly_burn"
+              ],
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              }
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "ASSUMED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MISSING",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [],
+            "computation_timestamp": "2026-10-14T15:48:52.795139+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [
+              "[W0] INSUFFICIENT_EVIDENCE: 3 material fields (['monthly_expenses_v', 'monthly_income_v', 'survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked.",
+              "[W0] INSUFFICIENT_EVIDENCE: 3 material fields (['monthly_expenses_v', 'monthly_income_v', 'survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked."
+            ],
+            "errors": [
+              "corporate_runway requires liquid_assets and monthly_burn"
+            ],
+            "session_id": "REPRO-D2",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.35,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "coverage": {
+              "known": 0,
+              "total": 3,
+              "ratio": 0.0,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "ASSUMED",
+              "quality": "MISSING",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.0,
+              "coverage_unmeasured": false,
+              "material_args_count": 3,
+              "material_args": [
+                "monthly_expenses_v",
+                "monthly_income_v",
+                "survival_submode"
+              ],
+              "gate": "CAUTION",
+              "warnings": [
+                "INSUFFICIENT_EVIDENCE: 3 material fields (['monthly_expenses_v', 'monthly_income_v', 'survival_submode']) provided but ZERO reflected in result. Interpretation prose blocked."
+              ]
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_health",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": ""
+          }
+        }
+      }
+    },
+    "D3a_toplevel_domain_scope": {
+      "case": "D3a_toplevel_domain_scope",
+      "timestamp": "2026-10-14T15:48:52.797916+00:00",
+      "request": {
+        "tool": "capital_diagnose",
+        "arguments": {
+          "mode": "collapse_signature",
+          "domain_scope": "enron_2000",
+          "session_id": "REPRO-D3",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_diagnose\", \"tool_version\": \"2026.07.12\", \"domain\": \"collapse\", \"result\": {\"profile\": {\"axis_1_national_destiny_triumphalism\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_2_politicisation_ideology\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_3_extraction_over_reinvestment\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_4_external_blame_denial\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_5_generic_governance_boilerplate\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_6_overpromise_hedge_metrics_lag\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"related_party_jurisdiction_structural\": {\"related_party\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"jurisdiction_shopping\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"structural_grievance\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}}, \"_source_text\": \"\", \"acemoglu_axis\": {\"score\": null, \"label\": \"INSUFFICIENT_SIGNAL\", \"extractive_count\": 0, \"inclusive_count\": 0}, \"calhoun_axis\": {\"score\": null, \"label\": \"INSUFFICIENT_SIGNAL\", \"sink_count\": 0, \"healthy_count\": 0}}, \"risk\": {\"score\": 0.0, \"risk_level\": \"MINIMAL\", \"dominant_axes\": [], \"recommendation\": \"No institutional-collapse signature detected.\"}, \"two_d_risk_map\": {\"acemoglu_score\": null, \"acemoglu_label\": \"INSUFFICIENT_SIGNAL\", \"calhoun_score\": null, \"calhoun_label\": \"INSUFFICIENT_SIGNAL\", \"quadrant\": \"INSUFFICIENT_SIGNAL\"}, \"tripwires\": {\"tripwires\": {\"tripwire_1_mof_2027_dividend\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_2_gentari_sale\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_3_tt_exit\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_4_sarawak_settlement\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_5_new_spvs\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}}, \"critical_extractive_tripwires\": 0, \"overall_drift\": \"NEUTRAL_OR_MIXED\", \"total_extractive_signals\": 0, \"total_inclusive_signals\": 0, \"overall_net_drift\": 0}, \"dimensional_densities\": {\"axis_1_national_destiny_triumphalism\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_2_politicisation_ideology\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_3_extraction_over_reinvestment\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_4_external_blame_denial\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_5_generic_governance_boilerplate\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_6_overpromise_hedge_metrics_lag\": {\"signal_count\": 0, \"density\": 0.0}}, \"capital_type\": \"financial\", \"priors_used\": [], \"prior_comparison\": {}, \"quantitative_triggers\": [], \"semantic_mechanism_hits\": [], \"evidence_coverage\": {\"ratio\": 0.0, \"present\": [], \"missing\": [\"payout_ratio_or_pct\", \"cadence_statement\", \"transfer_structure\", \"loss_figure\", \"debt_structure\", \"governance_composition\", \"reinvestment\", \"operations\"], \"adequate\": false}, \"detector_version\": \"calibrated_v2_2026-09-16\", \"verdict_discipline\": \"INSUFFICIENT_DATA\", \"missing_evidence_fields\": [\"payout_ratio_or_pct\", \"cadence_statement\", \"transfer_structure\", \"loss_figure\", \"debt_structure\", \"governance_composition\", \"reinvestment\", \"operations\"], \"recommendation\": null, \"calibrated_verdict\": \"INSUFFICIENT_DATA\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"INTERPRETED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom\"], \"computation_timestamp\": \"2026-10-14T15:48:54.095807+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"], \"errors\": [], \"session_id\": \"REPRO-D3\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"INTERPRETED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"coverage_unmeasured\": false, \"material_args_count\": 1, \"material_args\": [\"domain_scope\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_diagnose\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_diagnose",
+            "tool_version": "2026.07.12",
+            "domain": "collapse",
+            "result": {
+              "profile": {
+                "axis_1_national_destiny_triumphalism": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_2_politicisation_ideology": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_3_extraction_over_reinvestment": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_4_external_blame_denial": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_5_generic_governance_boilerplate": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_6_overpromise_hedge_metrics_lag": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "related_party_jurisdiction_structural": {
+                  "related_party": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  },
+                  "jurisdiction_shopping": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  },
+                  "structural_grievance": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  }
+                },
+                "_source_text": "",
+                "acemoglu_axis": {
+                  "score": null,
+                  "label": "INSUFFICIENT_SIGNAL",
+                  "extractive_count": 0,
+                  "inclusive_count": 0
+                },
+                "calhoun_axis": {
+                  "score": null,
+                  "label": "INSUFFICIENT_SIGNAL",
+                  "sink_count": 0,
+                  "healthy_count": 0
+                }
+              },
+              "risk": {
+                "score": 0.0,
+                "risk_level": "MINIMAL",
+                "dominant_axes": [],
+                "recommendation": "No institutional-collapse signature detected."
+              },
+              "two_d_risk_map": {
+                "acemoglu_score": null,
+                "acemoglu_label": "INSUFFICIENT_SIGNAL",
+                "calhoun_score": null,
+                "calhoun_label": "INSUFFICIENT_SIGNAL",
+                "quadrant": "INSUFFICIENT_SIGNAL"
+              },
+              "tripwires": {
+                "tripwires": {
+                  "tripwire_1_mof_2027_dividend": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_2_gentari_sale": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_3_tt_exit": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_4_sarawak_settlement": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_5_new_spvs": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  }
+                },
+                "critical_extractive_tripwires": 0,
+                "overall_drift": "NEUTRAL_OR_MIXED",
+                "total_extractive_signals": 0,
+                "total_inclusive_signals": 0,
+                "overall_net_drift": 0
+              },
+              "dimensional_densities": {
+                "axis_1_national_destiny_triumphalism": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_2_politicisation_ideology": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_3_extraction_over_reinvestment": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_4_external_blame_denial": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_5_generic_governance_boilerplate": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_6_overpromise_hedge_metrics_lag": {
+                  "signal_count": 0,
+                  "density": 0.0
+                }
+              },
+              "capital_type": "financial",
+              "priors_used": [],
+              "prior_comparison": {},
+              "quantitative_triggers": [],
+              "semantic_mechanism_hits": [],
+              "evidence_coverage": {
+                "ratio": 0.0,
+                "present": [],
+                "missing": [
+                  "payout_ratio_or_pct",
+                  "cadence_statement",
+                  "transfer_structure",
+                  "loss_figure",
+                  "debt_structure",
+                  "governance_composition",
+                  "reinvestment",
+                  "operations"
+                ],
+                "adequate": false
+              },
+              "detector_version": "calibrated_v2_2026-09-16",
+              "verdict_discipline": "INSUFFICIENT_DATA",
+              "missing_evidence_fields": [
+                "payout_ratio_or_pct",
+                "cadence_statement",
+                "transfer_structure",
+                "loss_figure",
+                "debt_structure",
+                "governance_composition",
+                "reinvestment",
+                "operations"
+              ],
+              "recommendation": null,
+              "calibrated_verdict": "INSUFFICIENT_DATA",
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              }
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "INTERPRETED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MODERATE",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [
+              "collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom"
+            ],
+            "computation_timestamp": "2026-10-14T15:48:54.095807+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [
+              "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.",
+              "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+            ],
+            "errors": [],
+            "session_id": "REPRO-D3",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.7,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "coverage": {
+              "known": 0,
+              "total": 1,
+              "ratio": 0.0,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "INTERPRETED",
+              "quality": "MODERATE",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.0,
+              "coverage_unmeasured": false,
+              "material_args_count": 1,
+              "material_args": [
+                "domain_scope"
+              ],
+              "gate": "CAUTION",
+              "warnings": [
+                "INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+              ]
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_diagnose",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": ""
+          }
+        }
+      }
+    },
+    "D3b_toplevel_domain_scope_B": {
+      "case": "D3b_toplevel_domain_scope_B",
+      "timestamp": "2026-10-14T15:48:54.102987+00:00",
+      "request": {
+        "tool": "capital_diagnose",
+        "arguments": {
+          "mode": "collapse_signature",
+          "domain_scope": "lehman_2008",
+          "session_id": "REPRO-D3",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_diagnose\", \"tool_version\": \"2026.07.12\", \"domain\": \"collapse\", \"result\": {\"profile\": {\"axis_1_national_destiny_triumphalism\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_2_politicisation_ideology\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_3_extraction_over_reinvestment\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_4_external_blame_denial\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_5_generic_governance_boilerplate\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_6_overpromise_hedge_metrics_lag\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"related_party_jurisdiction_structural\": {\"related_party\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"jurisdiction_shopping\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"structural_grievance\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}}, \"_source_text\": \"\", \"acemoglu_axis\": {\"score\": null, \"label\": \"INSUFFICIENT_SIGNAL\", \"extractive_count\": 0, \"inclusive_count\": 0}, \"calhoun_axis\": {\"score\": null, \"label\": \"INSUFFICIENT_SIGNAL\", \"sink_count\": 0, \"healthy_count\": 0}}, \"risk\": {\"score\": 0.0, \"risk_level\": \"MINIMAL\", \"dominant_axes\": [], \"recommendation\": \"No institutional-collapse signature detected.\"}, \"two_d_risk_map\": {\"acemoglu_score\": null, \"acemoglu_label\": \"INSUFFICIENT_SIGNAL\", \"calhoun_score\": null, \"calhoun_label\": \"INSUFFICIENT_SIGNAL\", \"quadrant\": \"INSUFFICIENT_SIGNAL\"}, \"tripwires\": {\"tripwires\": {\"tripwire_1_mof_2027_dividend\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_2_gentari_sale\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_3_tt_exit\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_4_sarawak_settlement\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_5_new_spvs\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}}, \"critical_extractive_tripwires\": 0, \"overall_drift\": \"NEUTRAL_OR_MIXED\", \"total_extractive_signals\": 0, \"total_inclusive_signals\": 0, \"overall_net_drift\": 0}, \"dimensional_densities\": {\"axis_1_national_destiny_triumphalism\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_2_politicisation_ideology\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_3_extraction_over_reinvestment\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_4_external_blame_denial\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_5_generic_governance_boilerplate\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_6_overpromise_hedge_metrics_lag\": {\"signal_count\": 0, \"density\": 0.0}}, \"capital_type\": \"financial\", \"priors_used\": [], \"prior_comparison\": {}, \"quantitative_triggers\": [], \"semantic_mechanism_hits\": [], \"evidence_coverage\": {\"ratio\": 0.0, \"present\": [], \"missing\": [\"payout_ratio_or_pct\", \"cadence_statement\", \"transfer_structure\", \"loss_figure\", \"debt_structure\", \"governance_composition\", \"reinvestment\", \"operations\"], \"adequate\": false}, \"detector_version\": \"calibrated_v2_2026-09-16\", \"verdict_discipline\": \"INSUFFICIENT_DATA\", \"missing_evidence_fields\": [\"payout_ratio_or_pct\", \"cadence_statement\", \"transfer_structure\", \"loss_figure\", \"debt_structure\", \"governance_composition\", \"reinvestment\", \"operations\"], \"recommendation\": null, \"calibrated_verdict\": \"INSUFFICIENT_DATA\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"INTERPRETED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom\"], \"computation_timestamp\": \"2026-10-14T15:48:55.417211+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"], \"errors\": [], \"session_id\": \"REPRO-D3\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"INTERPRETED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"coverage_unmeasured\": false, \"material_args_count\": 1, \"material_args\": [\"domain_scope\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_diagnose\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_diagnose",
+            "tool_version": "2026.07.12",
+            "domain": "collapse",
+            "result": {
+              "profile": {
+                "axis_1_national_destiny_triumphalism": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_2_politicisation_ideology": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_3_extraction_over_reinvestment": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_4_external_blame_denial": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_5_generic_governance_boilerplate": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_6_overpromise_hedge_metrics_lag": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "related_party_jurisdiction_structural": {
+                  "related_party": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  },
+                  "jurisdiction_shopping": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  },
+                  "structural_grievance": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  }
+                },
+                "_source_text": "",
+                "acemoglu_axis": {
+                  "score": null,
+                  "label": "INSUFFICIENT_SIGNAL",
+                  "extractive_count": 0,
+                  "inclusive_count": 0
+                },
+                "calhoun_axis": {
+                  "score": null,
+                  "label": "INSUFFICIENT_SIGNAL",
+                  "sink_count": 0,
+                  "healthy_count": 0
+                }
+              },
+              "risk": {
+                "score": 0.0,
+                "risk_level": "MINIMAL",
+                "dominant_axes": [],
+                "recommendation": "No institutional-collapse signature detected."
+              },
+              "two_d_risk_map": {
+                "acemoglu_score": null,
+                "acemoglu_label": "INSUFFICIENT_SIGNAL",
+                "calhoun_score": null,
+                "calhoun_label": "INSUFFICIENT_SIGNAL",
+                "quadrant": "INSUFFICIENT_SIGNAL"
+              },
+              "tripwires": {
+                "tripwires": {
+                  "tripwire_1_mof_2027_dividend": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_2_gentari_sale": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_3_tt_exit": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_4_sarawak_settlement": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_5_new_spvs": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  }
+                },
+                "critical_extractive_tripwires": 0,
+                "overall_drift": "NEUTRAL_OR_MIXED",
+                "total_extractive_signals": 0,
+                "total_inclusive_signals": 0,
+                "overall_net_drift": 0
+              },
+              "dimensional_densities": {
+                "axis_1_national_destiny_triumphalism": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_2_politicisation_ideology": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_3_extraction_over_reinvestment": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_4_external_blame_denial": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_5_generic_governance_boilerplate": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_6_overpromise_hedge_metrics_lag": {
+                  "signal_count": 0,
+                  "density": 0.0
+                }
+              },
+              "capital_type": "financial",
+              "priors_used": [],
+              "prior_comparison": {},
+              "quantitative_triggers": [],
+              "semantic_mechanism_hits": [],
+              "evidence_coverage": {
+                "ratio": 0.0,
+                "present": [],
+                "missing": [
+                  "payout_ratio_or_pct",
+                  "cadence_statement",
+                  "transfer_structure",
+                  "loss_figure",
+                  "debt_structure",
+                  "governance_composition",
+                  "reinvestment",
+                  "operations"
+                ],
+                "adequate": false
+              },
+              "detector_version": "calibrated_v2_2026-09-16",
+              "verdict_discipline": "INSUFFICIENT_DATA",
+              "missing_evidence_fields": [
+                "payout_ratio_or_pct",
+                "cadence_statement",
+                "transfer_structure",
+                "loss_figure",
+                "debt_structure",
+                "governance_composition",
+                "reinvestment",
+                "operations"
+              ],
+              "recommendation": null,
+              "calibrated_verdict": "INSUFFICIENT_DATA",
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              }
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "INTERPRETED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MODERATE",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [
+              "collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom"
+            ],
+            "computation_timestamp": "2026-10-14T15:48:55.417211+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [
+              "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.",
+              "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+            ],
+            "errors": [],
+            "session_id": "REPRO-D3",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.7,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "coverage": {
+              "known": 0,
+              "total": 1,
+              "ratio": 0.0,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "INTERPRETED",
+              "quality": "MODERATE",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.0,
+              "coverage_unmeasured": false,
+              "material_args_count": 1,
+              "material_args": [
+                "domain_scope"
+              ],
+              "gate": "CAUTION",
+              "warnings": [
+                "INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+              ]
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_diagnose",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": ""
+          }
+        }
+      }
+    },
+    "D3c_payload_domain_scope": {
+      "case": "D3c_payload_domain_scope",
+      "timestamp": "2026-10-14T15:48:55.420914+00:00",
+      "request": {
+        "tool": "capital_diagnose",
+        "arguments": {
+          "mode": "collapse_signature",
+          "payload": {
+            "domain_scope": "enron_2000"
+          },
+          "session_id": "REPRO-D3",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_diagnose\", \"tool_version\": \"2026.07.12\", \"domain\": \"collapse\", \"result\": {\"profile\": {\"axis_1_national_destiny_triumphalism\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_2_politicisation_ideology\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_3_extraction_over_reinvestment\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_4_external_blame_denial\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_5_generic_governance_boilerplate\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_6_overpromise_hedge_metrics_lag\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"related_party_jurisdiction_structural\": {\"related_party\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"jurisdiction_shopping\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"structural_grievance\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}}, \"_source_text\": \"enron_2000\", \"acemoglu_axis\": {\"score\": 0.5, \"label\": \"INSUFFICIENT_SIGNAL\", \"extractive_count\": 0, \"inclusive_count\": 0}, \"calhoun_axis\": {\"score\": 0.5, \"label\": \"INSUFFICIENT_SIGNAL\", \"sink_count\": 0, \"healthy_count\": 0}}, \"risk\": {\"score\": 0.0, \"risk_level\": \"MINIMAL\", \"dominant_axes\": [], \"recommendation\": \"No institutional-collapse signature detected.\"}, \"two_d_risk_map\": {\"acemoglu_score\": 0.5, \"acemoglu_label\": \"INSUFFICIENT_SIGNAL\", \"calhoun_score\": 0.5, \"calhoun_label\": \"INSUFFICIENT_SIGNAL\", \"quadrant\": \"INSUFFICIENT_SIGNAL\"}, \"tripwires\": {\"tripwires\": {\"tripwire_1_mof_2027_dividend\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_2_gentari_sale\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_3_tt_exit\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_4_sarawak_settlement\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_5_new_spvs\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}}, \"critical_extractive_tripwires\": 0, \"overall_drift\": \"NEUTRAL_OR_MIXED\", \"total_extractive_signals\": 0, \"total_inclusive_signals\": 0, \"overall_net_drift\": 0}, \"dimensional_densities\": {\"axis_1_national_destiny_triumphalism\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_2_politicisation_ideology\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_3_extraction_over_reinvestment\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_4_external_blame_denial\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_5_generic_governance_boilerplate\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_6_overpromise_hedge_metrics_lag\": {\"signal_count\": 0, \"density\": 0.0}}, \"capital_type\": \"financial\", \"priors_used\": [], \"prior_comparison\": {}, \"quantitative_triggers\": [], \"semantic_mechanism_hits\": [], \"evidence_coverage\": {\"ratio\": 0.0, \"present\": [], \"missing\": [\"payout_ratio_or_pct\", \"cadence_statement\", \"transfer_structure\", \"loss_figure\", \"debt_structure\", \"governance_composition\", \"reinvestment\", \"operations\"], \"adequate\": false}, \"detector_version\": \"calibrated_v2_2026-09-16\", \"verdict_discipline\": \"INSUFFICIENT_DATA\", \"missing_evidence_fields\": [\"payout_ratio_or_pct\", \"cadence_statement\", \"transfer_structure\", \"loss_figure\", \"debt_structure\", \"governance_composition\", \"reinvestment\", \"operations\"], \"recommendation\": null, \"calibrated_verdict\": \"INSUFFICIENT_DATA\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"INTERPRETED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom\"], \"computation_timestamp\": \"2026-10-14T15:48:56.858510+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['payload']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['payload']) provided but ZERO reflected in result. Interpretation prose blocked.\"], \"errors\": [], \"session_id\": \"REPRO-D3\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"INTERPRETED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"coverage_unmeasured\": false, \"material_args_count\": 1, \"material_args\": [\"payload\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['payload']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_diagnose\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_diagnose",
+            "tool_version": "2026.07.12",
+            "domain": "collapse",
+            "result": {
+              "profile": {
+                "axis_1_national_destiny_triumphalism": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_2_politicisation_ideology": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_3_extraction_over_reinvestment": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_4_external_blame_denial": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_5_generic_governance_boilerplate": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_6_overpromise_hedge_metrics_lag": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "related_party_jurisdiction_structural": {
+                  "related_party": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  },
+                  "jurisdiction_shopping": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  },
+                  "structural_grievance": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  }
+                },
+                "_source_text": "enron_2000",
+                "acemoglu_axis": {
+                  "score": 0.5,
+                  "label": "INSUFFICIENT_SIGNAL",
+                  "extractive_count": 0,
+                  "inclusive_count": 0
+                },
+                "calhoun_axis": {
+                  "score": 0.5,
+                  "label": "INSUFFICIENT_SIGNAL",
+                  "sink_count": 0,
+                  "healthy_count": 0
+                }
+              },
+              "risk": {
+                "score": 0.0,
+                "risk_level": "MINIMAL",
+                "dominant_axes": [],
+                "recommendation": "No institutional-collapse signature detected."
+              },
+              "two_d_risk_map": {
+                "acemoglu_score": 0.5,
+                "acemoglu_label": "INSUFFICIENT_SIGNAL",
+                "calhoun_score": 0.5,
+                "calhoun_label": "INSUFFICIENT_SIGNAL",
+                "quadrant": "INSUFFICIENT_SIGNAL"
+              },
+              "tripwires": {
+                "tripwires": {
+                  "tripwire_1_mof_2027_dividend": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_2_gentari_sale": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_3_tt_exit": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_4_sarawak_settlement": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_5_new_spvs": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  }
+                },
+                "critical_extractive_tripwires": 0,
+                "overall_drift": "NEUTRAL_OR_MIXED",
+                "total_extractive_signals": 0,
+                "total_inclusive_signals": 0,
+                "overall_net_drift": 0
+              },
+              "dimensional_densities": {
+                "axis_1_national_destiny_triumphalism": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_2_politicisation_ideology": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_3_extraction_over_reinvestment": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_4_external_blame_denial": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_5_generic_governance_boilerplate": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_6_overpromise_hedge_metrics_lag": {
+                  "signal_count": 0,
+                  "density": 0.0
+                }
+              },
+              "capital_type": "financial",
+              "priors_used": [],
+              "prior_comparison": {},
+              "quantitative_triggers": [],
+              "semantic_mechanism_hits": [],
+              "evidence_coverage": {
+                "ratio": 0.0,
+                "present": [],
+                "missing": [
+                  "payout_ratio_or_pct",
+                  "cadence_statement",
+                  "transfer_structure",
+                  "loss_figure",
+                  "debt_structure",
+                  "governance_composition",
+                  "reinvestment",
+                  "operations"
+                ],
+                "adequate": false
+              },
+              "detector_version": "calibrated_v2_2026-09-16",
+              "verdict_discipline": "INSUFFICIENT_DATA",
+              "missing_evidence_fields": [
+                "payout_ratio_or_pct",
+                "cadence_statement",
+                "transfer_structure",
+                "loss_figure",
+                "debt_structure",
+                "governance_composition",
+                "reinvestment",
+                "operations"
+              ],
+              "recommendation": null,
+              "calibrated_verdict": "INSUFFICIENT_DATA",
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              }
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "INTERPRETED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MODERATE",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [
+              "collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom"
+            ],
+            "computation_timestamp": "2026-10-14T15:48:56.858510+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [
+              "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['payload']) provided but ZERO reflected in result. Interpretation prose blocked.",
+              "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['payload']) provided but ZERO reflected in result. Interpretation prose blocked."
+            ],
+            "errors": [],
+            "session_id": "REPRO-D3",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.7,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "coverage": {
+              "known": 0,
+              "total": 1,
+              "ratio": 0.0,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "INTERPRETED",
+              "quality": "MODERATE",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.0,
+              "coverage_unmeasured": false,
+              "material_args_count": 1,
+              "material_args": [
+                "payload"
+              ],
+              "gate": "CAUTION",
+              "warnings": [
+                "INSUFFICIENT_EVIDENCE: 1 material fields (['payload']) provided but ZERO reflected in result. Interpretation prose blocked."
+              ]
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_diagnose",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": ""
+          }
+        }
+      }
+    },
+    "D3d_blank_domain_scope": {
+      "case": "D3d_blank_domain_scope",
+      "timestamp": "2026-10-14T15:48:56.863391+00:00",
+      "request": {
+        "tool": "capital_diagnose",
+        "arguments": {
+          "mode": "collapse_signature",
+          "domain_scope": "",
+          "session_id": "REPRO-D3",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_diagnose\", \"tool_version\": \"2026.07.12\", \"domain\": \"collapse\", \"result\": {\"profile\": {\"axis_1_national_destiny_triumphalism\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_2_politicisation_ideology\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_3_extraction_over_reinvestment\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_4_external_blame_denial\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_5_generic_governance_boilerplate\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_6_overpromise_hedge_metrics_lag\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"related_party_jurisdiction_structural\": {\"related_party\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"jurisdiction_shopping\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"structural_grievance\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}}, \"_source_text\": \"\", \"acemoglu_axis\": {\"score\": null, \"label\": \"INSUFFICIENT_SIGNAL\", \"extractive_count\": 0, \"inclusive_count\": 0}, \"calhoun_axis\": {\"score\": null, \"label\": \"INSUFFICIENT_SIGNAL\", \"sink_count\": 0, \"healthy_count\": 0}}, \"risk\": {\"score\": 0.0, \"risk_level\": \"MINIMAL\", \"dominant_axes\": [], \"recommendation\": \"No institutional-collapse signature detected.\"}, \"two_d_risk_map\": {\"acemoglu_score\": null, \"acemoglu_label\": \"INSUFFICIENT_SIGNAL\", \"calhoun_score\": null, \"calhoun_label\": \"INSUFFICIENT_SIGNAL\", \"quadrant\": \"INSUFFICIENT_SIGNAL\"}, \"tripwires\": {\"tripwires\": {\"tripwire_1_mof_2027_dividend\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_2_gentari_sale\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_3_tt_exit\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_4_sarawak_settlement\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_5_new_spvs\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}}, \"critical_extractive_tripwires\": 0, \"overall_drift\": \"NEUTRAL_OR_MIXED\", \"total_extractive_signals\": 0, \"total_inclusive_signals\": 0, \"overall_net_drift\": 0}, \"dimensional_densities\": {\"axis_1_national_destiny_triumphalism\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_2_politicisation_ideology\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_3_extraction_over_reinvestment\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_4_external_blame_denial\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_5_generic_governance_boilerplate\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_6_overpromise_hedge_metrics_lag\": {\"signal_count\": 0, \"density\": 0.0}}, \"capital_type\": \"financial\", \"priors_used\": [], \"prior_comparison\": {}, \"quantitative_triggers\": [], \"semantic_mechanism_hits\": [], \"evidence_coverage\": {\"ratio\": 0.0, \"present\": [], \"missing\": [\"payout_ratio_or_pct\", \"cadence_statement\", \"transfer_structure\", \"loss_figure\", \"debt_structure\", \"governance_composition\", \"reinvestment\", \"operations\"], \"adequate\": false}, \"detector_version\": \"calibrated_v2_2026-09-16\", \"verdict_discipline\": \"INSUFFICIENT_DATA\", \"missing_evidence_fields\": [\"payout_ratio_or_pct\", \"cadence_statement\", \"transfer_structure\", \"loss_figure\", \"debt_structure\", \"governance_composition\", \"reinvestment\", \"operations\"], \"recommendation\": null, \"calibrated_verdict\": \"INSUFFICIENT_DATA\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}, \"verdict\": \"HOLD\"}, \"result_type\": \"scalar\", \"epistemic_tag\": \"INTERPRETED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom\"], \"computation_timestamp\": \"2026-10-14T15:48:58.267791+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\", \"[W0] UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"], \"errors\": [], \"session_id\": \"REPRO-D3\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": -1.0, \"unmeasured\": true}, \"epistemic\": {\"tag\": \"INTERPRETED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": -1.0, \"coverage_unmeasured\": true, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"FAIL\", \"warnings\": [\"UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_diagnose\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\", \"domain_verdict\": \"HOLD\", \"verdict\": \"HOLD\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_diagnose",
+            "tool_version": "2026.07.12",
+            "domain": "collapse",
+            "result": {
+              "profile": {
+                "axis_1_national_destiny_triumphalism": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_2_politicisation_ideology": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_3_extraction_over_reinvestment": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_4_external_blame_denial": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_5_generic_governance_boilerplate": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_6_overpromise_hedge_metrics_lag": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "related_party_jurisdiction_structural": {
+                  "related_party": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  },
+                  "jurisdiction_shopping": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  },
+                  "structural_grievance": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  }
+                },
+                "_source_text": "",
+                "acemoglu_axis": {
+                  "score": null,
+                  "label": "INSUFFICIENT_SIGNAL",
+                  "extractive_count": 0,
+                  "inclusive_count": 0
+                },
+                "calhoun_axis": {
+                  "score": null,
+                  "label": "INSUFFICIENT_SIGNAL",
+                  "sink_count": 0,
+                  "healthy_count": 0
+                }
+              },
+              "risk": {
+                "score": 0.0,
+                "risk_level": "MINIMAL",
+                "dominant_axes": [],
+                "recommendation": "No institutional-collapse signature detected."
+              },
+              "two_d_risk_map": {
+                "acemoglu_score": null,
+                "acemoglu_label": "INSUFFICIENT_SIGNAL",
+                "calhoun_score": null,
+                "calhoun_label": "INSUFFICIENT_SIGNAL",
+                "quadrant": "INSUFFICIENT_SIGNAL"
+              },
+              "tripwires": {
+                "tripwires": {
+                  "tripwire_1_mof_2027_dividend": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_2_gentari_sale": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_3_tt_exit": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_4_sarawak_settlement": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_5_new_spvs": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  }
+                },
+                "critical_extractive_tripwires": 0,
+                "overall_drift": "NEUTRAL_OR_MIXED",
+                "total_extractive_signals": 0,
+                "total_inclusive_signals": 0,
+                "overall_net_drift": 0
+              },
+              "dimensional_densities": {
+                "axis_1_national_destiny_triumphalism": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_2_politicisation_ideology": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_3_extraction_over_reinvestment": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_4_external_blame_denial": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_5_generic_governance_boilerplate": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_6_overpromise_hedge_metrics_lag": {
+                  "signal_count": 0,
+                  "density": 0.0
+                }
+              },
+              "capital_type": "financial",
+              "priors_used": [],
+              "prior_comparison": {},
+              "quantitative_triggers": [],
+              "semantic_mechanism_hits": [],
+              "evidence_coverage": {
+                "ratio": 0.0,
+                "present": [],
+                "missing": [
+                  "payout_ratio_or_pct",
+                  "cadence_statement",
+                  "transfer_structure",
+                  "loss_figure",
+                  "debt_structure",
+                  "governance_composition",
+                  "reinvestment",
+                  "operations"
+                ],
+                "adequate": false
+              },
+              "detector_version": "calibrated_v2_2026-09-16",
+              "verdict_discipline": "INSUFFICIENT_DATA",
+              "missing_evidence_fields": [
+                "payout_ratio_or_pct",
+                "cadence_statement",
+                "transfer_structure",
+                "loss_figure",
+                "debt_structure",
+                "governance_composition",
+                "reinvestment",
+                "operations"
+              ],
+              "recommendation": null,
+              "calibrated_verdict": "INSUFFICIENT_DATA",
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              },
+              "verdict": "HOLD"
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "INTERPRETED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MODERATE",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [
+              "collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom"
+            ],
+            "computation_timestamp": "2026-10-14T15:48:58.267791+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [
+              "[W0] UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input.",
+              "[W0] UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+            ],
+            "errors": [],
+            "session_id": "REPRO-D3",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.7,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "coverage": {
+              "known": 0,
+              "total": 0,
+              "ratio": -1.0,
+              "unmeasured": true
+            },
+            "epistemic": {
+              "tag": "INTERPRETED",
+              "quality": "MODERATE",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": -1.0,
+              "coverage_unmeasured": true,
+              "material_args_count": 0,
+              "material_args": [],
+              "gate": "FAIL",
+              "warnings": [
+                "UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+              ]
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_diagnose",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": "",
+            "domain_verdict": "HOLD",
+            "verdict": "HOLD"
+          }
+        }
+      }
+    },
+    "D3e_unknown_domain_scope": {
+      "case": "D3e_unknown_domain_scope",
+      "timestamp": "2026-10-14T15:48:58.271436+00:00",
+      "request": {
+        "tool": "capital_diagnose",
+        "arguments": {
+          "mode": "collapse_signature",
+          "domain_scope": "planet_mars_2199",
+          "session_id": "REPRO-D3",
+          "actor_id": "ARIF"
+        }
+      },
+      "http_status": 200,
+      "raw_response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "_meta": {
+            "cross_organ_inheritance": "lane_denied",
+            "binding_code": "OBSERVE_ANONYMOUS_OK"
+          },
+          "content": [
+            {
+              "text": "{\"tool_name\": \"capital_diagnose\", \"tool_version\": \"2026.07.12\", \"domain\": \"collapse\", \"result\": {\"profile\": {\"axis_1_national_destiny_triumphalism\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_2_politicisation_ideology\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_3_extraction_over_reinvestment\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_4_external_blame_denial\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_5_generic_governance_boilerplate\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"axis_6_overpromise_hedge_metrics_lag\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"related_party_jurisdiction_structural\": {\"related_party\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"jurisdiction_shopping\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}, \"structural_grievance\": {\"signal_count\": 0, \"matched_signals\": [], \"truncated\": false}}, \"_source_text\": \"\", \"acemoglu_axis\": {\"score\": null, \"label\": \"INSUFFICIENT_SIGNAL\", \"extractive_count\": 0, \"inclusive_count\": 0}, \"calhoun_axis\": {\"score\": null, \"label\": \"INSUFFICIENT_SIGNAL\", \"sink_count\": 0, \"healthy_count\": 0}}, \"risk\": {\"score\": 0.0, \"risk_level\": \"MINIMAL\", \"dominant_axes\": [], \"recommendation\": \"No institutional-collapse signature detected.\"}, \"two_d_risk_map\": {\"acemoglu_score\": null, \"acemoglu_label\": \"INSUFFICIENT_SIGNAL\", \"calhoun_score\": null, \"calhoun_label\": \"INSUFFICIENT_SIGNAL\", \"quadrant\": \"INSUFFICIENT_SIGNAL\"}, \"tripwires\": {\"tripwires\": {\"tripwire_1_mof_2027_dividend\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_2_gentari_sale\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_3_tt_exit\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_4_sarawak_settlement\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}, \"tripwire_5_new_spvs\": {\"extractive_count\": 0, \"inclusive_count\": 0, \"net_drift\": 0, \"status\": \"NEUTRAL\"}}, \"critical_extractive_tripwires\": 0, \"overall_drift\": \"NEUTRAL_OR_MIXED\", \"total_extractive_signals\": 0, \"total_inclusive_signals\": 0, \"overall_net_drift\": 0}, \"dimensional_densities\": {\"axis_1_national_destiny_triumphalism\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_2_politicisation_ideology\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_3_extraction_over_reinvestment\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_4_external_blame_denial\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_5_generic_governance_boilerplate\": {\"signal_count\": 0, \"density\": 0.0}, \"axis_6_overpromise_hedge_metrics_lag\": {\"signal_count\": 0, \"density\": 0.0}}, \"capital_type\": \"financial\", \"priors_used\": [], \"prior_comparison\": {}, \"quantitative_triggers\": [], \"semantic_mechanism_hits\": [], \"evidence_coverage\": {\"ratio\": 0.0, \"present\": [], \"missing\": [\"payout_ratio_or_pct\", \"cadence_statement\", \"transfer_structure\", \"loss_figure\", \"debt_structure\", \"governance_composition\", \"reinvestment\", \"operations\"], \"adequate\": false}, \"detector_version\": \"calibrated_v2_2026-09-16\", \"verdict_discipline\": \"INSUFFICIENT_DATA\", \"missing_evidence_fields\": [\"payout_ratio_or_pct\", \"cadence_statement\", \"transfer_structure\", \"loss_figure\", \"debt_structure\", \"governance_composition\", \"reinvestment\", \"operations\"], \"recommendation\": null, \"calibrated_verdict\": \"INSUFFICIENT_DATA\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"INTERPRETED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom\"], \"computation_timestamp\": \"2026-10-14T15:48:59.761221+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"], \"errors\": [], \"session_id\": \"REPRO-D3\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"INTERPRETED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"coverage_unmeasured\": false, \"material_args_count\": 1, \"material_args\": [\"domain_scope\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_diagnose\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+              "type": "text"
+            }
+          ],
+          "isError": false,
+          "structuredContent": {
+            "tool_name": "capital_diagnose",
+            "tool_version": "2026.07.12",
+            "domain": "collapse",
+            "result": {
+              "profile": {
+                "axis_1_national_destiny_triumphalism": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_2_politicisation_ideology": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_3_extraction_over_reinvestment": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_4_external_blame_denial": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_5_generic_governance_boilerplate": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "axis_6_overpromise_hedge_metrics_lag": {
+                  "signal_count": 0,
+                  "matched_signals": [],
+                  "truncated": false
+                },
+                "related_party_jurisdiction_structural": {
+                  "related_party": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  },
+                  "jurisdiction_shopping": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  },
+                  "structural_grievance": {
+                    "signal_count": 0,
+                    "matched_signals": [],
+                    "truncated": false
+                  }
+                },
+                "_source_text": "",
+                "acemoglu_axis": {
+                  "score": null,
+                  "label": "INSUFFICIENT_SIGNAL",
+                  "extractive_count": 0,
+                  "inclusive_count": 0
+                },
+                "calhoun_axis": {
+                  "score": null,
+                  "label": "INSUFFICIENT_SIGNAL",
+                  "sink_count": 0,
+                  "healthy_count": 0
+                }
+              },
+              "risk": {
+                "score": 0.0,
+                "risk_level": "MINIMAL",
+                "dominant_axes": [],
+                "recommendation": "No institutional-collapse signature detected."
+              },
+              "two_d_risk_map": {
+                "acemoglu_score": null,
+                "acemoglu_label": "INSUFFICIENT_SIGNAL",
+                "calhoun_score": null,
+                "calhoun_label": "INSUFFICIENT_SIGNAL",
+                "quadrant": "INSUFFICIENT_SIGNAL"
+              },
+              "tripwires": {
+                "tripwires": {
+                  "tripwire_1_mof_2027_dividend": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_2_gentari_sale": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_3_tt_exit": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_4_sarawak_settlement": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  },
+                  "tripwire_5_new_spvs": {
+                    "extractive_count": 0,
+                    "inclusive_count": 0,
+                    "net_drift": 0,
+                    "status": "NEUTRAL"
+                  }
+                },
+                "critical_extractive_tripwires": 0,
+                "overall_drift": "NEUTRAL_OR_MIXED",
+                "total_extractive_signals": 0,
+                "total_inclusive_signals": 0,
+                "overall_net_drift": 0
+              },
+              "dimensional_densities": {
+                "axis_1_national_destiny_triumphalism": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_2_politicisation_ideology": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_3_extraction_over_reinvestment": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_4_external_blame_denial": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_5_generic_governance_boilerplate": {
+                  "signal_count": 0,
+                  "density": 0.0
+                },
+                "axis_6_overpromise_hedge_metrics_lag": {
+                  "signal_count": 0,
+                  "density": 0.0
+                }
+              },
+              "capital_type": "financial",
+              "priors_used": [],
+              "prior_comparison": {},
+              "quantitative_triggers": [],
+              "semantic_mechanism_hits": [],
+              "evidence_coverage": {
+                "ratio": 0.0,
+                "present": [],
+                "missing": [
+                  "payout_ratio_or_pct",
+                  "cadence_statement",
+                  "transfer_structure",
+                  "loss_figure",
+                  "debt_structure",
+                  "governance_composition",
+                  "reinvestment",
+                  "operations"
+                ],
+                "adequate": false
+              },
+              "detector_version": "calibrated_v2_2026-09-16",
+              "verdict_discipline": "INSUFFICIENT_DATA",
+              "missing_evidence_fields": [
+                "payout_ratio_or_pct",
+                "cadence_statement",
+                "transfer_structure",
+                "loss_figure",
+                "debt_structure",
+                "governance_composition",
+                "reinvestment",
+                "operations"
+              ],
+              "recommendation": null,
+              "calibrated_verdict": "INSUFFICIENT_DATA",
+              "_governance_advisory": {
+                "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+                "kappa_r_is_observed": true,
+                "witness_is_observed": true
+              }
+            },
+            "result_type": "scalar",
+            "epistemic_tag": "INTERPRETED",
+            "claim_state": "DRAFT",
+            "evidence_quality": "MODERATE",
+            "execution_authorized": false,
+            "execution_authority": "OBSERVATION",
+            "human_final_authority": "Arif",
+            "requires_888_hold": false,
+            "source_attribution": [
+              "collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom"
+            ],
+            "computation_timestamp": "2026-10-14T15:48:59.761221+00:00",
+            "missing_inputs": [],
+            "metadata": {},
+            "warnings": [
+              "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.",
+              "[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+            ],
+            "errors": [],
+            "session_id": "REPRO-D3",
+            "actor_id": "ARIF",
+            "witness": {
+              "human": false,
+              "ai": true,
+              "earth": false,
+              "is_complete": false,
+              "missing": [
+                "human",
+                "earth"
+              ]
+            },
+            "shadow": false,
+            "kappa_r": 0.7,
+            "psi_le": 0.2,
+            "qdf": "QDF-v2.0-TRINITY",
+            "verdict": "INSUFFICIENT_EVIDENCE",
+            "coverage": {
+              "known": 0,
+              "total": 1,
+              "ratio": 0.0,
+              "unmeasured": false
+            },
+            "epistemic": {
+              "tag": "INTERPRETED",
+              "quality": "MODERATE",
+              "confidence": 0.5
+            },
+            "_w0_evidence_gate": {
+              "coverage": 0.0,
+              "coverage_unmeasured": false,
+              "material_args_count": 1,
+              "material_args": [
+                "domain_scope"
+              ],
+              "gate": "CAUTION",
+              "warnings": [
+                "INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked."
+              ]
+            },
+            "_hermes_semantic_gate": {
+              "gate": "hermes_semantic",
+              "gate_mode": "enforce",
+              "hermes_url": "http://127.0.0.1:18087/mcp",
+              "tool": "capital_diagnose",
+              "status": "PASS",
+              "outcome": "NO_SEMANTIC_CONTENT",
+              "semantic_fields": [],
+              "error_code": ""
+            },
+            "trace_id": ""
+          }
+        }
+      }
+    }
+  }
+}

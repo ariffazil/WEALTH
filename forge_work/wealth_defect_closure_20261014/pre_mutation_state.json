@@ -1,0 +1,68 @@
+{
+  "receipt": "pre_mutation_state.json",
+  "session": "WEALTH_THREE_DEFECT_CLOSURE_20261014",
+  "authority": "ARIF (FORGE INIT, PLAN_THEN_EXECUTE)",
+  "executor": "333-AGI via A-FORGE lane",
+  "timestamp_utc": "2026-10-14T16:05:00Z",
+  "repo_path": "/root/WEALTH",
+  "branch": "fix/fiscal-breakeven-and-semantic-gate-2026-10-08",
+  "head_commit_before": "dbf4d4b2c6a2549bc019b9e0c4063c6753d404ab",
+  "head_commit_subject": "markets: F13 SABAR / Option B — fail-closed World pairing",
+  "service": {
+    "unit": "wealth-organ.service",
+    "active_since": "2026-10-11 11:01:58 +0800",
+    "pid": 329610,
+    "cmd": "/root/WEALTH/.venv/bin/python3 server_federated.py",
+    "port": 18082,
+    "note": "running process loads the CURRENT working tree: canonical.py mtime 2026-10-10 08:44 (== a8fc402), server.py mtime 2026-10-11 10:52 (uncommitted WAVE6 mods present at process start)"
+  },
+  "pre_existing_dirty_state_not_mine": {
+    "modified_non_fixture": ["wealth_mcp/server.py (WAVE6 P11 cross_organ_inheritance — unrelated to this mission)", "wealth_mcp/tools/backtest.py (unrelated hardening)"],
+    "modified_fixtures": "48 files under tests/fixtures/baseline/ (probe refresh 2026-10-14T15:34Z) + tests/fixtures/w001_receipt.json",
+    "untracked_fixtures": 13,
+    "policy": "this mission will neither revert nor commit those unrelated changes; commits stage only files named in mutation_manifest.json"
+  },
+  "sha256_before": {
+    "wealth_mcp/tools/canonical.py": "dfe1c7b2d53aa7b918042817c2978510337edb1b2e5654bd85132f9c9fe0bfb9",
+    "wealth_mcp/middleware/evidence_middleware.py": "e8c7995dc996f6c357c4130c1a34f124b0ba9fde1ca0746157e0f9fad169e512",
+    "scripts/baseline_probe.py": "c2060ca352d60a6914f29fd6554bd3f17bfed6f315965206d061a9654f3e5b94",
+    "docs/INGESTION_MAP.md": "acb7d21585b7e3a95e47f77bd8edcc1ada9168f3f16fa04c42f6057bfdb09428",
+    "docs/MODE_INVENTORY.md": "fcbe5dc0971d36443f2541e45d1ab2faba1db5ce2c08fa02c362d98405444794",
+    "tests/test_differential.py": "cd8ed084945078b2740308d2df5c3b0550a7c9b7b6637ff764f1aa98f75547bf"
+  },
+  "baseline_pytest_pre_mutation": {
+    "command": ".venv/bin/python -m pytest tests/test_differential.py tests/test_capital_entropy_bugfixes.py tests/test_wealth_gates.py tests/test_ingestion_map.py tests/test_monotonicity.py tests/test_collapse_calibration.py tests/test_receipt_truth.py -q",
+    "collected": 83,
+    "passed": 83,
+    "failed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "per_file_collected": {
+      "test_differential.py": 1,
+      "test_capital_entropy_bugfixes.py": 14,
+      "test_wealth_gates.py": 37,
+      "test_ingestion_map.py": 13,
+      "test_monotonicity.py": 11,
+      "test_collapse_calibration.py": 0,
+      "test_receipt_truth.py": 7
+    },
+    "note_collapse_calibration": "test_collapse_calibration.py is a standalone runner by design (no pytest-collectable functions); standalone run: ALL GREEN (record tests/calibration/collapse_signature_calibration_2026-09-16.json)",
+    "note_audit_discrepancy": "combined audit cited 52+24+20=96; live discovery today is 83. Mission says: do not hard-code totals; report collected/passed per suite."
+  },
+  "baseline_verifiers_pre_mutation": {
+    "mode_inventory": "REJECTED — R6_MODE_NO_RESPONSE: sovereign_fiscal claimed (crashed ❌ in MODE_INVENTORY.md) without fixture; total_fixtures=63",
+    "carry_forward": "ACCEPT — 63 fixtures >= 53 claimed",
+    "audit_dir_docs_audits": "ACCEPT — 1 file"
+  },
+  "commands_executed_for_this_receipt": [
+    "git status --short; git branch --show-current; git log -1",
+    "systemctl status wealth-organ.service; curl -sf localhost:18082/health",
+    ".venv/bin/python -m pytest <7 suites> -q",
+    ".venv/bin/python scripts/verify_receipt.py --mode-inventory / --carry-forward / --dir docs/audits",
+    ".venv/bin/python tests/test_collapse_calibration.py",
+    "sha256sum <6 target files>"
+  ],
+  "remaining_unknowns": [
+    "WealthEvidenceMiddleware class is passed to FastMCP(middleware=[...]) but live responses carry only the server.py post-call '_w0_evidence_gate' witness, never '_w0_evidence_middleware' — the class's on_call_tool (incl. Gate 0b SEP-1303 dead-field rejection) appears not to execute on the live path. Out of mission scope; recorded as observation."
+  ]
+}

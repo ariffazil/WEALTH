@@ -361,9 +361,17 @@ def register_canonical_tools(mcp):
             result={
                 "error": f"Unknown mode '{mode}'.",
                 "valid_modes": [
-                    "npv", "irr", "emv", "evoi", "mc", "kelly",
-                    "markowitz", "robust", "chance_constrained",
-                    "two_stage", "reward_design",
+                    "npv",
+                    "irr",
+                    "emv",
+                    "evoi",
+                    "mc",
+                    "kelly",
+                    "markowitz",
+                    "robust",
+                    "chance_constrained",
+                    "two_stage",
+                    "reward_design",
                 ],
             },
             epistemic_tag=EpistemicTag.DERIVED,
@@ -520,17 +528,22 @@ def register_canonical_tools(mcp):
                         session_id=session_id,
                         actor_id=actor_id,
                     )
+                _fiscal_result = fiscal_breakeven_oil_price(
+                    total_govt_expenditure,
+                    non_oil_revenue,
+                    petronas_dividend_base_rm,
+                    oil_price_assumption_usd,
+                    petroleum_direct_revenue=petroleum_direct_revenue,
+                    dividend_brent_sensitivity=dividend_brent_sensitivity,
+                )
+                # D1 (2026-10-15): resolved mode must be visible in output —
+                # mode-resolution ambiguity is how silent downgrades hide.
+                _fiscal_result["mode"] = m
+                _fiscal_result["survival_submode"] = "sovereign_fiscal"
                 return wrap_result(
                     tool_name="capital_health",
                     domain="risk",
-                    result=fiscal_breakeven_oil_price(
-                        total_govt_expenditure,
-                        non_oil_revenue,
-                        petronas_dividend_base_rm,
-                        oil_price_assumption_usd,
-                        petroleum_direct_revenue=petroleum_direct_revenue,
-                        dividend_brent_sensitivity=dividend_brent_sensitivity,
-                    ),
+                    result=_fiscal_result,
                     epistemic_tag=EpistemicTag.DERIVED,
                     evidence_quality=EvidenceQuality.MODERATE,
                     source_attribution=["fiscal_breakeven_model"],
@@ -541,6 +554,42 @@ def register_canonical_tools(mcp):
             if _sm == "corporate_runway":
                 # Corporate runway: liquid_assets / monthly_burn → runway_months.
                 # Distinct from personal_finance — no income/expense, burn rate is the driver.
+                # D2 (2026-10-15): field-disposition law — personal-finance-only
+                # material fields are neither consumable nor silently droppable
+                # here; they must be rejected explicitly (eat / reflect / reject).
+                _foreign_fields = [
+                    k
+                    for k, v in (
+                        ("income", income),
+                        ("expenses", expenses),
+                        ("monthly_income_v", monthly_income_v),
+                        ("monthly_expenses_v", monthly_expenses_v),
+                    )
+                    if v is not None and v != [] and v != 0
+                ]
+                if _foreign_fields:
+                    _msg = (
+                        f"corporate_runway does not consume personal-finance "
+                        f"fields: {', '.join(_foreign_fields)}. Remove them or "
+                        f"use survival_submode='personal_finance'."
+                    )
+                    return wrap_result(
+                        tool_name="capital_health",
+                        domain="capital",
+                        result={
+                            "status": "ERROR",
+                            "error_code": "UNSUPPORTED_FIELDS",
+                            "message": _msg,
+                            "unsupported_fields": _foreign_fields,
+                            "mode": m,
+                            "survival_submode": _sm,
+                        },
+                        epistemic_tag=EpistemicTag.ASSUMED,
+                        evidence_quality=EvidenceQuality.MISSING,
+                        errors=[_msg],
+                        session_id=session_id,
+                        actor_id=actor_id,
+                    )
                 if liquid_assets is None or monthly_burn is None:
                     return wrap_result(
                         tool_name="capital_health",
@@ -573,6 +622,11 @@ def register_canonical_tools(mcp):
                     tool_name="capital_health",
                     domain="capital",
                     result={
+                        # D2 (2026-10-15): resolved mode reflected in output —
+                        # a corporate result must never be mistakable for a
+                        # personal_finance result.
+                        "mode": m,
+                        "survival_submode": _sm,
                         "runway_months": round(runway_months, 1),
                         "liquid_assets": liquid_assets,
                         "monthly_burn": monthly_burn,
@@ -755,8 +809,35 @@ def register_canonical_tools(mcp):
                 actor_id=actor_id,
             )
 
-        raise ValueError(
-            f"Unknown mode '{mode}'. Valid: conservation, flow, runway, survival, fiscal_breakeven, confluence, asymmetry, asymmetric_risk"
+        # Zen Phase 2 (2026-10-15): unknown mode → structured error, never a
+        # bare raise. A raise exits via the governance wrapper as
+        # INTERNAL_ERROR/FATAL/ESCALATE_TO_888 — the wrong class for a client
+        # input error, and the crash shape that produced the historical
+        # -32602-class failures on this tool.
+        _VALID_HEALTH_MODES = [
+            "conservation",
+            "flow",
+            "runway",
+            "survival",
+            "fiscal_breakeven",
+            "confluence",
+            "asymmetry",
+            "asymmetric_risk",
+        ]
+        return wrap_result(
+            tool_name="capital_health",
+            domain="capital",
+            result={
+                "status": "ERROR",
+                "error_code": "UNKNOWN_MODE",
+                "message": f"Unknown mode '{mode}'. Valid: {', '.join(_VALID_HEALTH_MODES)}",
+                "valid_modes": _VALID_HEALTH_MODES,
+            },
+            epistemic_tag=EpistemicTag.ASSUMED,
+            evidence_quality=EvidenceQuality.MISSING,
+            errors=[f"Unknown mode '{mode}'. Valid: {', '.join(_VALID_HEALTH_MODES)}"],
+            session_id=session_id,
+            actor_id=actor_id,
         )
 
     # ═══════════════════════════════════════════════════════════════════
@@ -915,17 +996,91 @@ def register_canonical_tools(mcp):
 
         if m == "collapse_signature":
             from wealth_core.collapse_signature.scanner import compute_collapse_risk
+            from wealth_core.collapse_signature.historical import (
+                list_available_corpora,
+            )
 
+            # D3 fix (2026-10-15): the TOP-LEVEL domain_scope parameter was
+            # accepted by the signature but never consumed — only the
+            # payload-embedded copy was read. Wire it into the scenario
+            # chain, the corpus-prior selection, and the output reflection.
+            # Unknown scopes are REJECTED explicitly, never silently ignored.
+            _scope = str(p.get("domain_scope") or domain_scope or "").strip()
+            _narrative = (
+                p.get("scenario")
+                or p.get("text")
+                or p.get("source_text")
+                or _scope
+                or ""
+            )
+            if not _narrative:
+                # No material input at all: an empty scan must not yield a
+                # confident negative ("MINIMAL / no signature detected").
+                return wrap_result(
+                    tool_name="capital_diagnose",
+                    domain="collapse",
+                    result={
+                        "status": "ERROR",
+                        "error_code": "MISSING_REQUIRED_INPUT",
+                        "message": (
+                            "collapse_signature requires narrative input: "
+                            "payload.scenario / payload.text / payload.source_text, "
+                            "or domain_scope (top-level or payload). Empty input "
+                            "cannot yield a collapse verdict."
+                        ),
+                        "mode": m,
+                    },
+                    epistemic_tag=EpistemicTag.ASSUMED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    errors=[
+                        "collapse_signature: no scenario text and no domain_scope supplied"
+                    ],
+                    session_id=session_id,
+                    actor_id=actor_id,
+                )
+            _resolved_prior = None
+            if _scope:
+                _available = list_available_corpora()
+                if _scope in _available:
+                    _resolved_prior = _scope
+                elif f"{_scope}_ar" in _available:
+                    _resolved_prior = f"{_scope}_ar"
+                if _resolved_prior is None:
+                    return wrap_result(
+                        tool_name="capital_diagnose",
+                        domain="collapse",
+                        result={
+                            "status": "ERROR",
+                            "error_code": "UNSUPPORTED_DOMAIN_SCOPE",
+                            "message": (
+                                f"domain_scope '{_scope}' does not resolve to any "
+                                f"stored collapse corpus. Available: "
+                                f"{', '.join(sorted(_available))}"
+                            ),
+                            "domain_scope": _scope,
+                            "available_scopes": sorted(_available),
+                            "mode": m,
+                        },
+                        epistemic_tag=EpistemicTag.ASSUMED,
+                        evidence_quality=EvidenceQuality.MISSING,
+                        errors=[
+                            f"unsupported domain_scope '{_scope}' — not in corpus registry"
+                        ],
+                        session_id=session_id,
+                        actor_id=actor_id,
+                    )
+            _collapse_result = compute_collapse_risk(
+                _narrative,
+                historical_priors=[_resolved_prior] if _resolved_prior else None,
+            )
+            # Reflect the resolved scope so consumers can verify the field
+            # was consumed (ingestion coverage), not merely accepted.
+            _collapse_result["domain_scope"] = _scope or None
+            _collapse_result["domain_scope_resolved"] = _resolved_prior
             return wrap_result(
                 tool_name="capital_diagnose",
                 domain="collapse",
-                result=compute_collapse_risk(
-                    p.get("scenario")
-                    or p.get("text")
-                    or p.get("source_text")
-                    or p.get("domain_scope")
-                    or ""
-                ),
+                result=_collapse_result,
                 epistemic_tag=EpistemicTag.INTERPRETED,
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["collapse_corpus:enron,pdvsa,pemex,1mdb,worldcom"],
@@ -1328,9 +1483,7 @@ def register_canonical_tools(mcp):
             # engine must never surface as data. Empty snapshot = all
             # sub-calls failed → UNAVAILABLE, not a wrapped empty reading.
             _commodity_errors = (
-                dict(raw.get("errors") or {})
-                if isinstance(raw, dict)
-                else {}
+                dict(raw.get("errors") or {}) if isinstance(raw, dict) else {}
             )
             if engine_name and not (raw.get("snapshot") or {}):
                 return wrap_result(
@@ -1340,8 +1493,7 @@ def register_canonical_tools(mcp):
                         "status": "UNAVAILABLE",
                         "asset": engine_name,
                         "message": (
-                            "All commodity engine sub-calls failed — no "
-                            "observed data."
+                            "All commodity engine sub-calls failed — no observed data."
                         ),
                         "engine_errors": _commodity_errors,
                         "decision_eligibility": "INELIGIBLE",
@@ -1373,8 +1525,7 @@ def register_canonical_tools(mcp):
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["commodity_engine_live"],
                 errors=[
-                    f"partial snapshot — {k}: {v}"
-                    for k, v in _commodity_errors.items()
+                    f"partial snapshot — {k}: {v}" for k, v in _commodity_errors.items()
                 ],
                 session_id=session_id,
                 trace_id=trace_id,
@@ -1468,8 +1619,7 @@ def register_canonical_tools(mcp):
                             "asset": m,
                             "operation": "snapshot",
                             "message": (
-                                "All snapshot sub-calls failed — no observed "
-                                "data."
+                                "All snapshot sub-calls failed — no observed data."
                             ),
                             "engine_errors": _snap_errors,
                             "decision_eligibility": "INELIGIBLE",
@@ -1643,13 +1793,11 @@ def register_canonical_tools(mcp):
                                     "actor_id": _rec.get("actor_id"),
                                     "tool_name": _rec.get("tool_name"),
                                     "call_status": _rec.get("call_status"),
-                                    "governance_status": _rec.get(
-                                        "governance_status"
-                                    ),
+                                    "governance_status": _rec.get("governance_status"),
                                     "trace_id": _rec.get("trace_id"),
-                                    "arguments_preview": str(
-                                        _rec.get("arguments")
-                                    )[:160],
+                                    "arguments_preview": str(_rec.get("arguments"))[
+                                        :160
+                                    ],
                                 }
                             )
             except OSError as _exc:
@@ -1773,9 +1921,7 @@ def register_canonical_tools(mcp):
                 result=raw,
                 epistemic_tag=EpistemicTag.OBSERVED,
                 evidence_quality=(
-                    EvidenceQuality.OBSERVED
-                    if persisted
-                    else EvidenceQuality.MISSING
+                    EvidenceQuality.OBSERVED if persisted else EvidenceQuality.MISSING
                 ),
                 execution_authority=(
                     ExecutionAuthority.OBSERVATION
@@ -1874,19 +2020,25 @@ def register_canonical_tools(mcp):
         # sweep, session-gate surface, runtime mount helper. Fail-closed. ──
         import hashlib as _hl
         import subprocess as _sp
-        from pathlib import Path as _P  # helper-scoped; manifests branch rebind is harmless
+        from pathlib import (
+            Path as _P,
+        )  # helper-scoped; manifests branch rebind is harmless
 
         def _build_plane() -> dict:
             _repo = _P(__file__).resolve().parents[2]
             try:
                 _c = _sp.run(
                     ["git", "-C", str(_repo), "rev-parse", "--short=7", "HEAD"],
-                    capture_output=True, text=True, timeout=5,
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
                 )
                 _commit = _c.stdout.strip() if _c.returncode == 0 else "UNAVAILABLE"
                 _d = _sp.run(
                     ["git", "-C", str(_repo), "status", "--porcelain"],
-                    capture_output=True, text=True, timeout=5,
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
                 )
                 _dirty = bool(_d.stdout.strip()) if _d.returncode == 0 else None
             except Exception:
@@ -1899,14 +2051,19 @@ def register_canonical_tools(mcp):
                 _n += 1
             return {
                 "git_commit": _commit,
-                "working_tree": ("DIRTY" if _dirty else "CLEAN") if _dirty is not None else "UNKNOWN",
-                "seal_state": ("UNSEALED" if _dirty else "SEALED") if _dirty is not None else "UNKNOWN",
+                "working_tree": ("DIRTY" if _dirty else "CLEAN")
+                if _dirty is not None
+                else "UNKNOWN",
+                "seal_state": ("UNSEALED" if _dirty else "SEALED")
+                if _dirty is not None
+                else "UNKNOWN",
                 "build_digest": f"sha256:{_h.hexdigest()[:16]}",
                 "packaged_files_hashed": _n,
             }
 
         def _deprecated_sweep() -> list:
             import re as _re
+
             _found = []
             for _rel in ("wealth_mcp/server.py", "wealth_mcp/__init__.py"):
                 try:
@@ -1923,8 +2080,11 @@ def register_canonical_tools(mcp):
 
         def _session_gate_surface() -> list:
             import re as _re
+
             try:
-                _txt = (_P(__file__).resolve().parents[2] / "wealth_mcp" / "server.py").read_text()
+                _txt = (
+                    _P(__file__).resolve().parents[2] / "wealth_mcp" / "server.py"
+                ).read_text()
             except OSError:
                 return []
             _blk = _re.search(r"_OBSERVE_TOOLS\s*=\s*\{([^}]*)\}", _txt)
@@ -1934,7 +2094,7 @@ def register_canonical_tools(mcp):
             try:
                 return sorted(
                     {
-                        k.split("@", 1)[0][len("tool:"):]
+                        k.split("@", 1)[0][len("tool:") :]
                         for k in mcp._local_provider._components
                         if k.startswith("tool:")
                     }
@@ -1974,9 +2134,7 @@ def register_canonical_tools(mcp):
 
             def _lowest_state(t: str) -> dict:
                 declared = t in canonical_tools or t in public_tools
-                mounted = (
-                    t in _runtime_tools if _runtime_tools is not None else None
-                )
+                mounted = t in _runtime_tools if _runtime_tools is not None else None
                 if not declared and mounted is True:
                     state = "MOUNTED_UNDECLARED"
                 elif not declared:
@@ -2001,7 +2159,11 @@ def register_canonical_tools(mcp):
             _per_tool = [_lowest_state(t) for t in _all_tools]
 
             _ghosts = (
-                [t for t in _runtime_tools if t not in set(canonical_tools) | set(public_tools)]
+                [
+                    t
+                    for t in _runtime_tools
+                    if t not in set(canonical_tools) | set(public_tools)
+                ]
                 if _runtime_tools is not None
                 else None
             )
@@ -2142,7 +2304,9 @@ def register_canonical_tools(mcp):
                     "manifest_summary": {
                         "source": len(canonical_tools),
                         "public": len(public_tools),
-                        "runtime": (lambda r: len(r) if r is not None else None)(_runtime_mounts()),
+                        "runtime": (lambda r: len(r) if r is not None else None)(
+                            _runtime_mounts()
+                        ),
                         "probe_failures": len(probe_failures),
                         "build": _build_plane(),
                         "note": (
@@ -2278,8 +2442,12 @@ def register_canonical_tools(mcp):
                         "public_tool_count": len(public_tools),
                         "schema_map_count": len(tool_schemas),
                     },
-                    epistemic_tag=EpistemicTag.ASSUMED if _schema_err else EpistemicTag.DERIVED,
-                    evidence_quality=EvidenceQuality.MISSING if _schema_err else EvidenceQuality.MODERATE,
+                    epistemic_tag=EpistemicTag.ASSUMED
+                    if _schema_err
+                    else EpistemicTag.DERIVED,
+                    evidence_quality=EvidenceQuality.MISSING
+                    if _schema_err
+                    else EvidenceQuality.MODERATE,
                     errors=[_schema_err] if _schema_err else [],
                     session_id=session_id,
                     trace_id=trace_id,
@@ -2378,7 +2546,9 @@ def register_canonical_tools(mcp):
             epistemic_tag=EpistemicTag.ASSUMED,
             evidence_quality=EvidenceQuality.MISSING,
             claim_state=ClaimState.VOID,
-            errors=[f"Unknown mode '{mode}'. Valid: status, manifests, schema, domains, health"],
+            errors=[
+                f"Unknown mode '{mode}'. Valid: status, manifests, schema, domains, health"
+            ],
             session_id=session_id,
             actor_id=actor_id,
         )
@@ -2965,7 +3135,9 @@ def register_canonical_tools(mcp):
 
         errors = []
         warnings = []
-        if actor_cryptographically_verified or p.get("actor_cryptographically_verified"):
+        if actor_cryptographically_verified or p.get(
+            "actor_cryptographically_verified"
+        ):
             warnings.append(
                 "SELF_ATTESTED_VERIFICATION_IGNORED: actor_cryptographically_verified "
                 "is caller-declared and carries no authority (C10 hardening 2026-09-16). "
@@ -3949,6 +4121,7 @@ def register_canonical_tools(mcp):
 
         except ImportError as e:
             import traceback as _tb
+
             return wrap_result(
                 tool_name="capital_backtest",
                 domain="market",
@@ -4135,9 +4308,9 @@ def register_canonical_tools(mcp):
                     high[i] >= high[i - j] for j in range(1, lookback_swing + 1)
                 ) and all(high[i] >= high[i + j] for j in range(1, lookback_swing + 1)):
                     swing_highs.append(float(high[i]))
-                if all(low[i] <= low[i - j] for j in range(1, lookback_swing + 1)) and all(
-                    low[i] <= low[i + j] for j in range(1, lookback_swing + 1)
-                ):
+                if all(
+                    low[i] <= low[i - j] for j in range(1, lookback_swing + 1)
+                ) and all(low[i] <= low[i + j] for j in range(1, lookback_swing + 1)):
                     swing_lows.append(float(low[i]))
 
         # Cluster nearby levels
@@ -4254,14 +4427,18 @@ def register_canonical_tools(mcp):
         import datetime as _dtmod
 
         _MAX_AGE_S = {
-            "15m": 86400, "30m": 172800, "1h": 172800,
-            "4h": 345600, "1d": 604800,
+            "15m": 86400,
+            "30m": 172800,
+            "1h": 172800,
+            "4h": 345600,
+            "1d": 604800,
         }
         _last_bar = hist.index[-1]
         try:
             _last_dt = _last_bar.to_pydatetime()
             _last_age_s = max(
-                0, int((_dtmod.datetime.now(_last_dt.tzinfo) - _last_dt).total_seconds())
+                0,
+                int((_dtmod.datetime.now(_last_dt.tzinfo) - _last_dt).total_seconds()),
             )
         except Exception:
             _last_age_s = -1
@@ -4504,9 +4681,7 @@ def register_canonical_tools(mcp):
                     )
                 ),
                 "rolled": rolled,
-                "omega_invariants_provided": list(
-                    (omega_invariants or {}).keys()
-                ),
+                "omega_invariants_provided": list((omega_invariants or {}).keys()),
             },
             "evidence_basis": evidence_basis,
             "session_id": session_id,
@@ -4520,8 +4695,7 @@ def register_canonical_tools(mcp):
                 "constitutional_verdicts_issued": [],
                 "handoff_target": "arifOS.arif_judge",
                 "irreducible_question": (
-                    "If capital moves this way, what follows — and how "
-                    "sure are we?"
+                    "If capital moves this way, what follows — and how sure are we?"
                 ),
             },
         }

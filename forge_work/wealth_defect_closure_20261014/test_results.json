@@ -1,0 +1,38 @@
+{
+  "receipt": "test_results.json",
+  "timestamp_utc": "2026-10-14T16:14:04.733974+00:00",
+  "repo_path": "/root/WEALTH",
+  "head_commit_before": "dbf4d4b2c6a2549bc019b9e0c4063c6753d404ab",
+  "suites": {
+    "pytest_combined": {
+      "command": ".venv/bin/python -m pytest tests/test_differential.py tests/test_capital_entropy_bugfixes.py tests/test_wealth_gates.py tests/test_ingestion_map.py tests/test_monotonicity.py tests/test_collapse_calibration.py tests/test_receipt_truth.py tests/test_defect_closure_20261014.py tests/test_fiscal_breakeven_and_gate_fix_20261008.py -q",
+      "collected": 109,
+      "passed": 109,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "baseline_before": {
+        "collected": 83,
+        "passed": 83,
+        "failed": 0,
+        "skipped": 0,
+        "xfailed": 0
+      },
+      "delta": "+17 new defect-contract tests (tests/test_defect_closure_20261014.py: 17) and +9 pre-existing fiscal suite included in run; zero regressions",
+      "differential_detail": "7 green / 0 red / 0 known-red (collapse_signature 10379 vs 3797 chars \u2014 computed vs governed rejection)"
+    },
+    "collapse_calibration_standalone": {
+      "command": ".venv/bin/python tests/test_collapse_calibration.py",
+      "result": "ALL GREEN (record tests/calibration/collapse_signature_calibration_2026-09-16.json)"
+    },
+    "mode_inventory_verifier": {
+      "command": ".venv/bin/python scripts/verify_receipt.py --mode-inventory",
+      "before": "REJECTED \u2014 R6 sovereign_fiscal without fixture (63 fixtures)",
+      "after": "ACCEPT \u2014 0 modes without fixtures, 64 fixtures"
+    }
+  },
+  "evidence_paths": [
+    "/tmp/opencode/wealth_defect_closure_20261014/r6_after.json"
+  ],
+  "remaining_unknowns": []
+}

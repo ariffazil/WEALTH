@@ -1,0 +1,183 @@
+{
+  "receipt": "adversarial_results.json",
+  "timestamp_utc": "2026-10-14T16:14:04.735739+00:00",
+  "repo_path": "/root/WEALTH",
+  "head_commit_before": "dbf4d4b2c6a2549bc019b9e0c4063c6753d404ab",
+  "raw_case_dir": "/tmp/opencode/wealth_defect_closure_20261014/adversarial/",
+  "summary": {
+    "A01_malformed_sovereign": "explicit MISSING_REQUIRED_PARAMS (fail nyata)",
+    "A02_corporate_personal_shaped": "explicit UNSUPPORTED_FIELDS income+expenses (no silent processing)",
+    "A03_personal_labelled_corporate": "explicit UNSUPPORTED_FIELDS (no downgrade, no partial compute)",
+    "A04_blank_scope": "MISSING_REQUIRED_INPUT (no confident negative on zero evidence)",
+    "A05_unknown_scope": "UNSUPPORTED_DOMAIN_SCOPE with available_scopes list",
+    "A06_scope_differential": "enron_2000 vs enron_1999 differ after volatile-strip (True); resolved priors enron_2000_ar / enron_1999_ar",
+    "A07_material_input_output": "full 6-axis profile with narrative + scope both consumed",
+    "A08_missing_evidence": "MISSING evidence_quality always paired with status=ERROR \u2014 no affirmative verdict on MISSING evidence",
+    "A09_fixture_deletion": "verifier REJECTED with fixture deleted (fail-closed intact); ACCEPT 64 after restore",
+    "A10_replays": "probe shape \u2192 explicit error; canonical \u2192 structured result (mode reflected); direct mode=sovereign_fiscal \u2192 UNKNOWN_MODE (no crash/FATAL); top-level scope \u2192 consumed"
+  },
+  "cases": {
+    "A01_malformed_sovereign": {
+      "is_error": false,
+      "status": "ERROR",
+      "error_code": "MISSING_REQUIRED_PARAMS",
+      "mode": null,
+      "survival_submode": null,
+      "verdict": "HOLD",
+      "domain_scope": null,
+      "domain_scope_resolved": null,
+      "source_text": null,
+      "evidence_quality": "MISSING"
+    },
+    "A02_corporate_personal_shaped": {
+      "is_error": false,
+      "status": "ERROR",
+      "error_code": "UNSUPPORTED_FIELDS",
+      "mode": "survival",
+      "survival_submode": "corporate_runway",
+      "verdict": "HOLD",
+      "domain_scope": null,
+      "domain_scope_resolved": null,
+      "source_text": null,
+      "evidence_quality": "MISSING"
+    },
+    "A03_personal_labelled_corporate": {
+      "is_error": false,
+      "status": "ERROR",
+      "error_code": "UNSUPPORTED_FIELDS",
+      "mode": "survival",
+      "survival_submode": "corporate_runway",
+      "verdict": "HOLD",
+      "domain_scope": null,
+      "domain_scope_resolved": null,
+      "source_text": null,
+      "evidence_quality": "MISSING"
+    },
+    "A04_blank_scope": {
+      "is_error": false,
+      "status": "ERROR",
+      "error_code": "MISSING_REQUIRED_INPUT",
+      "mode": "collapse_signature",
+      "survival_submode": null,
+      "verdict": "HOLD",
+      "domain_scope": null,
+      "domain_scope_resolved": null,
+      "source_text": null,
+      "evidence_quality": "MISSING"
+    },
+    "A05_unknown_scope": {
+      "is_error": false,
+      "status": "ERROR",
+      "error_code": "UNSUPPORTED_DOMAIN_SCOPE",
+      "mode": "collapse_signature",
+      "survival_submode": null,
+      "verdict": "HOLD",
+      "domain_scope": "planet_mars_2199",
+      "domain_scope_resolved": null,
+      "source_text": null,
+      "evidence_quality": "MISSING"
+    },
+    "A06a_scope_enron2000": {
+      "is_error": false,
+      "status": null,
+      "error_code": null,
+      "mode": null,
+      "survival_submode": null,
+      "verdict": null,
+      "domain_scope": "enron_2000",
+      "domain_scope_resolved": "enron_2000_ar",
+      "source_text": "enron_2000",
+      "evidence_quality": "MODERATE"
+    },
+    "A06b_scope_enron1999": {
+      "is_error": false,
+      "status": null,
+      "error_code": null,
+      "mode": null,
+      "survival_submode": null,
+      "verdict": null,
+      "domain_scope": "enron_1999",
+      "domain_scope_resolved": "enron_1999_ar",
+      "source_text": "enron_1999",
+      "evidence_quality": "MODERATE"
+    },
+    "A07_material_input_output": {
+      "is_error": false,
+      "status": null,
+      "error_code": null,
+      "mode": null,
+      "survival_submode": null,
+      "verdict": null,
+      "domain_scope": "enron_2000",
+      "domain_scope_resolved": "enron_2000_ar",
+      "source_text": "Off-balance-sheet vehicles, related-party transactions, mark-to-model gains, flat operating cash flow.",
+      "evidence_quality": "MODERATE"
+    },
+    "A08_missing_evidence_not_affirmative": {
+      "is_error": false,
+      "status": "ERROR",
+      "error_code": "MISSING_REQUIRED_PARAMS",
+      "mode": null,
+      "survival_submode": null,
+      "verdict": null,
+      "domain_scope": null,
+      "domain_scope_resolved": null,
+      "source_text": null,
+      "evidence_quality": "MISSING"
+    },
+    "A09_fixture_deletion_verifier_fail_closed": {
+      "verdict_with_fixture_deleted": "REJECTED",
+      "verdict_after_restore": "ACCEPT"
+    },
+    "A10a_replay_probe_shape": {
+      "is_error": false,
+      "status": "ERROR",
+      "error_code": "MISSING_REQUIRED_PARAMS",
+      "mode": null,
+      "survival_submode": null,
+      "verdict": null,
+      "domain_scope": null,
+      "domain_scope_resolved": null,
+      "source_text": null,
+      "evidence_quality": "MISSING"
+    },
+    "A10b_replay_canonical": {
+      "is_error": false,
+      "status": null,
+      "error_code": null,
+      "mode": "survival",
+      "survival_submode": "sovereign_fiscal",
+      "verdict": null,
+      "domain_scope": null,
+      "domain_scope_resolved": null,
+      "source_text": null,
+      "evidence_quality": "MODERATE"
+    },
+    "A10c_replay_direct_mode": {
+      "is_error": false,
+      "status": "ERROR",
+      "error_code": "UNKNOWN_MODE",
+      "mode": null,
+      "survival_submode": null,
+      "verdict": null,
+      "domain_scope": null,
+      "domain_scope_resolved": null,
+      "source_text": null,
+      "evidence_quality": "MISSING"
+    },
+    "A10d_replay_toplevel_scope": {
+      "is_error": false,
+      "status": null,
+      "error_code": null,
+      "mode": null,
+      "survival_submode": null,
+      "verdict": null,
+      "domain_scope": "enron_2000",
+      "domain_scope_resolved": "enron_2000_ar",
+      "source_text": "enron_2000",
+      "evidence_quality": "MODERATE"
+    }
+  },
+  "exit_conditions_checked": "invalid cases fail explicitly; valid cases return structured output; no silent downgrade; no fabricated fixture; verifier rejects missing evidence",
+  "remaining_unknowns": []
+}

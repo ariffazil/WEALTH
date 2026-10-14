@@ -2,7 +2,7 @@
   "tool": "capital_health",
   "mode": "fiscal_breakeven",
   "error_class": "ok",
-  "probed_at": "2026-08-06T08:35:08.056528+00:00",
+  "probed_at": "2026-10-14T16:09:23.250927+00:00",
   "session_id": "SEAL-38c1e44946c84c49",
   "raw_response": {
     "jsonrpc": "2.0",
@@ -12,16 +12,19 @@
         "wealth_receipt": {
           "persisted": true,
           "path": "/root/VAULT999/wealth/receipts.jsonl",
-          "receipt_id": "fdd5d373-79b6-4fc3-8e08-48f475523e39",
+          "receipt_id": "54e3ab2e-7468-490d-8f57-fb6dd37fe98a",
           "call_status": "ERROR"
-        }
+        },
+        "cross_organ_inheritance": "lane_denied",
+        "binding_code": "OBSERVE_ANONYMOUS_OK"
       },
       "content": [
         {
-          "type": "text",
-          "text": "{\"isError\": true, \"error_class\": \"INTERNAL_ERROR\", \"recoverability\": \"ESCALATE_TO_888_HOLD\", \"suspected_layer\": \"tool_execution\", \"severity\": \"FATAL\", \"message\": \"Error calling tool 'capital_health'\", \"next_action\": \"Log to VAULT999 and escalate \\u2014 server bug\", \"epistemic_label\": \"DER\", \"timestamp\": \"2026-08-06T08:35:08.054732+00:00\", \"source_tool\": \"capital_health\", \"source_organ\": \"wealth\", \"original_error\": \"ToolError: Error calling tool 'capital_health'\", \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"trace_id\": \"\", \"execution_authorized\": false, \"human_final_authority\": \"Arif\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": 1.0}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 1.0, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"PASS\", \"warnings\": []}}"
+          "text": "{\"isError\": true, \"error_class\": \"INTERNAL_ERROR\", \"recoverability\": \"ESCALATE_TO_888_HOLD\", \"suspected_layer\": \"tool_execution\", \"severity\": \"FATAL\", \"message\": \"Error calling tool 'capital_health'\", \"next_action\": \"Log to VAULT999 and escalate \\u2014 server bug\", \"epistemic_label\": \"DER\", \"timestamp\": \"2026-10-14T16:09:23.248269+00:00\", \"source_tool\": \"capital_health\", \"source_organ\": \"wealth\", \"original_error\": \"ToolError: Error calling tool 'capital_health'\", \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"trace_id\": \"\", \"execution_authorized\": false, \"human_final_authority\": \"Arif\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": -1.0, \"unmeasured\": true}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": -1.0, \"coverage_unmeasured\": true, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"FAIL\", \"warnings\": [\"UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"warnings\": [\"[W0] UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"], \"verdict\": \"READONLY\"}",
+          "type": "text"
         }
       ],
+      "isError": false,
       "structuredContent": {
         "isError": true,
         "error_class": "INTERNAL_ERROR",
@@ -31,7 +34,7 @@
         "message": "Error calling tool 'capital_health'",
         "next_action": "Log to VAULT999 and escalate \u2014 server bug",
         "epistemic_label": "DER",
-        "timestamp": "2026-08-06T08:35:08.054732+00:00",
+        "timestamp": "2026-10-14T16:09:23.248269+00:00",
         "source_tool": "capital_health",
         "source_organ": "wealth",
         "original_error": "ToolError: Error calling tool 'capital_health'",
@@ -40,11 +43,11 @@
         "trace_id": "",
         "execution_authorized": false,
         "human_final_authority": "Arif",
-        "verdict": "PARTIAL",
         "coverage": {
           "known": 0,
           "total": 0,
-          "ratio": 1.0
+          "ratio": -1.0,
+          "unmeasured": true
         },
         "epistemic": {
           "tag": "DERIVED",
@@ -52,15 +55,31 @@
           "confidence": 0.5
         },
         "_w0_evidence_gate": {
-          "coverage": 1.0,
+          "coverage": -1.0,
+          "coverage_unmeasured": true,
           "material_args_count": 0,
           "material_args": [],
-          "gate": "PASS",
-          "warnings": []
-        }
-      },
-      "isError": false
+          "gate": "FAIL",
+          "warnings": [
+            "UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+          ]
+        },
+        "_hermes_semantic_gate": {
+          "gate": "hermes_semantic",
+          "gate_mode": "enforce",
+          "hermes_url": "http://127.0.0.1:18087/mcp",
+          "tool": "capital_health",
+          "status": "PASS",
+          "outcome": "NO_SEMANTIC_CONTENT",
+          "semantic_fields": [],
+          "error_code": ""
+        },
+        "warnings": [
+          "[W0] UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+        ],
+        "verdict": "READONLY"
+      }
     }
   },
-  "sha256": "cf1b09d2a228d96f39ed9ed870e27642927573d51de46e56c3abbcf92a3ee109"
+  "sha256": "d66cec687386eec3465a82e146af8e901a6d0eb5c211cb0bdf6128b51442f522"
 }

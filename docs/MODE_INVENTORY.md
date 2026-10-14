@@ -55,8 +55,8 @@
 | Submode | Reachable | Probe Result |
 |---------|-----------|-------------|
 | `personal_finance` | ✅ | Valid response |
-| `corporate_runway` | ✅ (degraded) | Silently downgraded to personal_finance. `assumptions: ["income=0, expenses=0"]` despite supplied arrays. COVERAGE: 0.33. Verdict contradiction: domain_verdict=SEAL, apex.verdict=HOLD(G=0.0), risk.verdict=GO. C11 witness: inner earth=true, envelope earth=false. |
-| `sovereign_fiscal` | ❌ | **error:MCP_SCHEMA_VIOLATION** (-32602). Tool crashes at output schema layer before returning. |
+| `corporate_runway` | ✅ | FIXED 2026-10-15 (was degraded): corporate branch computes runway from liquid_assets/monthly_burn; resolved mode reflected in output (`mode`/`survival_submode`); personal-finance-only fields explicitly rejected (UNSUPPORTED_FIELDS). Fixture: `capital_health__survival__corporate_runway.json` (canonical payload). |
+| `sovereign_fiscal` | ✅ | FIXED (crash 2026-08-06 Loop 8; closed 2026-10-15): canonical 4-param payload returns structured fiscal breakeven result with resolved-mode reflection; missing params → structured MISSING_REQUIRED_PARAMS; unknown mode → structured UNKNOWN_MODE (never a bare raise). Real fixture: `capital_health__survival__sovereign_fiscal.json`. |
 
 **Known identity bug (Arif session):** Previously returned `tool_name: "capital_market"` — routing/labelling mismatch. This probe returned correct `tool_name: "capital_health"`. Intermittent.
 
@@ -70,7 +70,7 @@
 | `governance_capacity` | ✅ | Not yet probed | — |
 | `cascade_model` | ✅ | Not yet probed | — |
 | `exploitation_detect` | ✅ | Not yet probed | — |
-| `collapse_signature` | ✅ | ✅ | Returns 6-axis profile, all `signal_count=0`. `_source_text: ""` — no text ingestion path. `risk.score=0.0, risk_level=MINIMAL`. The Enron pipeline feeds nothing in. |
+| `collapse_signature` | ✅ | ✅ | FIXED 2026-10-15: top-level `domain_scope` consumed end-to-end — `profile._source_text` populated, corpus prior selected (`priors_used`), output reflects `domain_scope`/`domain_scope_resolved`. Unsupported scope → UNSUPPORTED_DOMAIN_SCOPE; empty input → MISSING_REQUIRED_INPUT (no confident negative on zero evidence). |
 | `beautiful_mouse` | ✅ | Not yet probed | — |
 | `capture_scan` | ✅ | Not yet probed | — |
 | `power_audit` | ✅ | Not yet probed | — |

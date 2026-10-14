@@ -47,10 +47,10 @@
 | survival (personal_finance) | monthly_expenses_v | ✅ CONSUMED | Affects net_monthly directly |
 | survival (personal_finance) | liquid_assets | ✅ CONSUMED | Affects runway calculation |
 | survival (personal_finance) | survival_submode | ✅ CONSUMED | Routes to personal_finance engine |
-| survival (corporate_runway) | liquid_assets | 🟡 DEGRADED | Value carried but mode downgraded to personal_finance |
-| survival (corporate_runway) | monthly_burn | 🟡 DEGRADED | Accepted but mode=personal_finance ignores it |
-| survival (corporate_runway) | survival_submode | 🟡 DEGRADED | **SILENT DOWNGRADE**: corporate_runway→personal_finance. Defect. |
-| survival (sovereign_fiscal) | all | 💥 ERROR | **MCP_SCHEMA_VIOLATION** (-32602). Tool crashes at output schema. |
+| survival (corporate_runway) | liquid_assets | ✅ CONSUMED | FIXED 2026-10-15: corporate branch computes runway from liquid_assets/monthly_burn; value reflected in output |
+| survival (corporate_runway) | monthly_burn | ✅ CONSUMED | FIXED 2026-10-15: consumed by corporate branch; personal-finance-only fields now explicitly rejected (UNSUPPORTED_FIELDS) |
+| survival (corporate_runway) | survival_submode | ✅ CONSUMED | FIXED 2026-10-15: resolved mode reflected in output (`mode`, `survival_submode` keys); no personal_finance downgrade |
+| survival (sovereign_fiscal) | all | ✅ CONSUMED | FIXED (crash 2026-08-06 Loop 8; closure 2026-10-15): canonical 4-param payload → structured fiscal result with resolved-mode reflection; missing params → explicit MISSING_REQUIRED_PARAMS; real fixture `capital_health__survival__sovereign_fiscal.json` stored |
 | conservation | — | ⬜ UNPROBED | |
 | flow | — | ⬜ UNPROBED | |
 | runway | — | ⬜ UNPROBED | |
@@ -58,10 +58,10 @@
 | confluence | — | ⬜ UNPROBED | |
 | asymmetry | — | ⬜ UNPROBED | |
 
-**dead_field_count:** 3 (corporate_runway fields downgraded, sovereign_fiscal crashes)
+**dead_field_count:** 0 for the three audited defects (closed 2026-10-15; see below)
 **critical_defects:**
-- corporate_runway silently downgraded to personal_finance — income/expenses zeroed
-- sovereign_fiscal crashes at MCP schema layer (-32602)
+- ~~corporate_runway silently downgraded to personal_finance~~ CLOSED 2026-10-15 — corporate branch live, resolved mode reflected, foreign fields explicitly rejected
+- ~~sovereign_fiscal crashes at MCP schema layer (-32602)~~ CLOSED — crash fixed 2026-08-06 (Loop 8, commit 52ff13c); closure verified 2026-10-15 with canonical payload + real fixture
 - apex authority gate: pass=false, actor=None despite supplied actor_id
 
 ---
@@ -70,7 +70,7 @@
 
 | Mode | Field | Status | Evidence |
 |------|-------|--------|----------|
-| collapse_signature | domain_scope | ❌ DEAD | _source_text="" regardless of domain_scope value. All 6 axes signal_count=0. Enron pipeline feeds nothing. |
+| collapse_signature | domain_scope | ✅ CONSUMED | FIXED 2026-10-15: top-level domain_scope enters scenario chain (`profile._source_text`), corpus-prior selection (`priors_used`/`prior_comparison`), and output reflection (`domain_scope`, `domain_scope_resolved`). Unsupported scopes → UNSUPPORTED_DOMAIN_SCOPE. |
 | collapse_signature | session_id | ✅ CONSUMED | Required for auth |
 | petronas_vitals | (no args) | ✅ CONSUMED | Autonomous mode — reads IFR data internally. 9 tripwires, 3 layers, F2-audited. |
 | sovereign_pulse | (no args) | ✅ CONSUMED | Alias for petronas_vitals. |
@@ -87,10 +87,10 @@
 | cadence_monitor | — | ⬜ UNPROBED | |
 | crisis_reflex | — | ⬜ UNPROBED | |
 
-**dead_field_count:** 1 (domain_scope on collapse_signature)
+**dead_field_count:** 0 (domain_scope on collapse_signature CLOSED 2026-10-15 — top-level param now wired into scenario chain + corpus-prior selection + output reflection; unsupported scopes rejected explicitly)
 **undocumented_modes:** 3 (petronas_vitals, sovereign_pulse, petronas_phi — not in registry listing or error message)
 **critical_defects:**
-- collapse_signature _source_text empty — ingestion pipeline broken
+- ~~collapse_signature _source_text empty — ingestion pipeline broken~~ CLOSED 2026-10-15
 - 12 modes advertised, 3 runtime-only modes invisible to discovery
 
 ---
@@ -185,10 +185,11 @@
 | wealth_judge_handoff | 1/2 | 4 | 0 | 0 | 0 | 1 |
 | **TOTAL** | **17/53** | **20** | **3** | **1** | **1** | **40** |
 
-**Critical defects blocking W-003 middleware:**
-1. capital_health corporate_runway silent downgrade → fields listed as consumed but mode not honored
-2. capital_health sovereign_fiscal MCP_SCHEMA_VIOLATION → any call with these fields crashes
-3. capital_diagnose collapse_signature domain_scope dead → middleware would flag as unconsumed
+**Critical defects blocking W-003 middleware — ALL THREE CLOSED 2026-10-15 (WEALTH_THREE_DEFECT_CLOSURE_20261014):**
+1. ~~capital_health corporate_runway silent downgrade~~ → corporate branch consumes fields, mode reflected, foreign fields rejected
+2. ~~capital_health sovereign_fiscal MCP_SCHEMA_VIOLATION~~ → structured responses; canonical payload fixture stored; unknown modes structured (never a bare raise)
+3. ~~capital_diagnose collapse_signature domain_scope dead~~ → consumed end-to-end (source text + corpus prior + reflection); unsupported scope rejected
+Middleware dead-field/crashing entries for these three removed the same day (defense structure retained).
 
 **Fixed in this session:**
 1. capital_entropy power_consequence_map — all 3 field groups now consumed (was: list-length-only)

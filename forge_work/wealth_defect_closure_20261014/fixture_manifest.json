@@ -1,0 +1,355 @@
+{
+  "receipt": "fixture_manifest.json",
+  "timestamp_utc": "2026-10-14T16:14:04.738388+00:00",
+  "total_fixtures": 64,
+  "all_fixtures": [
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__beautiful_mouse.json",
+      "sha256": "c0690b48fbefbabb7b527c8ae27abd0e525e18cf7ea329936ea31810db1ad367",
+      "bytes": 5954
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__bid_surface.json",
+      "sha256": "888e2aa4e6393a5c9d3b49fec839b809bdf550708febe4c005884c26b42cbe50",
+      "bytes": 7132
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__cadence_monitor.json",
+      "sha256": "920072b231e931043edb77fa90425b80b4937e7cc3e1a952ea8288945e2e3b8a",
+      "bytes": 9460
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__capture_scan.json",
+      "sha256": "b20037d6e7a068e456872438ea7cc8d1554226591b871025a1110dbcee187100",
+      "bytes": 7339
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__cascade_model.json",
+      "sha256": "109e209949a940c44b765a01cbaa0495d8b4445d375d2b403c07f1287902b905",
+      "bytes": 6660
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__collapse_signature.json",
+      "sha256": "743ce22481052332ef4d9181d4de31af27bccc5b7fc6816a5cfa7a62597eb1bd",
+      "bytes": 14845
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__crisis_reflex.json",
+      "sha256": "4ebd7dd7fb4e018b7222381fb006e8d20fe636f2e992c90e21a816f1090fbbe1",
+      "bytes": 10950
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__exploitation_detect.json",
+      "sha256": "eb4ef8e2a7b406c0d080119350bc03aa670e929ca719da4f85fdfd23a09d4e69",
+      "bytes": 6446
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__garbage_mode_test.json",
+      "sha256": "30f1fd3fabebafb406de1a05dbffd955801366c921ce3d1582b684437eee4b66",
+      "bytes": 7916
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__governance_capacity.json",
+      "sha256": "6eeeed7eb9bd5b20b7b951a669d9ad7f613d709ce08a2630867a51f1b03505cb",
+      "bytes": 6423
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__optimize_mwc.json",
+      "sha256": "170c7db695da8e5f2b7102fe1ad044112b13c2452fceeec4417cb482cb5c3542",
+      "bytes": 6625
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__petronas_phi.json",
+      "sha256": "c20bfc6e86fa7d2b3dd93c9264a030eee403221397f85af62dd0f6d22a8d94e7",
+      "bytes": 25031
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__petronas_vitals.json",
+      "sha256": "0bfd144926d3f429b935da4255754611abf0d9f5c806b51b8e2ff42e46c8fba5",
+      "bytes": 25034
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__power_audit.json",
+      "sha256": "502f1a6cc9a9eaf44947f02995b53c4573c94babbb8bace3171d5b150d83ac0b",
+      "bytes": 11172
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__sovereign_pulse.json",
+      "sha256": "0ab58e99b2b56685d19b6aa85d985b296edf6b0217c23d65a97922c1879f0bb6",
+      "bytes": 25034
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__stress_index.json",
+      "sha256": "173dd0337d54460c2bd7762a0ebb4526a4b3a9bcb7fa9fb1477891f819cae0ec",
+      "bytes": 9256
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_entropy__coercive_order_cost.json",
+      "sha256": "9d16b9a8cc10681a3dfb5fd3458ddeae32f26234ee77e685d2a854842a1f0d9c",
+      "bytes": 6945
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_entropy__entropy_externality.json",
+      "sha256": "7ac50109aca5d25652c295cbd2f3a0bfa04727d683bc68930540dec39e487fd9",
+      "bytes": 6961
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_entropy__garbage_mode_test.json",
+      "sha256": "b89d3ad98be170ea2347ba4e01cc9cb67a228edb3f7242440d0e7b9b1735cc13",
+      "bytes": 6470
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_entropy__metric_purpose_audit.json",
+      "sha256": "287f5dcfa34ef23ddbb21da4b4d8b14ab58e197221efc769e1d16a712d24e8d1",
+      "bytes": 7725
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_entropy__power_consequence_map.json",
+      "sha256": "f9509741798105af9cbf0a5483616e1b1480e17002d752ae4b397fcbaa87e2d9",
+      "bytes": 7013
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_entropy__responsibility_ledger.json",
+      "sha256": "600564651688ee6196f9450c2926a970c64418326abc3d6087f88ba02ab19549",
+      "bytes": 7637
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_entropy__trust_capital_decay.json",
+      "sha256": "f6da33343c725d70dcc1acbd14d48f4a7ee907eba52a7de1fc4fa6ebbb188ac0",
+      "bytes": 6733
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__asymmetry.json",
+      "sha256": "7d25d1a6025bec173450b6c5e361c249205093a58218e0056c3d7f7e32c80965",
+      "bytes": 4268
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__confluence.json",
+      "sha256": "7ed953492daaaf1ee4bc34fb56e35db2ab0b7bc55a46f988d848791af5c9c6a5",
+      "bytes": 4269
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__conservation.json",
+      "sha256": "c86a92fb1556436ecd20a4bac93de6caf5d81c4081f2d019e10e47f8e8850b6e",
+      "bytes": 5778
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__fiscal_breakeven.json",
+      "sha256": "db1fd288f7678bc5075101d460e15c00ff92e11407a11ab36598bd0fd410f698",
+      "bytes": 4275
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__flow.json",
+      "sha256": "7a7d94a40891709269acf76267d959f6ba3bb8dbe4bdca76d37cfafb19796568",
+      "bytes": 5782
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__garbage_mode_test.json",
+      "sha256": "157a25e84f525ee844583ef2deff5f26b01faea7ab288029fea61514f0645d98",
+      "bytes": 6593
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__runway.json",
+      "sha256": "ebe7f006ad5bd628f4fe564c37fe3bba41c8cfd6f55ca52f4e7e2bf227efba6c",
+      "bytes": 4265
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__survival.json",
+      "sha256": "9b7c00e016177d0aff14abee7159559bc6d78b8ea6c8ae31734caf086591110c",
+      "bytes": 17865
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__survival__corporate_runway.json",
+      "sha256": "f07bbd99e796e06f49cd0c7d6898a861ef6d75d2c095b94769276d49503650c6",
+      "bytes": 5581
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__survival__personal_finance.json",
+      "sha256": "90e278d65b64d137f050762c4fed2155dd87197514aae85b4498ff78ab77c45d",
+      "bytes": 17615
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__survival__sovereign_fiscal.json",
+      "sha256": "a4ed10084d03b5cb18fdd57f3a32c89cf39b7f3aac701b2b037677c79b3a862c",
+      "bytes": 7747
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_ledger__garbage_mode_test.json",
+      "sha256": "cd6e5ee41ce3b06fe02b23094ceabb630422c200f4050b25e04d6b5b35d29d0d",
+      "bytes": 3191
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_ledger__query.json",
+      "sha256": "bf7768f30bc678adce50d48747addd57bd85905180fc4baee84e9c76f81b2c60",
+      "bytes": 3179
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_ledger__write.json",
+      "sha256": "10c5df7a5c704a22bd6006c3c4e40463f51605c47d58de2f89d0b1e6e1073d5d",
+      "bytes": 3179
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_market__commodity.json",
+      "sha256": "33669649212a3803fab7e209b13375e564032a07031bb02b37a526d8847d8cde",
+      "bytes": 12598
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_market__fx.json",
+      "sha256": "9ef00806278104b00a9a884f1155001c9473c310c3fbd820812083074f029d17",
+      "bytes": 7050
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_market__garbage_mode_test.json",
+      "sha256": "4344c1f99b9f755eff931312ac761152231ee6799e1c96cb7dc3b50e11fcc544",
+      "bytes": 7103
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_market__gas.json",
+      "sha256": "e66777852b18075e68c9bfa99a99b7884f93fdd8690a1849f7ef250bb2604b29",
+      "bytes": 11940
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_market__gold.json",
+      "sha256": "1cd071234de0318d7a41bae0da1bd1e828e66832e1c5dd42a060cef685b4e3b1",
+      "bytes": 12084
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_market__indicator.json",
+      "sha256": "0adf30706e0c492d429761cf91778a29ea9ca8b876c8a74a0ffcc3652066aeab",
+      "bytes": 6955
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_market__oil.json",
+      "sha256": "ee303635b68349f286986a5a666430fbc0aae6aa34c1d9fb44d722660ca97b64",
+      "bytes": 12066
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_market__stock.json",
+      "sha256": "bbe7f5fa99b234ae4f36330f194da6f13ebe01717820060452259875f37415e9",
+      "bytes": 7203
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_primitive__chance_constrained.json",
+      "sha256": "adc89cd18e740172c3472ae9aaa0280ab708db24dd690c63076a3731339ac58f",
+      "bytes": 4508
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_primitive__emv.json",
+      "sha256": "118e17bbd64a08357e83fbaf4ff8005a7601a053494c446ecc6fb9ee5958157a",
+      "bytes": 4493
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_primitive__evoi.json",
+      "sha256": "0285c7b97256a0a30f1c3d0473977cc19c096b2e52cb20fce2ff8633d8a61edd",
+      "bytes": 4494
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_primitive__garbage_mode_test.json",
+      "sha256": "8492f677ae87d4a3b55302308767b2985a35e14dbbc238c596a1a4716f23bc40",
+      "bytes": 6369
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_primitive__irr.json",
+      "sha256": "77e195bfa5f7e64be3935770a712bf17f46ca03b58019a86744e36482595b283",
+      "bytes": 5045
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_primitive__kelly.json",
+      "sha256": "50dd172dc8083a9dc262977e179ec18bff5744c694c995d8a137099fb885bb8c",
+      "bytes": 4495
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_primitive__markowitz.json",
+      "sha256": "469e41e362c6b50efbb8b1619bbe6e5ab8fdd35e30785db54e93fde39f309427",
+      "bytes": 4499
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_primitive__mc.json",
+      "sha256": "d8079881484b8082ea5149927b7034af411489e02db4ef7be5218c470dc1443a",
+      "bytes": 4492
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_primitive__npv.json",
+      "sha256": "12565367a77f942181650f5f80242e23422b2728d645ef16270a9cd58796793f",
+      "bytes": 5105
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_primitive__robust.json",
+      "sha256": "c3a186548eb634a4071ac24222e983de8a73ac53f57956c2ceb51724946a58c5",
+      "bytes": 4496
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_primitive__two_stage.json",
+      "sha256": "2f693bf30cf87954ffba2c988a54a834d1d9fca8baf8214fad6c6984cc5e30fe",
+      "bytes": 4499
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_registry__domains.json",
+      "sha256": "0d19ba326f7be54b4555243038808372b981f2500db6d8d2b3b626a07b83d41f",
+      "bytes": 7399
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_registry__garbage_mode_test.json",
+      "sha256": "1c021a6cdb6489fd5cb485305f8c479832df4d3289509af3079c4d3fcc867b7c",
+      "bytes": 5925
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_registry__health.json",
+      "sha256": "bf1b7bee99da17c17a5b1e3e19586794ad1358fa641ae5ea56de39c345e02a4d",
+      "bytes": 5802
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_registry__schema.json",
+      "sha256": "6427663088d432cf50106f68fc4e995f9d191f2728348b7c458fdf4c8aa3e3fb",
+      "bytes": 11234
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_registry__status.json",
+      "sha256": "5ab9f3a57dfae6f1c908f46c9e517630cb1e838422e5c3226881bef35045ada0",
+      "bytes": 8870
+    },
+    {
+      "file": "tests/fixtures/baseline/wealth_judge_handoff__garbage_mode_test.json",
+      "sha256": "4ca8dd953e89c7d8fb650f3b08da53015686f55fe716342ec80e71b5f891f49d",
+      "bytes": 3221
+    },
+    {
+      "file": "tests/fixtures/baseline/wealth_judge_handoff__prepare.json",
+      "sha256": "9234f14e3873a90c2f6c66d4e1ce7b6fc09bd0511cd51e5128e7da83cd8e4d5d",
+      "bytes": 3211
+    },
+    {
+      "file": "tests/fixtures/baseline/wealth_judge_handoff__submit.json",
+      "sha256": "510bde9365b3996ff4c1349d2689cfd29d7344e035e759be47508e1c9ebc11b6",
+      "bytes": 3210
+    }
+  ],
+  "defect_relevant": [
+    {
+      "file": "tests/fixtures/baseline/capital_diagnose__collapse_signature.json",
+      "sha256": "743ce22481052332ef4d9181d4de31af27bccc5b7fc6816a5cfa7a62597eb1bd",
+      "bytes": 14845
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__survival__corporate_runway.json",
+      "sha256": "f07bbd99e796e06f49cd0c7d6898a861ef6d75d2c095b94769276d49503650c6",
+      "bytes": 5581
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__survival__personal_finance.json",
+      "sha256": "90e278d65b64d137f050762c4fed2155dd87197514aae85b4498ff78ab77c45d",
+      "bytes": 17615
+    },
+    {
+      "file": "tests/fixtures/baseline/capital_health__survival__sovereign_fiscal.json",
+      "sha256": "a4ed10084d03b5cb18fdd57f3a32c89cf39b7f3aac701b2b037677c79b3a862c",
+      "bytes": 7747
+    }
+  ],
+  "generation_method": "REAL probe calls via scripts/baseline_probe.py against live :18082 after service restart (no hand-edited fixtures)",
+  "commands_executed": [
+    ".venv/bin/python scripts/baseline_probe.py --tool capital_health",
+    ".venv/bin/python scripts/baseline_probe.py --tool capital_diagnose"
+  ],
+  "remaining_unknowns": []
+}

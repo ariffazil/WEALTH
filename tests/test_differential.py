@@ -129,9 +129,7 @@ def payload_capital_health_corporate():
             "monthly_burn": 50000,
             **session,
         },
-        "expected_difference": "runway_months should differ: 100 vs 1. KNOWN-RED: corporate_runway silently downgraded to personal_finance, so both may collapse to SURVIVAL_ADEQUATE.",
-        "known_red": True,
-        "red_reason": "corporate_runway silent downgrade to personal_finance defect",
+        "expected_difference": "runway_months should differ: 100 vs 1. DEFECT CLOSED 2026-10-15: corporate branch consumes liquid_assets/monthly_burn directly; resolved mode reflected; personal-only fields now explicitly rejected (UNSUPPORTED_FIELDS).",
     }
 
 
@@ -152,9 +150,7 @@ def payload_capital_diagnose_collapse():
             "domain_scope": "temasek_2014",
             **session,
         },
-        "expected_difference": "risk profiles should differ: Enron (known extractive) vs Temasek (known inclusive). KNOWN-RED: _source_text empty — all axes signal_count=0 regardless of domain_scope.",
-        "known_red": True,
-        "red_reason": "collapse_signature _source_text empty defect — domain_scope not consumed",
+        "expected_difference": "DEFECT CLOSED 2026-10-15: top-level domain_scope now consumed — enron_2000 resolves to the enron_2000_ar corpus prior and computes; temasek_2014 has no stored corpus and is explicitly rejected (UNSUPPORTED_DOMAIN_SCOPE). Computed-vs-rejected outputs differ materially and explainably.",
     }
 
 

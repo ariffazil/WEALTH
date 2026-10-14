@@ -1,41 +1,335 @@
 {
   "tool": "capital_health",
-  "tool_version": "2026.07.12",
-  "domain": "capital",
-  "mode": "survival",
-  "survival_submode": "personal_finance",
-  "session_id": "SEAL-b3bbf8e9e1844adc",
-  "actor_id": "ARIF",
-  "probed_at": "2026-08-06T07:44:45Z",
-  "sent_payload": {
-    "monthly_income_v": 10000,
-    "monthly_expenses_v": 7000
-  },
-  "raw_response": {
-    "primary_metrics": {
-      "engine": "wealth_survival_engine",
-      "mode": "personal_finance",
-      "runway_months": null,
-      "burn_rate": 0.0,
-      "net_monthly": 3000.0,
-      "total_income": 10000.0,
-      "total_expenses": 7000.0,
-      "liquid_assets": 0.0,
-      "survival_verdict": "SURVIVAL_ADEQUATE"
-    },
-    "domain_verdict": "SEAL",
-    "apex": {
-      "verdict": "HOLD",
-      "G": 0.0,
-      "dials": {"A": 0.9655, "P": 1.0, "H": 0.0, "S": 0.7, "U": 0.922, "E": 0.7751}
-    },
-    "risk": {"verdict": "GO", "level": "GREEN"},
-    "coverage": {"ratio": 0.0, "material_args": ["monthly_expenses_v", "monthly_income_v", "survival_submode"]},
-    "witness": {"human": false, "ai": true, "earth": true},
-    "warnings": ["LOW_COVERAGE: 0% < 15% threshold"],
-    "receipt_hash": "3b459d74d8b202a08ad8dd3872d576912419064c74f58e43e696ac542f20e36f"
-  },
-  "verdict_contradiction": "domain_verdict=SEAL, apex_verdict=HOLD(G=0.0), risk_verdict=GO — THREE different verdicts in one response",
+  "mode": "survival__personal_finance",
   "error_class": "ok",
-  "sha256": "3b459d74d8b202a08ad8dd3872d576912419064c74f58e43e696ac542f20e36f"
+  "probed_at": "2026-10-14T16:09:23.684286+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "cross_organ_inheritance": "lane_denied",
+        "binding_code": "OBSERVE_ANONYMOUS_OK"
+      },
+      "content": [
+        {
+          "text": "{\"tool_name\": \"capital_health\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"mcp\": \"WEALTH\", \"task\": \"wealth_survival_engine\", \"status\": \"PASS\", \"domain_verdict\": \"SEAL\", \"g_score\": 0.6158, \"entropy_s\": true, \"qdf\": \"QDF-v2.0-TRINITY\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": true}, \"shadow\": false, \"kappa_r\": 0.93, \"psi_le\": true, \"confidence\": \"HIGH\", \"epistemic\": {\"class\": \"OBSERVED\", \"integrity_score\": 1.0}, \"authority\": {\"level\": \"domain_expert\", \"boundary\": \"Economic thermodynamics and capital allocation.\"}, \"readiness\": {\"human\": \"UNKNOWN\", \"machine\": \"HEALTHY\"}, \"risk\": {\"level\": \"GREEN\", \"economic\": \"HIGH\", \"constitutional\": \"LOW\", \"coupled\": \"UNKNOWN\", \"g_score\": 0.6158, \"delta_s\": true, \"lyapunov_lambda\": -0.0117, \"verdict\": \"GO\", \"regime\": \"inclusive\"}, \"execution\": {\"recommended_mode\": \"full\", \"human_confirmation_required\": false, \"next_safe_action\": \"Consult arifOS 888_JUDGE\"}, \"primary_metrics\": {\"engine\": \"wealth_survival_engine\", \"mode\": \"personal_finance\", \"runway_months\": null, \"burn_rate\": 0.0, \"net_monthly\": 12000.0, \"total_income\": 20000.0, \"total_expenses\": 8000.0, \"liquid_assets\": 200000.0, \"survival_verdict\": \"SURVIVAL_ADEQUATE\"}, \"primary_result\": {\"engine\": \"wealth_survival_engine\", \"mode\": \"personal_finance\", \"runway_months\": null, \"burn_rate\": 0.0, \"net_monthly\": 12000.0, \"total_income\": 20000.0, \"total_expenses\": 8000.0, \"liquid_assets\": 200000.0, \"survival_verdict\": \"SURVIVAL_ADEQUATE\"}, \"governance_verdict\": \"SEAL\", \"allocation_signal\": \"MARGINAL\", \"engine_status\": \"VALID\", \"economic_signal\": null, \"execution_verdict\": null, \"secondary_metrics\": {\"display_name\": \"wealth_survival_engine\", \"family\": \"SURVIVAL\", \"allocation_signal\": \"MARGINAL\", \"engine_status\": \"VALID\", \"harness_audit\": {\"verdict\": \"PASS\", \"recommended_verdict\": \"SEAL\", \"harness_status\": {\"Identity\": {\"stress\": 0.0, \"status\": \"SECURE\"}, \"Reality\": {\"stress\": 0.0, \"status\": \"SECURE\"}, \"Epistemic\": {\"stress\": 0.0, \"status\": \"SECURE\"}, \"Entropy\": {\"stress\": 0.0, \"status\": \"SECURE\"}, \"Survival\": {\"stress\": 0.0, \"status\": \"SECURE\"}, \"Constitutional\": {\"stress\": 0.0, \"status\": \"SECURE\"}, \"Efficiency\": {\"stress\": 0.0, \"status\": \"SECURE\"}, \"Coordination\": {\"stress\": 0.0, \"status\": \"SECURE\"}, \"Civilization\": {\"stress\": 0.0, \"status\": \"SECURE\"}}, \"violations\": [], \"systemic_stress\": 0.0, \"harness_lineage_hash\": \"589fbc9c279a1f174dffcfcbcb39239ffff316f57f47f387fbf907e71e119323\", \"doctrine_hash\": \"a113e7a326c5105bb8b852ff4b7e624bbdf5da6dd4980ec1ea41bcc94373ae8d\"}, \"secondary_metrics_raw\": {\"period_unit\": \"monthly\", \"horizon_months\": 12}, \"period_unit\": \"monthly\", \"horizon_months\": 12}, \"assumptions\": [\"income=20000.0, expenses=8000.0\", \"liquid_assets=200000.0\", \"conservative_factor=0.8\", \"WEALTH computes. Arif judges.\"], \"failure_flags\": [], \"reversibility\": \"UNKNOWN\", \"final_authority\": \"Arif\", \"recommendation_only\": true, \"execution_authorized\": false, \"human_final_authority\": \"Arif\", \"epoch\": \"2026-10-14T16:09:23.681156Z\", \"w0\": \"OPERATOR_VETO_INTACT / HIERARCHY_INVARIANT\", \"receipt_hash\": \"0f2c9a6c443d0a1ca62f06b02a60f482c75ed39966eca2e8fb9e976fe8e522b9\", \"apex\": {\"equation\": \"g(t)=A(t)\\u00b7P(t)\\u00b7H(t)\\u00b7\\u221a(S(t)\\u00b7U(t))\\u00b7E(t)\\u00b2\", \"gates\": {\"amanah\": {\"pass\": true, \"score\": 1.0, \"detail\": \"confidence 0.88\"}, \"presence\": {\"pass\": true, \"score\": 1.0, \"detail\": \"LIVE\", \"boundary\": \"LIVE\"}, \"humility\": {\"pass\": true, \"score\": 1.0, \"detail\": \"declared\"}, \"signal\": {\"pass\": true, \"score\": 0.7, \"detail\": \"default\"}, \"understanding\": {\"pass\": true, \"score\": 0.9, \"detail\": \"coherent\"}, \"energy\": {\"pass\": true, \"score\": 0.8732, \"detail\": \"cost 0.13\"}, \"authority\": {\"pass\": true, \"score\": 1.0, \"detail\": \"actor=ARIF\", \"actor_id\": \"ARIF\"}, \"reversibility\": {\"pass\": true, \"score\": 1.0, \"detail\": \"MUTATE\", \"action_class\": \"MUTATE\"}, \"proof\": {\"pass\": true, \"score\": 0.85, \"detail\": \"ZKPC_OBSERVATION\", \"proof_level\": \"ZKPC_OBSERVATION\"}, \"sovereign\": {\"pass\": true, \"score\": 1.0, \"detail\": \"no F13 halt\"}}, \"dials\": {\"A\": 0.9655, \"P\": 1.0, \"H\": 1.0, \"S\": 0.7, \"U\": 0.922, \"E\": 0.8732}, \"G\": 0.5914, \"verdict\": \"SABAR\", \"timestamp\": \"2026-10-14T16:09:23.681586+00:00\"}, \"dimensional_verdicts\": {\"conservation\": \"ADEQUATE\", \"flow\": \"SURPLUS\", \"time\": \"SUFFICIENT\", \"entropy\": \"LOW\", \"boundary\": \"GREEN\"}, \"claim_state\": \"CLAIM\", \"warnings\": [], \"scar_pressure\": 0.0, \"constraint_count\": 0, \"forbidden_zones\": [], \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}, \"verdict\": \"HOLD\"}, \"result_type\": \"scalar\", \"epistemic_tag\": \"ASSUMED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MISSING\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": true, \"source_attribution\": [\"survival_engine_unverified\"], \"computation_timestamp\": \"2026-10-14T16:09:23.681860+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.35, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"HOLD\", \"coverage\": {\"known\": 1, \"total\": 4, \"ratio\": 0.25, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"ASSUMED\", \"quality\": \"MISSING\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.25, \"coverage_unmeasured\": false, \"material_args_count\": 4, \"material_args\": [\"liquid_assets\", \"monthly_expenses_v\", \"monthly_income_v\", \"survival_submode\"], \"gate\": \"CAUTION\", \"warnings\": [\"EVIDENCE_QUALITY_MISMATCH: PASS gate but MISSING evidence and no reflection prose \\u2014 internal contradiction\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\", \"domain_verdict\": \"HOLD\"}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "tool_name": "capital_health",
+        "tool_version": "2026.07.12",
+        "domain": "capital",
+        "result": {
+          "mcp": "WEALTH",
+          "task": "wealth_survival_engine",
+          "status": "PASS",
+          "domain_verdict": "SEAL",
+          "g_score": 0.6158,
+          "entropy_s": true,
+          "qdf": "QDF-v2.0-TRINITY",
+          "witness": {
+            "human": false,
+            "ai": true,
+            "earth": true
+          },
+          "shadow": false,
+          "kappa_r": 0.93,
+          "psi_le": true,
+          "confidence": "HIGH",
+          "epistemic": {
+            "class": "OBSERVED",
+            "integrity_score": 1.0
+          },
+          "authority": {
+            "level": "domain_expert",
+            "boundary": "Economic thermodynamics and capital allocation."
+          },
+          "readiness": {
+            "human": "UNKNOWN",
+            "machine": "HEALTHY"
+          },
+          "risk": {
+            "level": "GREEN",
+            "economic": "HIGH",
+            "constitutional": "LOW",
+            "coupled": "UNKNOWN",
+            "g_score": 0.6158,
+            "delta_s": true,
+            "lyapunov_lambda": -0.0117,
+            "verdict": "GO",
+            "regime": "inclusive"
+          },
+          "execution": {
+            "recommended_mode": "full",
+            "human_confirmation_required": false,
+            "next_safe_action": "Consult arifOS 888_JUDGE"
+          },
+          "primary_metrics": {
+            "engine": "wealth_survival_engine",
+            "mode": "personal_finance",
+            "runway_months": null,
+            "burn_rate": 0.0,
+            "net_monthly": 12000.0,
+            "total_income": 20000.0,
+            "total_expenses": 8000.0,
+            "liquid_assets": 200000.0,
+            "survival_verdict": "SURVIVAL_ADEQUATE"
+          },
+          "primary_result": {
+            "engine": "wealth_survival_engine",
+            "mode": "personal_finance",
+            "runway_months": null,
+            "burn_rate": 0.0,
+            "net_monthly": 12000.0,
+            "total_income": 20000.0,
+            "total_expenses": 8000.0,
+            "liquid_assets": 200000.0,
+            "survival_verdict": "SURVIVAL_ADEQUATE"
+          },
+          "governance_verdict": "SEAL",
+          "allocation_signal": "MARGINAL",
+          "engine_status": "VALID",
+          "economic_signal": null,
+          "execution_verdict": null,
+          "secondary_metrics": {
+            "display_name": "wealth_survival_engine",
+            "family": "SURVIVAL",
+            "allocation_signal": "MARGINAL",
+            "engine_status": "VALID",
+            "harness_audit": {
+              "verdict": "PASS",
+              "recommended_verdict": "SEAL",
+              "harness_status": {
+                "Identity": {
+                  "stress": 0.0,
+                  "status": "SECURE"
+                },
+                "Reality": {
+                  "stress": 0.0,
+                  "status": "SECURE"
+                },
+                "Epistemic": {
+                  "stress": 0.0,
+                  "status": "SECURE"
+                },
+                "Entropy": {
+                  "stress": 0.0,
+                  "status": "SECURE"
+                },
+                "Survival": {
+                  "stress": 0.0,
+                  "status": "SECURE"
+                },
+                "Constitutional": {
+                  "stress": 0.0,
+                  "status": "SECURE"
+                },
+                "Efficiency": {
+                  "stress": 0.0,
+                  "status": "SECURE"
+                },
+                "Coordination": {
+                  "stress": 0.0,
+                  "status": "SECURE"
+                },
+                "Civilization": {
+                  "stress": 0.0,
+                  "status": "SECURE"
+                }
+              },
+              "violations": [],
+              "systemic_stress": 0.0,
+              "harness_lineage_hash": "589fbc9c279a1f174dffcfcbcb39239ffff316f57f47f387fbf907e71e119323",
+              "doctrine_hash": "a113e7a326c5105bb8b852ff4b7e624bbdf5da6dd4980ec1ea41bcc94373ae8d"
+            },
+            "secondary_metrics_raw": {
+              "period_unit": "monthly",
+              "horizon_months": 12
+            },
+            "period_unit": "monthly",
+            "horizon_months": 12
+          },
+          "assumptions": [
+            "income=20000.0, expenses=8000.0",
+            "liquid_assets=200000.0",
+            "conservative_factor=0.8",
+            "WEALTH computes. Arif judges."
+          ],
+          "failure_flags": [],
+          "reversibility": "UNKNOWN",
+          "final_authority": "Arif",
+          "recommendation_only": true,
+          "execution_authorized": false,
+          "human_final_authority": "Arif",
+          "epoch": "2026-10-14T16:09:23.681156Z",
+          "w0": "OPERATOR_VETO_INTACT / HIERARCHY_INVARIANT",
+          "receipt_hash": "0f2c9a6c443d0a1ca62f06b02a60f482c75ed39966eca2e8fb9e976fe8e522b9",
+          "apex": {
+            "equation": "g(t)=A(t)\u00b7P(t)\u00b7H(t)\u00b7\u221a(S(t)\u00b7U(t))\u00b7E(t)\u00b2",
+            "gates": {
+              "amanah": {
+                "pass": true,
+                "score": 1.0,
+                "detail": "confidence 0.88"
+              },
+              "presence": {
+                "pass": true,
+                "score": 1.0,
+                "detail": "LIVE",
+                "boundary": "LIVE"
+              },
+              "humility": {
+                "pass": true,
+                "score": 1.0,
+                "detail": "declared"
+              },
+              "signal": {
+                "pass": true,
+                "score": 0.7,
+                "detail": "default"
+              },
+              "understanding": {
+                "pass": true,
+                "score": 0.9,
+                "detail": "coherent"
+              },
+              "energy": {
+                "pass": true,
+                "score": 0.8732,
+                "detail": "cost 0.13"
+              },
+              "authority": {
+                "pass": true,
+                "score": 1.0,
+                "detail": "actor=ARIF",
+                "actor_id": "ARIF"
+              },
+              "reversibility": {
+                "pass": true,
+                "score": 1.0,
+                "detail": "MUTATE",
+                "action_class": "MUTATE"
+              },
+              "proof": {
+                "pass": true,
+                "score": 0.85,
+                "detail": "ZKPC_OBSERVATION",
+                "proof_level": "ZKPC_OBSERVATION"
+              },
+              "sovereign": {
+                "pass": true,
+                "score": 1.0,
+                "detail": "no F13 halt"
+              }
+            },
+            "dials": {
+              "A": 0.9655,
+              "P": 1.0,
+              "H": 1.0,
+              "S": 0.7,
+              "U": 0.922,
+              "E": 0.8732
+            },
+            "G": 0.5914,
+            "verdict": "SABAR",
+            "timestamp": "2026-10-14T16:09:23.681586+00:00"
+          },
+          "dimensional_verdicts": {
+            "conservation": "ADEQUATE",
+            "flow": "SURPLUS",
+            "time": "SUFFICIENT",
+            "entropy": "LOW",
+            "boundary": "GREEN"
+          },
+          "claim_state": "CLAIM",
+          "warnings": [],
+          "scar_pressure": 0.0,
+          "constraint_count": 0,
+          "forbidden_zones": [],
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          },
+          "verdict": "HOLD"
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "ASSUMED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "MISSING",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": true,
+        "source_attribution": [
+          "survival_engine_unverified"
+        ],
+        "computation_timestamp": "2026-10-14T16:09:23.681860+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.35,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "verdict": "HOLD",
+        "coverage": {
+          "known": 1,
+          "total": 4,
+          "ratio": 0.25,
+          "unmeasured": false
+        },
+        "epistemic": {
+          "tag": "ASSUMED",
+          "quality": "MISSING",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 0.25,
+          "coverage_unmeasured": false,
+          "material_args_count": 4,
+          "material_args": [
+            "liquid_assets",
+            "monthly_expenses_v",
+            "monthly_income_v",
+            "survival_submode"
+          ],
+          "gate": "CAUTION",
+          "warnings": [
+            "EVIDENCE_QUALITY_MISMATCH: PASS gate but MISSING evidence and no reflection prose \u2014 internal contradiction"
+          ]
+        },
+        "_hermes_semantic_gate": {
+          "gate": "hermes_semantic",
+          "gate_mode": "enforce",
+          "hermes_url": "http://127.0.0.1:18087/mcp",
+          "tool": "capital_health",
+          "status": "PASS",
+          "outcome": "NO_SEMANTIC_CONTENT",
+          "semantic_fields": [],
+          "error_code": ""
+        },
+        "trace_id": "",
+        "domain_verdict": "HOLD"
+      }
+    }
+  },
+  "sha256": "99b1c0e46f2ebeee029f2d5bb1b77137a04680e2db47ecb9307be0fc86ca8045"
 }

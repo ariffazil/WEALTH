@@ -1,0 +1,129 @@
+{
+  "tool": "capital_health",
+  "mode": "survival__sovereign_fiscal",
+  "error_class": "ok",
+  "probed_at": "2026-10-14T16:09:23.915107+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "cross_organ_inheritance": "lane_denied",
+        "binding_code": "OBSERVE_ANONYMOUS_OK"
+      },
+      "content": [
+        {
+          "text": "{\"tool_name\": \"capital_health\", \"tool_version\": \"2026.07.12\", \"domain\": \"risk\", \"result\": {\"breakeven_price_usd\": 1731.2, \"current_oil_price_usd\": 80.0, \"fiscal_pressure\": \"UNSUSTAINABLE\", \"current_deficit_rm_b\": 80.0, \"deficit_pct_of_gdp\": 20.51, \"target_deficit_pct\": 3.5000000000000004, \"additional_oil_revenue_needed_rm_b\": 66.3, \"fiscal_sensitivity_rm_b_per_usd\": 0.038, \"petronas_dividend_base_rm_b\": 40.0, \"petroleum_direct_revenue_rm_b\": 0.0, \"dividend_brent_sensitivity\": null, \"non_oil_revenue_rm_b\": 260.0, \"total_govt_expenditure_rm_b\": 380.0, \"epistemic_tag\": \"CLAIM\", \"confidence_band\": 0.7, \"breakeven_error\": null, \"warnings\": [\"petroleum_direct_revenue NOT_MODED \\u2014 deficit excludes direct petroleum revenue (PETRONAS income tax, royalties, export duties). Real deficit is LOWER than reported here.\", \"dividend response to Brent UNCALIBRATED \\u2014 breakeven reflects production-take response only (dividend held constant). Breakeven is NOT decision-grade.\"], \"caveat\": \"Breakeven price assumes constant production and no reserve depletion. In crisis (USD 50-), production also declines, worsening the fiscal gap. Real breakeven is higher than calculated under tail scenarios.\", \"mode\": \"survival\", \"survival_submode\": \"sovereign_fiscal\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"fiscal_breakeven_model\"], \"computation_timestamp\": \"2026-10-14T16:09:23.913256+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 4, \"total\": 5, \"ratio\": 0.8, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.8, \"coverage_unmeasured\": false, \"material_args_count\": 5, \"material_args\": [\"non_oil_revenue\", \"oil_price_assumption_usd\", \"petronas_dividend_base_rm\", \"survival_submode\", \"total_govt_expenditure\"], \"gate\": \"PASS\", \"warnings\": []}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "tool_name": "capital_health",
+        "tool_version": "2026.07.12",
+        "domain": "risk",
+        "result": {
+          "breakeven_price_usd": 1731.2,
+          "current_oil_price_usd": 80.0,
+          "fiscal_pressure": "UNSUSTAINABLE",
+          "current_deficit_rm_b": 80.0,
+          "deficit_pct_of_gdp": 20.51,
+          "target_deficit_pct": 3.5000000000000004,
+          "additional_oil_revenue_needed_rm_b": 66.3,
+          "fiscal_sensitivity_rm_b_per_usd": 0.038,
+          "petronas_dividend_base_rm_b": 40.0,
+          "petroleum_direct_revenue_rm_b": 0.0,
+          "dividend_brent_sensitivity": null,
+          "non_oil_revenue_rm_b": 260.0,
+          "total_govt_expenditure_rm_b": 380.0,
+          "epistemic_tag": "CLAIM",
+          "confidence_band": 0.7,
+          "breakeven_error": null,
+          "warnings": [
+            "petroleum_direct_revenue NOT_MODED \u2014 deficit excludes direct petroleum revenue (PETRONAS income tax, royalties, export duties). Real deficit is LOWER than reported here.",
+            "dividend response to Brent UNCALIBRATED \u2014 breakeven reflects production-take response only (dividend held constant). Breakeven is NOT decision-grade."
+          ],
+          "caveat": "Breakeven price assumes constant production and no reserve depletion. In crisis (USD 50-), production also declines, worsening the fiscal gap. Real breakeven is higher than calculated under tail scenarios.",
+          "mode": "survival",
+          "survival_submode": "sovereign_fiscal",
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "DERIVED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "MODERATE",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "fiscal_breakeven_model"
+        ],
+        "computation_timestamp": "2026-10-14T16:09:23.913256+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.7,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "verdict": "PARTIAL",
+        "coverage": {
+          "known": 4,
+          "total": 5,
+          "ratio": 0.8,
+          "unmeasured": false
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 0.8,
+          "coverage_unmeasured": false,
+          "material_args_count": 5,
+          "material_args": [
+            "non_oil_revenue",
+            "oil_price_assumption_usd",
+            "petronas_dividend_base_rm",
+            "survival_submode",
+            "total_govt_expenditure"
+          ],
+          "gate": "PASS",
+          "warnings": []
+        },
+        "_hermes_semantic_gate": {
+          "gate": "hermes_semantic",
+          "gate_mode": "enforce",
+          "hermes_url": "http://127.0.0.1:18087/mcp",
+          "tool": "capital_health",
+          "status": "PASS",
+          "outcome": "NO_SEMANTIC_CONTENT",
+          "semantic_fields": [],
+          "error_code": ""
+        },
+        "trace_id": ""
+      }
+    }
+  },
+  "sha256": "15f3590918f648d2a731fb7f4e5865bbf65145de1d1eba7b61a593acb01e91dd"
+}

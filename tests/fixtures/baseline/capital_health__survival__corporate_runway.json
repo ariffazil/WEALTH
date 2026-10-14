@@ -1,40 +1,111 @@
 {
   "tool": "capital_health",
-  "tool_version": "2026.07.12",
-  "domain": "capital",
-  "mode": "survival",
-  "survival_submode": "corporate_runway",
-  "session_id": "SEAL-b3bbf8e9e1844adc",
-  "actor_id": "ARIF",
-  "probed_at": "2026-08-06T07:44:45Z",
-  "sent_payload": {
-    "liquid_assets": 500000,
-    "monthly_burn": 50000
-  },
-  "defect": "SILENT_DOWNGRADE: corporate_runway silently downgraded to personal_finance. Income and expenses zeroed despite supplied arrays.",
-  "raw_response": {
-    "primary_metrics": {
-      "engine": "wealth_survival_engine",
-      "mode": "personal_finance",
-      "runway_months": null,
-      "burn_rate": 0.0,
-      "net_monthly": 0,
-      "total_income": 0,
-      "total_expenses": 0,
-      "liquid_assets": 500000.0,
-      "survival_verdict": "SURVIVAL_ADEQUATE"
-    },
-    "domain_verdict": "SEAL",
-    "apex": {
-      "verdict": "HOLD",
-      "G": 0.0,
-      "dials": {"A": 0.9655, "P": 1.0, "H": 0.0, "S": 0.7, "U": 0.922, "E": 0.8253}
-    },
-    "risk": {"verdict": "GO", "level": "GREEN"},
-    "coverage": {"ratio": 0.33, "material_args": ["liquid_assets", "monthly_burn", "survival_submode"]},
-    "assumptions": ["income=0, expenses=0", "liquid_assets=500000.0", "conservative_factor=0.8"],
-    "receipt_hash": "34d94d13ba472cbf938d0bd7ea16aa0c9ecee17e0e192c434c5fe2355c3a44ea"
-  },
+  "mode": "survival__corporate_runway",
   "error_class": "ok",
-  "sha256": "34d94d13ba472cbf938d0bd7ea16aa0c9ecee17e0e192c434c5fe2355c3a44ea"
+  "probed_at": "2026-10-14T16:09:23.800125+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "cross_organ_inheritance": "lane_denied",
+        "binding_code": "OBSERVE_ANONYMOUS_OK"
+      },
+      "content": [
+        {
+          "text": "{\"tool_name\": \"capital_health\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"mode\": \"survival\", \"survival_submode\": \"corporate_runway\", \"runway_months\": 100.0, \"liquid_assets\": 10000000.0, \"monthly_burn\": 100000.0, \"verdict\": \"CORPORATE_RUNWAY_ADEQUATE\", \"interpretation\": \"Corporate runway: 100.0 months at burn rate 100000.0/month.\", \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"corporate_runway_computation\"], \"computation_timestamp\": \"2026-10-14T16:09:23.798083+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 3, \"total\": 3, \"ratio\": 1.0, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 1.0, \"coverage_unmeasured\": false, \"material_args_count\": 3, \"material_args\": [\"liquid_assets\", \"monthly_burn\", \"survival_submode\"], \"gate\": \"PASS\", \"warnings\": []}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_health\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "tool_name": "capital_health",
+        "tool_version": "2026.07.12",
+        "domain": "capital",
+        "result": {
+          "mode": "survival",
+          "survival_submode": "corporate_runway",
+          "runway_months": 100.0,
+          "liquid_assets": 10000000.0,
+          "monthly_burn": 100000.0,
+          "verdict": "CORPORATE_RUNWAY_ADEQUATE",
+          "interpretation": "Corporate runway: 100.0 months at burn rate 100000.0/month.",
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "DERIVED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "MODERATE",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "corporate_runway_computation"
+        ],
+        "computation_timestamp": "2026-10-14T16:09:23.798083+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.7,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "verdict": "PARTIAL",
+        "coverage": {
+          "known": 3,
+          "total": 3,
+          "ratio": 1.0,
+          "unmeasured": false
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": 1.0,
+          "coverage_unmeasured": false,
+          "material_args_count": 3,
+          "material_args": [
+            "liquid_assets",
+            "monthly_burn",
+            "survival_submode"
+          ],
+          "gate": "PASS",
+          "warnings": []
+        },
+        "_hermes_semantic_gate": {
+          "gate": "hermes_semantic",
+          "gate_mode": "enforce",
+          "hermes_url": "http://127.0.0.1:18087/mcp",
+          "tool": "capital_health",
+          "status": "PASS",
+          "outcome": "NO_SEMANTIC_CONTENT",
+          "semantic_fields": [],
+          "error_code": ""
+        },
+        "trace_id": ""
+      }
+    }
+  },
+  "sha256": "1cf785848e1061991e3ca92e5905cd2e502c616ba9477aefecfb30842540c827"
 }

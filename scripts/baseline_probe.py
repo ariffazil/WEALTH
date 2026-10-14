@@ -117,6 +117,27 @@ TOOL_MATRIX = {
         "submodes": {
             "survival": ["personal_finance", "corporate_runway", "sovereign_fiscal"]
         },
+        # Canonical payloads per survival submode (2026-10-15): a submode
+        # probe must send the submode's OWN required fields, otherwise the
+        # fixture records a MISSING_REQUIRED_PARAMS error instead of a real
+        # response (that gap kept sovereign_fiscal unfixtureable → R6 REJECT).
+        "submode_payloads": {
+            "personal_finance": {
+                "monthly_income_v": 20000.0,
+                "monthly_expenses_v": 8000.0,
+                "liquid_assets": 200000.0,
+            },
+            "corporate_runway": {
+                "liquid_assets": 10000000.0,
+                "monthly_burn": 100000.0,
+            },
+            "sovereign_fiscal": {
+                "total_govt_expenditure": 380.0,
+                "non_oil_revenue": 260.0,
+                "petronas_dividend_base_rm": 40.0,
+                "oil_price_assumption_usd": 80.0,
+            },
+        },
         "invalid_mode": "garbage_mode_test",
         "representative_payload": {
             "mode": None,
@@ -289,7 +310,12 @@ def probe_invalid_mode(tool_name: str) -> str | None:
     return None
 
 
-def probe_mode(tool_name: str, mode: str, extra_payload: dict | None = None) -> str:
+def probe_mode(
+    tool_name: str,
+    mode: str,
+    extra_payload: dict | None = None,
+    fixture_mode_name: str | None = None,
+) -> str:
     """Probe a single (tool, mode) combination and save raw response."""
     matrix = TOOL_MATRIX[tool_name]
     payload = {**matrix["representative_payload"], "mode": mode}
@@ -297,7 +323,9 @@ def probe_mode(tool_name: str, mode: str, extra_payload: dict | None = None) -> 
         payload.update(extra_payload)
 
     result, error_class = mcp_call(tool_name, payload)
-    fixture_path = save_fixture(tool_name, mode, result, error_class)
+    fixture_path = save_fixture(
+        tool_name, fixture_mode_name or mode, result, error_class
+    )
 
     # Summarize
     if result and "error" not in result:
@@ -361,7 +389,19 @@ def probe_all(limit: int | None = None):
                     print(f"\n  LIMIT REACHED. {total - results['probed']} remaining.")
                     return results
                 extra = {"survival_submode": submode} if base_mode == "survival" else {}
-                probe_mode(tool_name, base_mode, extra_payload=extra if extra else None)
+                # Canonical per-submode fields (2026-10-15): probe each submode
+                # with its OWN required inputs, not an empty representative.
+                sub_payloads = matrix.get("submode_payloads") or {}
+                extra.update(sub_payloads.get(submode, {}))
+                # Persist under a submode-specific fixture name (2026-10-15):
+                # the generic __survival.json write is last-write-wins and
+                # left sovereign_fiscal without any stored raw response.
+                probe_mode(
+                    tool_name,
+                    base_mode,
+                    extra_payload=extra if extra else None,
+                    fixture_mode_name=f"{base_mode}__{submode}",
+                )
                 count += 1
                 results["probed"] += 1
                 results["fixtures"] += 1
