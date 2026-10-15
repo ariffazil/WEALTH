@@ -2,57 +2,98 @@
   "tool": "capital_primitive",
   "mode": "garbage_mode_test",
   "error_class": "ok",
-  "probed_at": "2026-08-06T08:35:05.132172+00:00",
+  "probed_at": "2026-10-14T15:34:04.046023+00:00",
   "session_id": "SEAL-38c1e44946c84c49",
   "raw_response": {
     "jsonrpc": "2.0",
     "id": 1,
     "result": {
       "_meta": {
-        "wealth_receipt": {
-          "persisted": true,
-          "path": "/root/VAULT999/wealth/receipts.jsonl",
-          "receipt_id": "57591527-82b4-4ed9-8ca4-a1dcdcee7dac",
-          "call_status": "ERROR"
-        }
+        "cross_organ_inheritance": "lane_denied",
+        "binding_code": "OBSERVE_ANONYMOUS_OK"
       },
       "content": [
         {
-          "type": "text",
-          "text": "{\"isError\": true, \"error_class\": \"INTERNAL_ERROR\", \"recoverability\": \"ESCALATE_TO_888_HOLD\", \"suspected_layer\": \"tool_execution\", \"severity\": \"FATAL\", \"message\": \"Error calling tool 'capital_primitive'\", \"next_action\": \"Log to VAULT999 and escalate \\u2014 server bug\", \"epistemic_label\": \"DER\", \"timestamp\": \"2026-08-06T08:35:05.121029+00:00\", \"source_tool\": \"capital_primitive\", \"source_organ\": \"wealth\", \"original_error\": \"ToolError: Error calling tool 'capital_primitive'\", \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"trace_id\": \"\", \"execution_authorized\": false, \"human_final_authority\": \"Arif\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 2, \"ratio\": 0.0}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"material_args_count\": 2, \"material_args\": [\"cash_flows\", \"discount_rate\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 2 material fields (['cash_flows', 'discount_rate']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 2 material fields (['cash_flows', 'discount_rate']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}"
+          "text": "{\"tool_name\": \"capital_primitive\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"error\": \"Unknown mode 'garbage_mode_test'.\", \"valid_modes\": [\"npv\", \"irr\", \"emv\", \"evoi\", \"mc\", \"kelly\", \"markowitz\", \"robust\", \"chance_constrained\", \"two_stage\", \"reward_design\"], \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"WEAK\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"capital_primitive:error\"], \"computation_timestamp\": \"2026-10-14T15:34:04.043969+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 2 material fields (['cash_flows', 'discount_rate']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] INSUFFICIENT_EVIDENCE: 2 material fields (['cash_flows', 'discount_rate']) provided but ZERO reflected in result. Interpretation prose blocked.\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.52, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 2, \"ratio\": 0.0, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"WEAK\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"coverage_unmeasured\": false, \"material_args_count\": 2, \"material_args\": [\"cash_flows\", \"discount_rate\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 2 material fields (['cash_flows', 'discount_rate']) provided but ZERO reflected in result. Interpretation prose blocked.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_primitive\", \"status\": \"SKIPPED\", \"outcome\": \"GATE_EXEMPT\", \"error_code\": \"\"}, \"trace_id\": \"\"}",
+          "type": "text"
         }
       ],
+      "isError": false,
       "structuredContent": {
-        "isError": true,
-        "error_class": "INTERNAL_ERROR",
-        "recoverability": "ESCALATE_TO_888_HOLD",
-        "suspected_layer": "tool_execution",
-        "severity": "FATAL",
-        "message": "Error calling tool 'capital_primitive'",
-        "next_action": "Log to VAULT999 and escalate \u2014 server bug",
-        "epistemic_label": "DER",
-        "timestamp": "2026-08-06T08:35:05.121029+00:00",
-        "source_tool": "capital_primitive",
-        "source_organ": "wealth",
-        "original_error": "ToolError: Error calling tool 'capital_primitive'",
+        "tool_name": "capital_primitive",
+        "tool_version": "2026.07.12",
+        "domain": "capital",
+        "result": {
+          "error": "Unknown mode 'garbage_mode_test'.",
+          "valid_modes": [
+            "npv",
+            "irr",
+            "emv",
+            "evoi",
+            "mc",
+            "kelly",
+            "markowitz",
+            "robust",
+            "chance_constrained",
+            "two_stage",
+            "reward_design"
+          ],
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "DERIVED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "WEAK",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "capital_primitive:error"
+        ],
+        "computation_timestamp": "2026-10-14T15:34:04.043969+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [
+          "[W0] INSUFFICIENT_EVIDENCE: 2 material fields (['cash_flows', 'discount_rate']) provided but ZERO reflected in result. Interpretation prose blocked.",
+          "[W0] INSUFFICIENT_EVIDENCE: 2 material fields (['cash_flows', 'discount_rate']) provided but ZERO reflected in result. Interpretation prose blocked."
+        ],
+        "errors": [],
         "session_id": "SEAL-38c1e44946c84c49",
         "actor_id": "ARIF",
-        "trace_id": "",
-        "execution_authorized": false,
-        "human_final_authority": "Arif",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.52,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
         "verdict": "INSUFFICIENT_EVIDENCE",
         "coverage": {
           "known": 0,
           "total": 2,
-          "ratio": 0.0
+          "ratio": 0.0,
+          "unmeasured": false
         },
         "epistemic": {
           "tag": "DERIVED",
-          "quality": "MODERATE",
+          "quality": "WEAK",
           "confidence": 0.5
         },
         "_w0_evidence_gate": {
           "coverage": 0.0,
+          "coverage_unmeasured": false,
           "material_args_count": 2,
           "material_args": [
             "cash_flows",
@@ -63,12 +104,18 @@
             "INSUFFICIENT_EVIDENCE: 2 material fields (['cash_flows', 'discount_rate']) provided but ZERO reflected in result. Interpretation prose blocked."
           ]
         },
-        "warnings": [
-          "[W0] INSUFFICIENT_EVIDENCE: 2 material fields (['cash_flows', 'discount_rate']) provided but ZERO reflected in result. Interpretation prose blocked."
-        ]
-      },
-      "isError": false
+        "_hermes_semantic_gate": {
+          "gate": "hermes_semantic",
+          "gate_mode": "enforce",
+          "hermes_url": "http://127.0.0.1:18087/mcp",
+          "tool": "capital_primitive",
+          "status": "SKIPPED",
+          "outcome": "GATE_EXEMPT",
+          "error_code": ""
+        },
+        "trace_id": ""
+      }
     }
   },
-  "sha256": "f0462dc885ef1e32a338d477dcd9530eecb1804948e0d7c5dfd2aeeee5ad0e27"
+  "sha256": "6c910568243a274a0bc151dff482129a8e9ddf04e0197f2c2781880302c932c9"
 }

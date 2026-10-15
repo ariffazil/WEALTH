@@ -1,0 +1,122 @@
+{
+  "tool": "capital_entropy",
+  "mode": "trust_capital_decay",
+  "error_class": "ok",
+  "probed_at": "2026-10-14T15:34:53.671268+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "cross_organ_inheritance": "lane_denied",
+        "binding_code": "OBSERVE_ANONYMOUS_OK"
+      },
+      "content": [
+        {
+          "text": "{\"tool_name\": \"capital_entropy\", \"tool_version\": \"2026.07.12\", \"domain\": \"institutional\", \"result\": {\"capital_id\": \"tcd-69ba2caabe78\", \"current_balance\": 0.5, \"formation_cost\": 0.0, \"betrayal_shock\": 0.0, \"recovery_accumulated\": 0.0, \"recovery_ratio\": null, \"spillover\": 0.0, \"coordination_overhead\": 0.5, \"option_loss\": 0.0, \"net_trajectory\": 0.5, \"interpretation\": \"Trust is depleted \\u2014 significant investment needed\", \"metadata\": {\"analyzed_at\": \"2026-10-14T15:34:53.662774+00:00\", \"tool\": \"wealth_trust_capital_decay\"}, \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}, \"verdict\": \"HOLD\"}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"entropy_integrity_local_dependency\"], \"computation_timestamp\": \"2026-10-14T15:34:53.663353+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\", \"[W0] UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": -1.0, \"unmeasured\": true}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": -1.0, \"coverage_unmeasured\": true, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"FAIL\", \"warnings\": [\"UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_entropy\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\", \"domain_verdict\": \"HOLD\", \"verdict\": \"HOLD\"}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "tool_name": "capital_entropy",
+        "tool_version": "2026.07.12",
+        "domain": "institutional",
+        "result": {
+          "capital_id": "tcd-69ba2caabe78",
+          "current_balance": 0.5,
+          "formation_cost": 0.0,
+          "betrayal_shock": 0.0,
+          "recovery_accumulated": 0.0,
+          "recovery_ratio": null,
+          "spillover": 0.0,
+          "coordination_overhead": 0.5,
+          "option_loss": 0.0,
+          "net_trajectory": 0.5,
+          "interpretation": "Trust is depleted \u2014 significant investment needed",
+          "metadata": {
+            "analyzed_at": "2026-10-14T15:34:53.662774+00:00",
+            "tool": "wealth_trust_capital_decay"
+          },
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          },
+          "verdict": "HOLD"
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "DERIVED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "MODERATE",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "entropy_integrity_local_dependency"
+        ],
+        "computation_timestamp": "2026-10-14T15:34:53.663353+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [
+          "[W0] UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input.",
+          "[W0] UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+        ],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.7,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "coverage": {
+          "known": 0,
+          "total": 0,
+          "ratio": -1.0,
+          "unmeasured": true
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": -1.0,
+          "coverage_unmeasured": true,
+          "material_args_count": 0,
+          "material_args": [],
+          "gate": "FAIL",
+          "warnings": [
+            "UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+          ]
+        },
+        "_hermes_semantic_gate": {
+          "gate": "hermes_semantic",
+          "gate_mode": "enforce",
+          "hermes_url": "http://127.0.0.1:18087/mcp",
+          "tool": "capital_entropy",
+          "status": "PASS",
+          "outcome": "NO_SEMANTIC_CONTENT",
+          "semantic_fields": [],
+          "error_code": ""
+        },
+        "trace_id": "",
+        "domain_verdict": "HOLD",
+        "verdict": "HOLD"
+      }
+    }
+  },
+  "sha256": "af60feb9c6e811181b0c8a15e6c34eeb6323a4d3abb915c94089c3416026a268"
+}

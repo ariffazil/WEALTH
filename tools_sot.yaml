@@ -1,5 +1,5 @@
 organ: WEALTH
-version: 2026.08.03
+version: 2026.10.15
 sot_source: wealth_mcp/tools/canonical.py
 live_port: 18082
 tools:
@@ -286,6 +286,54 @@ tools:
       domain: synthesis
       kind: advisory
       canonical: v1
+
+  # ── Semantic concept layer (2026-10-15, mission wealth-mcp-semantic) ──
+  # Implementation: wealth_mcp/semantic.py (registered from server.py).
+  # Token-gated (wealth:read / wealth:compute / wealth:admin) and
+  # evidence-gated: withholding applies to THESE 3 ONLY — the 15 tools above
+  # keep their advisory behaviour (owner ruling).
+  - name: capital_read
+    access: public
+    description: >
+      Read one governed capital concept by id from the semantic concept layer
+      (wealth://ontology, ~34 real concepts bound to live engines or printed
+      JSON SOTs). Every observation carries an inline verification flag
+      (VERIFIED_LIVE | VERIFIED_SINGLE | UNVERIFIED | STALE) and a real
+      VAULT999 receipt pointer. Evidence gate: unresolved or UNVERIFIED reads
+      return WITHHELD + input_requests — never a fabricated number.
+    tags:
+      domain: semantic
+      kind: observational
+      canonical: semantic-v1
+      auth: token-scoped
+
+  - name: capital_rank_sources
+    access: public
+    description: >
+      Transparency surface for capital_read: list a concept's bindings ranked
+      best-first by quality × freshness (locator, quality, freshness,
+      verification policy, rank). Metadata only — no fetching, no numbers.
+    tags:
+      domain: semantic
+      kind: observational
+      canonical: semantic-v1
+      auth: token-scoped
+
+  - name: capital_breakeven
+    access: public
+    description: >
+      Deductive fiscal-breakeven Brent (MY). anchor=budget_balance:
+      breakeven = spot − ((5 − deficit%)/100 × GDP) / sensitivity × 10, with
+      sensitivity RM3-4B per $10 (Treasury, sealed) — 3.5 midpoint point
+      estimate, range exposed. anchor=dividend_floor: sealed Overlay T-A
+      anchor ($67.34) with provenance. 555_COMPUTE_ONLY arithmetic; every
+      input carries its verification flag inline; any UNVERIFIED input
+      withholds the result. Token: wealth:compute or wealth:admin.
+    tags:
+      domain: semantic
+      kind: deductive
+      canonical: semantic-v1
+      auth: token-scoped
 
 extension_surface:
   - name: wealth_inequality_kernel

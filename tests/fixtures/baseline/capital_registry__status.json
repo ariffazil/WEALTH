@@ -1,0 +1,161 @@
+{
+  "tool": "capital_registry",
+  "mode": "status",
+  "error_class": "ok",
+  "probed_at": "2026-10-14T15:34:37.863546+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "cross_organ_inheritance": "lane_denied",
+        "binding_code": "OBSERVE_ANONYMOUS_OK"
+      },
+      "content": [
+        {
+          "text": "{\"tool_name\": \"capital_registry\", \"tool_version\": \"2026.07.12\", \"domain\": \"meta\", \"result\": {\"status\": \"OK\", \"organ\": \"WEALTH\", \"version\": \"2026.07.24\", \"architecture\": \"federated-15-canonical\", \"canonical_tools\": [\"capital_primitive\", \"capital_health\", \"capital_diagnose\", \"capital_market\", \"capital_ledger\", \"capital_registry\", \"capital_claims\", \"capital_entropy\", \"wealth_judge_handoff\", \"capital_indicator\", \"capital_backtest\", \"capital_entry_plan\", \"wealth_synthesize\", \"capital_polix\", \"capital_civx\"], \"canonical_tool_count\": 15, \"public_tools\": [\"capital_primitive\", \"capital_health\", \"capital_diagnose\", \"capital_market\", \"capital_ledger\", \"capital_registry\", \"capital_claims\", \"capital_entropy\", \"wealth_judge_handoff\", \"capital_indicator\", \"capital_backtest\", \"capital_entry_plan\", \"wealth_synthesize\", \"capital_polix\", \"capital_civx\"], \"public_tool_count\": 15, \"registry_truth\": \"PASS\", \"probe_failures\": [], \"manifest_summary\": {\"source\": 15, \"public\": 15, \"runtime\": 15, \"probe_failures\": 0, \"build\": {\"git_commit\": \"dbf4d4b\", \"working_tree\": \"DIRTY\", \"seal_state\": \"UNSEALED\", \"build_digest\": \"sha256:7ed52688f9a3f82c\", \"packaged_files_hashed\": 30}, \"note\": \"Counts are per-view and may legitimately differ; per-tool lowest-state truth = capital_registry mode=manifests. A tool can be canonical and dead simultaneously.\"}, \"legacy_dispatch\": \"direct_import\", \"final_authority\": \"ARIF\", \"read_only\": true, \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [], \"computation_timestamp\": \"2026-10-14T15:34:37.860722+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\", \"[W0] UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": -1.0, \"unmeasured\": true}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": -1.0, \"coverage_unmeasured\": true, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"FAIL\", \"warnings\": [\"UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_registry\", \"status\": \"SKIPPED\", \"outcome\": \"GATE_EXEMPT\", \"error_code\": \"\"}, \"trace_id\": \"\", \"verdict\": \"READONLY\"}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "tool_name": "capital_registry",
+        "tool_version": "2026.07.12",
+        "domain": "meta",
+        "result": {
+          "status": "OK",
+          "organ": "WEALTH",
+          "version": "2026.07.24",
+          "architecture": "federated-15-canonical",
+          "canonical_tools": [
+            "capital_primitive",
+            "capital_health",
+            "capital_diagnose",
+            "capital_market",
+            "capital_ledger",
+            "capital_registry",
+            "capital_claims",
+            "capital_entropy",
+            "wealth_judge_handoff",
+            "capital_indicator",
+            "capital_backtest",
+            "capital_entry_plan",
+            "wealth_synthesize",
+            "capital_polix",
+            "capital_civx"
+          ],
+          "canonical_tool_count": 15,
+          "public_tools": [
+            "capital_primitive",
+            "capital_health",
+            "capital_diagnose",
+            "capital_market",
+            "capital_ledger",
+            "capital_registry",
+            "capital_claims",
+            "capital_entropy",
+            "wealth_judge_handoff",
+            "capital_indicator",
+            "capital_backtest",
+            "capital_entry_plan",
+            "wealth_synthesize",
+            "capital_polix",
+            "capital_civx"
+          ],
+          "public_tool_count": 15,
+          "registry_truth": "PASS",
+          "probe_failures": [],
+          "manifest_summary": {
+            "source": 15,
+            "public": 15,
+            "runtime": 15,
+            "probe_failures": 0,
+            "build": {
+              "git_commit": "dbf4d4b",
+              "working_tree": "DIRTY",
+              "seal_state": "UNSEALED",
+              "build_digest": "sha256:7ed52688f9a3f82c",
+              "packaged_files_hashed": 30
+            },
+            "note": "Counts are per-view and may legitimately differ; per-tool lowest-state truth = capital_registry mode=manifests. A tool can be canonical and dead simultaneously."
+          },
+          "legacy_dispatch": "direct_import",
+          "final_authority": "ARIF",
+          "read_only": true,
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "DERIVED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "MODERATE",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [],
+        "computation_timestamp": "2026-10-14T15:34:37.860722+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [
+          "[W0] UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input.",
+          "[W0] UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+        ],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.7,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "coverage": {
+          "known": 0,
+          "total": 0,
+          "ratio": -1.0,
+          "unmeasured": true
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": -1.0,
+          "coverage_unmeasured": true,
+          "material_args_count": 0,
+          "material_args": [],
+          "gate": "FAIL",
+          "warnings": [
+            "UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+          ]
+        },
+        "_hermes_semantic_gate": {
+          "gate": "hermes_semantic",
+          "gate_mode": "enforce",
+          "hermes_url": "http://127.0.0.1:18087/mcp",
+          "tool": "capital_registry",
+          "status": "SKIPPED",
+          "outcome": "GATE_EXEMPT",
+          "error_code": ""
+        },
+        "trace_id": "",
+        "verdict": "READONLY"
+      }
+    }
+  },
+  "sha256": "2fed94b96c102f1fc4d15ea73d4666e48904c5fb488ef3c7731046693c2064fc"
+}

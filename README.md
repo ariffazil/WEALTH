@@ -298,3 +298,18 @@ And the new WEALTH identity, restated:
 **Licensed under AGPL-3.0.**
 
 **DITEMPA BUKAN DIBERI.**
+
+<!-- FEDERATION-STANDARD v2026-10-15 START :: 333-AGI audit :: source: organs.yaml + git + live probes :: regenerate: re-run audit -->
+## 🔗 Federation Identity (auto-audit 2026-10-15)
+| Field | Value |
+|---|---|
+| Organ | `wealth` · CORE · domain_evidence |
+| Ports | 18082 |
+| Unit | wealth-organ.service |
+| Authority ceiling | COMPUTE_ONLY |
+| Live (SOT probe @audit) | UP |
+| Repo HEAD @audit | `2c2faab 2026-10-15` |
+| Public MCP | https://wealth.arif-fazil.com/mcp |
+| Rollback | — |
+| Flow graph | [FEDERATION-FLOW-GRAPH.md](../FEDERATION-FLOW-GRAPH.md) — peta semua organ + repo |
+<!-- FEDERATION-STANDARD v2026-10-15 END -->

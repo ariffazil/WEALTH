@@ -1,0 +1,211 @@
+{
+  "tool": "capital_registry",
+  "mode": "schema",
+  "error_class": "ok",
+  "probed_at": "2026-10-14T15:34:37.982990+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "cross_organ_inheritance": "lane_denied",
+        "binding_code": "OBSERVE_ANONYMOUS_OK"
+      },
+      "content": [
+        {
+          "text": "{\"tool_name\": \"capital_registry\", \"tool_version\": \"2026.07.12\", \"domain\": \"meta\", \"result\": {\"version\": \"2026.07.24\", \"architecture\": \"federated-15-canonical\", \"scope\": \"partial mode-map \\u2014 NOT a census of all public tools (use mode=manifests)\", \"tools\": {\"capital_primitive\": {\"modes\": [\"npv\", \"irr\", \"emv\", \"evoi\", \"mc\", \"kelly\", \"markowitz\", \"robust\", \"chance_constrained\", \"two_stage\"], \"description\": \"Financial mathematics and decision analysis primitives\"}, \"capital_health\": {\"modes\": [\"conservation\", \"flow\", \"runway\", \"survival\", \"fiscal_breakeven\", \"confluence\", \"asymmetry\"], \"survival_submodes\": [\"personal_finance\", \"corporate_runway\", \"sovereign_fiscal\"], \"description\": \"Financial health, runway, and survival computation\"}, \"capital_diagnose\": {\"modes\": [\"stress_index\", \"governance_capacity\", \"cascade_model\", \"exploitation_detect\", \"collapse_signature\", \"beautiful_mouse\", \"capture_scan\", \"power_audit\", \"bid_surface\", \"optimize_mwc\", \"cadence_monitor\", \"crisis_reflex\"], \"description\": \"Abductive institutional diagnosis and governance capacity\"}, \"capital_market\": {\"modes\": [\"fx\", \"commodity\", \"indicator\", \"stock\", \"gold\", \"oil\", \"gas\"], \"description\": \"Live commodity, FX, and country market indicators\"}, \"capital_ledger\": {\"modes\": [\"query\", \"write\"], \"description\": \"VAULT999 immutable append-only ledger\"}, \"capital_registry\": {\"modes\": [\"status\", \"schema\", \"domains\", \"health\"], \"description\": \"WEALTH organ self-introspection and registry status\"}, \"capital_entropy\": {\"modes\": [\"power_consequence_map\", \"metric_purpose_audit\", \"responsibility_ledger\", \"trust_capital_decay\", \"coercive_order_cost\", \"entropy_externality\"], \"description\": \"Thermodynamic power/consequence and metric-purpose drift\"}, \"capital_claims\": {\"modes\": [\"validate\"], \"description\": \"Named-entity claim gate \\u2014 external citation + retrieval timestamp + CHECKED contradiction required for OBS_ELIGIBLE\"}, \"wealth_judge_handoff\": {\"modes\": [\"prepare\", \"submit\"], \"description\": \"Sovereign 888_HOLD judge handoff envelope\"}}, \"canonical_tool_count\": 15, \"public_tool_count\": 15, \"schema_map_count\": 9, \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [], \"computation_timestamp\": \"2026-10-14T15:34:37.980021+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\", \"[W0] UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": -1.0, \"unmeasured\": true}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": -1.0, \"coverage_unmeasured\": true, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"FAIL\", \"warnings\": [\"UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_registry\", \"status\": \"SKIPPED\", \"outcome\": \"GATE_EXEMPT\", \"error_code\": \"\"}, \"trace_id\": \"\", \"verdict\": \"READONLY\"}",
+          "type": "text"
+        }
+      ],
+      "isError": false,
+      "structuredContent": {
+        "tool_name": "capital_registry",
+        "tool_version": "2026.07.12",
+        "domain": "meta",
+        "result": {
+          "version": "2026.07.24",
+          "architecture": "federated-15-canonical",
+          "scope": "partial mode-map \u2014 NOT a census of all public tools (use mode=manifests)",
+          "tools": {
+            "capital_primitive": {
+              "modes": [
+                "npv",
+                "irr",
+                "emv",
+                "evoi",
+                "mc",
+                "kelly",
+                "markowitz",
+                "robust",
+                "chance_constrained",
+                "two_stage"
+              ],
+              "description": "Financial mathematics and decision analysis primitives"
+            },
+            "capital_health": {
+              "modes": [
+                "conservation",
+                "flow",
+                "runway",
+                "survival",
+                "fiscal_breakeven",
+                "confluence",
+                "asymmetry"
+              ],
+              "survival_submodes": [
+                "personal_finance",
+                "corporate_runway",
+                "sovereign_fiscal"
+              ],
+              "description": "Financial health, runway, and survival computation"
+            },
+            "capital_diagnose": {
+              "modes": [
+                "stress_index",
+                "governance_capacity",
+                "cascade_model",
+                "exploitation_detect",
+                "collapse_signature",
+                "beautiful_mouse",
+                "capture_scan",
+                "power_audit",
+                "bid_surface",
+                "optimize_mwc",
+                "cadence_monitor",
+                "crisis_reflex"
+              ],
+              "description": "Abductive institutional diagnosis and governance capacity"
+            },
+            "capital_market": {
+              "modes": [
+                "fx",
+                "commodity",
+                "indicator",
+                "stock",
+                "gold",
+                "oil",
+                "gas"
+              ],
+              "description": "Live commodity, FX, and country market indicators"
+            },
+            "capital_ledger": {
+              "modes": [
+                "query",
+                "write"
+              ],
+              "description": "VAULT999 immutable append-only ledger"
+            },
+            "capital_registry": {
+              "modes": [
+                "status",
+                "schema",
+                "domains",
+                "health"
+              ],
+              "description": "WEALTH organ self-introspection and registry status"
+            },
+            "capital_entropy": {
+              "modes": [
+                "power_consequence_map",
+                "metric_purpose_audit",
+                "responsibility_ledger",
+                "trust_capital_decay",
+                "coercive_order_cost",
+                "entropy_externality"
+              ],
+              "description": "Thermodynamic power/consequence and metric-purpose drift"
+            },
+            "capital_claims": {
+              "modes": [
+                "validate"
+              ],
+              "description": "Named-entity claim gate \u2014 external citation + retrieval timestamp + CHECKED contradiction required for OBS_ELIGIBLE"
+            },
+            "wealth_judge_handoff": {
+              "modes": [
+                "prepare",
+                "submit"
+              ],
+              "description": "Sovereign 888_HOLD judge handoff envelope"
+            }
+          },
+          "canonical_tool_count": 15,
+          "public_tool_count": 15,
+          "schema_map_count": 9,
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "DERIVED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "MODERATE",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [],
+        "computation_timestamp": "2026-10-14T15:34:37.980021+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [
+          "[W0] UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input.",
+          "[W0] UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+        ],
+        "errors": [],
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.7,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
+        "coverage": {
+          "known": 0,
+          "total": 0,
+          "ratio": -1.0,
+          "unmeasured": true
+        },
+        "epistemic": {
+          "tag": "DERIVED",
+          "quality": "MODERATE",
+          "confidence": 0.5
+        },
+        "_w0_evidence_gate": {
+          "coverage": -1.0,
+          "coverage_unmeasured": true,
+          "material_args_count": 0,
+          "material_args": [],
+          "gate": "FAIL",
+          "warnings": [
+            "UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+          ]
+        },
+        "_hermes_semantic_gate": {
+          "gate": "hermes_semantic",
+          "gate_mode": "enforce",
+          "hermes_url": "http://127.0.0.1:18087/mcp",
+          "tool": "capital_registry",
+          "status": "SKIPPED",
+          "outcome": "GATE_EXEMPT",
+          "error_code": ""
+        },
+        "trace_id": "",
+        "verdict": "READONLY"
+      }
+    }
+  },
+  "sha256": "27811614f53d6f9c23c6524b4cb2ded6efa7442c51d3a2d68695939b7794b54b"
+}

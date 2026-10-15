@@ -1,68 +1,63 @@
 {
   "task": "W-001",
-  "session": "SEAL-b3bbf8e9e1844adc",
-  "timestamp": "2026-08-06T07:51:50.031007+00:00",
-  "differential_results": {
-    "capital_primitive__npv": {
-      "status": "GREEN",
-      "payload_a": {
-        "npv": 388.77,
-        "cash_flows": [
-          -1000,
-          300,
-          400,
-          500,
-          600
-        ]
+  "test_file": "/root/WEALTH/tests/test_differential.py",
+  "results": {
+    "green": 7,
+    "red": 0,
+    "known_red": 0,
+    "details": [
+      {
+        "tool": "capital_health",
+        "mode": "survival",
+        "passed": true,
+        "detail": "DIFFERENT (lengths: 12184 vs 12390)",
+        "known_red": false
       },
-      "payload_b": {
-        "npv": -841.51,
-        "cash_flows": [
-          -1000,
-          50,
-          50,
-          50,
-          50
-        ]
+      {
+        "tool": "capital_health",
+        "mode": "survival",
+        "passed": true,
+        "detail": "DIFFERENT (lengths: 3311 vs 3293)",
+        "known_red": true
       },
-      "delta": "Material \u2014 positive vs negative NPV. Function computes correctly."
-    },
-    "capital_health__survival__personal_finance": {
-      "status": "GREEN",
-      "payload_a": {
-        "survival_verdict": "SURVIVAL_ADEQUATE",
-        "net_monthly": 12000,
-        "domain_verdict": "SEAL"
+      {
+        "tool": "capital_diagnose",
+        "mode": "collapse_signature",
+        "passed": true,
+        "detail": "DIFFERENT (lengths: 10766 vs 10766)",
+        "known_red": true
       },
-      "payload_b": {
-        "survival_verdict": "SURVIVAL_CRITICAL",
-        "net_monthly": -2000,
-        "domain_verdict": "VOID",
-        "shadow": true
+      {
+        "tool": "capital_entropy",
+        "mode": "power_consequence_map",
+        "passed": true,
+        "detail": "DIFFERENT (lengths: 3850 vs 3866)",
+        "known_red": true
       },
-      "delta": "Material \u2014 ADEQUATE vs CRITICAL. Harness SURVIVAL SNAPPED on deficit. Function responds correctly."
-    },
-    "capital_entropy__power_consequence_map": {
-      "status": "GREEN (was KNOWN-RED)",
-      "payload_a": {
-        "power_concentration": 0.722,
-        "benefit_concentration": 1.0,
-        "consequence_gap": 0.4666,
-        "interpretation": "MODERATE \u2014 benefits concentrated"
+      {
+        "tool": "capital_primitive",
+        "mode": "npv",
+        "passed": true,
+        "detail": "DIFFERENT (lengths: 3021 vs 3015)",
+        "known_red": false
       },
-      "payload_b": {
-        "power_concentration": 0.2708,
-        "benefit_concentration": 0.3981,
-        "consequence_gap": 0.1807,
-        "interpretation": "LOW \u2014 well-integrated"
+      {
+        "tool": "wealth_judge_handoff",
+        "mode": "prepare",
+        "passed": true,
+        "detail": "DIFFERENT (lengths: 2417 vs 2417)",
+        "known_red": false
       },
-      "delta": "Material \u2014 concentrated vs distributed governance produces different scores. KNOWN-RED defect FIXED.",
-      "note": "Decision makers, beneficiaries, cost_bearers fields now consumed. Scores derived from content, not list length."
-    }
+      {
+        "tool": "capital_health",
+        "mode": "fiscal_breakeven",
+        "passed": true,
+        "detail": "DIFFERENT (lengths: 5326 vs 5324)",
+        "known_red": false
+      }
+    ]
   },
-  "known_red_fixed": 1,
-  "known_red_remaining": 2,
-  "verdict": "MIXED \u2014 3 GREEN, 2 KNOWN-RED unfixed, 2 not yet probed live",
-  "green": 3,
-  "red": 0
+  "timestamp": "2026-10-14T15:33:18.554555+00:00",
+  "session_id": "SEAL-e26fefa68fc642b6",
+  "note": "KNOWN-RED cases are expected failures \u2014 they are calibration targets, not bugs."
 }

@@ -23,6 +23,38 @@ from wealth_mcp import (
 )
 
 
+# ── Semantic concept layer (2026-10-15, mission wealth-mcp-semantic) ─────
+# SOT declaration for the 3 token-gated semantic tools. Implementation lives
+# in wealth_mcp/semantic.py (registered via register_semantic_tools from
+# server.py); names are mirrored in wealth_mcp.CAPITAL_TOOL_NAMES so the
+# registry, health endpoint, and capital_registry all report 18 public tools.
+# Evidence-gate withholding applies to THESE 3 ONLY — the 15 canonical tools
+# above keep their advisory behaviour (owner ruling, stricter-than-C8).
+SEMANTIC_TOOL_NAMES: tuple[str, ...] = (
+    "capital_read",
+    "capital_rank_sources",
+    "capital_breakeven",
+)
+
+SEMANTIC_TOOL_SPECS: dict[str, str] = {
+    "capital_read": (
+        "Read one governed capital concept by id (concepts_ontology.json). "
+        "Inline verification flag on every observation; evidence gate withholds "
+        "UNVERIFIED/unresolvable values behind input_requests. Token: wealth:read+."
+    ),
+    "capital_rank_sources": (
+        "List a concept's bindings ranked by quality × freshness — the "
+        "transparency surface for capital_read resolution. Token: wealth:read+."
+    ),
+    "capital_breakeven": (
+        "Deductive fiscal-breakeven Brent (MY). budget_balance: "
+        "spot − ((5−deficit)/100 × GDP)/sensitivity × 10 (sensitivity RM3-4B per "
+        "$10, Treasury-sealed; 3.5 midpoint + range exposed). dividend_floor: "
+        "sealed Overlay T-A anchor 67.34 with provenance. Token: wealth:compute+."
+    ),
+}
+
+
 def _coerce_json_string(v: Any) -> Any:
     """Coerce MCP transport string serialization back to native types.
 
@@ -2417,6 +2449,51 @@ def register_canonical_tools(mcp):
                     "modes": ["prepare", "submit"],
                     "description": "Sovereign 888_HOLD judge handoff envelope",
                 },
+                "capital_indicator": {
+                    "modes": ["ema", "sma", "rsi", "macd", "bb", "psar", "atr", "adx"],
+                    "description": "Technical analysis indicators for any yfinance symbol",
+                },
+                "capital_backtest": {
+                    "modes": ["run", "compass", "stress_test", "ensemble"],
+                    "description": "Strategy simulation, drawdown estimation, and scenario backtesting",
+                },
+                "capital_entry_plan": {
+                    "modes": ["plan"],
+                    "description": "Risk-adjusted entry planning and position sizing",
+                },
+                "wealth_synthesize": {
+                    "modes": ["synthesize", "deal", "hysteresis"],
+                    "description": "Ω00 cross-dimensional synthesis — domain assessment, never a constitutional verdict",
+                },
+                "capital_polix": {
+                    "modes": ["topology", "power_audit"],
+                    "description": "Macro-political risk and power topology",
+                },
+                "capital_civx": {
+                    "modes": ["cycle", "resources"],
+                    "description": "Civilizational resource cycles",
+                },
+                "capital_read": {
+                    "modes": ["read"],
+                    "description": (
+                        "Semantic concept layer — read one governed capital concept with "
+                        "inline verification flag; evidence gate withholds UNVERIFIED values"
+                    ),
+                },
+                "capital_rank_sources": {
+                    "modes": ["rank"],
+                    "description": (
+                        "Semantic concept layer — list a concept's bindings ranked by "
+                        "quality × freshness (transparency surface for capital_read)"
+                    ),
+                },
+                "capital_breakeven": {
+                    "modes": ["budget_balance", "dividend_floor"],
+                    "description": (
+                        "Deductive fiscal-breakeven Brent (MY) — sealed sensitivity "
+                        "RM3-4B per $10, dividend_floor = sealed Overlay T-A anchor"
+                    ),
+                },
             }
             # P1 scope disclosure (2026-09-16): this map is PARTIAL — it is
             # a mode-map for schema lookup, never a census of public tools.
@@ -2483,7 +2560,11 @@ def register_canonical_tools(mcp):
                         {
                             "name": "capital",
                             "kind": "deductive",
-                            "tools": ["capital_primitive", "capital_health"],
+                            "tools": [
+                                "capital_primitive",
+                                "capital_health",
+                                "capital_breakeven",
+                            ],
                         },
                         {
                             "name": "institutional",
@@ -2493,12 +2574,22 @@ def register_canonical_tools(mcp):
                         {
                             "name": "market",
                             "kind": "observational",
-                            "tools": ["capital_market"],
+                            "tools": [
+                                "capital_market",
+                                "capital_indicator",
+                                "capital_entry_plan",
+                                "capital_backtest",
+                            ],
                         },
                         {
                             "name": "vault",
                             "kind": "mutating",
                             "tools": ["capital_ledger"],
+                        },
+                        {
+                            "name": "evidence",
+                            "kind": "deductive",
+                            "tools": ["capital_claims"],
                         },
                         {
                             "name": "governance",
@@ -2509,6 +2600,21 @@ def register_canonical_tools(mcp):
                             "name": "meta",
                             "kind": "observational",
                             "tools": ["capital_registry"],
+                        },
+                        {
+                            "name": "synthesis",
+                            "kind": "advisory",
+                            "tools": ["wealth_synthesize"],
+                        },
+                        {
+                            "name": "civilizational",
+                            "kind": "interpretive",
+                            "tools": ["capital_polix", "capital_civx"],
+                        },
+                        {
+                            "name": "semantic",
+                            "kind": "observational",
+                            "tools": ["capital_read", "capital_rank_sources"],
                         },
                     ],
                     "canonical_tool_count": len(canonical_tools),

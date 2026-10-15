@@ -1,0 +1,64 @@
+{
+  "tool": "wealth_judge_handoff",
+  "mode": "prepare",
+  "error_class": "ok",
+  "probed_at": "2026-10-14T15:34:57.094998+00:00",
+  "session_id": "SEAL-38c1e44946c84c49",
+  "raw_response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {},
+      "content": [
+        {
+          "text": "{\"tool_name\": \"wealth_judge_handoff\", \"tool_version\": \"2026.07.24\", \"domain\": \"capital\", \"result\": {\"verdict\": \"VOID\"}, \"result_type\": \"ERROR\", \"epistemic_tag\": \"ASSUMED\", \"claim_state\": \"UNPROVEN\", \"evidence_quality\": \"MISSING\", \"epistemic\": {\"tag\": \"ASSUMED\", \"quality\": \"MISSING\", \"confidence\": 0.0}, \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"ARIF\", \"requires_888_hold\": false, \"source_attribution\": [\"wealth-session-gate\"], \"computation_timestamp\": \"2026-10-14T15:34:57.085001+00:00\", \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"cross_organ_inheritance\": \"NONE\", \"binding_code\": \"ACTOR_UNVERIFIED\", \"bridge_code\": \"\", \"errors\": [\"L11 AUTH: bound session_id but caller_service=None is not in trusted-service list AND tool_name='wealth_judge_handoff' requires a verified actor. Send caller_service=arifos (or aforge) to delegate through a machine-authenticated channel, or supply a verified actor_id.\"], \"error_code\": \"ACTOR_UNVERIFIED\", \"trace_id\": \"\", \"verdict\": \"VOID\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": 0.0}, \"domain_verdict\": \"VOID\"}",
+          "type": "text"
+        }
+      ],
+      "isError": true,
+      "structuredContent": {
+        "tool_name": "wealth_judge_handoff",
+        "tool_version": "2026.07.24",
+        "domain": "capital",
+        "result": {
+          "verdict": "VOID"
+        },
+        "result_type": "ERROR",
+        "epistemic_tag": "ASSUMED",
+        "claim_state": "UNPROVEN",
+        "evidence_quality": "MISSING",
+        "epistemic": {
+          "tag": "ASSUMED",
+          "quality": "MISSING",
+          "confidence": 0.0
+        },
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "ARIF",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "wealth-session-gate"
+        ],
+        "computation_timestamp": "2026-10-14T15:34:57.085001+00:00",
+        "session_id": "SEAL-38c1e44946c84c49",
+        "actor_id": "ARIF",
+        "cross_organ_inheritance": "NONE",
+        "binding_code": "ACTOR_UNVERIFIED",
+        "bridge_code": "",
+        "errors": [
+          "L11 AUTH: bound session_id but caller_service=None is not in trusted-service list AND tool_name='wealth_judge_handoff' requires a verified actor. Send caller_service=arifos (or aforge) to delegate through a machine-authenticated channel, or supply a verified actor_id."
+        ],
+        "error_code": "ACTOR_UNVERIFIED",
+        "trace_id": "",
+        "verdict": "VOID",
+        "coverage": {
+          "known": 0,
+          "total": 0,
+          "ratio": 0.0
+        },
+        "domain_verdict": "VOID"
+      }
+    }
+  },
+  "sha256": "18eec6a9f83ca61fdd03435bef8dd583924e1bdbc13444e3b7047c087b52a560"
+}

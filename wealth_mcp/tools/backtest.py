@@ -75,6 +75,7 @@ def register_backtest(mcp):
                     epistemic_tag=EpistemicTag.ASSUMED,
                     evidence_quality=EvidenceQuality.MISSING,
                     session_id=session_id,
+                    trace_id=trace_id,
                     actor_id=actor_id,
                 )
 
@@ -104,6 +105,7 @@ def register_backtest(mcp):
                     "trademaster_distillation",
                 ],
                 session_id=session_id,
+                trace_id=trace_id,
                 actor_id=actor_id,
             )
 
@@ -128,6 +130,7 @@ def register_backtest(mcp):
                     epistemic_tag=EpistemicTag.ASSUMED,
                     evidence_quality=EvidenceQuality.MISSING,
                     session_id=session_id,
+                    trace_id=trace_id,
                     actor_id=actor_id,
                 )
 
@@ -151,6 +154,7 @@ def register_backtest(mcp):
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["stress_test_engine", "trademaster_distillation"],
                 session_id=session_id,
+                trace_id=trace_id,
                 actor_id=actor_id,
             )
 
@@ -175,6 +179,7 @@ def register_backtest(mcp):
                     epistemic_tag=EpistemicTag.ASSUMED,
                     evidence_quality=EvidenceQuality.MISSING,
                     session_id=session_id,
+                    trace_id=trace_id,
                     actor_id=actor_id,
                 )
 
@@ -190,6 +195,7 @@ def register_backtest(mcp):
                     epistemic_tag=EpistemicTag.ASSUMED,
                     evidence_quality=EvidenceQuality.MISSING,
                     session_id=session_id,
+                    trace_id=trace_id,
                     actor_id=actor_id,
                 )
 
@@ -216,6 +222,7 @@ def register_backtest(mcp):
                 evidence_quality=EvidenceQuality.MODERATE,
                 source_attribution=["ensemble_engine", "trademaster_distillation"],
                 session_id=session_id,
+                trace_id=trace_id,
                 actor_id=actor_id,
             )
 
@@ -237,6 +244,7 @@ def register_backtest(mcp):
                     epistemic_tag=EpistemicTag.ASSUMED,
                     evidence_quality=EvidenceQuality.MISSING,
                     session_id=session_id,
+                    trace_id=trace_id,
                     actor_id=actor_id,
                 )
 
@@ -266,11 +274,63 @@ def register_backtest(mcp):
 
             bt_result = run_backtest(candles, cfg)
 
-            # Extract key metrics
-            metrics = bt_result.get("metrics", {})
-            trades = bt_result.get("trades", [])
+            # Extract key metrics — SEMANTIC CONTRACT (P0 2026-10-14, FI-008):
+            # engine_v2 returns {"config","summary","by_regime",...} on success,
+            # {"total_trades":0,"error":"No trades generated"} on empty. The old
+            # code read bt_result["metrics"] (never written by engine_v2 — the
+            # unit test mocked that shape, so green tests masked the lie).
+            # Failure class: 0-trade run reported final_equity=0 from $10,000
+            # with errors=[] — money vanishing in a simulation that did nothing.
+            metrics = (
+                bt_result.get("metrics")
+                or bt_result.get("summary")
+                or {}
+            )
+            trades = bt_result.get("trades") or bt_result.get("trade_log") or []
+            engine_error = bt_result.get("error")
+
+            total_trades = int(metrics.get("total_trades", bt_result.get("total_trades", 0)) or 0)
+
+            if total_trades == 0 or not trades:
+                # NO_TRADES: equity is CONSERVED (no trade = no P&L), never 0.
+                summary = {
+                    "status": "NO_TRADES",
+                    "symbol": sym,
+                    "interval": interval,
+                    "lookback": lookback,
+                    "data_points": len(candles),
+                    "date_range": {
+                        "from": str(candles[0].timestamp)[:19] if candles else None,
+                        "to": str(candles[-1].timestamp)[:19] if candles else None,
+                    },
+                    "initial_capital": float(initial_capital),
+                    "final_equity": float(initial_capital),
+                    "total_return_pct": 0.0,
+                    "total_trades": 0,
+                    "message": (
+                        "NO_TRADES: strategy generated zero trades over the "
+                        "window — result is not evidence of strategy failure or "
+                        "success. Check indicator thresholds / regime filter."
+                    ),
+                    "engine_note": engine_error,
+                    "last_5_trades": [],
+                }
+                return wrap_result(
+                    tool_name="capital_backtest",
+                    domain="market",
+                    result=summary,
+                    epistemic_tag=EpistemicTag.DERIVED,
+                    evidence_quality=EvidenceQuality.MISSING,
+                    source_attribution=[f"yfinance:{sym}", "engine_v2"],
+                    errors=["NO_TRADES: 0 trades generated — no performance claim admissible"],
+                    warnings=["final_equity = initial_capital by conservation; do not read as realised equity"],
+                    session_id=session_id,
+                    trace_id=trace_id,
+                    actor_id=actor_id,
+                )
 
             summary = {
+                "status": "OK",
                 "symbol": sym,
                 "interval": interval,
                 "lookback": lookback,
@@ -280,10 +340,10 @@ def register_backtest(mcp):
                     "to": str(candles[-1].timestamp)[:19] if candles else None,
                 },
                 "initial_capital": float(initial_capital),
-                "final_equity": round(float(metrics.get("final_equity", 0)), 2),
+                "final_equity": round(float(metrics.get("final_equity", initial_capital)), 2),
                 "total_return_pct": round(float(metrics.get("total_return_pct", 0)), 2),
-                "total_trades": int(metrics.get("total_trades", 0)),
-                "win_rate_pct": round(float(metrics.get("win_rate_pct", 0)), 1),
+                "total_trades": total_trades,
+                "win_rate_pct": round(float(metrics.get("win_rate_pct", metrics.get("win_rate", 0))), 1),
                 "profit_factor": round(float(metrics.get("profit_factor", 0)), 2),
                 "sharpe_ratio": round(float(metrics.get("sharpe_ratio", 0)), 2),
                 "max_drawdown_pct": round(float(metrics.get("max_drawdown_pct", 0)), 2),
@@ -309,6 +369,7 @@ def register_backtest(mcp):
                 evidence_quality=EvidenceQuality.OBSERVED,
                 source_attribution=[f"yfinance:{sym}", "engine_v2"],
                 session_id=session_id,
+                trace_id=trace_id,
                 actor_id=actor_id,
             )
 
@@ -326,6 +387,7 @@ def register_backtest(mcp):
                 epistemic_tag=EpistemicTag.ASSUMED,
                 evidence_quality=EvidenceQuality.MISSING,
                 session_id=session_id,
+                trace_id=trace_id,
                 actor_id=actor_id,
             )
         except Exception as e:
@@ -340,6 +402,7 @@ def register_backtest(mcp):
                 epistemic_tag=EpistemicTag.ASSUMED,
                 evidence_quality=EvidenceQuality.MISSING,
                 session_id=session_id,
+                trace_id=trace_id,
                 actor_id=actor_id,
             )
 

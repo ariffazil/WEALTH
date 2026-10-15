@@ -56,7 +56,7 @@ A-FORGE Execution via Broker API
 
 ## 4. Canonical Tool Surfaces (Port 18082)
 
-Derived canonically from `/root/WEALTH/tools_sot.yaml` (17 Tools):
+Derived canonically from `/root/WEALTH/tools_sot.yaml` (18 Tools):
 
 | Category | Primary Tools | Modes / Capabilities |
 | :--- | :--- | :--- |

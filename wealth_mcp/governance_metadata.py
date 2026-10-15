@@ -25,6 +25,12 @@ CANONICAL_FLOORS: dict[str, list[str]] = {
     "capital_entry_plan": ["F1", "F2", "F7", "F11"],
     "wealth_judge_handoff": ["F1", "F2", "F4", "F7", "F11", "F13"],
     "wealth_bid_surface": ["F1", "F2", "F4", "F7", "F11"],
+    # Semantic concept layer (2026-10-15, mission wealth-mcp-semantic):
+    # F2 TRUTH is load-bearing here — the evidence gate withholds UNVERIFIED
+    # values instead of emitting them. F11 = receipts + invocation log.
+    "capital_read": ["F1", "F2", "F7", "F11"],
+    "capital_rank_sources": ["F1", "F2", "F11"],
+    "capital_breakeven": ["F1", "F2", "F4", "F7", "F11", "F13"],
     # Core primitives — computational only, low risk
     "wealth_compute_npv": ["F1", "F2", "F7", "F11"],
     "wealth_compute_irr": ["F1", "F2", "F7", "F11"],

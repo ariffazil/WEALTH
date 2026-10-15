@@ -2,65 +2,128 @@
   "tool": "capital_market",
   "mode": "garbage_mode_test",
   "error_class": "ok",
-  "probed_at": "2026-08-06T08:35:15.490885+00:00",
+  "probed_at": "2026-10-14T15:34:33.906527+00:00",
   "session_id": "SEAL-38c1e44946c84c49",
   "raw_response": {
     "jsonrpc": "2.0",
     "id": 1,
     "result": {
       "_meta": {
-        "wealth_receipt": {
-          "persisted": true,
-          "path": "/root/VAULT999/wealth/receipts.jsonl",
-          "receipt_id": "4a12f5bb-f1d2-465e-8aa6-630f4ce2fe62",
-          "call_status": "ERROR"
-        }
+        "cross_organ_inheritance": "lane_denied",
+        "binding_code": "OBSERVE_ANONYMOUS_OK"
       },
       "content": [
         {
-          "type": "text",
-          "text": "{\"isError\": true, \"error_class\": \"INTERNAL_ERROR\", \"recoverability\": \"ESCALATE_TO_888_HOLD\", \"suspected_layer\": \"tool_execution\", \"severity\": \"FATAL\", \"message\": \"Error calling tool 'capital_market'\", \"next_action\": \"Log to VAULT999 and escalate \\u2014 server bug\", \"epistemic_label\": \"DER\", \"timestamp\": \"2026-08-06T08:35:15.487815+00:00\", \"source_tool\": \"capital_market\", \"source_organ\": \"wealth\", \"original_error\": \"ToolError: Error calling tool 'capital_market'\", \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"trace_id\": \"\", \"execution_authorized\": false, \"human_final_authority\": \"Arif\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": 1.0}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 1.0, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"PASS\", \"warnings\": []}}"
+          "text": "{\"tool_name\": \"capital_market\", \"tool_version\": \"2026.07.12\", \"domain\": \"market\", \"result\": {\"error\": \"Unknown mode 'garbage_mode_test'.\", \"valid_modes\": [\"fundamentals\", \"fx\", \"commodity\", \"indicator\", \"stock\", \"gold\", \"oil\", \"gas\"], \"hint\": \"fundamentals: pass ticker=<BURSA_CODE> for the F1-F9 fundamental-invariant engine.\", \"source\": \"UNSPECIFIED\", \"timestamp\": \"2026-10-14T15:34:33.904064+00:00\", \"cache_age_seconds\": 0, \"staleness_class\": \"LIVE\", \"_freshness\": {\"source\": \"UNSPECIFIED\", \"timestamp\": \"2026-10-14T15:34:33.904064+00:00\", \"cache_age_seconds\": 0, \"staleness_class\": \"LIVE\", \"enforced_at\": \"2026-10-14T15:34:33.904064+00:00\", \"doctrine\": \"Freshness \\u2260 Truth. LatestAvailable \\u2260 RealTime.\"}, \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"WEAK\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"capital_market:error\"], \"computation_timestamp\": \"2026-10-14T15:34:33.904161+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\", \"[W0] UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.52, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": -1.0, \"unmeasured\": true}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"WEAK\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": -1.0, \"coverage_unmeasured\": true, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"FAIL\", \"warnings\": [\"UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_market\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\", \"verdict\": \"READONLY\"}",
+          "type": "text"
         }
       ],
+      "isError": false,
       "structuredContent": {
-        "isError": true,
-        "error_class": "INTERNAL_ERROR",
-        "recoverability": "ESCALATE_TO_888_HOLD",
-        "suspected_layer": "tool_execution",
-        "severity": "FATAL",
-        "message": "Error calling tool 'capital_market'",
-        "next_action": "Log to VAULT999 and escalate \u2014 server bug",
-        "epistemic_label": "DER",
-        "timestamp": "2026-08-06T08:35:15.487815+00:00",
-        "source_tool": "capital_market",
-        "source_organ": "wealth",
-        "original_error": "ToolError: Error calling tool 'capital_market'",
+        "tool_name": "capital_market",
+        "tool_version": "2026.07.12",
+        "domain": "market",
+        "result": {
+          "error": "Unknown mode 'garbage_mode_test'.",
+          "valid_modes": [
+            "fundamentals",
+            "fx",
+            "commodity",
+            "indicator",
+            "stock",
+            "gold",
+            "oil",
+            "gas"
+          ],
+          "hint": "fundamentals: pass ticker=<BURSA_CODE> for the F1-F9 fundamental-invariant engine.",
+          "source": "UNSPECIFIED",
+          "timestamp": "2026-10-14T15:34:33.904064+00:00",
+          "cache_age_seconds": 0,
+          "staleness_class": "LIVE",
+          "_freshness": {
+            "source": "UNSPECIFIED",
+            "timestamp": "2026-10-14T15:34:33.904064+00:00",
+            "cache_age_seconds": 0,
+            "staleness_class": "LIVE",
+            "enforced_at": "2026-10-14T15:34:33.904064+00:00",
+            "doctrine": "Freshness \u2260 Truth. LatestAvailable \u2260 RealTime."
+          },
+          "_governance_advisory": {
+            "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
+            "kappa_r_is_observed": true,
+            "witness_is_observed": true
+          }
+        },
+        "result_type": "scalar",
+        "epistemic_tag": "DERIVED",
+        "claim_state": "DRAFT",
+        "evidence_quality": "WEAK",
+        "execution_authorized": false,
+        "execution_authority": "OBSERVATION",
+        "human_final_authority": "Arif",
+        "requires_888_hold": false,
+        "source_attribution": [
+          "capital_market:error"
+        ],
+        "computation_timestamp": "2026-10-14T15:34:33.904161+00:00",
+        "missing_inputs": [],
+        "metadata": {},
+        "warnings": [
+          "[W0] UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input.",
+          "[W0] UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+        ],
+        "errors": [],
         "session_id": "SEAL-38c1e44946c84c49",
         "actor_id": "ARIF",
-        "trace_id": "",
-        "execution_authorized": false,
-        "human_final_authority": "Arif",
-        "verdict": "PARTIAL",
+        "witness": {
+          "human": false,
+          "ai": true,
+          "earth": false,
+          "is_complete": false,
+          "missing": [
+            "human",
+            "earth"
+          ]
+        },
+        "shadow": false,
+        "kappa_r": 0.52,
+        "psi_le": 0.2,
+        "qdf": "QDF-v2.0-TRINITY",
         "coverage": {
           "known": 0,
           "total": 0,
-          "ratio": 1.0
+          "ratio": -1.0,
+          "unmeasured": true
         },
         "epistemic": {
           "tag": "DERIVED",
-          "quality": "MODERATE",
+          "quality": "WEAK",
           "confidence": 0.5
         },
         "_w0_evidence_gate": {
-          "coverage": 1.0,
+          "coverage": -1.0,
+          "coverage_unmeasured": true,
           "material_args_count": 0,
           "material_args": [],
-          "gate": "PASS",
-          "warnings": []
-        }
-      },
-      "isError": false
+          "gate": "FAIL",
+          "warnings": [
+            "UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+          ]
+        },
+        "_hermes_semantic_gate": {
+          "gate": "hermes_semantic",
+          "gate_mode": "enforce",
+          "hermes_url": "http://127.0.0.1:18087/mcp",
+          "tool": "capital_market",
+          "status": "PASS",
+          "outcome": "NO_SEMANTIC_CONTENT",
+          "semantic_fields": [],
+          "error_code": ""
+        },
+        "trace_id": "",
+        "verdict": "READONLY"
+      }
     }
   },
-  "sha256": "a470f7bb564c9922a646a85704263b32cb5d60aa5d3948f38a6b436a9d2416c8"
+  "sha256": "53fa00fc80f5e9a7d638fac4288c4819810173af0899dcf450751f9a069236a0"
 }

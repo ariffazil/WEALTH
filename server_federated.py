@@ -208,6 +208,40 @@ if __name__ == "__main__":
         tools_list = await mcp.list_tools()
         return JSONResponse({"tools": [{"name": t.name} for t in tools_list]})
 
+    # ── MCP 2026-07-28 server discovery (2026-10-15, wealth-mcp-semantic) ──
+    # GET /server/discover → protocol metadata + organ identity. Additive:
+    # FastMCP transport (/mcp) and legacy clients are untouched (dual-compat).
+    # Best-effort: implemented as a documented custom route because FastMCP
+    # 4.x exposes no first-class server-metadata hook on http_app.
+    async def discover_endpoint(request):
+        tools_list = []
+        try:
+            tools_list = [t.name for t in await mcp.list_tools()]
+        except Exception:
+            pass  # discovery must never fail the endpoint
+        return JSONResponse(
+            {
+                "protocolVersion": "2026-07-28",
+                "capabilities": {
+                    "tools": True,
+                    "resources": True,
+                    "prompts": True,
+                },
+                "identity": {
+                    "organ": "WEALTH",
+                    "server": "WEALTH Federated Domain",
+                    "version": f"v{WEALTH_VERSION}",
+                    "authority_ceiling": "555_COMPUTE_ONLY",
+                    "mcp_endpoint": "/mcp",
+                    "health_endpoint": "/health",
+                    "protocol_transports": ["streamable-http"],
+                    "public_tools": tools_list,
+                    "public_tool_count": len(tools_list),
+                },
+            },
+            headers={"Access-Control-Allow-Origin": "*"},
+        )
+
     # ── A2A Agent Card: REMOVED 2026-07-15 (WEALTH portion of federation-wide
     # A2A card consolidation). Local agent-card serving is now disabled;
     # federation-level A2A discovery flows through the central coordinator
@@ -263,6 +297,12 @@ if __name__ == "__main__":
         routes=[
             Route("/health", health),
             Route("/tools", tools_endpoint),
+            # ── MCP 2026-07-28 server discovery (dual-compat, 2026-10-15) ──
+            # Additive GET route beside the existing MCP mount: the streamable-http
+            # /mcp surface and all legacy clients are untouched. Best-effort per
+            # mission wealth-mcp-semantic: FastMCP 4.x has no first-class
+            # server-metadata hook, so this is a documented custom route.
+            Route("/server/discover", discover_endpoint, methods=["GET"]),
             Route(
                 "/.well-known/oauth-protected-resource",
                 _wealth_oauth_protected_resource,

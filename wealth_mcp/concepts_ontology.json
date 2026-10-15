@@ -1,0 +1,639 @@
+{
+  "schema": "wealth.concepts_ontology.v1",
+  "organ": "WEALTH",
+  "authority": "CANON (owner-editable) — semantic concept layer SOT",
+  "sot_source": "wealth_mcp/semantic.py",
+  "note": "Semantic concept registry: ~30 REAL capital concepts, every binding points at a live engine or a printed/seeded JSON source on this VPS. No filler concepts. Resolution rule: rank bindings by quality x freshness, fetch best, fall through to next on failure. Verification vocabulary (inline on every observation): VERIFIED_LIVE | VERIFIED_SINGLE | UNVERIFIED | STALE (as_of/collected_at > 30 days). If the source declares its own verification field, it is inherited.",
+  "freshness_scores": {
+    "hourly": 1.0,
+    "daily": 0.9,
+    "weekly": 0.75,
+    "monthly": 0.6,
+    "event": 0.5,
+    "static": 1.0
+  },
+  "stale_after_days": 30,
+  "concepts": [
+    {
+      "id": "commodity.brent.spot",
+      "title": "Brent crude spot price",
+      "unit": "USD/bbl",
+      "entity_default": "XBRENT",
+      "description": "Live Brent spot from the WEALTH oil commodity engine (yfinance XBRENT + technicals).",
+      "refresh": "hourly",
+      "bindings": [
+        {
+          "source_kind": "engine_api",
+          "locator": "http://127.0.0.1:3457/api/snapshot",
+          "public_locator": "https://arif-fazil.com/oil/api/snapshot",
+          "jsonpath_or_field": "ticker.price",
+          "quality": 0.95,
+          "freshness": "hourly",
+          "verification_policy": "live: VERIFIED_LIVE if ticker.stale is false and observed_at within 30d; STALE if stale flag or old observed_at; inherit source stale field"
+        }
+      ]
+    },
+    {
+      "id": "commodity.brent.change_pct",
+      "title": "Brent daily change percent",
+      "unit": "%",
+      "entity_default": "XBRENT",
+      "description": "Live Brent day-over-day percentage change from the oil engine snapshot.",
+      "refresh": "hourly",
+      "bindings": [
+        {
+          "source_kind": "engine_api",
+          "locator": "http://127.0.0.1:3457/api/snapshot",
+          "public_locator": "https://arif-fazil.com/oil/api/snapshot",
+          "jsonpath_or_field": "ticker.changePct",
+          "quality": 0.95,
+          "freshness": "hourly",
+          "verification_policy": "live: VERIFIED_LIVE if ticker.stale is false and observed_at within 30d; STALE otherwise"
+        }
+      ]
+    },
+    {
+      "id": "commodity.brent.rsi",
+      "title": "Brent RSI(14)",
+      "unit": "index",
+      "entity_default": "XBRENT",
+      "description": "Live Brent relative strength index from the oil engine snapshot (DERIVED technical).",
+      "refresh": "hourly",
+      "bindings": [
+        {
+          "source_kind": "engine_api",
+          "locator": "http://127.0.0.1:3457/api/snapshot",
+          "public_locator": "https://arif-fazil.com/oil/api/snapshot",
+          "jsonpath_or_field": "ticker.rsi",
+          "quality": 0.9,
+          "freshness": "hourly",
+          "verification_policy": "live: VERIFIED_LIVE if ticker.stale is false (indicator is DERIVED from live series); STALE otherwise"
+        }
+      ]
+    },
+    {
+      "id": "commodity.brent.dividend_floor",
+      "title": "PETRONAS dividend-floor Brent anchor (Overlay T-A)",
+      "unit": "USD/bbl",
+      "entity_default": "MALAYSIA",
+      "description": "Sealed $67.34 dividend-floor anchor: at sustained $67.34 Brent, PETRONAS dividend extraction falls below the RM20B floor.",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/oil/floor.json",
+          "jsonpath_or_field": "floor_price_usd",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "inherit source verification field (floor.json declares VERIFIED_SINGLE); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "commodity.brent.glut_deck",
+      "title": "Brent 2027-2028 supply-glut forecast deck",
+      "unit": "USD/bbl (forecast array)",
+      "entity_default": "GLOBAL",
+      "description": "Bank/agency forecast deck (SEB, Goldman, IEA surplus, EIA 4Q26) for the 2027-2028 glut window. Forecasts are projections, not receipts.",
+      "refresh": "monthly",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/oil/glut.json",
+          "jsonpath_or_field": "forecasts",
+          "quality": 0.85,
+          "freshness": "monthly",
+          "verification_policy": "inherit per-entry verification fields (each forecast declares its own); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "commodity.henry_hub.spot",
+      "title": "Henry Hub natural gas spot",
+      "unit": "USD/MMBtu",
+      "entity_default": "XNATGAS",
+      "description": "Live Henry Hub spot from the WEALTH gas commodity engine.",
+      "refresh": "hourly",
+      "bindings": [
+        {
+          "source_kind": "engine_api",
+          "locator": "http://127.0.0.1:3458/api/snapshot",
+          "public_locator": "https://arif-fazil.com/gas/api/snapshot",
+          "jsonpath_or_field": "ticker.price",
+          "quality": 0.95,
+          "freshness": "hourly",
+          "verification_policy": "live: VERIFIED_LIVE if ticker.stale is false and observed_at within 30d; STALE otherwise"
+        }
+      ]
+    },
+    {
+      "id": "commodity.xau.spot",
+      "title": "Gold spot (XAU/USD)",
+      "unit": "USD/oz",
+      "entity_default": "XAUUSD",
+      "description": "Live gold spot from the WEALTH gold commodity engine.",
+      "refresh": "hourly",
+      "bindings": [
+        {
+          "source_kind": "engine_api",
+          "locator": "http://127.0.0.1:3456/api/snapshot",
+          "public_locator": "https://arif-fazil.com/gold/api/snapshot",
+          "jsonpath_or_field": "ticker.price",
+          "quality": 0.95,
+          "freshness": "hourly",
+          "verification_policy": "live: VERIFIED_LIVE if ticker.stale is false and observed_at within 30d; STALE otherwise"
+        }
+      ]
+    },
+    {
+      "id": "gold.cb_streak_months",
+      "title": "Central bank gold buying streak (China)",
+      "unit": "months",
+      "entity_default": "PBOC",
+      "description": "Consecutive months of reported central bank gold accumulation (PBOC streak, WGC series).",
+      "refresh": "monthly",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/gold/central_banks.json",
+          "jsonpath_or_field": "china.streak_months",
+          "quality": 0.9,
+          "freshness": "monthly",
+          "verification_policy": "inherit source verification field (china.verification); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "gold.cb_sept_purchase_t",
+      "title": "China September gold purchase",
+      "unit": "tonnes",
+      "entity_default": "PBOC",
+      "description": "China reported gold purchase for September 2026 (~23t per CNBC).",
+      "refresh": "monthly",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/gold/central_banks.json",
+          "jsonpath_or_field": "china.september_2026_purchase_t",
+          "quality": 0.85,
+          "freshness": "monthly",
+          "verification_policy": "inherit source verification field (china.verification); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "gold.cb_q2_net_t",
+      "title": "Global central bank Q2 net gold purchases",
+      "unit": "tonnes",
+      "entity_default": "WGC",
+      "description": "WGC Gold Demand Trends Q2 2026 estimated net purchases (289t) — estimated series, not the reported-only series.",
+      "refresh": "monthly",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/gold/central_banks.json",
+          "jsonpath_or_field": "global.q2_2026_net_purchase_t",
+          "quality": 0.9,
+          "freshness": "monthly",
+          "verification_policy": "inherit source verification field (global.verification); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "gold.etf_q3_inflow_usd_bn",
+      "title": "Gold ETF Q3 2026 inflows",
+      "unit": "USD billion",
+      "entity_default": "WGC",
+      "description": "Record quarterly gold ETF inflow (WGC: $31bn Q3 2026) — Western institutional re-entry signal.",
+      "refresh": "weekly",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/gold/etf_flows.json",
+          "jsonpath_or_field": "q3_2026.inflow_usd_bn",
+          "quality": 0.9,
+          "freshness": "weekly",
+          "verification_policy": "inherit source verification field (q3_2026.verification); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "gold.etf_holdings_t",
+      "title": "Gold ETF total holdings",
+      "unit": "tonnes",
+      "entity_default": "WGC",
+      "description": "Record gold ETF holdings (WGC: 4,256t, Sept 2026).",
+      "refresh": "weekly",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/gold/etf_flows.json",
+          "jsonpath_or_field": "september_2026.holdings_total_t",
+          "quality": 0.9,
+          "freshness": "weekly",
+          "verification_policy": "inherit source verification field (september_2026.verification); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "gold.malaysia_gold_usd_bn",
+      "title": "Malaysia gold reserves (BNM)",
+      "unit": "USD billion",
+      "entity_default": "BNM",
+      "description": "Bank Negara Malaysia gold reserves (Bernama 15 Jun 2026: US$6.5bn). Different series valuations are never averaged.",
+      "refresh": "weekly",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/gold/reserves.json",
+          "jsonpath_or_field": "malaysia.gold_usd_bn",
+          "quality": 0.9,
+          "freshness": "weekly",
+          "verification_policy": "inherit source verification field (malaysia.verification); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "gold.malaysia_total_reserves_usd_bn",
+      "title": "Malaysia total international reserves (BNM)",
+      "unit": "USD billion",
+      "entity_default": "BNM",
+      "description": "BNM international reserves (30 Jun 2026: US$132.6bn).",
+      "refresh": "weekly",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/gold/reserves.json",
+          "jsonpath_or_field": "malaysia.total_reserves_usd_bn",
+          "quality": 0.9,
+          "freshness": "weekly",
+          "verification_policy": "inherit source verification field (malaysia.verification); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "gold.dedollar_usd_share_excl",
+      "title": "USD share of global FX reserves (excl. gold)",
+      "unit": "%",
+      "entity_default": "IMF_COFER",
+      "description": "USD share of allocated global FX reserves excluding gold (IMF COFER framing, 57%, lowest since 1994).",
+      "refresh": "monthly",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/gold/dedollar.json",
+          "jsonpath_or_field": "usd_share.excl_gold_pct",
+          "quality": 0.85,
+          "freshness": "monthly",
+          "verification_policy": "inherit source verification field (usd_share.excl_gold_verification); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "gold.dedollar_usd_share_incl",
+      "title": "USD share of global reserves (incl. gold)",
+      "unit": "%",
+      "entity_default": "IMF_COFER",
+      "description": "USD share of global reserves including gold (46%, lowest in at least 26 years).",
+      "refresh": "monthly",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/gold/dedollar.json",
+          "jsonpath_or_field": "usd_share.incl_gold_pct",
+          "quality": 0.85,
+          "freshness": "monthly",
+          "verification_policy": "inherit source verification field (usd_share.incl_gold_verification); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "gold.tariff_lbma_pct",
+      "title": "Malaysia gold import tariff on LBMA bars",
+      "unit": "%",
+      "entity_default": "MALAYSIA",
+      "description": "Current Malaysian customs duty on LBMA-standard gold bars (10%; partial rollback to 0% for minted 999.9 small bars effective 1 Nov 2026).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/gold/tariff.json",
+          "jsonpath_or_field": "current_state.lbma_bars_pct",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "inherit source verification field (current_state.verification); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "petronas.net_cash_rm_b",
+      "title": "PETRONAS group net cash",
+      "unit": "RM billion",
+      "entity_default": "PETRONAS",
+      "description": "PETRONAS net cash = cash - group debt, from FRA 1H2026 derived view (RM66.854B as of 30 Jun 2026; source declares STALE).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/vitals/data/vitals.json",
+          "jsonpath_or_field": "cash_position.derived_view.net_cash_rm_b",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "inherit source verification field (derived_view declares STALE for the 30 Jun 2026 print); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "petronas.burn_rate_rm_b_per_yr",
+      "title": "PETRONAS net-cash burn rate",
+      "unit": "RM billion/year",
+      "entity_default": "PETRONAS",
+      "description": "Annualised net-cash burn (RM21.6B/yr) from cash delta Dec 2025 to Jun 2026 x2.",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/vitals/data/vitals.json",
+          "jsonpath_or_field": "burn.burn_rate_rm_b_per_yr",
+          "quality": 0.8,
+          "freshness": "event",
+          "verification_policy": "inherit source verification field (burn.verification); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "petronas.flip_projection_year",
+      "title": "PETRONAS net-cash-to-net-debt flip projection",
+      "unit": "year",
+      "entity_default": "PETRONAS",
+      "description": "Projected year group net cash flips negative (~2029, LOW confidence).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/vitals/data/vitals.json",
+          "jsonpath_or_field": "burn.flip_projection_year",
+          "quality": 0.7,
+          "freshness": "event",
+          "verification_policy": "inherit source verification field (burn.verification); projection is a model output, not an observation"
+        }
+      ]
+    },
+    {
+      "id": "petronas.cash_rm_b",
+      "title": "PETRONAS group cash",
+      "unit": "RM billion",
+      "entity_default": "PETRONAS",
+      "description": "PETRONAS group cash 30 Jun 2026 (FRA 1H2026 print: RM193,635 million, scaled to RM billion).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/wealth/petronas_vitals.json",
+          "jsonpath_or_field": "reality_facts_fra_1h26.cash_30jun2026_rm_m",
+          "scale": 0.001,
+          "declared_as_of": "2026-06-30",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "single printed source (FRA 1H26); VERIFIED_SINGLE with STALE drift if print older than 30d"
+        }
+      ]
+    },
+    {
+      "id": "petronas.debt_rm_b",
+      "title": "PETRONAS group debt",
+      "unit": "RM billion",
+      "entity_default": "PETRONAS",
+      "description": "PETRONAS group debt 30 Jun 2026 (FRA 1H2026 print: RM126,781 million, scaled to RM billion; gearing incl. guarantees).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/wealth/petronas_vitals.json",
+          "jsonpath_or_field": "reality_facts_fra_1h26.debt_rm_m",
+          "scale": 0.001,
+          "declared_as_of": "2026-06-30",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "single printed source (FRA 1H26); VERIFIED_SINGLE with STALE drift if print older than 30d"
+        }
+      ]
+    },
+    {
+      "id": "petronas.dividend_extraction_pct",
+      "title": "PETRONAS dividend extraction (% of PAT)",
+      "unit": "% of PAT",
+      "entity_default": "PETRONAS",
+      "description": "Dividend extraction ratio under the constitutional extraction-crisis lock (70.5% > pacemaker 65% > trip 60%).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/wealth/petronas_vitals.json",
+          "jsonpath_or_field": "extraction_crisis_lock.current_extraction_pct_pat",
+          "quality": 0.95,
+          "freshness": "static",
+          "verification_policy": "constitutional lock value (HARD_LOCK, F13 directive); sealed — never drifts with file age"
+        }
+      ]
+    },
+    {
+      "id": "petronas.sellable_stock_b_bbl",
+      "title": "PETRONAS sellable stock (latest position)",
+      "unit": "billion bbl",
+      "entity_default": "PETRONAS",
+      "description": "Latest sellable stock position from FRA/IR reality facts (1 Jan 2026: 7.92 billion bbl).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/wealth/petronas_vitals.json",
+          "jsonpath_or_field": "reality_facts_fra_1h26.sellable_stock_b_bbl[-1].value",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "single printed source (IR position print); VERIFIED_SINGLE with STALE drift if position older than 30d"
+        }
+      ]
+    },
+    {
+      "id": "petronas.reserve_replacement_3yr",
+      "title": "PETRONAS reserve replacement ratio (3-yr avg, latest)",
+      "unit": "ratio",
+      "entity_default": "PETRONAS",
+      "description": "Latest published 3-year average reserve replacement ratio (IR2025: 0.3 — below 1.0 means consuming the future).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/vitals/data/vitals.json",
+          "jsonpath_or_field": "reserve_replacement[-1].ratio",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "inherit per-entry verification field (reserve_replacement[-1].verification); STALE if last_updated > 30d"
+        }
+      ]
+    },
+    {
+      "id": "sovereign.debt_gdp_pct",
+      "title": "Malaysia federal debt / GDP",
+      "unit": "%",
+      "entity_default": "MALAYSIA",
+      "description": "Federal debt-to-GDP (63.1%, 1.9pp below the 65% statutory ceiling; tripwire #1, VOID zone).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/sovereign/malaysia.json",
+          "jsonpath_or_field": "tripwires.debt_gdp_pct.value",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "inherit source verification field; SOT seeded from sealed /wealth/malaysia/ page prints"
+        }
+      ]
+    },
+    {
+      "id": "sovereign.fiscal_deficit_pct",
+      "title": "Malaysia federal fiscal deficit / GDP",
+      "unit": "%",
+      "entity_default": "MALAYSIA",
+      "description": "Federal fiscal deficit-to-GDP (3.8%, 1.2pp before the 5% rating-review threshold; tripwire #2, HOLD).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/sovereign/malaysia.json",
+          "jsonpath_or_field": "tripwires.fiscal_deficit_pct.value",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "inherit source verification field; SOT seeded from sealed /wealth/malaysia/ page prints"
+        }
+      ]
+    },
+    {
+      "id": "sovereign.reserves_import_months",
+      "title": "Malaysia reserves cover of imports",
+      "unit": "months",
+      "entity_default": "MALAYSIA",
+      "description": "International reserves expressed as months of imports (5.0; trip <3, safe 7; tripwire #3).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/sovereign/malaysia.json",
+          "jsonpath_or_field": "tripwires.reserves_import_months.value",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "inherit source verification field; SOT seeded from sealed /wealth/malaysia/ page prints"
+        }
+      ]
+    },
+    {
+      "id": "sovereign.gdp_growth_pct",
+      "title": "Malaysia real GDP growth",
+      "unit": "%",
+      "entity_default": "MALAYSIA",
+      "description": "Real GDP growth (4.2%; tripwire #4, MIXED).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/sovereign/malaysia.json",
+          "jsonpath_or_field": "tripwires.gdp_growth_pct.value",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "inherit source verification field; SOT seeded from sealed /wealth/malaysia/ page prints"
+        }
+      ]
+    },
+    {
+      "id": "sovereign.current_account_gdp_pct",
+      "title": "Malaysia current account / GDP",
+      "unit": "%",
+      "entity_default": "MALAYSIA",
+      "description": "Current account balance-to-GDP (2.1%; tripwire #5, MIXED).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/sovereign/malaysia.json",
+          "jsonpath_or_field": "tripwires.current_account_gdp_pct.value",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "inherit source verification field; SOT seeded from sealed /wealth/malaysia/ page prints"
+        }
+      ]
+    },
+    {
+      "id": "sovereign.gdp_rm_t",
+      "title": "Malaysia nominal GDP (explicit, RM trillion)",
+      "unit": "RM trillion",
+      "entity_default": "MALAYSIA",
+      "description": "Explicit nominal GDP stored in the sovereign SOT (RM1.90T, DERIVED from total debt RM1.2T / 63.1% debt ratio) — stored so tools never re-derive it.",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/sovereign/malaysia.json",
+          "jsonpath_or_field": "fiscal_math.gdp_rm_t.value",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "inherit source verification field; value carries claim_class DERIVED with the formula stored beside it in the SOT"
+        }
+      ]
+    },
+    {
+      "id": "sovereign.pulse_score",
+      "title": "Malaysia sovereign pulse composite",
+      "unit": "score/100",
+      "entity_default": "MALAYSIA",
+      "description": "Sealed composite sovereign pulse (45 HOLD; fiscal 0.40 / economic 0.35 / institutions 0.25).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/sovereign/malaysia.json",
+          "jsonpath_or_field": "pulse.composite_score",
+          "quality": 0.9,
+          "freshness": "event",
+          "verification_policy": "inherit source verification field; sealed composite — anchor unchanged between audits"
+        }
+      ]
+    },
+    {
+      "id": "court.petros_hearing_date",
+      "title": "PETROS Federal Court hearing date",
+      "unit": "ISO date",
+      "entity_default": "PETRONAS",
+      "description": "Expected Federal Court hearing window start for the PETROS Sarawak gas dispute (2027-01-25, tentative — media-sourced, not registrar-confirmed).",
+      "refresh": "event",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/vitals/data/vitals.json",
+          "jsonpath_or_field": "court_timeline[date=2027-01-25].date",
+          "quality": 0.7,
+          "freshness": "event",
+          "verification_policy": "inherit per-entry verification field (entry declares UNVERIFIED — tentative media date); gate withholds if UNVERIFIED"
+        }
+      ]
+    },
+    {
+      "id": "oil.hormuz_attacks_week",
+      "title": "Hormuz tanker attacks (weekly minimum count)",
+      "unit": "attacks/week",
+      "entity_default": "HORMUZ",
+      "description": "Minimum counted attacks on oil/LNG/chemical tankers in the latest tracked week (12 in week to 5 Oct 2026 — Reuters/CNBC).",
+      "refresh": "weekly",
+      "bindings": [
+        {
+          "source_kind": "static_json",
+          "locator": "/var/www/html/arif/data/oil/hormuz.json",
+          "jsonpath_or_field": "attacks.count_min",
+          "quality": 0.85,
+          "freshness": "weekly",
+          "verification_policy": "inherit source verification field (attacks.verification); counted events only — contested flow claims excluded"
+        }
+      ]
+    }
+  ]
+}

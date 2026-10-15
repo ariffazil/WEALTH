@@ -1,7 +1,7 @@
 {
   "artifact": "collapse_signature_calibration",
   "release": "LAW-WEALTH-01 release 1",
-  "generated_at_utc": "2026-09-16T12:08:09.378850+00:00",
+  "generated_at_utc": "2026-10-14T16:08:01.376409+00:00",
   "detector_version": "calibrated_v2_2026-09-16",
   "corpus_file": "tests/calibration/collapse_cases.json",
   "corpus_sha256": "28163a3c8520cac2",

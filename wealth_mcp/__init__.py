@@ -21,6 +21,12 @@ CAPITAL_TOOL_NAMES = (
     "wealth_synthesize",
     "capital_polix",
     "capital_civx",
+    # Semantic concept layer (2026-10-15, mission wealth-mcp-semantic).
+    # Token-gated + evidence-gated (stricter than the standing C8 advisory
+    # framing of the 15 tools above — owner ruling).
+    "capital_read",
+    "capital_rank_sources",
+    "capital_breakeven",
 )
 
 # Zen Phase 1a: shadow tools removed from MCP surface.
@@ -53,6 +59,9 @@ WEALTH_RESOURCE_URIS: tuple[str, ...] = (
     "wealth://schema/field-dictionary",
     "wealth://epistemic/tag-definitions",
     "wealth://provenance/feeds",
+    # Semantic concept layer (2026-10-15, mission wealth-mcp-semantic)
+    "wealth://ontology",
+    "wealth://coupling",
 )
 
 WEALTH_PROMPT_NAMES: tuple[str, ...] = (
@@ -63,6 +72,7 @@ WEALTH_PROMPT_NAMES: tuple[str, ...] = (
     "wealth_allocation_judgment_loop",
     "wealth_institutional_power_loop",
     "wealth_arifos_handoff_loop",
+    "macro_capital_radar",
 )
 
 

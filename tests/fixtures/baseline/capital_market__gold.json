@@ -2,26 +2,23 @@
   "tool": "capital_market",
   "mode": "gold",
   "error_class": "ok",
-  "probed_at": "2026-08-06T08:35:22.947337+00:00",
+  "probed_at": "2026-10-14T15:34:36.150515+00:00",
   "session_id": "SEAL-38c1e44946c84c49",
   "raw_response": {
     "jsonrpc": "2.0",
     "id": 1,
     "result": {
       "_meta": {
-        "wealth_receipt": {
-          "persisted": true,
-          "path": "/root/VAULT999/wealth/receipts.jsonl",
-          "receipt_id": "c1344fee-e386-426a-990e-672b0ec22030",
-          "call_status": "PASS"
-        }
+        "cross_organ_inheritance": "lane_denied",
+        "binding_code": "OBSERVE_ANONYMOUS_OK"
       },
       "content": [
         {
-          "type": "text",
-          "text": "{\"tool_name\": \"capital_market\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"asset\": \"gold\", \"source\": \"wealth://commodity\", \"snapshot\": {\"ticker\": {\"symbol\": \"XAUUSD\", \"price\": 4267.64, \"change\": 11.5, \"changePct\": 0.27, \"rsi\": 63.5, \"rsiState\": \"NEUTRAL\", \"skewness_20d\": 0.642, \"signal\": \"NEUTRAL\", \"confidence\": 0.3, \"ema20\": 4238.5, \"ema50\": 4181.48, \"ema200\": 4097.06, \"emaTrend\": \"BULLISH\", \"support\": [4263.09, 4258.25, 4248.87], \"resistance\": [4272.47, 4277.31, 4294.53], \"pivot\": 4263.09, \"timestamp\": \"2026-08-06T16:35:20.851656+08:00\"}, \"signal\": {\"signal\": {\"direction\": \"BUY\", \"strength\": \"WEAK\", \"confidence\": 0.252, \"entry_price\": 4268.24, \"stop_loss\": 4231.11, \"take_profit_1\": 4305.37, \"take_profit_2\": 4323.94, \"rr_ratio\": 1, \"confluence_score\": 0.252, \"suggested_lot\": 0.01, \"risk_amount\": 37.13, \"verdict\": \"SABAR\", \"judge_reason\": \"RR ratio 1.0 < 1.5 \\u2014 insufficient reward; Confluence score 0.252 too low\"}, \"regime\": {\"regime\": \"UPTREND\", \"confidence\": 0.95, \"price\": 4268.24, \"ema_20\": 4238.55, \"ema_50\": 4181.57, \"ema_200\": 4099.7, \"rsi\": 67.4}, \"zones\": {\"buy_zone\": {\"price\": 4112, \"strength\": 1}, \"sell_zone\": {\"price\": 4294.53, \"strength\": 1}}, \"confluence_factors\": [{\"name\": \"APEX.A=0.89\", \"direction\": \"BUY\", \"weight\": 0.2, \"confidence\": 0.8932959746989221}, {\"name\": \"APEX.P=0.58\", \"direction\": \"BUY\", \"weight\": 0.2, \"confidence\": 0.5841527973510454}, {\"name\": \"APEX.E=0.86\", \"direction\": \"BUY\", \"weight\": 0.2, \"confidence\": 0.8638410336726687}, {\"name\": \"APEX.X=0.96\", \"direction\": \"BUY\", \"weight\": 0.2, \"confidence\": 0.9632321921254013}, {\"name\": \"APEX.\\u03a6=0.58\", \"direction\": \"BUY\", \"weight\": 0.2, \"confidence\": 0.5799673587430855}], \"timestamp\": \"2026-08-06T16:35:20.964194+08:00\"}, \"macro\": {\"timestamp\": \"2026-08-06T16:35:20.829365+08:00\", \"dxy\": 99.76, \"vix\": 15.92, \"us10y\": 4.617, \"silver\": 62.03, \"usmyr\": 4.09, \"gold_silver_ratio\": 68.8}}, \"errors\": null, \"partial\": false, \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"OBSERVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"wealth://commodity/gold/snapshot\"], \"computation_timestamp\": \"2026-08-06T08:35:22.944223+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.93, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"PARTIAL\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": 1.0}, \"epistemic\": {\"tag\": \"OBSERVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 1.0, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"PASS\", \"warnings\": []}, \"trace_id\": \"\"}"
+          "text": "{\"tool_name\": \"capital_market\", \"tool_version\": \"2026.07.12\", \"domain\": \"capital\", \"result\": {\"asset\": \"gold\", \"source\": \"wealth://commodity\", \"snapshot\": {\"ticker\": {\"symbol\": \"XAUUSD\", \"price\": 4101.8, \"change\": -0.25, \"changePct\": -0.01, \"rsi\": 15.8, \"rsiState\": \"OVERSOLD\", \"skewness_20d\": -2.275, \"signal\": \"NEUTRAL\", \"confidence\": 0.3, \"ema20\": 4138.95, \"ema50\": 4157.01, \"ema200\": 4177.66, \"emaTrend\": \"BEARISH\", \"support\": [4100.67, 4095.3, 4091], \"resistance\": [4107.16, 4112.53, 4157.12], \"pivot\": 4100.67, \"timestamp\": \"2026-10-14T23:30:32.127669+08:00\"}, \"signal\": {\"signal\": {\"direction\": \"SELL\", \"strength\": \"WEAK\", \"confidence\": 0.091, \"entry_price\": 4099.68, \"stop_loss\": 4128.18, \"take_profit_1\": 4071.18, \"take_profit_2\": 4056.92, \"rr_ratio\": 1, \"confluence_score\": 0.091, \"suggested_lot\": 0.01, \"risk_amount\": 28.5, \"verdict\": \"SABAR\", \"judge_reason\": \"RR ratio 1.0 < 1.5 \\u2014 insufficient reward; Confluence score 0.091 too low\"}, \"regime\": {\"regime\": \"DOWNTREND\", \"confidence\": 0.85, \"price\": 4099.68, \"ema_20\": 4138.75, \"ema_50\": 4156.65, \"ema_200\": 4168.18, \"rsi\": 21.7}, \"zones\": {\"buy_zone\": {\"price\": 4081.67, \"strength\": 1}, \"sell_zone\": {\"price\": 4150.68, \"strength\": 5}}, \"confluence_factors\": [{\"name\": \"APEX.A=0.45\", \"direction\": \"SELL\", \"weight\": 0.2, \"confidence\": 0.45119477079963294}, {\"name\": \"APEX.P=0.61\", \"direction\": \"SELL\", \"weight\": 0.2, \"confidence\": 0.6071927001621646}, {\"name\": \"APEX.E=1.00\", \"direction\": \"SELL\", \"weight\": 0.2, \"confidence\": 1}, {\"name\": \"APEX.X=0.84\", \"direction\": \"SELL\", \"weight\": 0.2, \"confidence\": 0.8366417960394156}, {\"name\": \"APEX.\\u03a6=0.40\", \"direction\": \"SELL\", \"weight\": 0.2, \"confidence\": 0.3973332237252784}], \"timestamp\": \"2026-10-14T23:34:36.038480+08:00\"}, \"macro\": {\"timestamp\": \"2026-10-14T23:30:33.724353+08:00\", \"dxy\": 102.91, \"vix\": 15.92, \"us10y\": 5.261, \"silver\": 56.24, \"usmyr\": 4.08, \"gold_silver_ratio\": 72.9}}, \"errors\": null, \"partial\": false, \"timestamp\": \"2026-10-14T15:34:36.148010+00:00\", \"cache_age_seconds\": 0, \"staleness_class\": \"LIVE\", \"_freshness\": {\"source\": \"wealth://commodity\", \"timestamp\": \"2026-10-14T15:34:36.148010+00:00\", \"cache_age_seconds\": 0, \"staleness_class\": \"LIVE\", \"enforced_at\": \"2026-10-14T15:34:36.148010+00:00\", \"doctrine\": \"Freshness \\u2260 Truth. LatestAvailable \\u2260 RealTime.\"}, \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"OBSERVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"wealth://commodity/gold/snapshot\"], \"computation_timestamp\": \"2026-10-14T15:34:36.148138+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\", \"[W0] UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"coverage\": {\"known\": 0, \"total\": 0, \"ratio\": -1.0, \"unmeasured\": true}, \"epistemic\": {\"tag\": \"OBSERVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": -1.0, \"coverage_unmeasured\": true, \"material_args_count\": 0, \"material_args\": [], \"gate\": \"FAIL\", \"warnings\": [\"UNMEASURED: zero material arguments \\u2014 coverage cannot be computed. No verdict is valid on empty input.\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_market\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\", \"verdict\": \"READONLY\"}",
+          "type": "text"
         }
       ],
+      "isError": false,
       "structuredContent": {
         "tool_name": "capital_market",
         "tool_version": "2026.07.12",
@@ -32,112 +29,123 @@
           "snapshot": {
             "ticker": {
               "symbol": "XAUUSD",
-              "price": 4267.64,
-              "change": 11.5,
-              "changePct": 0.27,
-              "rsi": 63.5,
-              "rsiState": "NEUTRAL",
-              "skewness_20d": 0.642,
+              "price": 4101.8,
+              "change": -0.25,
+              "changePct": -0.01,
+              "rsi": 15.8,
+              "rsiState": "OVERSOLD",
+              "skewness_20d": -2.275,
               "signal": "NEUTRAL",
               "confidence": 0.3,
-              "ema20": 4238.5,
-              "ema50": 4181.48,
-              "ema200": 4097.06,
-              "emaTrend": "BULLISH",
+              "ema20": 4138.95,
+              "ema50": 4157.01,
+              "ema200": 4177.66,
+              "emaTrend": "BEARISH",
               "support": [
-                4263.09,
-                4258.25,
-                4248.87
+                4100.67,
+                4095.3,
+                4091
               ],
               "resistance": [
-                4272.47,
-                4277.31,
-                4294.53
+                4107.16,
+                4112.53,
+                4157.12
               ],
-              "pivot": 4263.09,
-              "timestamp": "2026-08-06T16:35:20.851656+08:00"
+              "pivot": 4100.67,
+              "timestamp": "2026-10-14T23:30:32.127669+08:00"
             },
             "signal": {
               "signal": {
-                "direction": "BUY",
+                "direction": "SELL",
                 "strength": "WEAK",
-                "confidence": 0.252,
-                "entry_price": 4268.24,
-                "stop_loss": 4231.11,
-                "take_profit_1": 4305.37,
-                "take_profit_2": 4323.94,
+                "confidence": 0.091,
+                "entry_price": 4099.68,
+                "stop_loss": 4128.18,
+                "take_profit_1": 4071.18,
+                "take_profit_2": 4056.92,
                 "rr_ratio": 1,
-                "confluence_score": 0.252,
+                "confluence_score": 0.091,
                 "suggested_lot": 0.01,
-                "risk_amount": 37.13,
+                "risk_amount": 28.5,
                 "verdict": "SABAR",
-                "judge_reason": "RR ratio 1.0 < 1.5 \u2014 insufficient reward; Confluence score 0.252 too low"
+                "judge_reason": "RR ratio 1.0 < 1.5 \u2014 insufficient reward; Confluence score 0.091 too low"
               },
               "regime": {
-                "regime": "UPTREND",
-                "confidence": 0.95,
-                "price": 4268.24,
-                "ema_20": 4238.55,
-                "ema_50": 4181.57,
-                "ema_200": 4099.7,
-                "rsi": 67.4
+                "regime": "DOWNTREND",
+                "confidence": 0.85,
+                "price": 4099.68,
+                "ema_20": 4138.75,
+                "ema_50": 4156.65,
+                "ema_200": 4168.18,
+                "rsi": 21.7
               },
               "zones": {
                 "buy_zone": {
-                  "price": 4112,
+                  "price": 4081.67,
                   "strength": 1
                 },
                 "sell_zone": {
-                  "price": 4294.53,
-                  "strength": 1
+                  "price": 4150.68,
+                  "strength": 5
                 }
               },
               "confluence_factors": [
                 {
-                  "name": "APEX.A=0.89",
-                  "direction": "BUY",
+                  "name": "APEX.A=0.45",
+                  "direction": "SELL",
                   "weight": 0.2,
-                  "confidence": 0.8932959746989221
+                  "confidence": 0.45119477079963294
                 },
                 {
-                  "name": "APEX.P=0.58",
-                  "direction": "BUY",
+                  "name": "APEX.P=0.61",
+                  "direction": "SELL",
                   "weight": 0.2,
-                  "confidence": 0.5841527973510454
+                  "confidence": 0.6071927001621646
                 },
                 {
-                  "name": "APEX.E=0.86",
-                  "direction": "BUY",
+                  "name": "APEX.E=1.00",
+                  "direction": "SELL",
                   "weight": 0.2,
-                  "confidence": 0.8638410336726687
+                  "confidence": 1
                 },
                 {
-                  "name": "APEX.X=0.96",
-                  "direction": "BUY",
+                  "name": "APEX.X=0.84",
+                  "direction": "SELL",
                   "weight": 0.2,
-                  "confidence": 0.9632321921254013
+                  "confidence": 0.8366417960394156
                 },
                 {
-                  "name": "APEX.\u03a6=0.58",
-                  "direction": "BUY",
+                  "name": "APEX.\u03a6=0.40",
+                  "direction": "SELL",
                   "weight": 0.2,
-                  "confidence": 0.5799673587430855
+                  "confidence": 0.3973332237252784
                 }
               ],
-              "timestamp": "2026-08-06T16:35:20.964194+08:00"
+              "timestamp": "2026-10-14T23:34:36.038480+08:00"
             },
             "macro": {
-              "timestamp": "2026-08-06T16:35:20.829365+08:00",
-              "dxy": 99.76,
+              "timestamp": "2026-10-14T23:30:33.724353+08:00",
+              "dxy": 102.91,
               "vix": 15.92,
-              "us10y": 4.617,
-              "silver": 62.03,
-              "usmyr": 4.09,
-              "gold_silver_ratio": 68.8
+              "us10y": 5.261,
+              "silver": 56.24,
+              "usmyr": 4.08,
+              "gold_silver_ratio": 72.9
             }
           },
           "errors": null,
           "partial": false,
+          "timestamp": "2026-10-14T15:34:36.148010+00:00",
+          "cache_age_seconds": 0,
+          "staleness_class": "LIVE",
+          "_freshness": {
+            "source": "wealth://commodity",
+            "timestamp": "2026-10-14T15:34:36.148010+00:00",
+            "cache_age_seconds": 0,
+            "staleness_class": "LIVE",
+            "enforced_at": "2026-10-14T15:34:36.148010+00:00",
+            "doctrine": "Freshness \u2260 Truth. LatestAvailable \u2260 RealTime."
+          },
           "_governance_advisory": {
             "note": "kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.",
             "kappa_r_is_observed": true,
@@ -155,10 +163,13 @@
         "source_attribution": [
           "wealth://commodity/gold/snapshot"
         ],
-        "computation_timestamp": "2026-08-06T08:35:22.944223+00:00",
+        "computation_timestamp": "2026-10-14T15:34:36.148138+00:00",
         "missing_inputs": [],
         "metadata": {},
-        "warnings": [],
+        "warnings": [
+          "[W0] UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input.",
+          "[W0] UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+        ],
         "errors": [],
         "session_id": "SEAL-38c1e44946c84c49",
         "actor_id": "ARIF",
@@ -173,14 +184,14 @@
           ]
         },
         "shadow": false,
-        "kappa_r": 0.93,
+        "kappa_r": 0.7,
         "psi_le": 0.2,
         "qdf": "QDF-v2.0-TRINITY",
-        "verdict": "PARTIAL",
         "coverage": {
           "known": 0,
           "total": 0,
-          "ratio": 1.0
+          "ratio": -1.0,
+          "unmeasured": true
         },
         "epistemic": {
           "tag": "OBSERVED",
@@ -188,16 +199,29 @@
           "confidence": 0.5
         },
         "_w0_evidence_gate": {
-          "coverage": 1.0,
+          "coverage": -1.0,
+          "coverage_unmeasured": true,
           "material_args_count": 0,
           "material_args": [],
-          "gate": "PASS",
-          "warnings": []
+          "gate": "FAIL",
+          "warnings": [
+            "UNMEASURED: zero material arguments \u2014 coverage cannot be computed. No verdict is valid on empty input."
+          ]
         },
-        "trace_id": ""
-      },
-      "isError": false
+        "_hermes_semantic_gate": {
+          "gate": "hermes_semantic",
+          "gate_mode": "enforce",
+          "hermes_url": "http://127.0.0.1:18087/mcp",
+          "tool": "capital_market",
+          "status": "PASS",
+          "outcome": "NO_SEMANTIC_CONTENT",
+          "semantic_fields": [],
+          "error_code": ""
+        },
+        "trace_id": "",
+        "verdict": "READONLY"
+      }
     }
   },
-  "sha256": "72d56a10dd986f462bed2452e7993251e884a059cbb64c4252d3b39a3b3418d4"
+  "sha256": "99adf966db576e1059c231b830c205540d9c04a1dd76a756e1983f4c35f8dabc"
 }

@@ -2,26 +2,23 @@
   "tool": "capital_diagnose",
   "mode": "bid_surface",
   "error_class": "ok",
-  "probed_at": "2026-08-06T08:35:12.781254+00:00",
+  "probed_at": "2026-10-14T16:08:40.465656+00:00",
   "session_id": "SEAL-38c1e44946c84c49",
   "raw_response": {
     "jsonrpc": "2.0",
     "id": 1,
     "result": {
       "_meta": {
-        "wealth_receipt": {
-          "persisted": true,
-          "path": "/root/VAULT999/wealth/receipts.jsonl",
-          "receipt_id": "5e8e19a1-8a00-46fd-9e95-50ffbf40a99a",
-          "call_status": "PASS"
-        }
+        "cross_organ_inheritance": "lane_denied",
+        "binding_code": "OBSERVE_ANONYMOUS_OK"
       },
       "content": [
         {
-          "type": "text",
-          "text": "{\"tool_name\": \"capital_diagnose\", \"tool_version\": \"2026.07.12\", \"domain\": \"power\", \"result\": {\"ranked_bids\": [], \"winner\": null, \"winning_price\": 0.0, \"total_surplus\": 0.0, \"competitive_intensity\": 0.0, \"hhi_category\": \"unconcentrated\", \"surface_metrics\": {\"bid_count\": 0, \"eligible_count\": 0, \"reserve_met\": false, \"spread\": 0.0, \"avg_bid\": 0.0, \"median_bid\": 0.0, \"std_bid\": 0.0, \"mode\": \"first_price\", \"winner_surplus\": 0.0, \"all_pay_total\": 0.0, \"reserve_price\": 0.0}, \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"bid_scoring_surface\"], \"computation_timestamp\": \"2026-08-06T08:35:12.778717+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] EMPTY_RESULT: material inputs but all-zeros result\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] EMPTY_RESULT: material inputs but all-zeros result\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.93, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"material_args_count\": 1, \"material_args\": [\"domain_scope\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"EMPTY_RESULT: material inputs but all-zeros result\"]}, \"trace_id\": \"\"}"
+          "text": "{\"tool_name\": \"capital_diagnose\", \"tool_version\": \"2026.07.12\", \"domain\": \"power\", \"result\": {\"ranked_bids\": [], \"winner\": null, \"winning_price\": 0.0, \"total_surplus\": 0.0, \"competitive_intensity\": 0.0, \"hhi_category\": \"unconcentrated\", \"surface_metrics\": {\"bid_count\": 0, \"eligible_count\": 0, \"reserve_met\": false, \"spread\": 0.0, \"avg_bid\": 0.0, \"median_bid\": 0.0, \"std_bid\": 0.0, \"mode\": \"first_price\", \"winner_surplus\": 0.0, \"all_pay_total\": 0.0, \"reserve_price\": 0.0}, \"_governance_advisory\": {\"note\": \"kappa_r, psi_le, and witness are observed telemetry, not gating floors. A sub-floor reading does NOT block execution. These fields describe constitutional alignment; they do not enforce it. Per APEX Audit Directive 2026-08-04 C8.\", \"kappa_r_is_observed\": true, \"witness_is_observed\": true}}, \"result_type\": \"scalar\", \"epistemic_tag\": \"DERIVED\", \"claim_state\": \"DRAFT\", \"evidence_quality\": \"MODERATE\", \"execution_authorized\": false, \"execution_authority\": \"OBSERVATION\", \"human_final_authority\": \"Arif\", \"requires_888_hold\": false, \"source_attribution\": [\"bid_scoring_surface\"], \"computation_timestamp\": \"2026-10-14T16:08:40.453930+00:00\", \"missing_inputs\": [], \"metadata\": {}, \"warnings\": [\"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] EMPTY_RESULT: material inputs but all-zeros result\", \"[W0] INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"[W0] EMPTY_RESULT: material inputs but all-zeros result\"], \"errors\": [], \"session_id\": \"SEAL-38c1e44946c84c49\", \"actor_id\": \"ARIF\", \"witness\": {\"human\": false, \"ai\": true, \"earth\": false, \"is_complete\": false, \"missing\": [\"human\", \"earth\"]}, \"shadow\": false, \"kappa_r\": 0.7, \"psi_le\": 0.2, \"qdf\": \"QDF-v2.0-TRINITY\", \"verdict\": \"INSUFFICIENT_EVIDENCE\", \"coverage\": {\"known\": 0, \"total\": 1, \"ratio\": 0.0, \"unmeasured\": false}, \"epistemic\": {\"tag\": \"DERIVED\", \"quality\": \"MODERATE\", \"confidence\": 0.5}, \"_w0_evidence_gate\": {\"coverage\": 0.0, \"coverage_unmeasured\": false, \"material_args_count\": 1, \"material_args\": [\"domain_scope\"], \"gate\": \"CAUTION\", \"warnings\": [\"INSUFFICIENT_EVIDENCE: 1 material fields (['domain_scope']) provided but ZERO reflected in result. Interpretation prose blocked.\", \"EMPTY_RESULT: material inputs but all-zeros result\"]}, \"_hermes_semantic_gate\": {\"gate\": \"hermes_semantic\", \"gate_mode\": \"enforce\", \"hermes_url\": \"http://127.0.0.1:18087/mcp\", \"tool\": \"capital_diagnose\", \"status\": \"PASS\", \"outcome\": \"NO_SEMANTIC_CONTENT\", \"semantic_fields\": [], \"error_code\": \"\"}, \"trace_id\": \"\"}",
+          "type": "text"
         }
       ],
+      "isError": false,
       "structuredContent": {
         "tool_name": "capital_diagnose",
         "tool_version": "2026.07.12",
@@ -63,7 +60,7 @@
         "source_attribution": [
           "bid_scoring_surface"
         ],
-        "computation_timestamp": "2026-08-06T08:35:12.778717+00:00",
+        "computation_timestamp": "2026-10-14T16:08:40.453930+00:00",
         "missing_inputs": [],
         "metadata": {},
         "warnings": [
@@ -86,14 +83,15 @@
           ]
         },
         "shadow": false,
-        "kappa_r": 0.93,
+        "kappa_r": 0.7,
         "psi_le": 0.2,
         "qdf": "QDF-v2.0-TRINITY",
         "verdict": "INSUFFICIENT_EVIDENCE",
         "coverage": {
           "known": 0,
           "total": 1,
-          "ratio": 0.0
+          "ratio": 0.0,
+          "unmeasured": false
         },
         "epistemic": {
           "tag": "DERIVED",
@@ -102,6 +100,7 @@
         },
         "_w0_evidence_gate": {
           "coverage": 0.0,
+          "coverage_unmeasured": false,
           "material_args_count": 1,
           "material_args": [
             "domain_scope"
@@ -112,10 +111,19 @@
             "EMPTY_RESULT: material inputs but all-zeros result"
           ]
         },
+        "_hermes_semantic_gate": {
+          "gate": "hermes_semantic",
+          "gate_mode": "enforce",
+          "hermes_url": "http://127.0.0.1:18087/mcp",
+          "tool": "capital_diagnose",
+          "status": "PASS",
+          "outcome": "NO_SEMANTIC_CONTENT",
+          "semantic_fields": [],
+          "error_code": ""
+        },
         "trace_id": ""
-      },
-      "isError": false
+      }
     }
   },
-  "sha256": "c722452a42b7f1e1edeb4fee89f4b082a7cfd70b792c7085f19590e13b175b86"
+  "sha256": "39979c3191c77f498e5a3c72c9f459da82d65888b6f1c7aa15ff08eb758cbe78"
 }

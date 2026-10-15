@@ -526,6 +526,15 @@ def _validate_direct_session_binding(
         # ADVISORY_ONLY — never a constitutional verdict. Same exemption
         # class as capital_diagnose: interpretive read, no mutation.
         "wealth_synthesize",
+        # Semantic concept layer (2026-10-15, wealth-mcp-semantic) —
+        # observational reads + deductive arithmetic with their OWN stricter
+        # scoped-token gate (wealth:read/compute/admin) + receipts + invocation
+        # log. Worst case from a missing kernel session = no audit trail; the
+        # semantic layer writes its own audit trail. Evidence gate withholds
+        # numbers — no mutation path exists on these three tools.
+        "capital_read",
+        "capital_rank_sources",
+        "capital_breakeven",
         # P1 2026-09-21 — legacy aliases of OBSERVE-class tools. Per
         # F13 directive the direct :18082 connector is engineering /
         # diagnostic only; legacy names that resolve to OBSERVE-class
@@ -575,6 +584,10 @@ def _validate_direct_session_binding(
         # session-loss (the arifOS bridge audit 2026-09-17 finding) is
         # observably visible. Any consumer mistaking this for a real
         # session is now obvious in logs and federation probes.
+        # WAVE6 P11 — cross-organ ACT v1 inheritance field (B.11 contract):
+        # `cross_organ_inheritance ∈ {"server_mismatch", "key_mismatch",
+        # "unsupported_kid", "lane_denied", "NONE"}` is REQUIRED on every
+        # binding decision so cross-organ failures have a precise reason.
         if tool_name in _OBSERVE_TOOLS:
             return {
                 "ok": True,
@@ -587,6 +600,7 @@ def _validate_direct_session_binding(
                 "session_id": session_id or "_MISSING_SESSION",
                 "authority_ceiling": "OBSERVE_ONLY",
                 "identity_model": "unbound",
+                "cross_organ_inheritance": "NONE",
                 "tool_name": tool_name,
                 "_ts": _now,
             }
@@ -603,6 +617,7 @@ def _validate_direct_session_binding(
             "caller_service": caller_service,
             "trace_id": trace_id,
             "session_id": session_id,
+            "cross_organ_inheritance": "NONE",
             "tool_name": tool_name,
             "_ts": _now,
         }
@@ -627,6 +642,8 @@ def _validate_direct_session_binding(
         # the invariant WEALTH protects regardless of session's nominal
         # authority.
         subject_verified = bool(actor_id) and actor_id not in _UNBOUND_SESSION_TOKENS
+        # WAVE6 P11 — cross_organ_inheritance: caller_service in
+        # _TRUSTED_SERVICES and bridge reachable → lane honored, NONE.
         return {
             "ok": True,
             "code": "DUAL_IDENTITY_OK",
@@ -645,6 +662,7 @@ def _validate_direct_session_binding(
             "session_id": session_id,
             "authority_ceiling": "OBSERVE_ONLY",
             "identity_model": "dual_identity",
+            "cross_organ_inheritance": "NONE",
             "bridge_code": bridge_code,
             "tool_name": tool_name,
             "_ts": _now,
@@ -656,6 +674,8 @@ def _validate_direct_session_binding(
         bridge["actor_verified"] = False
         bridge["caller_service"] = caller_service
         bridge["trace_id"] = trace_id
+        # WAVE6 P11 — bridge unreachable: server_mismatch
+        bridge["cross_organ_inheritance"] = "server_mismatch"
         return bridge
 
     # Bound + bridge_ok BUT caller_service is NOT trusted. This is the
@@ -686,6 +706,8 @@ def _validate_direct_session_binding(
             "session_id": session_id,
             "authority_ceiling": "OBSERVE_ONLY",
             "identity_model": "anonymous_via_session",
+            # WAVE6 P11 — caller_service NOT in trusted list; lane_denied.
+            "cross_organ_inheritance": "lane_denied",
             "tool_name": tool_name,
             "_ts": _now,
         }
@@ -1245,6 +1267,8 @@ def create_mcp_server() -> FastMCP:
             if not binding.get("ok"):
                 # MUST return schema-conformant response matching WEALTH_OUTPUT_SCHEMA
                 # All 9 required fields included to prevent FastMCP -32602 rejection.
+                # WAVE6 P11 — propagate cross_organ_inheritance field so the
+                # B.11 contract is observably satisfied on every binding failure.
                 return _finalize(
                     ToolResult(
                         content=[
@@ -1273,6 +1297,11 @@ def create_mcp_server() -> FastMCP:
                                         "computation_timestamp": binding.get("_ts", ""),
                                         "session_id": binding.get("session_id"),
                                         "actor_id": binding.get("actor_id"),
+                                        "cross_organ_inheritance": binding.get(
+                                            "cross_organ_inheritance", "NONE"
+                                        ),
+                                        "binding_code": binding.get("code", "SESSION_REQUIRED"),
+                                        "bridge_code": binding.get("bridge_code", ""),
                                         "errors": [
                                             binding.get(
                                                 "reason",
@@ -1295,6 +1324,22 @@ def create_mcp_server() -> FastMCP:
 
             # Use resolved actor from binding
             actor_id = str(binding.get("actor_id") or actor_id or "wealth-mcp")
+            # WAVE6 P11 (FIX 2026-10-11) — propagate cross_organ_inheritance
+            # via the response META, NOT via the tool arguments. Mutating
+            # `arguments` here breaks downstream Pydantic validation on the
+            # tool schema (any unknown key raises BAD_INPUT_VALUE). The
+            # binding code/COI is attached in the SUCCESS path via a
+            # local _binding_payload dict merged into the result meta.
+            _coi = binding.get("cross_organ_inheritance") or "NONE"
+            _bcode = binding.get("code", "BINDING_OK")
+            _binding_payload = {
+                "cross_organ_inheritance": _coi,
+                "binding_code": _bcode,
+            }
+            # DO NOT mutate `arguments` — the tool schema rejects unknown
+            # keys (case J regression: capital_registry rejected
+            # _cross_organ_inheritance as unexpected_keyword_argument).
+            arguments = arguments or {}
 
             # ── arifOS governance check ────────────────────────────────
             # Pass extracted system actor_id and session_id (Gap-C alignment)
@@ -1664,8 +1709,24 @@ def create_mcp_server() -> FastMCP:
                 )
 
             call_status = _tool_result_status(result)
-            # F2: shadow flag suppresses vault receipt writes
-            if not arguments.get("shadow", False):
+            # WAVE4 P5 — default reads are pure (no vault receipt); receipts
+            # are opt-in via record:true. Per SUBSTRATE-PATCHES-v2.1 §B.5
+            # contract:
+            #   * Reads with default args MUST be pure (no side effect).
+            #   * Vault-receipt emission MUST move from `read` to `preview`
+            #     mode or be opt-in via `record:true` flag.
+            # Backward-compat: legacy callers that depended on default-write
+            # can re-enable by passing legacy_record_mode="default-write".
+            # `shadow:true` is also honored as a no-receipt opt-out.
+            _args = arguments or {}
+            _wants_receipt = (
+                bool(_args.get("record", False))
+                or (
+                    _args.get("legacy_record_mode") == "default-write"
+                    and not bool(_args.get("shadow", False))
+                )
+            )
+            if _wants_receipt:
                 receipt_state = _emit_receipt(
                     name,
                     arguments,
@@ -1686,7 +1747,18 @@ def create_mcp_server() -> FastMCP:
                     verdict,
                     is_err=False,
                 )
-            return _finalize(result, verdict, is_err=False)
+            # Pure path: no receipt write, but advertise the non-write + binding
+            # decision so the caller knows what kind of read it just
+            # performed. WAVE6 P11 fix: binding_payload is attached to the
+            # response meta, NOT to arguments (which would break schema).
+            _final = _finalize(result, verdict, is_err=False)
+            try:
+                if hasattr(_final, "meta") and isinstance(_final.meta, dict):
+                    _final.meta.setdefault("cross_organ_inheritance", _coi)
+                    _final.meta.setdefault("binding_code", _bcode)
+            except Exception:
+                pass
+            return _final
 
         # Tuas 2 (2026-09-19): every dispatched tool call emits one invocation
         # receipt to the shared federation telemetry. Wrapped, never raising.
@@ -1746,6 +1818,17 @@ def create_mcp_server() -> FastMCP:
         register_polix_civx(mcp)
     except Exception as e:
         print(f"[TOOLS] POLIX/CIVX registration failed: {e}")
+
+    # ── Register semantic concept layer tools (2026-10-15) ────────────
+    # capital_read / capital_rank_sources / capital_breakeven — token-gated,
+    # evidence-gated (withholding applies to THESE 3 ONLY; the 15 standing
+    # capital_* tools keep advisory behaviour per owner ruling).
+    try:
+        from wealth_mcp.semantic import register_semantic_tools
+
+        register_semantic_tools(mcp)
+    except Exception as e:
+        print(f"[TOOLS] semantic layer registration failed: {e}")
 
     return mcp
 
@@ -2883,6 +2966,99 @@ def _register_resources(mcp: FastMCP) -> None:
             indent=2,
         )
 
+    # 18. wealth://ontology — semantic concept registry (2026-10-15)
+    @mcp.resource(
+        uri="wealth://ontology",
+        name="Semantic Concept Ontology",
+        description="Full semantic concept registry (concepts_ontology.json): ~34 real capital concepts, each bound to a live engine or a printed/seeded JSON source, with per-binding quality/freshness/verification policy. Read by capital_read / capital_rank_sources / capital_breakeven.",
+        mime_type="application/json",
+        tags={"wealth", "semantic", "ontology", "reference"},
+        annotations={"readOnlyHint": True, "idempotentHint": True},
+        meta={"version": "2026.10.15", "authority": "advisory_only"},
+    )
+    def wealth_ontology() -> str:
+        """Semantic concept registry — the concepts the semantic tools serve."""
+        from wealth_mcp import semantic as _sem
+
+        return json.dumps(_sem.load_ontology(), indent=2, ensure_ascii=False)
+
+    # 19. wealth://coupling — machine-readable coupling graph (2026-10-15)
+    @mcp.resource(
+        uri="wealth://coupling",
+        name="Capital Coupling Graph",
+        description="Machine-readable coupling graph (the /coupling page made queryable): directed edges between concepts/organs with weight where a sealed sensitivity exists, evidence source, and verification. War premium recorded as exogenous — outside all organs.",
+        mime_type="application/json",
+        tags={"wealth", "semantic", "coupling", "reference"},
+        annotations={"readOnlyHint": True, "idempotentHint": True},
+        meta={"version": "2026.10.15", "authority": "advisory_only"},
+    )
+    def wealth_coupling() -> str:
+        """Capital coupling graph — directed edges, sealed weights where they exist."""
+        return json.dumps(
+            {
+                "schema": "wealth.coupling.v1",
+                "note": "Edges are transmission channels, not proven causality. Weight carries a value ONLY where a sealed sensitivity exists; otherwise null + UNVERIFIED (do not quantify guesses).",
+                "page": "https://arif-fazil.com/coupling/",
+                "edges": [
+                    {
+                        "from": "commodity.brent.spot",
+                        "to": "petronas.dividend_extraction",
+                        "direction": "→",
+                        "weight": "RM3-4B sovereign deficit/debt pressure per $10 Brent drop",
+                        "weight_value_rm_b_per_10usd": [3.0, 4.0],
+                        "note": "Lower Brent compresses PETRONAS cash flow; the MOF response has historically been to hold/reraise the dividend take, deepening extraction above the 65% pacemaker.",
+                        "evidence_source": "Treasury sensitivity sealed on /wealth/malaysia/ (Overlay T-B); /wealth/malaysia/ tripwire #2",
+                        "verification": "VERIFIED_SINGLE",
+                    },
+                    {
+                        "from": "petronas.dividend",
+                        "to": "sovereign.fiscal_deficit",
+                        "direction": "→",
+                        "weight": None,
+                        "note": "PETRONAS dividend is the federal non-tax revenue pillar; extraction cuts widen the deficit unless spending adjusts. No sealed per-RM sensitivity exists — do not quantify.",
+                        "evidence_source": "/wealth/malaysia/ fiscal pillar; MOF Fiscal Outlook (dividend trail in /var/www/html/arif/vitals/data/vitals.json)",
+                        "verification": "UNVERIFIED",
+                    },
+                    {
+                        "from": "commodity.brent.spot",
+                        "to": "petronas.reserve_replacement",
+                        "direction": "→",
+                        "weight": None,
+                        "note": "Capex chain: sustained low Brent forces capex cuts, which show up 3-5 years later as replacement ratio decay (1.6 → 0.8 → 0.3 across IR2023-25). Lag and elasticity unsealed.",
+                        "evidence_source": "petronas.reserve_replacement_3yr series (IR2023/24/25, vitals.json)",
+                        "verification": "UNVERIFIED",
+                    },
+                    {
+                        "from": "gold.cb_streak_months",
+                        "to": "sovereign.reserve_adequacy",
+                        "direction": "→",
+                        "weight": None,
+                        "note": "Central-bank accumulation is the structural gold floor; for reserve-holding states (BNM included) it signals the reserve-adequacy regime shift from FX-only to metal-backed defence. No sealed weight.",
+                        "evidence_source": "/var/www/html/arif/data/gold/central_banks.json + /var/www/html/arif/data/gold/reserves.json",
+                        "verification": "UNVERIFIED",
+                    },
+                    {
+                        "from": "gold.tariff_lbma_pct",
+                        "to": "sovereign.capital_flow",
+                        "direction": "→",
+                        "weight": None,
+                        "note": "A state taxing gold imports is defending reserves, not collecting revenue — the tariff is a capital-flow control signal. Partial rollback (0% on minted 999.9 bars, 1 Nov 2026) shows the defence relaxing for retail segments.",
+                        "evidence_source": "/var/www/html/arif/data/gold/tariff.json (Customs/RinggitPlus/Kitco prints)",
+                        "verification": "UNVERIFIED",
+                    },
+                ],
+                "exogenous": [
+                    {
+                        "term": "war premium (Hormuz / tanker war)",
+                        "relation": "outside_all_organs",
+                        "note": "Exogenous shock term — enters every organ from outside; no organ owns it and no organ can model it away. Tracked (attack counts) but not predicted: see oil.hormuz_attacks_week and /var/www/html/arif/data/oil/hormuz.json. Contested flow-collapse claims are recorded as CONTESTED, not fact.",
+                        "verification": "PARTIAL (counts VERIFIED_SINGLE; flows CONTESTED/UNVERIFIED)",
+                    }
+                ],
+            },
+            indent=2,
+        )
+
 
 def _register_prompts(mcp: FastMCP) -> None:
     """
@@ -3509,6 +3685,108 @@ def _register_prompts(mcp: FastMCP) -> None:
                 "wealth://handoff/envelope",
                 f"Source: {source_tool}\nIntent: {intent}\nBlast: {blast_radius}\nReversibility: {reversibility}\nDomain: {domain}",
                 "application/json",
+            ),
+        ]
+
+    # ────────────────────────────────────────────────────────────────────
+    # 8. macro_capital_radar — gold vs debasement / capital radar brief
+    # Reads the semantic concept layer (capital_read) with verification
+    # flags reported INLINE. Evidence-gated: withhold what is UNVERIFIED.
+    # ────────────────────────────────────────────────────────────────────
+    @mcp.prompt(
+        name="macro_capital_radar",
+        description=(
+            "Gold-vs-debasement / capital radar brief. Instructs the model to pull "
+            "gold.* and sovereign.* concepts via capital_read (token required), report "
+            "every verification flag inline, withhold UNVERIFIED numbers, and close "
+            "with the coupling view (wealth://coupling)."
+        ),
+        tags={"wealth", "semantic", "gold", "macro", "radar"},
+        meta={"version": "2026.10.15", "loop": "read-verify-couple-report"},
+    )
+    def macro_capital_radar(
+        entity: str = "MALAYSIA",
+        window: str = "current",
+    ) -> list[Message]:
+        """
+        Template for a gold-vs-debasement / capital radar brief grounded in the
+        semantic concept layer. Every number must carry its verification flag.
+
+        Args:
+            entity: Sovereign/entity lens, default "MALAYSIA"
+            window: Analysis window, default "current"
+        """
+        body = (
+            "# MACRO CAPITAL RADAR — gold vs debasement\n\n"
+            f"## Lens\nEntity: {entity} · Window: {window}\n\n"
+            "## Required reads (capital_read — scoped token required)\n"
+            "Pull each concept with `capital_read(concept_id=...)` and record "
+            "the returned verification flag next to EVERY number you print:\n\n"
+            "### Gold pillar\n"
+            "- commodity.xau.spot\n"
+            "- gold.cb_streak_months · gold.cb_sept_purchase_t · gold.cb_q2_net_t\n"
+            "- gold.etf_q3_inflow_usd_bn · gold.etf_holdings_t\n"
+            "- gold.dedollar_usd_share_excl · gold.dedollar_usd_share_incl\n"
+            "- gold.tariff_lbma_pct\n\n"
+            "### Sovereign pillar\n"
+            "- sovereign.debt_gdp_pct · sovereign.fiscal_deficit_pct\n"
+            "- sovereign.reserves_import_months · sovereign.gdp_growth_pct\n"
+            "- sovereign.current_account_gdp_pct · sovereign.pulse_score\n"
+            "- gold.malaysia_gold_usd_bn · gold.malaysia_total_reserves_usd_bn\n\n"
+            "### Petronas coupling (context)\n"
+            "- commodity.brent.spot · petronas.dividend_extraction_pct\n"
+            "- petronas.net_cash_rm_b · petronas.reserve_replacement_3yr\n\n"
+            "## Required loop\n\n"
+            "1. **READ** — call capital_read for each concept. If a call returns "
+            "status WITHHELD (evidence_gate failed), print the concept as "
+            "`[WITHHELD — <input_requests.why>]`. Never guess a withheld number.\n\n"
+            "2. **VERIFY INLINE** — every number appears as "
+            "`value unit [VERIFICATION] (source, observed_at)`. "
+            "VERIFIED_LIVE / VERIFIED_SINGLE / STALE / UNVERIFIED — no bare numbers.\n\n"
+            "3. **WEIGH** — classify each pillar of the debasement trade: "
+            "central-bank accumulation (structural floor), ETF re-entry (western "
+            "marginal buyer), de-dollarisation meter (direction vs magnitude), "
+            "sovereign reserve defence (tariff + BNM accumulation).\n\n"
+            "4. **COUPLE** — read wealth://coupling. Name the transmission edges "
+            "that are live right now (Brent→extraction→deficit; gold→reserve "
+            "adequacy) and state which weights are sealed vs UNVERIFIED. "
+            "Treat the war premium as exogenous — outside all organs.\n\n"
+            "5. **REPORT** — one-page radar: pillars, coupling, top three risks, "
+            "and the open input_requests (what evidence would upgrade the "
+            "withheld/unverified items).\n\n"
+            "## Forbidden\n"
+            "Do not print a number without its verification flag.\n"
+            "Do not treat forecast decks (glut, bank projections) as receipts.\n"
+            "Do not convert radar readings into buy/sell advice — WEALTH computes, "
+            "arifOS judges, Arif decides.\n"
+        )
+        return [
+            _msg_text(body),
+            # NOTE (2026-10-15): self-contained resource message with a plain
+            # string uri — the shared _msg_resource helper wraps AnyUrl which
+            # fails pydantic 2.13 TextResourceContents validation (all 7
+            # legacy prompts inherit that breakage; out of scope here).
+            Message(
+                EmbeddedResource(
+                    type="resource",
+                    resource=TextResourceContents(
+                        uri="wealth://ontology",
+                        mimeType="application/json",
+                        text=f"Concept registry for {entity} radar — {window} window",
+                    ),
+                ),
+                role="user",
+            ),
+            Message(
+                EmbeddedResource(
+                    type="resource",
+                    resource=TextResourceContents(
+                        uri="wealth://coupling",
+                        mimeType="application/json",
+                        text="Coupling graph for the radar's step 4",
+                    ),
+                ),
+                role="user",
             ),
         ]
 
