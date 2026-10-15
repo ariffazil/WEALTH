@@ -122,7 +122,7 @@ agents:
     band: band-1-sdk + band-3-os
     sdk_install: "arifos_kernel_sdk.py"
     mcp_servers: [arifos, geox, wealth, well, aforge]
-    reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml, /root/geox/reality_contracts/geox_reality_contract.yaml]
+    reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml, /root/GEOX/reality_contracts/geox_reality_contract.yaml]
     lease_max: EXECUTE_HIGH_IMPACT
     risk: HIGH
     notes: "High-privilege runtime. SDK + OS band (ClawEDR if available)."
@@ -155,7 +155,7 @@ agents:
     sdk_install: "arifos_kernel_sdk.py"
     mcp_servers: [arifos, aforge, geox, wealth, well, playwright, hostinger-vps, meyhem, brave-search, perplexity, sequential-thinking, postgres, supabase, qdrant, cloudflare, docker, github, context7]
     mcp_count: 18
-    reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml, /root/geox/reality_contracts/geox_reality_contract.yaml]
+    reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml, /root/GEOX/reality_contracts/geox_reality_contract.yaml]
     lease_max: EXECUTE_HIGH_IMPACT
     risk: YELLOW
     notes: "Primary forge instrument. SDK loaded via AAA/agents/opencode/config/."
@@ -167,7 +167,7 @@ agents:
     sdk_install: "arifos_kernel_sdk.py"
     mcp_servers: [arifos, aforge, geox, wealth, well]
     mcp_count: 10
-    reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml, /root/geox/reality_contracts/geox_reality_contract.yaml]
+    reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml, /root/GEOX/reality_contracts/geox_reality_contract.yaml]
     lease_max: EXECUTE_HIGH_IMPACT
     risk: YELLOW
     notes: "Mirror of opencode. SDK in /root/.claude/."
@@ -220,7 +220,7 @@ agents:
     sdk_install: "arifos_kernel_sdk.py"
     mcp_servers: []  # [FIX 2026-09-25 FI-008: 9-entry stale mirror removed. SOT: /root/.kimi-code/mcp.json — 14 enabled + 5 governed-disabled (lifecycle blocks) + dynamic tool lanes]
     mcp_count: 14  # as-of 2026-09-25, enabled set; SOT = mcp.json, mirrors drift
-    reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml, /root/geox/reality_contracts/geox_reality_contract.yaml]
+    reality_contracts: [/root/WEALTH/reality_contracts/wealth_reality_contract.yaml, /root/GEOX/reality_contracts/geox_reality_contract.yaml]
     lease_max: EXECUTE_REVERSIBLE
     risk: YELLOW
     notes: "Kimi Code CLI. SDK + config in /root/.kimi-code/ [path fixed 2026-09-25, was /root/.kimi/]"
