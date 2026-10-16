@@ -1,15 +1,15 @@
 <!-- SOT-MANIFEST
-owner: Muhammad Arif bin Fazil (F13 SOVEREIGN)
+owner: ARIF FAZ (F13 SOVEREIGN)
 federation_release: v2026.09.21 (P1 — WEALTH-IDENTITY-PIVOT)
 last_verified: 2026-09-21T02:01:00Z
 apex_zen: arifOS = ingress + authority · WEALTH = evidence · arifOS = judgment · F13 = decision
 
 surface:
-  canonical_primitives: 13        # Ω00 + Ω01-Ω12
+  canonical_primitives: 13        # Ω00 + Ω01-Ω12 (Ω00 = synthesis primitive)
   societal_extensions: 2          # inequality, role scarcity
   infrastructure_tools: 2         # health, registry
   compatibility_aliases: 14       # capital_* legacy names (excluded from canonical)
-  total_external_visible: 17
+  total_external_visible: 17      # declared — live tools/list reported 18 on 2026-10-16 (gap row)
 
 authority_ceiling: 555_COMPUTE_ONLY
 truth_rule: live :18082/health + tools/list beat any static count in prose
@@ -24,292 +24,183 @@ doctrine:
     market/macro output.
 -->
 
-# WEALTH — Capital Consequence Intelligence
+<p align="center">
+  <img src="docs/assets/wealth-hero.png" alt="WEALTH — capital movement through twelve consequence dimensions, uncertainty and path dependence, into auditable evidence and human judgment" width="100%">
+</p>
 
-> **Capital consequence infrastructure, not investment advice.**
->
-> WEALTH converts stocks, flows, prices, risk, productivity, time, leverage, macro conditions, information, incentives, governance, and path dependence into auditable capital evidence.
->
-> *WEALTH computes. arifOS judges. A-FORGE executes approved actions. Humans remain sovereign.*
+# WEALTH
 
-**Identity (P1 2026-09-21):**
+### Capital consequences before capital movement.
+
+WEALTH is the **capital-evidence organ** of the arifOS federation. It models how capital decisions propagate through liquidity, risk, productivity, time, leverage, macro conditions, incentives, governance and path dependence.
+
+> **If capital moves this way, what follows, and how sure are we?**
+
+WEALTH computes evidence. arifOS judges authority. A-FORGE executes approved actions. Humans remain sovereign.
+
+**Capital consequence infrastructure, not investment advice.**
+
+[Current Verified State](#current-verified-state) · [Ω Architecture](#the-ω-architecture) · [Examples](#what-wealth-helps-examine) · [Data Provenance](#every-market-observation-needs-a-clock) · [Research Roadmap](#research-roadmap-not-current-performance-claims)
+
+[![Authority](https://img.shields.io/badge/authority-COMPUTE__ONLY-2f6f5e?style=flat-square)](#governed-use-vs-engineering-use)
+[![Assessments](https://img.shields.io/badge/assessments-ADVISORY__ONLY-d4a853?style=flat-square)](#advisory-output-never-a-verdict)
+[![Freshness](https://img.shields.io/badge/data-freshness_metadata_required-blue?style=flat-square)](#every-market-observation-needs-a-clock)
+[![CI](https://img.shields.io/github/actions/workflow/status/ariffazil/WEALTH/agentic-ci.yml?label=CI&style=flat-square)](https://github.com/ariffazil/WEALTH/actions)
+[![Forecast calibration](https://img.shields.io/badge/forecast_calibration-not_yet_published-lightgrey?style=flat-square)](./docs/RESEARCH_ROADMAP.md)
+[![License](https://img.shields.io/badge/license-AGPL--3.0-blue?style=flat-square)](./LICENSE)
+
+---
+
+## What WEALTH helps examine
+
+- **Capital position** — what assets, liabilities, reserves and obligations exist? (Ω01)
+- **Capital movement** — where is liquidity moving, and what changes runway or fragility? (Ω02, Ω07)
+- **Capital productivity** — what output is produced per unit of capital and time? (Ω05)
+- **Capital environment** — which macro conditions, incentives and constraints shape the outcome? (Ω08, Ω10, Ω11)
+- **Capital memory** — how do refinancing, exceptions, governance failures and previous decisions constrain the future? (Ω12)
 
 ```text
 WEALTH : WorldState → CapitalConsequences        (not WorldState → InvestmentDecision)
 ```
 
-**The 12-invariant Ω architecture** is the spine. NPV, RSI, Monte Carlo, backtest, ledger — these are *implementations* underneath the invariants, not the identity.
+---
+
+## Capital has memory
+
+Two institutions can show the same balance sheet today and carry different future risk. One may have repeatedly refinanced, normalised exceptions or weakened governance. The other may have preserved reserves, commitments and institutional trust.
+
+```text
+Current state ≠ Complete state
+Capital reality = Present state + Path dependence
+```
+
+WEALTH records not only what exists now, but how the system arrived here (Ω12, `wealth_hysteresis_ledger`).
 
 ---
 
-## Irreducible question
+## Governed use vs engineering use
 
-> **If capital moves this way, what follows — and how sure are we?**
+**Governed use.** Connect to arifOS. The kernel delegates bounded capital-analysis work to WEALTH and receives an advisory evidence envelope. This is the recommended path.
 
-WEALTH's job is to make the consequences of moving money *harder to hide*. It does not decide where money should go.
+**Engineering use.** The direct WEALTH connector (`:18082`) is intended for diagnostics, conformance testing and local development. Direct access does not grant execution authority — it simply bypasses the recommended authority entry path.
+
+```text
+World state → WEALTH models capital consequences → arifOS evaluates authority → Human decides
+```
 
 ---
 
-## The 12 Ω-invariants
-
-| Ω    | Invariant | Question | Canonical name | Implementation |
-|------|-----------|----------|----------------|----------------|
-| Ω00  | Synthesis | Cross-dimensional roll-up → domain_assessment | `wealth_synthesize` | 12→1 roll-up; ADVISORY_ONLY |
-| Ω01  | Mass      | What exists? | `wealth_conservation_capital` | assets / liabilities / reserves |
-| Ω02  | Flow      | Where is money moving? | `wealth_flow_liquidity` | cash flow / burn / runway |
-| Ω03  | Gradient  | What differential drives movement? | `wealth_gradient_price` | price pressure / spreads |
-| Ω04  | Entropy   | How uncertain / disordered is it? | `wealth_entropy_risk` | tail risk / disorder |
-| Ω05  | Energy    | What output does capital produce? | `wealth_energy_productivity` | output per capital input |
-| Ω06  | Time      | What is future value worth now? | `wealth_time_discount` | NPV / IRR / decay |
-| Ω07  | Inertia   | What makes the system hard to change? | `wealth_inertia_leverage` | leverage / fragility |
-| Ω08  | Field     | What macro regime surrounds it? | `wealth_field_macro` | rates / FX / energy |
-| Ω09  | Signal    | What information deserves belief? | `wealth_signal_information` | evidence quality / information value |
-| Ω10  | Game      | What incentives shape behaviour? | `wealth_game_coordination` | incentives / bargaining |
-| Ω11  | Boundary  | What constraints cannot be crossed? | `wealth_boundary_governance` | governance / stewardship |
-| Ω12  | Hysteresis | How does history constrain the future? | `wealth_hysteresis_ledger` | path dependence / capital memory |
-
-The Ω invariants are the *fundamentals*. NPV, RSI, MACD, Bollinger, PSAR, ATR, ADX, backtest, and entry planning are market-microstructure implementations underneath Ω08 (Field) and Ω09 (Signal).
-
----
-
-## What WEALTH is becoming (vs what it was)
-
-| Was | Becoming |
-|-----|----------|
-| "11 Tools · 18 Resources" | 13 canonical primitives + 2 extensions + 2 infrastructure |
-| "AI-driven financial decision engine" | Capital consequence infrastructure |
-| "Capital Diagnostics / Market Pulse / Entropy Modeling / Entry Planning / Backtest / Ledger" | Ω-invariant primitives (Mass / Flow / Gradient / Entropy / Energy / Time / Inertia / Field / Signal / Game / Boundary / Hysteresis) |
-| Direct :18082 for clients | Recommended path: `Client → arifOS → WEALTH → arifOS → Human` |
-| "Real-time FX, commodity, and stock indicators" | "Live and latest-available market/macro data through configured adapters, with source, timestamp, cache age, and staleness metadata" |
-| "structural rot" | structural deterioration, incentive misalignment, and accumulating fragility |
-| "WEALTH = truth about consequences" | WEALTH = evidence about capital consequences |
-| `arifFlow — Witness Plane` | `arifFlow — metabolic telemetry` (FRAME = independent witness; VAULT999 = immutable record) |
-
----
-
-## Why hysteresis deserves more prominence
-
-Most finance systems model:
-
-```
-State_t
-```
-
-WEALTH is starting to model:
-
-```
-State_t = f(State_{t-1}, History)
-```
-
-Two institutions can have identical current balance sheets yet radically different future risk:
-- one survived repeated governance breaches;
-- one repeatedly refinanced;
-- one normalized exceptions;
-- one accumulated hidden obligations;
-- one has institutional trust;
-- another destroyed it.
-
-Therefore:
-
-```
-CurrentState ≠ CompleteState
-CapitalReality = PresentState + PathDependence
-```
-
-That is much deeper than another trading indicator.
-
----
-
-## Architecture (P1 corrected)
-
-```
-                  ┌──────────────────────┐
-                  │      Client          │
-                  └──────────┬───────────┘
-                             │
-                             ▼
-                  ┌──────────────────────┐
-                  │       arifOS         │
-                  │  Authority Boundary  │
-                  └──────────┬───────────┘
-                             │
-                  bounded request
-                             │
-                             ▼
-                  ┌──────────────────────┐
-                  │       WEALTH         │
-                  │ Capital Evidence     │
-                  │ (Ω-invariants)       │
-                  └──────────┬───────────┘
-                             │
-                  evidence envelope
-                             │
-                             ▼
-                  ┌──────────────────────┐
-                  │       arifOS         │
-                  │      Judgment        │
-                  └──────────┬───────────┘
-                             │
-                             ▼
-                          Human
-```
-
-**WEALTH is an organ.** **arifOS is the ingress and authority boundary.**
-
-Direct `:18082` is engineering / diagnostic only. The recommended user interface is to connect to arifOS; arifOS invokes WEALTH internally under a delegated SCT/session envelope.
-
----
-
-## Federation one-liner
-
-> WEALTH computes consequences. arifOS judges authority. A-FORGE executes approved actions. Humans remain sovereign.
-
-The data path:
-
-```
-Reality
-   ↓ evidence
-WEALTH
-   ↓ capital consequences
-arifOS
-   ↓ authority
-A-FORGE
-   ↓ action
-Reality
-```
-
-with FRAME / VAULT999 observing and preserving the loop, and arifFlow carrying metabolic telemetry.
-
----
-
-## Tool surface (P1)
-
-```
-13 canonical primitives (Ω00 + Ω01-Ω12)
-  + 2 societal extensions (inequality, role scarcity)
-  + 2 infrastructure tools (health, registry)
-  + 14 compatibility aliases (capital_* legacy names — excluded from canonical count)
-  = 17 visible surface
-```
-
-The raw count is not the point. The semantic classes are. The tool count becomes meaningful: "13 canonical capital primitives · 2 societal extensions · 2 infrastructure tools · compatibility aliases excluded."
-
-### Ω00 wealth_synthesize — domain_assessment, NOT constitutional verdict
+## Advisory output, never a verdict
 
 ```json
 {
-  "tool_name": "wealth_synthesize",
-  "domain_assessment": "FAVORABLE | CAUTION | INSUFFICIENT_EVIDENCE | CONSTRAINT_VIOLATION",
+  "domain_assessment": "CAUTION",
   "execution_authority": "ADVISORY_ONLY",
   "handoff": "arifOS.arif_judge",
   "constitutional_verdicts_issued": []
 }
 ```
 
-`WEALTH_ₐₛₛₑₛₛₘₑₙₜ ≠ arifOSᵥₑᵣᵈᵢcₜ`. WEALTH never returns SEAL / HOLD / SABAR / VOID. Those belong to arifOS.arif_judge.
+WEALTH assessments are domain evidence. They are not `SEAL`, `HOLD`, `SABAR` or `VOID`. Only arifOS issues constitutional verdicts.
 
-### Market/macro outputs (Ω08 / Ω09) carry mandatory freshness
+## Every market observation needs a clock
 
-```json
-{
-  "source": "Frankfurter API | wealth://commodity | …",
-  "timestamp": "2026-09-21T02:01:24.866489+00:00",
-  "cache_age_seconds": 0,
-  "staleness_class": "LIVE | RECENT | STALE | ARCHIVAL"
-}
+A market or macro observation carries: **source · observation timestamp · retrieval timestamp · cache age · staleness classification · known data limitations** (`LIVE | RECENT | STALE | ARCHIVAL`).
+
+**Freshness is not truth. Latest available is not real time.**
+
+---
+
+## Current verified state
+
+**Observed at: 2026-10-16T09:12Z** (live probe `:18082/health`)
+
+| Check | Result |
+|---|---|
+| Service | **healthy** · runtime seal state `SEALED` · working tree `CLEAN` · commit `5296ff5` |
+| Authority ceiling | `COMPUTE_ONLY` — no constitutional verdict capability |
+| Canonical primitives observed | 13 (Ω00 + Ω01–Ω12) + 2 societal extensions + 2 infrastructure |
+| Live tool count | **18** (`tools/list`) vs **17** declared visible surface — declared-vs-live gap open |
+| Freshness metadata coverage | required by contract on market/macro outputs; **coverage not independently measured** |
+| arifOS handoff (`wealth_judge_handoff`) | **unmeasured today** (session-gated MUTATE tool) |
+| Forecast calibration | **NOT YET PUBLISHED** |
+| Historical replay benchmark | **NOT YET PUBLISHED** |
+
+Dynamic state is generated by probe. **If this section conflicts with the live endpoint, the endpoint wins.**
+
+---
+
+## The Ω architecture
+
+**Twelve invariants, one synthesis primitive.** Ω00 (`wealth_synthesize`) is a synthesis roll-up, not a thirteenth domain invariant; Ω01–Ω12 are the twelve capital-consequence invariants (Mass · Flow · Gradient · Entropy · Energy · Time · Inertia · Field · Signal · Game · Boundary · Hysteresis).
+
+The Ω invariants are the fundamentals. NPV, RSI, MACD, Bollinger, PSAR, ATR, ADX, backtest and entry planning are market-microstructure implementations underneath Ω08 (Field) and Ω09 (Signal) — not the identity.
+
+Full Ω00–Ω12 table, capability-surface arithmetic and the L11 AUTH gate: [`docs/OMEGA_ARCHITECTURE.md`](./docs/OMEGA_ARCHITECTURE.md).
+
+### Capability surface
+
+- 13 canonical primitives · 2 societal extensions · 2 infrastructure capabilities
+- 14 legacy aliases (`capital_*`) — excluded from the canonical count
+
+**Canonical visible surface: 17** (declared) · live `tools/list` reports 18 (2026-10-16).
+
+---
+
+## Research roadmap (NOT current performance claims)
+
+Two research programmes are **planned, not demonstrated**:
+
+1. **CHRON-linked forecast calibration** — predict → record → verify → recalibrate. No calibration has been published; no predictive superiority is claimed.
+2. **Historical-collapse replay** — pre-cutoff evidence only, with a recorded source allowlist, contamination tests and negative controls. The stronger phrase "cryptographic exclusion" is reserved for when a real commitment/hash/signature mechanism exists — it does not yet.
+
+Details and the dated P1 checklist: [`docs/RESEARCH_ROADMAP.md`](./docs/RESEARCH_ROADMAP.md).
+
+---
+
+## Quick start
+
+```bash
+git clone https://github.com/ariffazil/WEALTH.git
+cd WEALTH
+# governed path: connect an MCP client to https://mcp.arif-fazil.com/mcp (arifOS delegates to WEALTH)
+# engineering path: run the organ locally, then:
+curl -s http://localhost:18082/health | jq '{status, tools_loaded, working_tree}'
 ```
 
-Doctrine: *Freshness ≠ Truth. LatestAvailable ≠ RealTime.*
+OBSERVE-class tools pass without a session; MUTATE tools (`capital_ledger`, `wealth_judge_handoff`) require a verified session ([details](./docs/OMEGA_ARCHITECTURE.md#l11-auth-gate-p1-fix)).
 
-### L11 AUTH gate (P1 fix)
+## Current limits
 
-Direct :18082 connector previously required `session_id` for every tool, including diagnostic reads. P1 restores OBSERVE-class exemptions:
-- `capital_market`, `capital_registry`, `capital_primitive`, `capital_entropy`, `capital_indicator`, `capital_backtest`, `capital_entry_plan`, `capital_claims`, `capital_diagnose`, `capital_health`, `capital_polix`, `capital_civx`, `wealth_synthesize` — and their legacy aliases — now pass without a session.
-- MUTATE tools (`capital_ledger`, `wealth_judge_handoff`) still require a verified session.
+- No published forecast calibration, no external benchmark, no demonstrated predictive superiority.
+- Declared-vs-live tool-count drift (17 vs 18) open.
+- Freshness metadata is contractually mandatory; coverage compliance is not independently measured.
+- Single sovereign, single reviewer; no succession procedure published.
 
----
+## Documentation
 
-## CHRON × WEALTH — the prediction → outcome → calibration loop
+[Ω Architecture](./docs/OMEGA_ARCHITECTURE.md) · [Research roadmap](./docs/RESEARCH_ROADMAP.md) · [Boundary](./docs/BOUNDARY.md) · [docs/](./docs/)
 
-```
-WEALTH predicts   capital consequence / probability / risk band / falsifier
-CHRON records     what WEALTH believed / when / using what evidence
-Reality occurs
-CHRON verifies    vs predicted
-WEALTH recalibrates
-HERMES checks    narrative distortion
-arifOS governs    future use
-```
+## Security · License
 
-This gives Prediction → Outcome → Calibration → ImprovedCapitalModel rather than endless investment commentary. That is where WEALTH becomes institutionally different.
+[SECURITY.md](./SECURITY.md) · **AGPL-3.0** ([LICENSE](./LICENSE)).
 
 ---
-
-## Historical collapse replay — discipline required
-
-Replay historical financial collapses using only information available before the collapse. The benchmark requires:
-- `case` (e.g., 2008 GFC, 1997 Asian crisis)
-- `cutoff_date` (cryptographic exclusion of post-cutoff evidence)
-- `allowed_sources` (only what was available before cutoff)
-- `forbidden_future_sources` (regression test against contamination)
-- `predicted_signal`, `actual_failure`
-- `false_positive_controls` (firms that looked bad but survived)
-- `score`
-
-The proper test is `Model(E_{t<collapse}) → RiskSignal_t` with all post-cutoff evidence cryptographically excluded. Without negative controls, the demonstration collapses into `FailedCompany → FindWarningSigns` which is much easier.
-
-CHRON's prediction ledger is the substrate for this benchmark.
-
----
-
-## What I would execute next in WEALTH
-
-This packet (P1) executes 4 of 7 items Arif specified; the rest are deferred:
-
-- ✅ **1** Fix session-envelope interface so arifOS → WEALTH works end-to-end without losing identity/authority.
-- ✅ **2** Declare the Ω00-Ω12 surface canonical; move old capital_* names into an explicit compatibility layer.
-- ✅ **3** Remove constitutional verdict ownership from wealth_synthesize; make its output explicitly advisory/domain-level.
-- ⏭ **4** Repin and test the capital_polix schema drift (done in FEDERATION-CONVERGENCE-P0).
-- ✅ **5** Make freshness/provenance mandatory on every market/macro output.
-- 📋 **6** CHRON-linked forecast calibration before claiming predictive superiority (deferred).
-- 📋 **7** Historical-collapse replay as a proper pre-cutoff benchmark with negative controls (deferred).
-
----
-
-## Identity, restated
-
-> arifOS's irreducible question is **"May this action happen?"**
->
-> WEALTH's irreducible question is **"If capital moves this way, what follows — and how sure are we?"**
->
-> HERMES asks **"What exactly are we claiming?"**
->
-> CHRON asks **"What did we expect, and what actually happened?"**
-
-And the new WEALTH identity, restated:
 
 > **WEALTH — Capital Consequence Intelligence.**
->
 > It does not decide where money should go.
 > It makes the consequences of moving it harder to hide.
 
----
-
-**Licensed under AGPL-3.0.**
-
 **DITEMPA BUKAN DIBERI.**
 
-<!-- FEDERATION-STANDARD v2026-10-15 START :: 333-AGI audit :: source: organs.yaml + git + live probes :: regenerate: re-run audit -->
-## 🔗 Federation Identity (auto-audit 2026-10-15)
+<!-- FEDERATION-STANDARD v2026-10-15 START :: 333-AGI audit :: source: organs.yaml + git + live probes -->
+## 🔗 Federation Identity
 | Field | Value |
 |---|---|
 | Organ | `wealth` · CORE · domain_evidence |
 | Ports | 18082 |
 | Unit | wealth-organ.service |
 | Authority ceiling | COMPUTE_ONLY |
-| Live (SOT probe @audit) | UP |
-| Repo HEAD @audit | `2c2faab 2026-10-15` |
 | Public MCP | https://wealth.arif-fazil.com/mcp |
-| Rollback | — |
-| Flow graph | [FEDERATION-FLOW-GRAPH.md](../FEDERATION-FLOW-GRAPH.md) — peta semua organ + repo |
+| Flow graph | [FEDERATION.md](https://github.com/ariffazil/AAA/blob/main/FEDERATION.md) — peta semua organ + repo |
 <!-- FEDERATION-STANDARD v2026-10-15 END -->
