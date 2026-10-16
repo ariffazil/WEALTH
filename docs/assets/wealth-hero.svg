@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" font-family="DejaVu Sans, Liberation Sans, sans-serif">
+  <defs>
+    <marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#5a6270"/>
+    </marker>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b1e24"/>
+      <stop offset="1" stop-color="#14161a"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#fade)"/>
+  <g stroke="#232830" stroke-width="1">
+    <line x1="0" y1="220" x2="1280" y2="220"/>
+    <line x1="0" y1="500" x2="1280" y2="500"/>
+  </g>
+
+  <!-- Title -->
+  <text x="60" y="104" fill="#f2f4f7" font-size="58" font-weight="700">WEALTH</text>
+  <text x="60" y="146" fill="#c98a4b" font-size="22" letter-spacing="5">CAPITAL LEAVES CONSEQUENCES</text>
+
+  <!-- Historical trail (path dependence) -->
+  <path d="M120 560 C 300 545, 380 575, 560 555 S 900 585, 1160 550" fill="none" stroke="#c98a4b" stroke-width="2" stroke-dasharray="3 7" opacity="0.55"/>
+  <text x="60" y="590" fill="#9aa4b2" font-size="14">path dependence — the history behind the current state</text>
+
+  <!-- Flow cards -->
+  <g>
+    <rect x="52" y="320" width="195" height="110" rx="14" fill="#1d2229" stroke="#4fd1c5" stroke-width="2"/>
+    <text x="149" y="360" fill="#f2f4f7" font-size="18" font-weight="700" text-anchor="middle">CAPITAL</text>
+    <text x="149" y="384" fill="#f2f4f7" font-size="18" font-weight="700" text-anchor="middle">MOVEMENT</text>
+    <text x="149" y="412" fill="#9aa4b2" font-size="14" text-anchor="middle">a decision is proposed</text>
+
+    <rect x="297" y="308" width="195" height="134" rx="14" fill="#2a2118" stroke="#c98a4b" stroke-width="2.5"/>
+    <text x="394" y="352" fill="#c98a4b" font-size="20" font-weight="700" text-anchor="middle">12 DIMENSIONS</text>
+    <text x="394" y="380" fill="#c98a4b" font-size="15" text-anchor="middle">Ω01–Ω12 consequences</text>
+    <text x="394" y="410" fill="#9aa4b2" font-size="13" text-anchor="middle">+ Ω00 synthesis</text>
+
+    <rect x="542" y="320" width="195" height="110" rx="14" fill="#1d2229" stroke="#c98a4b" stroke-width="2"/>
+    <text x="639" y="356" fill="#f2f4f7" font-size="16" font-weight="700" text-anchor="middle">UNCERTAINTY</text>
+    <text x="639" y="380" fill="#f2f4f7" font-size="16" font-weight="700" text-anchor="middle">+ PATH DEPENDENCE</text>
+    <text x="639" y="410" fill="#9aa4b2" font-size="13" text-anchor="middle">bands, not point promises</text>
+
+    <rect x="787" y="320" width="195" height="110" rx="14" fill="#1d2229" stroke="#3fbf7f" stroke-width="2"/>
+    <text x="884" y="366" fill="#f2f4f7" font-size="18" font-weight="700" text-anchor="middle">AUDITABLE</text>
+    <text x="884" y="394" fill="#f2f4f7" font-size="18" font-weight="700" text-anchor="middle">EVIDENCE</text>
+
+    <rect x="1032" y="320" width="195" height="110" rx="14" fill="#1d2229" stroke="#d4a853" stroke-width="2"/>
+    <text x="1129" y="366" fill="#d4a853" font-size="18" font-weight="700" text-anchor="middle">HUMAN</text>
+    <text x="1129" y="394" fill="#d4a853" font-size="18" font-weight="700" text-anchor="middle">JUDGMENT</text>
+    <text x="1129" y="418" fill="#9aa4b2" font-size="12" text-anchor="middle">sovereign decides</text>
+  </g>
+
+  <!-- Arrows -->
+  <g stroke="#5a6270" stroke-width="2.5" marker-end="url(#ah)">
+    <line x1="249" y1="375" x2="291" y2="375"/>
+    <line x1="494" y1="375" x2="536" y2="375"/>
+    <line x1="739" y1="375" x2="781" y2="375"/>
+    <line x1="984" y1="375" x2="1026" y2="375"/>
+  </g>
+
+  <!-- Invariant line -->
+  <text x="640" y="272" fill="#9aa4b2" font-size="16" text-anchor="middle">Current state ≠ Complete state — capital reality = present state + path dependence</text>
+
+  <!-- Footer -->
+  <text x="60" y="622" fill="#9aa4b2" font-size="17">WEALTH computes evidence. It does not decide where money should go.</text>
+  <text x="1220" y="622" fill="#c98a4b" font-size="16" letter-spacing="3" text-anchor="end">DITEMPA BUKAN DIBERI</text>
+</svg>
