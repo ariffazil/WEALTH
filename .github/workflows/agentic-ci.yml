@@ -62,7 +62,7 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - name: Provision shared federation contract libs (SOT: ariffazil/AAA@6602fdd3)
+      - name: "Provision shared federation contract libs (SOT: ariffazil/AAA@6602fdd3)"
         run: |
           set -euo pipefail
           base="https://raw.githubusercontent.com/ariffazil/AAA/6602fdd3f8f5503876584541aa030b220d0bcb57/lib"
