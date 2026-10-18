@@ -50,7 +50,9 @@ def test_index_every_entry_has_real_file():
         "total_entries must equal entries length"
     )
     for entry in index["entries"]:
-        path = Path(entry["absolute_path"])
+        # `absolute_path` records where the index was generated; it is not
+        # portable. `path` is repo-relative and is the truth this test asserts.
+        path = REPO / entry["path"]
         assert path.exists(), f"index entry points at missing file: {entry['path']}"
         assert path.stat().st_size == entry["size_bytes"], (
             f"size drift for {entry['path']}"

@@ -129,9 +129,9 @@ def payload_capital_health_corporate():
             "monthly_burn": 50000,
             **session,
         },
-        "expected_difference": "runway_months should differ: 100 vs 1. KNOWN-RED: corporate_runway silently downgraded to personal_finance, so both may collapse to SURVIVAL_ADEQUATE.",
-        "known_red": True,
-        "red_reason": "corporate_runway silent downgrade to personal_finance defect",
+        "expected_difference": "runway_months should differ: 100 vs 1. The corporate_runway -> personal_finance silent-downgrade defect was observed fixed on 2026-10-18 (payloads now diverge), so this case is green.",
+        "known_red": False,
+        "red_reason": "",
     }
 
 

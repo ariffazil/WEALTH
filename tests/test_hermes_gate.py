@@ -25,6 +25,20 @@ from wealth_mcp.hermes_gate import (
 )
 
 
+@pytest.fixture(autouse=True)
+def reset_gate_circuit():
+    """The circuit breaker is process-global; a tripped breaker from an earlier
+    test serves its cached verdict on later calls and makes the suite
+    order-dependent (e.g. a cached INJECTION leaking into the warn-mode case)."""
+    hermes_gate._CIRCUIT.update(
+        consecutive_failures=0, opened_at=None, last_good_verdict=None, last_good_at=None
+    )
+    yield
+    hermes_gate._CIRCUIT.update(
+        consecutive_failures=0, opened_at=None, last_good_verdict=None, last_good_at=None
+    )
+
+
 def _hermes_inner(
     verdict: str = "PASS",
     injection: bool = False,
