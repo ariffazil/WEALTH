@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """boundary_ratchet — fail-on-NEW architecture boundary gate (F4/F11).
 
 Reads contracts from boundary/.importlinter (INI), evaluates via import-linter
@@ -54,6 +53,7 @@ def run_lint(cfg: pathlib.Path, repo_root: pathlib.Path) -> tuple[int, list[str]
         cwd=repo_root,
         capture_output=True,
         text=True,
+        check=False,
     )
     edges: list[str] = []
     for line in (proc.stdout + "\n" + proc.stderr).splitlines():
@@ -73,12 +73,12 @@ def main() -> int:
     ledger_path = cfg.parent / "EXCEPTIONS-LEDGER.json"
 
     try:
-        root_packages, contracts = load_contracts(cfg)
-    except Exception as e:
+        _root_packages, contracts = load_contracts(cfg)
+    except (FileNotFoundError, configparser.Error, KeyError) as e:
         print(f"BOUNDARY RATCHET: TOOLING ERROR (config): {e}")
         return 2
 
-    proc_rc, current_edges = run_lint(cfg, root)
+    _proc_rc, current_edges = run_lint(cfg, root)
     src_of = {}
     for c in contracts:
         for s in c["sources"]:
@@ -102,7 +102,7 @@ def main() -> int:
         return 2
     allowed = {v["contract"] + "|" + v["path"]: v["expires"] for v in ledger.get("violations", [])}
 
-    today = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
     new_v, expired_v, kept = [], [], []
     current_keys = set()
     for cid, edges in current.items():
