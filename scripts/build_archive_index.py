@@ -25,8 +25,8 @@ import hashlib
 import json
 import os
 import sys
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 # Repository root (parent of this script's parent).
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -126,7 +126,7 @@ def extract_date(path: Path) -> str | None:
 
 
 def build_index() -> dict:
-    now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
+    now = dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()
     entries: list[dict] = []
     counts: dict[str, int] = {}
 
@@ -181,7 +181,9 @@ def check_drift(index: dict) -> list[str]:
     """Return list of drift messages (empty == parity OK)."""
     drift: list[str] = []
     for entry in index["entries"]:
-        p = Path(entry["absolute_path"])
+        # `absolute_path` records where the index was generated; it is not
+        # portable across hosts. `path` is repo-relative and is the truth.
+        p = REPO_ROOT / entry["path"]
         if not p.exists():
             drift.append(f"MISSING: {entry['path']}")
             continue
