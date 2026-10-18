@@ -90,6 +90,25 @@ CoercedDictListStrict = Annotated[
 CoercedStrList = Annotated[list[str] | None, BeforeValidator(_coerce_json_string)]
 
 
+def _invalid_input(tool_name: str, message: str, domain: str = "risk", valid_modes=None):
+    """Client input error as a structured result, never a raised exception.
+
+    A raise exits the governance wrapper as INTERNAL_ERROR/FATAL/888_HOLD —
+    the wrong class for a missing argument (2026-10-17, FI-008 valuation run).
+    """
+    body = {"status": "ERROR", "error_code": "INVALID_INPUT", "message": message}
+    if valid_modes:
+        body["valid_modes"] = valid_modes
+    return wrap_result(
+        tool_name=tool_name,
+        domain=domain,
+        result=body,
+        epistemic_tag=EpistemicTag.ASSUMED,
+        evidence_quality=EvidenceQuality.MISSING,
+        errors=[message],
+    )
+
+
 def register_canonical_tools(mcp):
     """Register the 8 canonical WEALTH tools. Call from server.py after imports."""
 
@@ -182,7 +201,7 @@ def register_canonical_tools(mcp):
 
         if m == "npv":
             if cash_flows is None or discount_rate is None:
-                raise ValueError("npv requires cash_flows, discount_rate")
+                return _invalid_input("capital_primitive","npv requires cash_flows, discount_rate")
             return wrap_result(
                 tool_name="capital_primitive",
                 domain="capital",
@@ -200,7 +219,7 @@ def register_canonical_tools(mcp):
 
         if m == "irr":
             if cash_flows is None:
-                raise ValueError("irr requires cash_flows")
+                return _invalid_input("capital_primitive","irr requires cash_flows")
             return wrap_result(
                 tool_name="capital_primitive",
                 domain="capital",
@@ -214,7 +233,7 @@ def register_canonical_tools(mcp):
 
         if m == "emv":
             if outcomes is None or probabilities is None:
-                raise ValueError("emv requires outcomes, probabilities")
+                return _invalid_input("capital_primitive","emv requires outcomes, probabilities")
             return wrap_result(
                 tool_name="capital_primitive",
                 domain="risk",
@@ -231,7 +250,7 @@ def register_canonical_tools(mcp):
                 v is None
                 for v in [prior_pos, posterior_pos, well_cost_musd, p50_value_musd]
             ):
-                raise ValueError(
+                return _invalid_input("capital_primitive",
                     "evoi requires prior_pos, posterior_pos, well_cost_musd, p50_value_musd"
                 )
             return wrap_result(
@@ -253,7 +272,7 @@ def register_canonical_tools(mcp):
 
         if m == "mc":
             if any(v is None for v in [initial_value, growth_rate, volatility]):
-                raise ValueError("mc requires initial_value, growth_rate, volatility")
+                return _invalid_input("capital_primitive","mc requires initial_value, growth_rate, volatility")
             return wrap_result(
                 tool_name="capital_primitive",
                 domain="risk",
@@ -274,7 +293,7 @@ def register_canonical_tools(mcp):
 
         if m == "kelly":
             if win_prob is None or odds is None:
-                raise ValueError("kelly requires win_prob, odds")
+                return _invalid_input("capital_primitive","kelly requires win_prob, odds")
             return wrap_result(
                 tool_name="capital_primitive",
                 domain="risk",
@@ -288,7 +307,7 @@ def register_canonical_tools(mcp):
 
         if m == "markowitz":
             if returns is None or covariances is None:
-                raise ValueError("markowitz requires returns, covariances")
+                return _invalid_input("capital_primitive","markowitz requires returns, covariances")
             return wrap_result(
                 tool_name="capital_primitive",
                 domain="risk",
@@ -304,7 +323,7 @@ def register_canonical_tools(mcp):
 
         if m == "robust":
             if returns is None:
-                raise ValueError("robust requires returns")
+                return _invalid_input("capital_primitive","robust requires returns")
             return wrap_result(
                 tool_name="capital_primitive",
                 domain="risk",
@@ -320,7 +339,7 @@ def register_canonical_tools(mcp):
 
         if m == "chance_constrained":
             if returns is None or covariances is None:
-                raise ValueError("chance_constrained requires returns, covariances")
+                return _invalid_input("capital_primitive","chance_constrained requires returns, covariances")
             return wrap_result(
                 tool_name="capital_primitive",
                 domain="risk",
@@ -334,7 +353,7 @@ def register_canonical_tools(mcp):
 
         if m == "two_stage":
             if first_stage_costs is None or scenario_data is None:
-                raise ValueError("two_stage requires first_stage_costs, scenario_data")
+                return _invalid_input("capital_primitive","two_stage requires first_stage_costs, scenario_data")
             return wrap_result(
                 tool_name="capital_primitive",
                 domain="risk",
@@ -481,7 +500,7 @@ def register_canonical_tools(mcp):
 
         if m == "runway":
             if liquid_assets is None or monthly_burn is None:
-                raise ValueError("runway requires liquid_assets, monthly_burn")
+                return _invalid_input("capital_health","runway requires liquid_assets, monthly_burn")
             return wrap_result(
                 tool_name="capital_health",
                 domain="capital",
@@ -727,7 +746,7 @@ def register_canonical_tools(mcp):
                     oil_price_assumption_usd,
                 ]
             ):
-                raise ValueError(
+                return _invalid_input("capital_health",
                     "fiscal_breakeven requires total_govt_expenditure, non_oil_revenue, petronas_dividend_base_rm, oil_price_assumption_usd"
                 )
             return wrap_result(
@@ -750,7 +769,7 @@ def register_canonical_tools(mcp):
 
         if m == "confluence":
             if indicators is None:
-                raise ValueError("confluence requires indicators")
+                return _invalid_input("capital_health","confluence requires indicators")
             return wrap_result(
                 tool_name="capital_health",
                 domain="risk",
@@ -764,7 +783,7 @@ def register_canonical_tools(mcp):
 
         if m == "asymmetry":
             if upside_scenarios is None or downside_scenarios is None:
-                raise ValueError(
+                return _invalid_input("capital_health",
                     "asymmetry requires upside_scenarios, downside_scenarios"
                 )
             return wrap_result(
@@ -1968,7 +1987,7 @@ def register_canonical_tools(mcp):
                 errors=[] if persisted else ["Ledger persistence was not confirmed."],
             )
 
-        raise ValueError(f"Unknown mode '{mode}'. Valid: query, write")
+        return _invalid_input("capital_ledger", f"Unknown mode '{mode}'. Valid: query, write")
 
     # ═══════════════════════════════════════════════════════════════════
     # 7. capital_registry — Meta and introspection
