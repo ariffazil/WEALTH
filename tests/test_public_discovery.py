@@ -22,6 +22,8 @@ import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import pytest
+
 REPO = Path(__file__).resolve().parent.parent
 PUBLIC = REPO / "public"
 SITEMAP = PUBLIC / "sitemap.xml"
@@ -35,6 +37,14 @@ DRAFT_PERSONA_CARD = REPO / "agent-cards" / "makcikgpt.json"
 
 SITEMAP_NS = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
 ORGAN_DOMAIN = "wealth.arif-fazil.com"
+
+# site/dist is a build output and is not committed, so the disk-parity tests can
+# only run where the site has been built. Sitemap/contract assertions still run
+# everywhere; these only witness the built artifact.
+requires_site_dist = pytest.mark.skipif(
+    not SITE_DIST.is_dir(),
+    reason="site/dist is a build artifact (uncommitted); build the site to run this check",
+)
 
 
 # ── 1. sitemap.xml ────────────────────────────────────────────────────────
@@ -84,6 +94,7 @@ def test_sitemap_includes_commodity_terminal_routes():
     assert not missing, f"sitemap is missing required routes: {missing}"
 
 
+@requires_site_dist
 def test_sitemap_commodity_dist_files_exist():
     """Every commodity route advertised by the sitemap must have a real file.
 
@@ -216,12 +227,14 @@ def test_mcp_surface_yaml_declares_commodity_routes():
         )
 
 
+@requires_site_dist
 def test_dist_files_for_commodity_routes_exist():
     for asset in ("gold", "oil", "gas", "wealth"):
         index = SITE_DIST / asset / "index.html"
         assert index.exists() and index.stat().st_size > 0, f"missing or empty: {index}"
 
 
+@requires_site_dist
 def test_dist_llms_txt_exists_for_terminal():
     llms = SITE_DIST / "wealth" / "llms.txt"
     assert llms.exists() and llms.stat().st_size > 0, f"missing: {llms}"
