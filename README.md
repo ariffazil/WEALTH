@@ -107,7 +107,7 @@ WEALTH assessments are domain evidence. They are not `SEAL`, `HOLD`, `SABAR` or 
 
 A market or macro observation carries: **source · observation timestamp · retrieval timestamp · cache age · staleness classification · known data limitations** (`LIVE | RECENT | STALE | ARCHIVAL`).
 
-**Freshness is not truth. Latest available is not real time.**
+**Freshness is not truth — it is evidence about capital consequences. Data is Live and latest-available, never real-time. arifFlow is metabolic telemetry: the metabolic record of the federation.**
 
 ---
 
