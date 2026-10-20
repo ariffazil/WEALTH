@@ -204,3 +204,23 @@ OBSERVE-class tools pass without a session; MUTATE tools (`capital_ledger`, `wea
 | Public MCP | https://wealth.arif-fazil.com/mcp |
 | Flow graph | [FEDERATION.md](https://github.com/ariffazil/AAA/blob/main/FEDERATION.md) — peta semua organ + repo |
 <!-- FEDERATION-STANDARD v2026-10-15 END -->
+
+## The 12 Ω-invariants
+
+| Ω | Invariant |
+|---|---|
+| Ω00 | Cross-dimensional synthesis (wealth_synthesize) |
+| Ω01 | conservation |
+| Ω02 | flow |
+| Ω03 | gradient |
+| Ω04 | entropy |
+| Ω05 | energy |
+| Ω06 | time |
+| Ω07 | inertia |
+| Ω08 | field |
+| Ω09 | signal |
+| Ω10 | game |
+| Ω11 | boundary |
+| Ω12 | hysteresis |
+
+Names are canonical in `wealth_mcp/tools/canonical.py` — counts are live from SOT, not hardcoded prose.
