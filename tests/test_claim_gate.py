@@ -25,6 +25,23 @@ from wealth_contracts.claim_gate import (  # noqa: E402
 )
 from wealth_contracts import claim_gate as claim_gate_module  # noqa: E402
 
+import pytest  # noqa: E402
+
+
+def _claim_kernel_available() -> bool:
+    """claim_kernel lives in the private AAA repo; the gate degrades to a local
+    membership rule without it (mismatch lint skipped)."""
+    try:
+        return claim_gate_module._claim_kernel() is not None
+    except Exception:
+        return False
+
+
+requires_claim_kernel = pytest.mark.skipif(
+    not _claim_kernel_available(),
+    reason="asserts claim_kernel behaviour; kernel unavailable (private AAA/lib not provisioned on this runner)",
+)
+
 
 def test_petronas_claim_without_uri_is_unbound():
     r = evaluate("PETRONAS declared dividend RM32.0B against PAT RM45.4B.")
@@ -220,6 +237,7 @@ def test_attribution_only_mode_reports_entity_check_not_applied():
 # ── 4. Explanatory class: NARRATIVE blocked, actionable classes allowed ─────
 
 
+@requires_claim_kernel
 def test_narrative_class_is_blocked_from_publication():
     r = evaluate(NARRATIVE_TEXT, [EXTERNAL_URI], "capital_diagnose", claim_class="NARRATIVE")
     x = r["explanatory_class_gate"]
@@ -271,6 +289,7 @@ def test_unknown_class_token_is_treated_as_undeclared():
     assert r["publishable"] is False
 
 
+@requires_claim_kernel
 def test_declared_class_contradicted_by_text_is_mismatch():
     r = evaluate(MEASURED_TEXT, [EXTERNAL_URI], "capital_diagnose", claim_class="MECHANISM")
     x = r["explanatory_class_gate"]
@@ -280,6 +299,7 @@ def test_declared_class_contradicted_by_text_is_mismatch():
     assert r["publishable"] is False
 
 
+@requires_claim_kernel
 def test_evaluate_claim_class_is_callable_on_its_own():
     x = evaluate_claim_class(MEASURED_TEXT, "MEASURED")
     assert x["schema"] == "claim_gate/explanatory_class/v1"

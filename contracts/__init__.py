@@ -6,8 +6,8 @@ from contracts.schemas.metabolic import (
     ConfidenceLevel,
     MetabolicOutput,
     OrganType,
-    WitnessType,
     WitnessStatus,
+    WitnessType,
 )
 
 __all__ = [
@@ -15,6 +15,6 @@ __all__ = [
     "ConfidenceLevel",
     "MetabolicOutput",
     "OrganType",
-    "WitnessType",
     "WitnessStatus",
+    "WitnessType",
 ]

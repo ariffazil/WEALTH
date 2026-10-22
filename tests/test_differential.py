@@ -20,6 +20,8 @@ import copy
 from pathlib import Path
 from datetime import datetime, timezone
 
+import pytest
+
 WEALTH_ROOT = Path(__file__).resolve().parent.parent
 BASELINE_DIR = WEALTH_ROOT / "tests" / "fixtures" / "baseline"
 
@@ -129,9 +131,9 @@ def payload_capital_health_corporate():
             "monthly_burn": 50000,
             **session,
         },
-        "expected_difference": "runway_months should differ: 100 vs 1. KNOWN-RED: corporate_runway silently downgraded to personal_finance, so both may collapse to SURVIVAL_ADEQUATE.",
-        "known_red": True,
-        "red_reason": "corporate_runway silent downgrade to personal_finance defect",
+        "expected_difference": "runway_months should differ: 100 vs 1. The corporate_runway -> personal_finance silent-downgrade defect was observed fixed on 2026-10-18 (payloads now diverge), so this case is green.",
+        "known_red": False,
+        "red_reason": "",
     }
 
 
@@ -446,6 +448,22 @@ def run_differential_test(case_func):
     )
 
 
+def _claim_kernel_available() -> bool:
+    """claim_kernel lives in the private AAA repo. Without it the harness
+    degrades and KNOWN-RED reproduction is environment-dependent (a case can
+    flip green for the wrong reason), so the full-fidelity run needs it."""
+    try:
+        from wealth_contracts.claim_gate import _claim_kernel
+
+        return _claim_kernel() is not None
+    except Exception:
+        return False
+
+
+@pytest.mark.skipif(
+    not _claim_kernel_available(),
+    reason="differential harness needs claim_kernel (private AAA/lib not provisioned on this runner)",
+)
 def test_all_differential():
     """Pytest test: run all differential tests and report red/green count."""
     results = {"green": 0, "red": 0, "known_red": 0, "details": []}

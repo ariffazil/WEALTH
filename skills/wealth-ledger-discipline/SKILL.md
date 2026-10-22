@@ -1,6 +1,6 @@
 ---
 id: wealth-ledger-discipline
-name: WEALTH Ledger Discipline
+name: wealth-ledger-discipline
 version: 1.0.0
 description: "VAULT999 capital ledger protocol via capital_ledger. USE WHEN: 'ledger query', 'record transaction', 'asset ledger', 'ledger history'. Covers: capital_ledger (query read-only; write requires ack_irreversible=true + human acknowledgment). Iron rules: writes are irreversible VAULT999 appends — 888 gate before any write; never write amounts without currency + description + asset_id; receipts are the audit trail, narratives are not; query before write to check for duplicate entries."
 owner: 333-AGI
@@ -18,3 +18,9 @@ VAULT999 capital ledger protocol via capital_ledger. USE WHEN: 'ledger query', '
 ## Provenance
 
 Forged 2026-09-04 by 333-AGI (session SEAL-83defc585b5a4296) from live organ tool surfaces + FEDERATION_SKILL_PROFILE gap analysis. Source of truth: the organ MCP surface itself — when skill and tool surface disagree, the tool surface wins and this skill must be revised.
+
+<!-- SKILL-WITNESS-NOTE (auto, additive-only) -->
+Witnessed reality moved this skill's selection to **ROUTE or MERGE**.
+Scar signatures: SCAR-LEDGER-HUMAN-ARIF-FAZIL-2026-09-23
+Do not treat this skill as neutral until the signatures are resolved.
+<!-- /SKILL-WITNESS-NOTE -->

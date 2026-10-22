@@ -142,8 +142,10 @@ class TestCommodityEngineBridge:
             assert 3456 <= port <= 3458  # internal only
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
 FETCHER_PATHS = {
-    asset: Path(f"/root/WEALTH/engines/commodity/{asset}-api/fetch_{asset}.py")
+    asset: REPO_ROOT / "engines" / "commodity" / f"{asset}-api" / f"fetch_{asset}.py"
     for asset in ("gold", "oil", "gas")
 }
 
@@ -153,11 +155,19 @@ FETCHER_PATHS = {
 # so these tests witness the builder that actually runs in production rather
 # than a second Python copy of it (a copy would drift, and passing it would
 # prove nothing about the served snapshot).
-SNAPSHOT_BUILDER = Path("/root/WEALTH/engines/commodity/snapshot_builder.cjs")
+SNAPSHOT_BUILDER = REPO_ROOT / "engines" / "commodity" / "snapshot_builder.cjs"
 
 # Public pages as actually served from the origin (Caddy html root), not the
 # build tree — a page that exists in dist/ but is not reachable is not a surface.
+# Deployed artifacts are not in the repo, so the check only runs where served.
 PUBLIC_PAGE_PATHS = [Path(f"/var/www/html/{asset}/index.html") for asset in ("gold", "oil", "gas")]
+
+
+def _served_pages_available() -> bool:
+    try:
+        return all(p.exists() for p in PUBLIC_PAGE_PATHS)
+    except OSError:
+        return False
 
 
 def _load_fetcher(asset):
@@ -268,6 +278,10 @@ def test_fetcher_snapshot_fails_closed_on_primary_fetch_error(asset, tmp_path, m
         module.cmd_snapshot({})
 
 
+@pytest.mark.skipif(
+    not _served_pages_available(),
+    reason="requires deployed public pages under /var/www/html (not present on a clean runner)",
+)
 def test_public_pages_have_no_stale_snapshot_markers():
     forbidden = (
         "0x999_TRINITY_SEALED_20260719",
