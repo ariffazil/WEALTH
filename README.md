@@ -224,3 +224,15 @@ OBSERVE-class tools pass without a session; MUTATE tools (`capital_ledger`, `wea
 | Ω12 | hysteresis |
 
 Names are canonical in `wealth_mcp/tools/canonical.py` — counts are live from SOT, not hardcoded prose.
+
+## External Footprint & Discovery
+
+WEALTH is the capital intelligence and macro telemetry organ of the arifOS federation.
+
+- **Discoverable:** YES (GitHub repository, public MCP door at `wealth.arif-fazil.com/mcp`)
+- **Authority Ceiling:** COMPUTE_ONLY (Advisory only — never executes or authorizes trades)
+- **Inspectable & Forkable:** YES
+- **Independent Validation:** NOT YET ESTABLISHED
+
+Canonical Witness Ledger: [EXTERNAL_WITNESS_LEDGER.md](https://github.com/ariffazil/arifOS/blob/main/docs/EXTERNAL_WITNESS_LEDGER.md)
+
