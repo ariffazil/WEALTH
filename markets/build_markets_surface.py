@@ -511,6 +511,7 @@ def sync_world_state(
         ARIF_SITE_ROOT / "public" / "world-state.json",
         ARIF_SITE_ROOT / "dist" / "world-state.json",
         ARIF_WEBROOT / "world-state.json",
+        Path("/var/www/html/world-state.json"),
     ]
     for t in ws_targets:
         if t.parent.is_dir():
@@ -523,6 +524,7 @@ def sync_world_state(
         ARIF_SITE_ROOT / "public" / "world" / "index.html",
         ARIF_SITE_ROOT / "dist" / "world" / "index.html",
         ARIF_WEBROOT / "world" / "index.html",
+        Path("/var/www/html/world/index.html"),
     ]
     gen_human = gen.astimezone(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     brent_val = macro.get("brent_crude_usd", 110.3)

@@ -653,6 +653,7 @@ def sync_arif_fazil_projections(tools: list[str], sot_map: dict[str, dict], iden
         for alias_p in [
             ARIF_SITE_ROOT / "public" / "capabilities.json",
             ARIF_WEBROOT / "capabilities.json",
+            Path("/var/www/html/capabilities.json"),
         ]:
             atomic_write_json(alias_p, cap)
 
