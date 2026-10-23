@@ -37,19 +37,150 @@
       }
     ]
   },
-  "defaultInputModes": ["application/json"],
-  "defaultOutputModes": ["application/json"],
-  "skills": [
-    {"id": "capital_primitive", "name": "Capital Primitive", "description": "Deductive math: NPV, IRR, EMV, EVOI, MC, Kelly, Markowitz, robust, chance-constrained, two-stage."},
-    {"id": "capital_health", "name": "Capital Health", "description": "Conservation, flow, runway, survival, fiscal breakeven, confluence, asymmetry."},
-    {"id": "capital_diagnose", "name": "Capital Diagnose", "description": "Institutional stress, governance, cascade, collapse signature, power, MWC — mode + payload."},
-    {"id": "capital_market", "name": "Capital Market", "description": "FX, commodity, indicator, stock (stock_payload)."},
-    {"id": "capital_ledger", "name": "Capital Ledger", "description": "VAULT999 query/write; write is C2/IRREVERSIBLE and requires ack_irreversible."},
-    {"id": "capital_registry", "name": "Capital Registry", "description": "Status, schema, domains, and health for the 8-tool public surface."},
-    {"id": "capital_entropy", "name": "Capital Entropy", "description": "Optional entropy-integrity analysis with explicit UNAVAILABLE results when the local dependency is absent."},
-    {"id": "wealth_judge_handoff", "name": "WEALTH Judge Handoff", "description": "Prepare or submit a structured arifOS governance handoff envelope."}
+  "defaultInputModes": [
+    "application/json"
   ],
-  "owned_mcp_count": 8,
+  "defaultOutputModes": [
+    "application/json"
+  ],
+  "skills": [
+    {
+      "id": "capital_primitive",
+      "name": "Capital Primitive",
+      "description": "Deductive capital math primitives. Pure computation — no inference, no governance verdict. Every mode is golden-tested against hand-check...",
+      "tags": [
+        "capital",
+        "deductive"
+      ]
+    },
+    {
+      "id": "capital_health",
+      "name": "Capital Health",
+      "description": "Financial health metrics. Deductive computation from structured inputs. No inference, no governance verdict.",
+      "tags": [
+        "capital",
+        "deductive"
+      ]
+    },
+    {
+      "id": "capital_diagnose",
+      "name": "Capital Diagnose",
+      "description": "Abductive institutional diagnostics — inference from partial evidence. Surface: mode, domain_scope, payload (dict). Mode-specific fields ...",
+      "tags": [
+        "institutional",
+        "abductive"
+      ]
+    },
+    {
+      "id": "capital_market",
+      "name": "Capital Market",
+      "description": "Market data and commodity intelligence. Observational with derived and interpreted fields.",
+      "tags": [
+        "market",
+        "observational"
+      ]
+    },
+    {
+      "id": "capital_ledger",
+      "name": "Capital Ledger",
+      "description": "VAULT999 immutable ledger access. Query is read-only (no ack required). Write requires explicit human acknowledgment (ack_irreversible=tr...",
+      "tags": [
+        "vault",
+        "mutating"
+      ]
+    },
+    {
+      "id": "capital_registry",
+      "name": "Capital Registry",
+      "description": "WEALTH meta/introspection. Registry status, tool schema, domain index, health check. Observational only.",
+      "tags": [
+        "meta",
+        "observational"
+      ]
+    },
+    {
+      "id": "capital_claims",
+      "name": "Capital Claims",
+      "description": "Named-entity claim gate — validates claims about real institutions/persons before publication. OBS_ELIGIBLE requires external source_uri ...",
+      "tags": [
+        "institutional",
+        "gate"
+      ]
+    },
+    {
+      "id": "capital_entropy",
+      "name": "Capital Entropy",
+      "description": "Capital and institutional entropy analysis. Modes: power_consequence_map, metric_purpose_audit, responsibility_ledger, trust_capital_deca...",
+      "tags": [
+        "institutional",
+        "abductive"
+      ]
+    },
+    {
+      "id": "wealth_judge_handoff",
+      "name": "WEALTH Judge Handoff",
+      "description": "Build or validate a structured handoff envelope for arifOS governance review. Preparation is advisory; submission remains authority-gated.",
+      "tags": [
+        "governance",
+        "handoff"
+      ]
+    },
+    {
+      "id": "capital_indicator",
+      "name": "Capital Indicator",
+      "description": "Technical analysis indicators for any yfinance symbol: ema | sma | rsi | macd | bb | psar | atr | adx. Pure numpy computation, no externa...",
+      "tags": [
+        "market",
+        "deductive"
+      ]
+    },
+    {
+      "id": "capital_backtest",
+      "name": "Capital Backtest",
+      "description": "Strategy backtest on XAUUSD (indicator fusion: EMA alignment, ATR-scaled stops, RSI pullback filter, S/R zones). Returns win rate, profit...",
+      "tags": [
+        "capital",
+        "deductive"
+      ]
+    },
+    {
+      "id": "capital_entry_plan",
+      "name": "Capital Entry Plan",
+      "description": "S/R-aware entry zone, stop loss and take-profit targets for XAUUSD. Swing-point support/resistance clustering + ATR risk scaling. Returns...",
+      "tags": [
+        "market",
+        "derived"
+      ]
+    },
+    {
+      "id": "wealth_synthesize",
+      "name": "WEALTH Synthesize",
+      "description": "Ω00 cross-dimensional synthesis — collapses the 12 Ω-invariants into a domain_assessment. Returns FAVORABLE | CAUTION | INSUFFICIENT_EVID...",
+      "tags": [
+        "synthesis",
+        "advisory"
+      ]
+    },
+    {
+      "id": "capital_polix",
+      "name": "Capital POLIX",
+      "description": "Power topology intelligence — incentive mapping, capture detection, rent extraction analysis, rule asymmetry.",
+      "tags": [
+        "political_economy",
+        "interpretive"
+      ]
+    },
+    {
+      "id": "capital_civx",
+      "name": "Capital CIVX",
+      "description": "Civilizational scenario intelligence — long-horizon resilience, sovereignty, intergenerational burden.",
+      "tags": [
+        "civilizational",
+        "scenario"
+      ]
+    }
+  ],
+  "owned_mcp_count": 15,
   "can_do": [
     "Compute NPV/EMV/EVOI/IRR/Monte Carlo capital primitives",
     "Run stock analysis, personal finance, market data lookups",
@@ -65,7 +196,15 @@
     "Make diagnosis or therapy claims (F9 ANTI-HANTU)",
     "Read human substrate (WELL owns that surface)"
   ],
-  "constitutional_floors": ["F1_AMANAH","F2_TRUTH","F4_CLARITY","F7_HUMILITY","F9_ANTI_HANTU","F11_AUDIT","F13_SOVEREIGN"],
+  "constitutional_floors": [
+    "F1_AMANAH",
+    "F2_TRUTH",
+    "F4_CLARITY",
+    "F7_HUMILITY",
+    "F9_ANTI_HANTU",
+    "F11_AUDIT",
+    "F13_SOVEREIGN"
+  ],
   "lane": "evidence_only",
   "self_judge": false,
   "judge_authority": "arifOS arif_judge",
@@ -73,17 +212,22 @@
   "ledger": "VAULT999",
   "seal_protocol": "arif_seal (irreversible hash chain, anchored)",
   "authentication": {
-    "schemes": ["bearer"],
+    "schemes": [
+      "bearer"
+    ],
     "credentials": "Lease-token issued by arifOS arif_lease_issue; bound at transport layer (ConstitutionalJWTAuthMiddleware)."
   },
   "a2a_endpoints": {
-    "health": "GET /health",
-    "mcp": "POST /mcp",
-    "agent_card_internal": "GET /.well-known/agent.json"
+    "health": "https://wealth.arif-fazil.com/health",
+    "mcp": "https://wealth.arif-fazil.com/mcp",
+    "agent_card_internal": "https://wealth.arif-fazil.com/.well-known/agent.json",
+    "tools": "https://wealth.arif-fazil.com/tools",
+    "markets_registry": "https://wealth.arif-fazil.com/api/markets/registry",
+    "agent_card": "https://wealth.arif-fazil.com/.well-known/agent-card.json"
   },
   "metadata": {
-    "generated_at": "2026-07-25",
-    "generator": "arifos-federation-alignment",
+    "generated_at": "2026-10-23",
+    "generator": "scripts/sync_manifest.py",
     "spec": "github.com/a2aproject/A2A v1.0 + arifOS internal v2.0.0 wrapper",
     "consolidation_reference": "/root/A-FORGE/forge_work/2026-07-01/federation-alignment.md",
     "discovery_surface": {
@@ -92,6 +236,16 @@
       "manifest_organ": "llms.txt",
       "mcp_manifest": ".well-known/mcp.json"
     },
-    "notes": "This card is the organ public agent card. It must remain aligned with contracts/tools.yaml (8 public tools, mode-dispatched) and contracts/mcp_surface.yaml (public_domain = https://wealth.arif-fazil.com)."
-  }
+    "notes": "This card is the organ public agent card. Synchronized from runtime mcp.list_tools() and tools_sot.yaml (15 public tools) with public_domain = https://wealth.arif-fazil.com."
+  },
+  "federation": "arifOS",
+  "organ": "WEALTH",
+  "role": "Capital Intelligence",
+  "authority_ceiling": "555_COMPUTE_ONLY",
+  "final_authority": "ARIF",
+  "mcp_endpoint": "https://wealth.arif-fazil.com/mcp",
+  "tools_url": "https://wealth.arif-fazil.com/tools",
+  "markets_registry_url": "https://wealth.arif-fazil.com/api/markets/registry",
+  "federation_identity": "https://arif-fazil.com/.well-known/arifos-federation.json",
+  "identity_hash": "d1ff40d030547572e57c7c5fe70423fe2d006635b60320786dec12878dd42395"
 }

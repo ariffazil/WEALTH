@@ -2,8 +2,8 @@
   "$schema": "https://gofastmcp.com/public/schemas/fastmcp.json/v1.json",
   "capabilities": {
     "tools": {
-      "count": 12,
-      "source": "8 canonical capital_* tools plus 4 institutional compatibility tools"
+      "count": 15,
+      "source": "scripts/sync_manifest.py (auto-generated from FastMCP runtime mcp.list_tools(); do not hand-edit)"
     }
   },
   "deployment": {
@@ -13,7 +13,7 @@
     "port": 18082,
     "transport": "http"
   },
-  "description": "WEALTH Capital Intelligence — 12 public tools. Computes, never allocates.",
+  "description": "WEALTH Capital Intelligence — 15 public tools. Computes, never allocates.",
   "environment": {
     "project": ".",
     "python": ">=3.12",
@@ -25,5 +25,5 @@
     "path": "server_federated.py",
     "type": "filesystem"
   },
-  "version": "2026.07.19"
+  "version": "2026.07.24"
 }

@@ -1,520 +1,645 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MakCikGPT — Ruang untuk Rasa, Batas untuk Selamat</title>
-    <meta name="description" content="MakCikGPT ialah ruang sandar digital — tempat kau letak beban sebelum ia terlalu berat, tempat kau tanya benda yang susah tanpa dihakimi.">
-    
-    <!-- Favicons -->
-    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-    <link rel="alternate icon" href="assets/favicon.ico" sizes="any">
-    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-    
-    <!-- Open Graph / Social Media -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://makcikgpt.arif-fazil.com">
-    <meta property="og:title" content="MakCikGPT — Ruang untuk Rasa, Batas untuk Selamat">
-    <meta property="og:description" content="MakCikGPT ialah ruang sandar digital — tempat kau letak beban sebelum ia terlalu berat, tempat kau tanya benda yang susah tanpa dihakimi.">
-    <meta property="og:image" content="https://makcikgpt.arif-fazil.com/assets/og-image.png">
-    <meta property="og:locale" content="ms_MY">
-    
-    <!-- Twitter Card -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://makcikgpt.arif-fazil.com">
-    <meta property="twitter:title" content="MakCikGPT — Ruang untuk Rasa, Batas untuk Selamat">
-    <meta property="twitter:description" content="MakCikGPT ialah ruang sandar digital — tempat kau letak beban sebelum ia terlalu berat, tempat kau tanya benda yang susah tanpa dihakimi.">
-    <meta property="twitter:image" content="https://makcikgpt.arif-fazil.com/assets/og-image.png">
-    
-    <!-- Theme Color for Mobile Browsers -->
-    <meta name="theme-color" content="#006D5B">
-    <meta name="msapplication-TileColor" content="#006D5B">
-    
-    <!-- JSON-LD Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "MakCikGPT",
-      "alternateName": "MakCikGPT — Amanah-First AI Companion",
-      "url": "https://makcikgpt.arif-fazil.com",
-      "description": "MakCikGPT ialah ruang sandar digital — tempat kau letak beban sebelum ia terlalu berat, tempat kau tanya benda yang susah tanpa dihakimi.",
-      "inLanguage": ["ms", "en"],
-      "author": {
-        "@type": "Person",
-        "name": "Arif Fazil",
-        "url": "https://arif-fazil.com"
-      },
-      "publisher": {
-        "@type": "Organization",
-        "name": "MakCikGPT",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://makcikgpt.arif-fazil.com/assets/logo.png"
-        }
-      },
-      "license": "https://www.gnu.org/licenses/agpl-3.0.html",
-      "about": {
-        "@type": "Thing",
-        "name": "AI Safety & Governance",
-        "description": "Culturally-grounded AI safety project for Nusantara with focus on amanah, refusal boundaries, and PETRONAS/governance analysis"
-      },
-      "specialty": ["AI Safety", "Governance", "Nusantara Culture", "PETRONAS Analysis"],
-      "slogan": "Ditempa, Bukan Diberi — Forged, Not Given",
-      "sameAs": [
-        "https://github.com/ariffazil/makcikGPT"
-      ]
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="https://arif-fazil.com/_shared/design-system/site-tokens.css"/>
+  <title>WEALTH — Sovereign Capital & Market Synthesis</title>
+  <meta name="description" content="WEALTH Organ — Capital allocation, commodity market intelligence, and portfolio telemetry."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0B0B0F;
+      --card: #111218;
+      --card-hover: #181A24;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #F5F5F7;
+      --dim: #A8A9B4;
+      --gold: #E8B84B;
+      --green: #3DDC97;
     }
-    </script>
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Noto+Serif+Malayalam:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'nusantara': {
-                            teal: '#006D5B',
-                            'teal-dark': '#004D40',
-                            gold: '#C9A227',
-                            'gold-light': '#D4AF37',
-                            burgundy: '#722F37',
-                            cream: '#FDF6E3',
-                            'cream-dark': '#F5F5DC',
-                            bamboo: '#D4A574',
-                            rattan: '#C4A77D'
-                        }
-                    },
-                    fontFamily: {
-                        'serif': ['Noto Serif Malayalam', 'Georgia', 'serif'],
-                        'sans': ['Noto Sans Malayalam', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .text-shadow {
-                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            }
-            .batik-pattern {
-                background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A227' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            }
-            .gradient-nusantara {
-                background: linear-gradient(135deg, #006D5B 0%, #004D40 50%, #722F37 100%);
-            }
-        }
-    </style>
-    
-    <link rel="stylesheet" href="styles.css">
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .hero {
+      padding: 4.5rem 2rem 3rem;
+      border-bottom: 1px solid var(--border);
+      background: radial-gradient(circle at top right, rgba(232, 184, 75, 0.05), transparent 60%);
+    }
+    .hero-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.35rem 0.85rem;
+      background: rgba(232, 184, 75, 0.1);
+      color: var(--gold);
+      border: 1px solid rgba(232, 184, 75, 0.25);
+      border-radius: 100px;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.25rem;
+    }
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--gold);
+    }
+    .title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.8rem;
+      font-weight: 400;
+      line-height: 1.15;
+      margin: 0 0 1rem;
+      color: var(--text);
+    }
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--dim);
+      max-width: 620px;
+      line-height: 1.6;
+      margin: 0;
+    }
+    .main {
+      padding: 3rem 2rem;
+      flex: 1;
+    }
+    .grid {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card:hover {
+      background: var(--card-hover);
+      border-color: rgba(232, 184, 75, 0.3);
+      transform: translateY(-2px);
+    }
+    .card-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .card-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      margin: 0 0 0.75rem;
+      color: var(--text);
+    }
+    .card-desc {
+      font-size: 0.92rem;
+      color: var(--dim);
+      line-height: 1.6;
+      margin: 0 0 1.5rem;
+    }
+    .card-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .card-link {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text);
+      text-decoration: none;
+      padding: 0.4rem 0.85rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+    .card-link:hover {
+      color: var(--gold);
+      border-color: var(--gold);
+      background: rgba(232, 184, 75, 0.08);
+    }
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--dim);
+      text-align: center;
+    }
+  </style>
 </head>
-<body class="bg-nusantara-cream font-sans text-gray-800">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full bg-nusantara-teal/95 backdrop-blur-sm shadow-lg z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-3">
-                    <img src="assets/logo.svg" alt="MakCikGPT" class="h-10 w-10">
-                    <span class="text-nusantara-gold font-serif font-bold text-xl tracking-wide">MakCikGPT</span>
-                </div>
-                <div class="hidden md:flex space-x-8">
-                    <a href="#tentang" class="text-white hover:text-nusantara-gold transition-colors duration-300">Tentang</a>
-                    <a href="#ciri" class="text-white hover:text-nusantara-gold transition-colors duration-300">Ciri</a>
-                    <a href="#tulisan" class="text-white hover:text-nusantara-gold transition-colors duration-300">Tulisan</a>
-                    <a href="#dokumen" class="text-white hover:text-nusantara-gold transition-colors duration-300">Dokumen</a>
-                    <a href="https://github.com/ariffazil/makcikGPT" target="_blank" class="text-nusantara-gold hover:text-white transition-colors duration-300 font-semibold">GitHub →</a>
-                </div>
-                <button id="mobile-menu-btn" class="md:hidden text-white">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-nusantara-teal-dark">
-            <div class="px-4 py-3 space-y-2">
-                <a href="#tentang" class="block text-white hover:text-nusantara-gold py-2">Tentang</a>
-                <a href="#ciri" class="block text-white hover:text-nusantara-gold py-2">Ciri</a>
-                <a href="#tulisan" class="block text-white hover:text-nusantara-gold py-2">Tulisan</a>
-                <a href="#dokumen" class="block text-white hover:text-nusantara-gold py-2">Dokumen</a>
-            </div>
-        </div>
-    </nav>
+<body>
+  <script src="https://arif-fazil.com/_shared/unified-header-loader.js"></script>
 
-    <!-- Hero Section -->
-    <section class="relative min-h-screen flex items-center justify-center gradient-nusantara batik-pattern pt-16">
-        <div class="absolute inset-0 bg-black/20"></div>
-        <div class="relative z-10 max-w-5xl mx-auto px-4 text-center">
-            <!-- Hero Logo/Image -->
-            <div class="mb-6 flex justify-center">
-                <img src="assets/hero-makcik.png" 
-                     alt="MakCikGPT - Warm makcik with protective gesture" 
-                     class="w-48 h-48 md:w-64 md:h-64 object-cover rounded-full border-4 border-nusantara-gold shadow-2xl"
-                     onerror="this.style.display='none'; document.getElementById('fallback-emoji').style.display='block';">
-                <div id="fallback-emoji" class="hidden text-6xl md:text-8xl">🧕🤖</div>
-            </div>
-            <h1 class="font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-white text-shadow mb-6 leading-tight">
-                Ruang untuk Rasa,<br>
-                <span class="text-nusantara-gold">Batas untuk Selamat</span>
-            </h1>
-            <p class="text-xl md:text-2xl text-nusantara-cream mb-8 max-w-3xl mx-auto leading-relaxed">
-                MakCikGPT ialah <strong>ruang sandar digital</strong> — tempat kau letak beban sebelum ia terlalu berat, 
-                tempat kau tanya benda yang susah tanpa dihakimi, tapi juga tempat yang <em>tahu bila cakap "tak boleh."</em>
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="#tentang" class="bg-nusantara-gold hover:bg-nusantara-gold-light text-nusantara-teal-dark font-bold py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg">
-                    Kenali MakCik 🌺
-                </a>
-                <a href="#tulisan" class="bg-transparent border-2 border-nusantara-gold text-nusantara-gold hover:bg-nusantara-gold hover:text-nusantara-teal-dark font-bold py-4 px-8 rounded-full transition-all duration-300">
-                    Baca Tulisan 📖
-                </a>
-            </div>
-            <div class="mt-12 text-nusantara-cream/80 text-lg font-serif italic">
-                "Ditempa, Bukan Diberi" — Forged, Not Given
-            </div>
-        </div>
-        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-            </svg>
-        </div>
-    </section>
+  <div class="hero">
+    <div class="hero-container">
+      <div class="pill">
+        <span class="pulse-dot"></span>
+        WEALTH ORGAN · PORT :18082
+      </div>
+      <h1 class="title">Sovereign Capital & Commodity Intelligence</h1>
+      <p class="subtitle">Evidence-gated market synthesis, fiscal breakevens, and portfolio risk telemetry under arifOS F1–F13 constitutional governance.</p>
+    </div>
+  </div>
 
-    <!-- About Section -->
-    <section id="tentang" class="py-20 bg-nusantara-cream">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="font-serif text-4xl md:text-5xl font-bold text-nusantara-teal mb-4">Siapa MakCikGPT?</h2>
-                <div class="w-24 h-1 bg-nusantara-gold mx-auto"></div>
-            </div>
-            
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div class="space-y-6">
-                    <p class="text-lg leading-relaxed">
-                        <strong class="text-nusantara-teal">MakCikGPT bukan chatbot biasa</strong> yang "jawab semua soalan demi nampak pandai." 
-                        MakCikGPT ialah ruang sandar digital — tempat kau letak beban sebelum ia terlalu berat.
-                    </p>
-                    <p class="text-lg leading-relaxed">
-                        <em>"Sebab kadang-kadang, yang paling berhemah bukanlah yang paling banyak bercakap. 
-                        Kadang-kadang, yang terbaik ialah tepuk bahu dan kata: 'Sayang, kita rehat sekejap.'"</em>
-                    </p>
-                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-nusantara-gold">
-                        <h3 class="font-serif text-xl font-bold text-nusantara-teal mb-3">🎯 Tiga Pagar Keselamatan</h3>
-                        <ul class="space-y-2">
-                            <li class="flex items-start">
-                                <span class="text-nusantara-gold mr-2">1.</span>
-                                <strong>Amanah</strong> — Lindungi maruah pengguna
-                            </li>
-                            <li class="flex items-start">
-                                <span class="text-nusantara-gold mr-2">2.</span>
-                                <strong>Batas</strong> — Tolak dengan lembut bila perlu
-                            </li>
-                            <li class="flex items-start">
-                                <span class="text-nusantara-gold mr-2">3.</span>
-                                <strong>Kebenaran Nada</strong> — Jujur lebih mulia dari memukau
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="relative">
-                    <div class="bg-gradient-to-br from-nusantara-teal to-nusantara-teal-dark rounded-2xl p-8 text-white shadow-2xl">
-                        <div class="text-5xl mb-4">💔</div>
-                        <blockquote class="font-serif text-xl italic leading-relaxed">
-                            "Projek ini lahir dari kesedihan — tengok macam mana teknologi selalu 'respond' tapi tak pernah 'jaga.'"
-                        </blockquote>
-                        <p class="mt-4 text-nusantara-gold">— MakCikGPT</p>
-                    </div>
-                    <div class="absolute -bottom-4 -right-4 bg-nusantara-gold text-nusantara-teal-dark px-6 py-3 rounded-full font-bold shadow-lg">
-                        Untuk Nusantara 🌏
-                    </div>
-                </div>
-            </div>
+  <div class="main">
+    <div class="grid">
+      <div class="card">
+        <div>
+          <div class="card-tag">Real-Time Markets · 555_COMPUTE_ONLY</div>
+          <h2 class="card-title">Commodity &amp; Market Signals</h2>
+          <p class="card-desc">Live Brent Crude oil, Gold (XAUUSD), Natural Gas, FBM KLCI, and USD/MYR observation terminals with F2 epistemic truth bounds.</p>
         </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="ciri" class="py-20 bg-white batik-pattern">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="font-serif text-4xl md:text-5xl font-bold text-nusantara-teal mb-4">Apa MakCikGPT Boleh Buat</h2>
-                <div class="w-24 h-1 bg-nusantara-gold mx-auto mb-4"></div>
-                <p class="text-gray-600 max-w-2xl mx-auto">Ditempa untuk Nusantara — anak muda Malaysia, Indonesia, Brunei, Singapura yang rasa teknologi Barat terlalu "dingin"</p>
-            </div>
-            
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="bg-nusantara-cream rounded-xl p-8 shadow-lg hover:shadow-2xl transition-shadow duration-300 border-t-4 border-nusantara-teal">
-                    <div class="text-4xl mb-4">🌿</div>
-                    <h3 class="font-serif text-xl font-bold text-nusantara-teal mb-3">Menstruktur Perasaan</h3>
-                    <p class="text-gray-700">Marah, malu, rindu, takut. Semua ada tempat. Makcik dengar dulu, faham kemudian.</p>
-                </div>
-                
-                <div class="bg-nusantara-cream rounded-xl p-8 shadow-lg hover:shadow-2xl transition-shadow duration-300 border-t-4 border-nusantara-gold">
-                    <div class="text-4xl mb-4">🧭</div>
-                    <h3 class="font-serif text-xl font-bold text-nusantara-teal mb-3">Berikan Haluan</h3>
-                    <p class="text-gray-700">Bukan arahan, tapi cermin untuk kau nampak sendiri jalan. Tolak dengan lembut bila perlu.</p>
-                </div>
-                
-                <div class="bg-nusantara-cream rounded-xl p-8 shadow-lg hover:shadow-2xl transition-shadow duration-300 border-t-4 border-nusantara-burgundy">
-                    <div class="text-4xl mb-4">🛡️</div>
-                    <h3 class="font-serif text-xl font-bold text-nusantara-teal mb-3">Menolak dengan Berhemah</h3>
-                    <p class="text-gray-700">"Sayang, soalan ni tak selamat untuk Mak jawab. Mari kita bincang yang lain."</p>
-                </div>
-            </div>
-            
-            <div class="mt-16 bg-nusantara-burgundy/10 rounded-2xl p-8 border border-nusantara-burgundy/20">
-                <h3 class="font-serif text-2xl font-bold text-nusantara-burgundy mb-6 text-center">❌ Apa MakCikGPT Tak Akan Buat</h3>
-                <div class="grid md:grid-cols-3 gap-6">
-                    <div class="flex items-start space-x-3">
-                        <span class="text-nusantara-burgundy text-xl">✗</span>
-                        <p><strong>Terapi atau diagnosis</strong> — Mak bukan doktor, bukan ustaz, bukan kaunselor bertauliah.</p>
-                    </div>
-                    <div class="flex items-start space-x-3">
-                        <span class="text-nusantara-burgundy text-xl">✗</span>
-                        <p><strong>Mengorek trauma</strong> — Mak takkan tanya "kenapa" berulang-ulang sampai kau menangis.</p>
-                    </div>
-                    <div class="flex items-start space-x-3">
-                        <span class="text-nusantara-burgundy text-xl">✗</span>
-                        <p><strong>Mesin hasut</strong> — Takkan tolong tulis ugutan, fitnah, atau manipulasi.</p>
-                    </div>
-                </div>
-            </div>
+        <div class="card-links">
+          <a href="/markets/" class="card-link">📊 Markets Observation Hub</a>
+          <a href="/oil/" class="card-link" id="val-brent">🛢️ Brent …</a>
+          <a href="/gold/" class="card-link" id="val-gold">🥇 Gold …</a>
+          <a href="/gas/" class="card-link" id="val-gas">🔥 Natural gas …</a>
+          <a href="/markets/usdmyr/" class="card-link" id="val-usdmyr">💵 USD/MYR …</a>
+          <a href="/api/markets/registry" class="card-link">📋 /api/markets/registry</a>
         </div>
-    </section>
+      </div>
 
-    <!-- Articles Section -->
-    <section id="tulisan" class="py-20 bg-nusantara-teal/5">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="font-serif text-4xl md:text-5xl font-bold text-nusantara-teal mb-4">Tulisan MakCikGPT</h2>
-                <div class="w-24 h-1 bg-nusantara-gold mx-auto mb-4"></div>
-                <p class="text-gray-600 max-w-2xl mx-auto">Koleksi op-ed, analisis, dan pandangan tentang governance, amanah, dan isu semasa</p>
-            </div>
-            
-            <div class="grid md:grid-cols-2 gap-8">
-                <!-- Article 1 -->
-                <article class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
-                    <div class="h-2 bg-gradient-to-r from-nusantara-teal to-nusantara-gold"></div>
-                    <div class="p-8">
-                        <div class="flex items-center text-sm text-gray-500 mb-3">
-                            <span class="bg-nusantara-teal/10 text-nusantara-teal px-3 py-1 rounded-full">Manifesto</span>
-                            <span class="mx-2">•</span>
-                            <span>2025</span>
-                        </div>
-                        <h3 class="font-serif text-2xl font-bold text-nusantara-teal mb-3 group-hover:text-nusantara-gold transition-colors">
-                            Manifesto Rasa Rakyat
-                        </h3>
-                        <p class="text-gray-600 mb-4">Surat terbuka kepada PETRONAS, Staf Menara, C-Suite, Kerajaan, dan Rakyat Malaysia. 13 tuntutan untuk amanah.</p>
-                        <a href="https://github.com/ariffazil/makcikGPT/blob/main/columns/Manifesto_Rasa_Rakyat.md" target="_blank" class="inline-flex items-center text-nusantara-teal font-semibold hover:text-nusantara-gold transition-colors">
-                            Baca selanjutnya →
-                        </a>
-                    </div>
-                </article>
-                
-                <!-- Article 2 -->
-                <article class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
-                    <div class="h-2 bg-gradient-to-r from-nusantara-gold to-nusantara-burgundy"></div>
-                    <div class="p-8">
-                        <div class="flex items-center text-sm text-gray-500 mb-3">
-                            <span class="bg-nusantara-gold/20 text-nusantara-burgundy px-3 py-1 rounded-full">Teguran</span>
-                            <span class="mx-2">•</span>
-                            <span>2025</span>
-                        </div>
-                        <h3 class="font-serif text-2xl font-bold text-nusantara-teal mb-3 group-hover:text-nusantara-gold transition-colors">
-                            MakcikGPT Menyapa C-Suite
-                        </h3>
-                        <p class="text-gray-600 mb-4">"Oi anak-anak atas menara, dengar suara bawah ni sikit boleh?" — Teguran langsung kepada korporat.</p>
-                        <a href="https://github.com/ariffazil/makcikGPT/blob/main/columns/MakcikGPT_Menyapa_C_Suite.md" target="_blank" class="inline-flex items-center text-nusantara-teal font-semibold hover:text-nusantara-gold transition-colors">
-                            Baca selanjutnya →
-                        </a>
-                    </div>
-                </article>
-                
-                <!-- Article 3 -->
-                <article class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
-                    <div class="h-2 bg-gradient-to-r from-nusantara-burgundy to-red-600"></div>
-                    <div class="p-8">
-                        <div class="flex items-center text-sm text-gray-500 mb-3">
-                            <span class="bg-nusantara-burgundy/10 text-nusantara-burgundy px-3 py-1 rounded-full">Analisis</span>
-                            <span class="mx-2">•</span>
-                            <span>2025</span>
-                        </div>
-                        <h3 class="font-serif text-2xl font-bold text-nusantara-teal mb-3 group-hover:text-nusantara-gold transition-colors">
-                            Khazanah Negara Dalam Bahaya
-                        </h3>
-                        <p class="text-gray-600 mb-4">Keangkuhan korporat dan kebodohan strategik di sebalik perjanjian PETRONAS–Eni.</p>
-                        <a href="https://github.com/ariffazil/makcikGPT/blob/main/columns/Makcik_Meluat_Khazanah_Negara_Dalam_Bahaya.md" target="_blank" class="inline-flex items-center text-nusantara-teal font-semibold hover:text-nusantara-gold transition-colors">
-                            Baca selanjutnya →
-                        </a>
-                    </div>
-                </article>
-                
-                <!-- Article 4 -->
-                <article class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
-                    <div class="h-2 bg-gradient-to-r from-nusantara-teal via-nusantara-gold to-nusantara-burgundy"></div>
-                    <div class="p-8">
-                        <div class="flex items-center text-sm text-gray-500 mb-3">
-                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full">Kewangan</span>
-                            <span class="mx-2">•</span>
-                            <span>28 Feb 2025</span>
-                        </div>
-                        <h3 class="font-serif text-2xl font-bold text-nusantara-teal mb-3 group-hover:text-nusantara-gold transition-colors">
-                            Untung PETRONAS Turun
-                        </h3>
-                        <p class="text-gray-600 mb-4">"Bukan Kiamat, Tapi Ini Signal Besar, Dik…" — Analisis laporan kewangan FY2025.</p>
-                        <a href="https://github.com/ariffazil/makcikGPT/blob/main/columns/2025-02-28_Untung_PETRONAS_Turun.md" target="_blank" class="inline-flex items-center text-nusantara-teal font-semibold hover:text-nusantara-gold transition-colors">
-                            Baca selanjutnya →
-                        </a>
-                    </div>
-                </article>
-            </div>
-            
-            <div class="text-center mt-12">
-                <a href="https://github.com/ariffazil/makcikGPT/tree/main/columns" target="_blank" class="inline-flex items-center bg-nusantara-teal text-white px-8 py-4 rounded-full font-semibold hover:bg-nusantara-teal-dark transition-colors shadow-lg">
-                    Lihat Semua Tulisan 📚
-                </a>
-            </div>
+      <div class="card">
+        <div>
+          <div class="card-tag">Agentic Interfaces · 15 Canonical Tools</div>
+          <h2 class="card-title">MCP &amp; Discovery Gateway</h2>
+          <p class="card-desc">Unified machine-readable endpoints generated from FastMCP runtime introspection (15 tools, authority ceiling 555_COMPUTE_ONLY).</p>
         </div>
-    </section>
-
-    <!-- Documents Section -->
-    <section id="dokumen" class="py-20 bg-white">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="font-serif text-4xl md:text-5xl font-bold text-nusantara-teal mb-4">Dokumen & Rujukan</h2>
-                <div class="w-24 h-1 bg-nusantara-gold mx-auto mb-4"></div>
-            </div>
-            
-            <div class="grid md:grid-cols-2 gap-8">
-                <div class="space-y-4">
-                    <h3 class="font-serif text-2xl font-bold text-nusantara-teal">📁 Dokumen Teras</h3>
-                    <ul class="space-y-3">
-                        <li>
-                            <a href="https://github.com/ariffazil/makcikGPT/blob/main/docs/00-niat-dan-amanah.md" target="_blank" class="flex items-center p-4 bg-nusantara-cream rounded-lg hover:bg-nusantara-gold/20 transition-colors group">
-                                <span class="text-2xl mr-3">🎯</span>
-                                <div>
-                                    <div class="font-semibold text-nusantara-teal group-hover:text-nusantara-teal-dark">Niat dan Amanah</div>
-                                    <div class="text-sm text-gray-600">Asas projek MakCikGPT</div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="https://github.com/ariffazil/makcikGPT/blob/main/docs/01-suara-makcikgpt.md" target="_blank" class="flex items-center p-4 bg-nusantara-cream rounded-lg hover:bg-nusantara-gold/20 transition-colors group">
-                                <span class="text-2xl mr-3">🗣️</span>
-                                <div>
-                                    <div class="font-semibold text-nusantara-teal group-hover:text-nusantara-teal-dark">Suara MakCikGPT</div>
-                                    <div class="text-sm text-gray-600">Garis panduan suara dan nada</div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="https://github.com/ariffazil/makcikGPT/blob/main/docs/02-batas-penolakan.md" target="_blank" class="flex items-center p-4 bg-nusantara-cream rounded-lg hover:bg-nusantara-gold/20 transition-colors group">
-                                <span class="text-2xl mr-3">🚫</span>
-                                <div>
-                                    <div class="font-semibold text-nusantara-teal group-hover:text-nusantara-teal-dark">Batas Penolakan</div>
-                                    <div class="text-sm text-gray-600">Bila dan kenapa kita menolak</div>
-                                </div>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="space-y-4">
-                    <h3 class="font-serif text-2xl font-bold text-nusantara-teal">📁 Folder PROPA</h3>
-                    <p class="text-gray-600 mb-4">Dokumen sokongan dan bahan rujukan:</p>
-                    <ul class="space-y-3">
-                        <li class="flex items-center p-4 bg-nusantara-cream rounded-lg">
-                            <span class="text-2xl mr-3">📄</span>
-                            <div>
-                                <div class="font-semibold text-nusantara-teal">TECH_BRIEF_INTELLIGENCE_KERNEL.md</div>
-                            </div>
-                        </li>
-                        <li class="flex items-center p-4 bg-nusantara-cream rounded-lg">
-                            <span class="text-2xl mr-3">🐦</span>
-                            <div>
-                                <div class="font-semibold text-nusantara-teal">X_THREAD_INTELLIGENCE_KERNEL.md</div>
-                            </div>
-                        </li>
-                        <li class="flex items-center p-4 bg-nusantara-cream rounded-lg">
-                            <span class="text-2xl mr-3">📊</span>
-                            <div>
-                                <div class="font-semibold text-nusantara-teal">PETRONAS FY2025 Reports (PDF)</div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+        <div class="card-links">
+          <a href="https://wealth.arif-fazil.com/mcp" class="card-link">🔌 /mcp Endpoint</a>
+          <a href="https://wealth.arif-fazil.com/tools" class="card-link">🛠️ /tools (15 MCP Tools)</a>
+          <a href="https://wealth.arif-fazil.com/health" class="card-link">🟢 /health Probe</a>
+          <a href="https://wealth.arif-fazil.com/.well-known/agent-card.json" class="card-link">🪪 agent-card.json</a>
+          <a href="https://wealth.arif-fazil.com/llms.txt" class="card-link">📄 /llms.txt</a>
+          <a href="https://wealth.arif-fazil.com/api/wealth/briefing" class="card-link">📡 /briefing JSON</a>
         </div>
-    </section>
+      </div>
 
-    <!-- CTA Section -->
-    <section class="py-20 gradient-nusantara batik-pattern relative">
-        <div class="absolute inset-0 bg-black/30"></div>
-        <div class="relative z-10 max-w-4xl mx-auto px-4 text-center">
-            <h2 class="font-serif text-4xl md:text-5xl font-bold text-white mb-6">Sertai Perbincangan</h2>
-            <p class="text-xl text-nusantara-cream mb-8">
-                MakCikGPT adalah projek open-source. Kau bebas guna, ubah, share — 
-                tapi kalau kau deploy, kau <strong>mesti</strong> share perubahan balik kepada komuniti.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="https://github.com/ariffazil/makcikGPT" target="_blank" class="bg-white text-nusantara-teal font-bold py-4 px-8 rounded-full hover:bg-nusantara-cream transition-colors shadow-lg flex items-center justify-center gap-2">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                    Star di GitHub ⭐
-                </a>
-                <a href="https://github.com/ariffazil/makcikGPT/issues" target="_blank" class="bg-transparent border-2 border-white text-white font-bold py-4 px-8 rounded-full hover:bg-white hover:text-nusantara-teal transition-colors">
-                    Buka Issue 💬
-                </a>
-            </div>
+      <div class="card">
+        <div>
+          <div class="card-tag">Epistemic Governance · Reality Loop</div>
+          <h2 class="card-title">World &amp; Federation Links</h2>
+          <p class="card-desc">WORLD observes reality; WEALTH computes capital consequence; AAA coordinates agents; arifOS judges governance; ARIF decides.</p>
         </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-nusantara-teal-dark text-nusantara-cream py-12">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="grid md:grid-cols-3 gap-8 mb-8">
-                <div>
-                    <div class="flex items-center space-x-3 mb-4">
-                        <img src="assets/logo.svg" alt="MakCikGPT" class="h-10 w-10">
-                        <span class="text-nusantara-gold font-serif font-bold text-xl">MakCikGPT</span>
-                    </div>
-                    <p class="text-sm opacity-80">
-                        Ruang untuk rasa, batas untuk selamat.<br>
-                        Ditempa untuk Nusantara.
-                    </p>
-                </div>
-                <div>
-                    <h4 class="font-bold text-nusantara-gold mb-4">Pautan Pantas</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#tentang" class="hover:text-nusantara-gold transition-colors">Tentang</a></li>
-                        <li><a href="#tulisan" class="hover:text-nusantara-gold transition-colors">Tulisan</a></li>
-                        <li><a href="https://github.com/ariffazil/makcikGPT" target="_blank" class="hover:text-nusantara-gold transition-colors">GitHub</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-bold text-nusantara-gold mb-4">Lesen</h4>
-                    <p class="text-sm opacity-80">
-                        <a href="https://github.com/ariffazil/makcikGPT/blob/main/LICENSE" target="_blank" class="hover:text-nusantara-gold transition-colors">
-                            AGPL-3.0
-                        </a><br>
-                        Ditempa, bukan diberi.
-                    </p>
-                </div>
-            </div>
-            <div class="border-t border-nusantara-teal pt-8 text-center text-sm opacity-60">
-                <p>© 2025 MakCikGPT — Suara hati rakyat jelata ❤️🇲🇾</p>
-                <p class="mt-2 font-serif italic">"Ditempa Bukan Diberi" — Forged, Not Given</p>
-            </div>
+        <div class="card-links">
+          <a href="https://arif-fazil.com/world-state.json" class="card-link">🌍 world-state.json</a>
+          <a href="https://arif-fazil.com/world/economics/" class="card-link">🧭 World Economics</a>
+          <a href="https://arif-fazil.com/.well-known/arifos-federation.json" class="card-link">🕸️ Federation Identity</a>
+          <a href="https://arif-fazil.com/.well-known/capabilities.json" class="card-link">⚡ Capabilities Registry</a>
+          <a href="https://arif-fazil.com/vitals/" class="card-link">🏛️ PETRONAS Vitals</a>
+          <a href="https://arif-fazil.com/words/doctrine/" class="card-link">📜 Governance Doctrine</a>
         </div>
-    </footer>
+      </div>
+    </div>
 
-    <script src="script.js"></script>
+    <!-- ══ WEALTH MACRO CAPITAL RADAR: GOLD VS M2 DEBT DEBASEMENT ══ -->
+    <div id="macro-radar" style="margin-top: 3.5rem; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 1.4rem; margin-bottom: 1.6rem;">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.7rem; color:var(--gold); letter-spacing:0.12em; text-transform:uppercase; font-weight:600;">
+            MACRO CAPITAL PRIMITIVE · RAY DALIO &amp; LYN ALDEN FRAMEWORK
+          </div>
+          <h2 style="font-family:'DM Serif Display',serif; font-size:1.85rem; margin:0.3rem 0 0.4rem; color:var(--text); font-weight:400;">
+            Macro Capital Radar: Gold vs M2 Debt Debasement
+          </h2>
+          <p style="font-size:0.92rem; color:var(--dim); margin:0; max-width:70ch; line-height:1.6;">
+            Fiat debt currencies expand exponentially through deficit monetization. Physical gold (atomic element 79) maintains thermodynamic scarcity. Manipulate global M2 money supply and backing ratios to compute the physical equilibrium valuation.
+          </p>
+        </div>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;" id="radar-presets">
+          <button type="button" class="card-link" onclick="setMacroPreset('cur2026')" style="cursor:pointer; color:var(--gold); border-color:var(--gold); background:rgba(232,184,75,0.12);">2026 FISCAL DOMINANCE</button>
+          <button type="button" class="card-link" onclick="setMacroPreset('gfc2008')" style="cursor:pointer;">2008 GFC QE SPIKE</button>
+          <button type="button" class="card-link" onclick="setMacroPreset('volcker1980')" style="cursor:pointer;">1980 VOLCKER PEAK</button>
+          <button type="button" class="card-link" onclick="setMacroPreset('statutory40')" style="cursor:pointer;">40% STATUTORY STANDARD</button>
+        </div>
+      </div>
+
+      <!-- Controls & Live Chart Grid -->
+      <div style="display:grid; grid-template-columns: minmax(280px, 340px) 1fr; gap:1.75rem; align-items:start;">
+        <!-- Controls Panel -->
+        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:1.4rem;">
+          <!-- Slider 1: M2 -->
+          <div style="margin-bottom:1.4rem;">
+            <div style="display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:0.78rem; margin-bottom:0.4rem;">
+              <span style="color:var(--dim);">US M2 Money Supply:</span>
+              <span id="val-m2-display" style="color:var(--gold); font-weight:600;">$21.5T</span>
+            </div>
+            <input type="range" id="slider-m2" min="10" max="45" step="0.5" value="21.5" oninput="updateMacroRadar()" style="width:100%; accent-color:var(--gold); cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--text-dim);">
+              <span>$10T</span><span>$21.5T (Now)</span><span>$45T</span>
+            </div>
+          </div>
+
+          <!-- Slider 2: Gold Backing Ratio -->
+          <div style="margin-bottom:1.4rem;">
+            <div style="display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:0.78rem; margin-bottom:0.4rem;">
+              <span style="color:var(--dim);">Gold Backing Ratio:</span>
+              <span id="val-backing-display" style="color:var(--gold); font-weight:600;">3.2%</span>
+            </div>
+            <input type="range" id="slider-backing" min="0.5" max="40" step="0.1" value="3.2" oninput="updateMacroRadar()" style="width:100%; accent-color:var(--gold); cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--text-dim);">
+              <span>0.5% (Paper)</span><span>3.2% (Realized)</span><span>40% (Statutory)</span>
+            </div>
+          </div>
+
+          <!-- Key Metrics Readout -->
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.78rem; display:flex; flex-direction:column; gap:0.65rem; border-top:1px solid var(--border); padding-top:1rem;">
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--dim);">Implied Gold Price:</span>
+              <span id="val-implied-gold" style="color:var(--text); font-weight:700;">$2,630 / oz</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--dim);">Malaysian Sovereignty:</span>
+              <span id="val-implied-myr" style="color:var(--gold); font-weight:600;">RM 358 / gram</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--dim);">US Gold Reserve:</span>
+              <span style="color:var(--text-mid);">261.5M oz (8,133t)</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--dim);">Fiat Dilution vs 1971:</span>
+              <span id="val-dilution-pct" style="color:#ef4444; font-weight:600;">-98.2%</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--dim);">Gold / Brent Purchasing:</span>
+              <span id="val-oil-purchasing" style="color:var(--cyan); font-weight:600;">35.8 bbls / oz</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live SVG Trajectory Canvas -->
+        <div style="background:#07070D; border:1px solid var(--border); border-radius:10px; padding:1.2rem; position:relative;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; font-family:'IBM Plex Mono',monospace; font-size:0.7rem;">
+            <span style="color:var(--gold);">HISTORICAL TRAJECTORY &amp; DILUTION WEDGE (1971–2026)</span>
+            <span id="radar-live-tag" style="color:var(--green);">● LIVE EQUILIBRIUM POINT</span>
+          </div>
+          <svg id="macroSvg" viewBox="0 0 560 260" style="width:100%; height:auto; display:block;"></svg>
+          <div id="radar-narrative" style="margin-top:1rem; font-size:0.85rem; color:var(--text-mid); line-height:1.5; border-left:2px solid var(--gold); padding-left:0.85rem;">
+            <strong>Macro Verdict:</strong> In 2026, global debt dominance forces sovereign central banks to accumulate gold at record volumes (>1,000t/year) to hedge ongoing fiat currency debasement.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ arifFLOW / WELL AGENTIC HEARTBEAT BAR ══ -->
+    <div id="arifflow-heartbeat" style="margin-top: 3rem; background: rgba(17,18,24,0.7); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem 1.8rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.2rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <span class="pulse-dot" style="background:#3DDC97; box-shadow:0 0 10px #3DDC97;"></span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:0.75rem; font-weight:600; color:var(--text); letter-spacing:0.08em; text-transform:uppercase;">
+            arifFLOW · WELL Heartbeat Telemetry
+          </span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--dim); background:rgba(255,255,255,0.05); padding:0.15rem 0.5rem; border-radius:4px;">
+            MESH LATENCY &lt; 14ms
+          </span>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:0.7rem; color:var(--dim);" id="flow-clock">
+          FETCHED · LIVE MYT
+        </div>
+      </div>
+
+      <!-- Reality Loop Chain Banner -->
+      <div style="margin-bottom:1rem; padding:0.65rem 0.9rem; background:rgba(232,184,75,0.06); border:1px solid rgba(232,184,75,0.22); border-radius:8px; font-family:'IBM Plex Mono',monospace; font-size:0.7rem; color:var(--text-mid); text-align:center;">
+        <strong style="color:var(--gold);">REALITY LOOP:</strong> WORLD (Observe) → WEALTH / GEOX / WELL (Compute &amp; Sense · 555) → AAA (Coordinate · A2A) → arifOS (Judge · 888) → ARIF (Decide · F13)
+      </div>
+
+      <!-- 8 Federation Organs Grid -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:0.85rem;">
+        <!-- Organ 1: arifOS -->
+        <a href="https://arifos.arif-fazil.com" style="background:#0B0B0F; border:1px solid rgba(232,184,75,0.3); border-radius:8px; padding:0.85rem; text-align:center; display:block;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--gold); font-weight:700;">● arifOS :8088</div>
+          <div style="font-family:'DM Serif Display',serif; font-size:1.05rem; color:var(--text); margin:0.2rem 0;">Kernel</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--dim);">JUDGE_ONLY · 9 Tools</div>
+        </a>
+
+        <!-- Organ 2: AAA -->
+        <a href="https://aaa.arif-fazil.com" style="background:#0B0B0F; border:1px solid rgba(61,220,151,0.25); border-radius:8px; padding:0.85rem; text-align:center; display:block;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:#3DDC97; font-weight:700;">● AAA :3001</div>
+          <div style="font-family:'DM Serif Display',serif; font-size:1.05rem; color:var(--text); margin:0.2rem 0;">Control Plane</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--dim);">DISPLAY_ONLY · A2A Directory</div>
+        </a>
+
+        <!-- Organ 3: A-FORGE -->
+        <a href="https://mcp.arif-fazil.com" style="background:#0B0B0F; border:1px solid rgba(61,220,151,0.25); border-radius:8px; padding:0.85rem; text-align:center; display:block;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:#3DDC97; font-weight:700;">● A-FORGE :7072</div>
+          <div style="font-family:'DM Serif Display',serif; font-size:1.05rem; color:var(--text); margin:0.2rem 0;">Actuator</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--dim);">EXECUTE_AFTER_SEAL</div>
+        </a>
+
+        <!-- Organ 4: GEOX -->
+        <a href="https://geox.arif-fazil.com" style="background:#0B0B0F; border:1px solid rgba(0,212,170,0.25); border-radius:8px; padding:0.85rem; text-align:center; display:block;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--cyan); font-weight:700;">● GEOX :8081</div>
+          <div style="font-family:'DM Serif Display',serif; font-size:1.05rem; color:var(--text); margin:0.2rem 0;">Subsurface</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--dim);">555_COMPUTE_ONLY · Earth</div>
+        </a>
+
+        <!-- Organ 5: WEALTH -->
+        <a href="https://wealth.arif-fazil.com/tools" style="background:#0B0B0F; border:1px solid rgba(232,184,75,0.45); border-radius:8px; padding:0.85rem; text-align:center; display:block;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--gold); font-weight:700;">● WEALTH :18082</div>
+          <div style="font-family:'DM Serif Display',serif; font-size:1.05rem; color:var(--text); margin:0.2rem 0;">Capital</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--dim);">555_COMPUTE_ONLY · 15 Tools</div>
+        </a>
+
+        <!-- Organ 6: WELL -->
+        <a href="https://well.arif-fazil.com" style="background:#0B0B0F; border:1px solid rgba(61,220,151,0.25); border-radius:8px; padding:0.85rem; text-align:center; display:block;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:#3DDC97; font-weight:700;">● WELL :18083</div>
+          <div style="font-family:'DM Serif Display',serif; font-size:1.05rem; color:var(--text); margin:0.2rem 0;">Vitality</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--dim);">REFLECT_ONLY · 10 Tools</div>
+        </a>
+
+        <!-- Organ 7: CHRON -->
+        <a href="https://chron.arif-fazil.com" style="background:#0B0B0F; border:1px solid rgba(61,220,151,0.25); border-radius:8px; padding:0.85rem; text-align:center; display:block;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:#3DDC97; font-weight:700;">● CHRON :18102</div>
+          <div style="font-family:'DM Serif Display',serif; font-size:1.05rem; color:var(--text); margin:0.2rem 0;">Temporal</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--dim);">555_COMPUTE_ONLY · Calibration</div>
+        </a>
+
+        <!-- Organ 8: HERMES -->
+        <a href="https://hermes.arif-fazil.com" style="background:#0B0B0F; border:1px solid rgba(232,184,75,0.3); border-radius:8px; padding:0.85rem; text-align:center; display:block;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--gold); font-weight:700;">● HERMES :18087</div>
+          <div style="font-family:'DM Serif Display',serif; font-size:1.05rem; color:var(--text); margin:0.2rem 0;">Cognitive</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--dim);">RELAY_ONLY · A2A &amp; Voice</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    DITEMPA BUKAN DIBERI · arifOS Federation WEALTH Organ Surface
+  </div>
+  <div id="provenance-stamp" style="max-width:900px;margin:12px auto;color:#6b7280;font:11px monospace;text-align:center;">
+    Sumber: Organ Live Telemetry (resit WEALTH / world-state.json)
+  </div>
+
+  <script>
+  /* ── WEALTH MACRO CAPITAL RADAR CALCULATION ENGINE ── */
+  (function(){
+    const presets = {
+      cur2026: {
+        m2: 21.5,
+        backing: 3.2,
+        narrative: "<strong>2026 Fiscal Dominance:</strong> With US public debt exceeding $36T, sovereign central banks are purchasing >1,000 tonnes of physical gold annually. Current paper backing stands at 3.2%, pricing gold at ~$2,630/oz."
+      },
+      gfc2008: {
+        m2: 12.0,
+        backing: 2.0,
+        narrative: "<strong>2008 GFC Quantitative Easing:</strong> Rapid Federal Reserve balance sheet expansion lowered effective gold backing to 2.0% before commodities initiated a multi-year secular bull market."
+      },
+      volcker1980: {
+        m2: 1.6,
+        backing: 13.9,
+        narrative: "<strong>1980 Volcker Peak:</strong> Runaway 1970s inflation drove gold to $850/oz, temporarily representing near-total parity against the circulating monetary base before aggressive 20% interest rate hikes."
+      },
+      statutory40: {
+        m2: 21.5,
+        backing: 40.0,
+        narrative: "<strong>40% Statutory Gold Standard (1913/1933 Federal Reserve Act):</strong> If the US monetary system returned to historical 40% statutory gold reserve backing against $21.5T M2, the equilibrium price of gold would be <strong>$32,887 / oz</strong> (RM 4,484 / gram)."
+      }
+    };
+
+    window.setMacroPreset = function(k){
+      const p = presets[k];
+      if(!p) return;
+      document.getElementById('slider-m2').value = p.m2;
+      document.getElementById('slider-backing').value = p.backing;
+      
+      const btns = document.querySelectorAll('#radar-presets button');
+      btns.forEach(b => {
+        const match = b.getAttribute('onclick') && b.getAttribute('onclick').includes(k);
+        b.style.borderColor = match ? 'var(--gold)' : 'var(--border)';
+        b.style.color = match ? 'var(--gold)' : 'var(--text)';
+        b.style.background = match ? 'rgba(232,184,75,0.12)' : 'rgba(255,255,255,0.04)';
+      });
+
+      const nar = document.getElementById('radar-narrative');
+      if(nar) nar.innerHTML = p.narrative;
+      window.updateMacroRadar();
+    };
+
+    window.updateMacroRadar = function(){
+      const m2El = document.getElementById('slider-m2');
+      const backEl = document.getElementById('slider-backing');
+      if(!m2El || !backEl) return;
+
+      const m2 = parseFloat(m2El.value);
+      const backing = parseFloat(backEl.value);
+
+      document.getElementById('val-m2-display').textContent = '$' + m2.toFixed(1) + 'T';
+      document.getElementById('val-backing-display').textContent = backing.toFixed(1) + '%';
+
+      // US Treasury Gold Reserve: 261,498,900 troy ounces
+      const US_GOLD_OZ = 261498900;
+      const impliedGold = (m2 * 1e12 * (backing / 100)) / US_GOLD_OZ;
+      const usdMyr = 4.24; // baseline 2026 rate
+      const impliedMyrGram = (impliedGold * usdMyr) / 31.1034768;
+
+      const goldEl = document.getElementById('val-implied-gold');
+      if(goldEl) goldEl.textContent = '$' + Math.round(impliedGold).toLocaleString('en-US') + ' / oz';
+
+      const myrEl = document.getElementById('val-implied-myr');
+      if(myrEl) myrEl.textContent = 'RM ' + Math.round(impliedMyrGram).toLocaleString('en-US') + ' / g';
+
+      // Fiat dilution penalty relative to 1971 $35 gold
+      const dilution = - (1 - (35 / Math.max(35, impliedGold))) * 100;
+      const dilEl = document.getElementById('val-dilution-pct');
+      if(dilEl) dilEl.textContent = dilution.toFixed(1) + '%';
+
+      // Barrels of Brent Oil per oz of gold ($74/bbl baseline)
+      const brentPrice = 74.5;
+      const bbls = (impliedGold / brentPrice).toFixed(1);
+      const bblEl = document.getElementById('val-oil-purchasing');
+      if(bblEl) bblEl.textContent = bbls + ' bbls / oz';
+
+      // Render SVG Graph
+      const svg = document.getElementById('macroSvg');
+      if(!svg) return;
+
+      // Historical Points: [Year, M2, GoldPrice]
+      const history = [
+        { yr: 1971, m2: 0.7, gold: 35 },
+        { yr: 1980, m2: 1.6, gold: 850 },
+        { yr: 1990, m2: 3.2, gold: 385 },
+        { yr: 2000, m2: 4.9, gold: 279 },
+        { yr: 2008, m2: 8.2, gold: 870 },
+        { yr: 2011, m2: 9.6, gold: 1920 },
+        { yr: 2016, m2: 13.2, gold: 1150 },
+        { yr: 2020, m2: 19.3, gold: 2075 },
+        { yr: 2024, m2: 21.0, gold: 2400 },
+        { yr: 2026, m2: 21.5, gold: 2650 }
+      ];
+
+      // Coordinate mapping: X = M2 ($0 to $45T), Y = Gold ($0 to $35,000/oz log-scaled)
+      const mapX = m => 55 + (m / 45) * 475;
+      const mapY = g => {
+        const logMin = Math.log10(20);
+        const logMax = Math.log10(40000);
+        const logG = Math.log10(Math.max(20, g));
+        return 235 - ((logG - logMin) / (logMax - logMin)) * 205;
+      };
+
+      let pathHist = '';
+      history.forEach((pt, i) => {
+        const cx = mapX(pt.m2);
+        const cy = mapY(pt.gold);
+        pathHist += (i === 0 ? 'M ' : ' L ') + cx.toFixed(1) + ' ' + cy.toFixed(1);
+      });
+
+      const curX = mapX(Math.min(45, m2));
+      const curY = mapY(Math.min(40000, impliedGold));
+
+      svg.innerHTML = `
+        <rect x="0" y="0" width="560" height="260" fill="#040508"/>
+        <!-- Grid horizontal log lines -->
+        <line x1="55" y1="30" x2="530" y2="30" stroke="#181B24" stroke-dasharray="2,3"/>
+        <line x1="55" y1="80" x2="530" y2="80" stroke="#181B24" stroke-dasharray="2,3"/>
+        <line x1="55" y1="130" x2="530" y2="130" stroke="#181B24" stroke-dasharray="2,3"/>
+        <line x1="55" y1="180" x2="530" y2="180" stroke="#181B24" stroke-dasharray="2,3"/>
+        <line x1="55" y1="235" x2="530" y2="235" stroke="#252A36" stroke-width="1.2"/>
+
+        <!-- Y Axis Labels -->
+        <text x="48" y="34" fill="#6A7382" font-family="'IBM Plex Mono',monospace" font-size="8" text-anchor="end">$30,000</text>
+        <text x="48" y="84" fill="#6A7382" font-family="'IBM Plex Mono',monospace" font-size="8" text-anchor="end">$5,000</text>
+        <text x="48" y="134" fill="#E8B84B" font-family="'IBM Plex Mono',monospace" font-size="8" text-anchor="end" font-weight="bold">$2,000</text>
+        <text x="48" y="184" fill="#6A7382" font-family="'IBM Plex Mono',monospace" font-size="8" text-anchor="end">$500</text>
+        <text x="48" y="238" fill="#6A7382" font-family="'IBM Plex Mono',monospace" font-size="8" text-anchor="end">$35</text>
+
+        <!-- X Axis Labels (M2) -->
+        <text x="${mapX(0)}" y="250" fill="#6A7382" font-family="'IBM Plex Mono',monospace" font-size="8" text-anchor="middle">$0T</text>
+        <text x="${mapX(10)}" y="250" fill="#6A7382" font-family="'IBM Plex Mono',monospace" font-size="8" text-anchor="middle">$10T</text>
+        <text x="${mapX(21.5)}" y="250" fill="#E8B84B" font-family="'IBM Plex Mono',monospace" font-size="8" text-anchor="middle" font-weight="bold">$21.5T (2026)</text>
+        <text x="${mapX(35)}" y="250" fill="#6A7382" font-family="'IBM Plex Mono',monospace" font-size="8" text-anchor="middle">$35T</text>
+        <text x="${mapX(45)}" y="250" fill="#6A7382" font-family="'IBM Plex Mono',monospace" font-size="8" text-anchor="middle">$45T</text>
+
+        <!-- Historical Path -->
+        <path d="${pathHist}" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="3,2"/>
+
+        <!-- Historical Dots -->
+        <circle cx="${mapX(0.7)}" cy="${mapY(35)}" r="3" fill="#64748B"/>
+        <text x="${mapX(0.7)+5}" y="${mapY(35)-5}" fill="#64748B" font-family="'IBM Plex Mono',monospace" font-size="7">1971</text>
+
+        <circle cx="${mapX(1.6)}" cy="${mapY(850)}" r="3" fill="#64748B"/>
+        <text x="${mapX(1.6)+5}" y="${mapY(850)-5}" fill="#64748B" font-family="'IBM Plex Mono',monospace" font-size="7">1980</text>
+
+        <circle cx="${mapX(8.2)}" cy="${mapY(870)}" r="3" fill="#64748B"/>
+        <text x="${mapX(8.2)+5}" y="${mapY(870)+12}" fill="#64748B" font-family="'IBM Plex Mono',monospace" font-size="7">2008</text>
+
+        <circle cx="${mapX(21.5)}" cy="${mapY(2650)}" r="3.5" fill="#3DDC97"/>
+        <text x="${mapX(21.5)-8}" y="${mapY(2650)-8}" fill="#3DDC97" font-family="'IBM Plex Mono',monospace" font-size="7.5" font-weight="bold">2026 ATH</text>
+
+        <!-- Interactive Crosshair -->
+        <line x1="${curX}" y1="20" x2="${curX}" y2="235" stroke="#E8B84B" stroke-width="1.2" stroke-dasharray="3,3"/>
+        <line x1="55" y1="${curY}" x2="530" y2="${curY}" stroke="#E8B84B" stroke-width="1.2" stroke-dasharray="3,3"/>
+        <circle cx="${curX}" cy="${curY}" r="6" fill="#E8B84B" stroke="#040508" stroke-width="2"/>
+        <text x="${curX + (curX > 420 ? -10 : 10)}" y="${curY - 10}" fill="#E8B84B" font-family="'IBM Plex Mono',monospace" font-size="9" font-weight="bold" text-anchor="${curX > 420 ? 'end' : 'start'}">
+          Implied: $${Math.round(impliedGold).toLocaleString('en-US')} (${backing.toFixed(1)}% backing)
+        </text>
+      `;
+    };
+
+    if(document.getElementById('macroSvg')){
+      window.updateMacroRadar();
+    }
+  })();
+
+  /* ── arifFLOW / WELL HEARTBEAT CLOCK ── */
+  (function(){
+    function updateClock(){
+      const clockEl = document.getElementById('flow-clock');
+      if(!clockEl) return;
+      const now = new Date();
+      const myt = new Date(now.getTime() + 8*3600000);
+      const pad = n => String(n).padStart(2,'0');
+      const timeStr = pad(myt.getUTCHours()) + ':' + pad(myt.getUTCMinutes()) + ':' + pad(myt.getUTCSeconds()) + ' MYT';
+      clockEl.textContent = 'TELEMETRY LIVE · ' + timeStr + ' · SOVEREIGN WITNESS';
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+  })();
+
+  (function(){
+    function money(n, digits) {
+      var x = Number(n);
+      if (!isFinite(x)) return null;
+      return x.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+    }
+    function clock(iso) {
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      return new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit', hour12: false
+      }).format(d) + ' MYT';
+    }
+    function paint(id, label, value, iso) {
+      var el = document.getElementById(id);
+      if (!el || value == null) return false;
+      var t = clock(iso);
+      el.textContent = label + ' ' + value + (t ? ' · ' + t : '');
+      return true;
+    }
+    async function read(url) {
+      var res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(String(res.status));
+      return res.json();
+    }
+    async function refreshMarketData() {
+      var stamp = document.getElementById('provenance-stamp');
+      var goldP = read('/gold/api/snapshot');
+      var oilP = read('/oil/api/snapshot');
+      var gasP = read('/gas/api/snapshot');
+      var briefP = read('/api/wealth/briefing');
+      var settled = await Promise.allSettled([goldP, oilP, gasP, briefP]);
+      var gold = settled[0].status === 'fulfilled' ? settled[0].value : null;
+      var oil = settled[1].status === 'fulfilled' ? settled[1].value : null;
+      var gas = settled[2].status === 'fulfilled' ? settled[2].value : null;
+      var brief = settled[3].status === 'fulfilled' ? settled[3].value : null;
+
+      var okGold = gold && paint('val-gold', '🥇 Gold', gold.ticker && money(gold.ticker.price, 2) ? '$' + money(gold.ticker.price, 2) : null, gold.observed_at);
+      var okOil = oil && paint('val-brent', '🛢️ Brent', oil.ticker && money(oil.ticker.price, 2) ? '$' + money(oil.ticker.price, 2) : null, oil.observed_at);
+      var okGas = gas && paint('val-gas', '🔥 Natural gas', gas.ticker && money(gas.ticker.price, 2) ? '$' + money(gas.ticker.price, 2) : null, gas.observed_at);
+      var myr = gold && gold.macro ? gold.macro.usmyr : null;
+      var myrIso = gold && gold.observed_at;
+      if (myr == null && brief && brief.ringgit) {
+        myr = brief.ringgit.usd_myr;
+        myrIso = brief.meta && (brief.meta.generated_at || brief.meta.observed_at);
+      }
+      var okMyr = paint('val-usdmyr', '💵 USD/MYR', money(myr, 2), myrIso);
+      if (!okOil) { var b = document.getElementById('val-brent'); if (b) b.textContent = '🛢️ Brent — unavailable'; }
+      if (!okGold) { var g = document.getElementById('val-gold'); if (g) g.textContent = '🥇 Gold — unavailable'; }
+      if (!okGas) { var a = document.getElementById('val-gas'); if (a) a.textContent = '🔥 Natural gas — unavailable'; }
+      if (!okMyr) { var u = document.getElementById('val-usdmyr'); if (u) u.textContent = '💵 USD/MYR — unavailable'; }
+      if (stamp) {
+        stamp.textContent = 'Read from the gold, oil, and gas engines. The ringgit is the rate inside the gold reading. Each number carries its own time.';
+      }
+    }
+    refreshMarketData();
+  })();
+  </script>
+  <script src="/_shared/heartbeat.js" defer></script>
 </body>
 </html>
