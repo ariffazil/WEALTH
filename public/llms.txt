@@ -8,7 +8,7 @@
 **Port (local):** 18082 · **Tools:** 15 public · **License:** AGPL-3.0
 
 > **WEALTH computes. arifOS judges. Arif decides.**
-> Authority ceiling: **555_COMPUTE_ONLY** · Final authority: **ARIF** · Final authority: **ARIF** — never allocates capital, never issues SEAL/VOID.
+> Authority ceiling: **555_COMPUTE_ONLY** · Final authority: **ARIF** · Final authority: **ARIF** · Final authority: **ARIF** — never allocates capital, never issues SEAL/VOID.
 
 ---
 
