@@ -1,14 +1,14 @@
 # WEALTH — Capital Intelligence (arifOS Federation)
 ## Machine & Agent Interface Specification
 
-**Version:** 2026.08.03
-**URL:** https://wealth.arif-fazil.com  
-**MCP:** https://wealth.arif-fazil.com/mcp  
-**Source:** https://github.com/ariffazil/WEALTH  
-**Port (local):** 18082 · **Tools:** 8 public · **License:** AGPL-3.0
+**Version:** 2026.10.14
+**URL:** https://wealth.arif-fazil.com
+**MCP:** https://wealth.arif-fazil.com/mcp
+**Source:** https://github.com/ariffazil/WEALTH
+**Port (local):** 18082 · **Tools:** 15 public · **License:** AGPL-3.0
 
-> **WEALTH computes. arifOS judges. Arif decides.**  
-> Authority ceiling: **COMPUTE_ONLY** — never allocates capital, never issues SEAL/VOID.
+> **WEALTH computes. arifOS judges. Arif decides.**
+> Authority ceiling: **555_COMPUTE_ONLY** · Final authority: **ARIF** · Final authority: **ARIF** — never allocates capital, never issues SEAL/VOID.
 
 ---
 
@@ -34,23 +34,59 @@ Contract: https://arifos.arif-fazil.com · `/root/FEDERATION_CONTRACT.md`
 
 ---
 
+## Markets Surface (2026-10-14)
+
+Paired observation terminals with provenance, freshness states and machine endpoints.
+Shared contract with arif-fazil.com World Economics:
+
+| Path | Purpose |
+|------|---------|
+| `/api/markets/registry` | Machine-readable market registry (paired World↔WEALTH routes, states) |
+| `/markets/` | Hub — all terminals + reported watchlist |
+| `/markets/{gold,oil,gas,klci,usdmyr}/` | Per-market observation terminal (HTML) |
+| `/markets/{id}/index.md` | Same content, markdown lane for agents |
+| `/api/markets/{id}/latest` | Latest observation JSON — value, as_of, source, evidence class |
+
+**Honesty states** (baked at generation time): `FRESH` (as_of ≤ 48h) · `STALE` (older) ·
+`UNKNOWN` (no observation wired — never fabricated) · `UNAVAILABLE` (generation-time
+fetch failed — retry, do not cache). Broker-reported levels are labeled REPORTED —
+they are never WEALTH forecasts and never trade signals.
+
+## Economic Context (World pairing)
+
+- [World Economics hub](https://arif-fazil.com/world/economics/): human narrative, Malaysia
+  and geopolitical context. WEALTH terminals pair 1:1 with World routes
+  (`/world/economics/gold|oil|gas|klci|usdmyr/` ↔ `/markets/{id}/`).
+- Honest status (2026-10-14, F13 SABAR / Option B): the World static terminal lane is
+  **sealed** (`index.html.bak-reseal`); instrument deep links serve a generic SPA shell.
+  Linking is **fail-closed**: this surface links only to the verified World hub. The
+  registry separates `world.desired_url` (deep route) from `world_url` / `world.verified_url`
+  (hub), with `surface_status: SEALED` and `link_policy: HUB_FALLBACK`. Reversal is a
+  separate ticket: WORLD-TERMINAL-REVERSAL-001 (witness old seal intent, clean tree,
+  canary terminal first, F13 acceptance before any five-terminal rollout).
+- arifOS governance judgment: https://arifos.arif-fazil.com
+
 ## Discovery Endpoints
 
 | Path | Purpose |
 |------|---------|
 | `/health` | Runtime health + tool count |
+| `/tools` | Canonical runtime tool list (`mcp.list_tools`) |
+| `/.well-known/arifos-federation.json` | Federation identity manifest (`https://arif-fazil.com/.well-known/arifos-federation.json`) |
 | `/mcp` | MCP streamable-http (POST tools; GET discovery card) |
 | `/llms.txt` | This file — agent map |
+| `/api/markets/registry` | Shared market registry (JSON) |
+| `/sitemap.xml` | Sitemap (markets surface + core pages) |
 | `/data/wealth/latest.json` | Daily capital market snapshot (public site) |
 | `/data/wealth/petronas_vitals.json` | PETRONAS·φ pulse compute mirror |
 | Human vitals UI | https://arif-fazil.com/vitals/ |
-| Agent card | `/.well-known/agent.json` (consolidated federation card) |
+| Agent card | `/.well-known/agent-card.json` (consolidated federation card) |
 
 **Truth rule:** live `tools/list` and `/health` beat static prose.
 
 ---
 
-## Public MCP Tools (8)
+## Public MCP Tools (15)
 
 | Tool | Purpose |
 |------|---------|
@@ -58,9 +94,16 @@ Contract: https://arifos.arif-fazil.com · `/root/FEDERATION_CONTRACT.md`
 | `capital_health` | Conservation, flow, runway, survival, fiscal breakeven |
 | `capital_diagnose` | Institutional stress, governance, cascade, collapse, power, **petronas_vitals** |
 | `capital_market` | FX, commodities, indicators, stocks |
+| `capital_indicator` | Pure indicator computation: EMA, SMA, RSI, MACD, BB, PSAR, ATR, ADX |
+| `capital_backtest` | XAUUSD strategy backtest (EMA + ATR stops + RSI pullback + S/R fusion) |
+| `capital_entry_plan` | S/R-aware entry zone, stop loss, take-profit targets (COMPUTE_ONLY) |
 | `capital_ledger` | Query; write is C2/IRREVERSIBLE (human ack) |
 | `capital_registry` | Live status, schema, domains, health |
+| `capital_claims` | Named-entity claim gate — OBS_ELIGIBLE needs external source + timestamp |
 | `capital_entropy` | Entropy / integrity modes (may report UNAVAILABLE) |
+| `capital_polix` | Power topology, capture detection, rent extraction, rule asymmetry |
+| `capital_civx` | Civilizational scenario intelligence — resilience, sovereignty, burden |
+| `wealth_synthesize` | Ω00 cross-dimensional synthesis over the 12 Ω-invariants |
 | `wealth_judge_handoff` | Prepare or submit a structured arifOS governance handoff |
 
 `capital_wisdom` and former institutional compatibility names are internal or
