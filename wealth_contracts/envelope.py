@@ -22,6 +22,7 @@ from .epistemic import (
     UncertaintyBand,
 )
 from .authority import ExecutionAuthority
+from .freshness import OMEGA_FIELD_TOOLS, enforce_freshness
 
 
 class WisdomDimension:
@@ -529,14 +530,11 @@ def wrap_result(
     Without these, the output is NOT admissible as Ω08/Ω09 evidence.
     """
     # P1 2026-09-21 — Ω08/Ω09 freshness enforcement
-    if isinstance(result, dict):
-        try:
-            from wealth_mcp.freshness import OMEGA_FIELD_TOOLS, enforce_freshness
-
-            if tool_name in OMEGA_FIELD_TOOLS:
-                result = enforce_freshness(tool_name, result)
-        except ImportError:
-            pass  # wealth_mcp.freshness not in path — skip enforcement
+    # Canonical home moved to wealth_contracts.freshness (2026-10-25): the
+    # contract layer must not import wealth_mcp (boundary contract
+    # wealth-contract-001). Module is stdlib-only; behaviour unchanged.
+    if isinstance(result, dict) and tool_name in OMEGA_FIELD_TOOLS:
+        result = enforce_freshness(tool_name, result)
     # Auto-compute shadow flag from violations/holds in result
     # BUG FIX (2026-08-08): respect explicit shadow kwarg (caller intent).
     # shadow only exists in kwargs (constructor param), not as wrap_result arg.
