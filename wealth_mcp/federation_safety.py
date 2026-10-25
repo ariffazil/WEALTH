@@ -336,6 +336,13 @@ def classify_error(
         "source_tool": source_tool,
         "source_organ": source_organ,
         "original_error": f"{type(error).__name__}: {msg[:200]}",
+        "tool_name": source_tool,
+        "domain": source_organ or "capital",
+        "result": None,
+        "execution_authorized": False,
+        "execution_authority": "OBSERVATION",
+        "source_attribution": [source_organ or "capital"],
+        "computation_timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 
