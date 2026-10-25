@@ -1,8 +1,10 @@
 """Forge 1 — WEALTH Ingress Session Contract Tests."""
+
 import json
 import pytest
 from wealth_contracts.envelope import WealthEnvelope, wrap_result, WEALTH_OUTPUT_SCHEMA
 from wealth_contracts.epistemic import EpistemicTag, EvidenceQuality
+
 
 class TestSessionContract:
     """Acceptance tests for Forge 1: WEALTH must echo session identity."""
@@ -47,7 +49,14 @@ class TestSessionContract:
         assert props["trace_id"]["type"] == "string"
 
     def test_missing_session_still_works(self):
-        """Tools must work without session for backward compat (observational only)."""
+        """Anonymous calls work; identity is emitted honestly, never omitted.
+
+        Contract per f2e9f7d: WEALTH_OUTPUT_SCHEMA declares the identity fields
+        as required strings, so FastMCP strict output validation rejects
+        omit-when-None. Anonymous session/actor therefore emit "" and a trace id
+        is always generated. The backward-compat guarantee is "call succeeds",
+        not "field absent".
+        """
         env = WealthEnvelope(
             tool_name="test",
             domain="test",
@@ -57,6 +66,6 @@ class TestSessionContract:
             trace_id=None,
         )
         d = env.to_dict()
-        assert "session_id" not in d
-        assert "actor_id" not in d
-        assert "trace_id" not in d
+        assert d["session_id"] == ""
+        assert d["actor_id"] == ""
+        assert d["trace_id"].startswith("trc-")
