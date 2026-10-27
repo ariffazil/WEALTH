@@ -4409,7 +4409,11 @@ def register_canonical_tools(mcp):
             "CONSTRAINT_VIOLATION — NEVER a constitutional verdict "
             "(SEAL/HOLD/SABAR/VOID). execution_authority is fixed at "
             "ADVISORY_ONLY; handoff is fixed at arifOS.arif_judge. "
-            "Doctrine: Analyst (WEALTH) ≠ Judge (arifOS)."
+            "Doctrine: Analyst (WEALTH) ≠ Judge (arifOS). "
+            "INPUT CONTRACT: omega_invariants (REQUIRED, object mapping "
+            "Ω01..Ω12 invariant ids to measured values) is the sole required "
+            "parameter — calls without it are rejected by schema validation "
+            "(additionalProperties: false)."
         ),
         tags={
             "domain": "capital",
