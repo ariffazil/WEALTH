@@ -9,7 +9,7 @@ surface:
   societal_extensions: 2          # inequality, role scarcity
   infrastructure_tools: 2         # health, registry
   compatibility_aliases: 14       # capital_* legacy names (excluded from canonical)
-  total_external_visible: 17      # declared — live tools/list reported 18 on 2026-10-16 (gap row)
+  total_external_visible: 17      # declared — live tools/list reported 15 on 2026-10-30 (gap −2, live below declared post-consolidation)
 
 authority_ceiling: 555_COMPUTE_ONLY
 truth_rule: live :18082/health + tools/list beat any static count in prose
@@ -113,14 +113,14 @@ A market or macro observation carries: **source · observation timestamp · retr
 
 ## Current verified state
 
-**Observed at: 2026-10-16T09:12Z** (live probe `:18082/health`)
+**Observed at: 2026-10-30T17:35Z** (live probe `:18082/health`)
 
 | Check | Result |
 |---|---|
-| Service | **healthy** · runtime seal state `SEALED` · working tree `CLEAN` · commit `5296ff5` |
+| Service | **healthy** · runtime seal state `SEALED` · working tree `CLEAN` · commit `cd10ae6` |
 | Authority ceiling | `COMPUTE_ONLY` — no constitutional verdict capability |
 | Canonical primitives observed | 13 (Ω00 + Ω01–Ω12) + 2 societal extensions + 2 infrastructure |
-| Live tool count | **18** (`tools/list`) vs **17** declared visible surface — declared-vs-live gap open |
+| Live tool count | **15** (`tools/list`, session-verified OBS 2026-10-30) vs **17** declared visible surface — gap −2, live below declared post-consolidation |
 | Freshness metadata coverage | required by contract on market/macro outputs; **coverage not independently measured** |
 | arifOS handoff (`wealth_judge_handoff`) | **unmeasured today** (session-gated MUTATE tool) |
 | Forecast calibration | **NOT YET PUBLISHED** |
@@ -143,7 +143,7 @@ Full Ω00–Ω12 table, capability-surface arithmetic and the L11 AUTH gate: [`d
 - 13 canonical primitives · 2 societal extensions · 2 infrastructure capabilities
 - 14 legacy aliases (`capital_*`) — excluded from the canonical count
 
-**Canonical visible surface: 17** (declared) · live `tools/list` reports 18 (2026-10-16).
+**Canonical visible surface: 17** (declared) · live `tools/list` reports 15 (2026-10-30).
 
 ---
 
