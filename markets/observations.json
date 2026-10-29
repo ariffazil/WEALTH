@@ -1,0 +1,229 @@
+{
+  "schema_version": "1.0",
+  "ledger_note": "Observation ledger for the WEALTH public markets surface. Source of truth for /api/markets/* and /markets/*. Edit observations here, then run build_markets_surface.py. No fabricated values: a market with no observation publishes UNKNOWN.",
+  "updated_by": "WEALTH markets/build_markets_surface.py (ARIFOS::WEALTH_FEDERATION_ALIGNMENT::2026-10-23)",
+  "freshness_rule": {
+    "fresh_within_hours": 48,
+    "states": [
+      "FRESH",
+      "STALE",
+      "UNKNOWN",
+      "UNAVAILABLE"
+    ],
+    "semantics": {
+      "FRESH": "primary observation age <= fresh_within_hours at generation time",
+      "STALE": "primary observation exists but is older than fresh_within_hours",
+      "UNKNOWN": "no observation wired for this market — nothing fabricated",
+      "UNAVAILABLE": "generation-time fetch of the observation failed — retry, do not cache"
+    },
+    "state_computed_at": "generation time (baked into every artifact)"
+  },
+  "markets": [
+    {
+      "id": "gold",
+      "label": "Gold",
+      "symbol": "XAU/USD",
+      "unit": "USD/oz",
+      "world_url": "https://arif-fazil.com/world/economics/gold/",
+      "observations": [
+        {
+          "as_of": "2026-10-23T13:09:20.219Z",
+          "observed_at": "2026-10-23T13:09:20.219Z",
+          "source": "WEALTH Gold Commodity Engine (:3456, yfinance XAUUSD)",
+          "epistemic_class": "OBS",
+          "evidence": "OBSERVED",
+          "freshness": "FRESH",
+          "producer": "WEALTH",
+          "authority": "555_COMPUTE_ONLY",
+          "value": 4039.56,
+          "change": 1.75,
+          "change_pct": 0.04,
+          "rsi_14d": 54,
+          "ema_trend": "BEARISH",
+          "resistance": 4057.16,
+          "support": 4028.24,
+          "levels_note": "Computed technical pivot levels from WEALTH commodity engine (not trade advice)."
+        }
+      ]
+    },
+    {
+      "id": "oil",
+      "label": "Crude Oil",
+      "symbol": "Brent",
+      "unit": "USD/bbl",
+      "world_url": "https://arif-fazil.com/world/economics/oil/",
+      "observations": [
+        {
+          "as_of": "2026-10-23T13:14:23.165Z",
+          "observed_at": "2026-10-23T13:14:23.165Z",
+          "source": "WEALTH Oil Commodity Engine (:3457, yfinance Brent)",
+          "epistemic_class": "OBS",
+          "evidence": "OBSERVED",
+          "freshness": "FRESH",
+          "producer": "WEALTH",
+          "authority": "555_COMPUTE_ONLY",
+          "value": 110.08,
+          "change": -0.08,
+          "change_pct": -0.07,
+          "rsi_14d": 35.5,
+          "ema_trend": "BULLISH",
+          "resistance": 110.99,
+          "support": 109.63,
+          "levels_note": "Computed technical pivot levels from WEALTH commodity engine (not trade advice).",
+          "secondary": [
+            {
+              "as_of": "2026-10-23T13:09:21.502Z",
+              "source": "WEALTH Oil Commodity Engine (:3457, yfinance Brent)",
+              "evidence": "OBSERVED",
+              "value": 110.2,
+              "note": "Prior recorded baseline observation in ledger."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gas",
+      "label": "Natural Gas",
+      "symbol": "HENRY HUB",
+      "unit": "USD/MMBtu",
+      "world_url": "https://arif-fazil.com/world/economics/gas/",
+      "observations": [
+        {
+          "as_of": "2026-10-23T13:18:16.305Z",
+          "observed_at": "2026-10-23T13:18:16.305Z",
+          "source": "WEALTH Natural Gas Commodity Engine (:3458, yfinance Henry Hub)",
+          "epistemic_class": "OBS",
+          "evidence": "OBSERVED",
+          "freshness": "FRESH",
+          "producer": "WEALTH",
+          "authority": "555_COMPUTE_ONLY",
+          "value": 3.09,
+          "change": -0.02,
+          "change_pct": -0.64,
+          "rsi_14d": 73.5,
+          "ema_trend": "BULLISH",
+          "resistance": 3.11,
+          "support": 3.06,
+          "levels_note": "Computed technical pivot levels from WEALTH commodity engine (not trade advice).",
+          "secondary": [
+            {
+              "as_of": "2026-10-23T13:12:31.058Z",
+              "source": "WEALTH Natural Gas Commodity Engine (:3458, yfinance Henry Hub)",
+              "evidence": "OBSERVED",
+              "value": 3.1,
+              "note": "Prior recorded baseline observation in ledger."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "klci",
+      "label": "FBM KLCI",
+      "symbol": "^KLSE",
+      "unit": "index pts",
+      "world_url": "https://arif-fazil.com/world/economics/klci/",
+      "observations": [
+        {
+          "as_of": "2026-10-22T23:00:11.911060+00:00",
+          "observed_at": "2026-10-22T23:00:11.911060+00:00",
+          "source": "arifOS WEALTH daily snapshot (yfinance ^KLSE)",
+          "epistemic_class": "OBS",
+          "evidence": "OBSERVED",
+          "freshness": "FRESH",
+          "producer": "WEALTH",
+          "authority": "555_COMPUTE_ONLY",
+          "value": 1608.14,
+          "change": 0.0,
+          "change_pct": 0.0,
+          "resistance": 1670,
+          "support": 1570,
+          "levels_note": "Broker-reported levels. Not WEALTH forecasts and not trade signals."
+        }
+      ]
+    },
+    {
+      "id": "usdmyr",
+      "label": "USD/MYR",
+      "symbol": "USD/MYR",
+      "unit": "MYR per USD",
+      "world_url": "https://arif-fazil.com/world/economics/usdmyr/",
+      "observations": [
+        {
+          "as_of": "2026-10-22T23:00:11.911060+00:00",
+          "observed_at": "2026-10-22T23:00:11.911060+00:00",
+          "source": "arifOS WEALTH daily snapshot (yfinance MYR=X)",
+          "epistemic_class": "OBS",
+          "evidence": "OBSERVED",
+          "freshness": "FRESH",
+          "producer": "WEALTH",
+          "authority": "555_COMPUTE_ONLY",
+          "value": 4.0787,
+          "secondary": [
+            {
+              "as_of": "2026-10-23T13:14:23.165Z",
+              "source": "WEALTH commodity engine macro feed (yfinance MYR=X)",
+              "evidence": "OBSERVED",
+              "value": 4.09,
+              "note": "Cross-engine intraday FX witness."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "watchlist": [
+    {
+      "id": "dow",
+      "label": "Dow Jones",
+      "as_of": "2026-10-14T00:00:00+08:00",
+      "as_of_precision": "date",
+      "source": "Bloomberg via M+Global Market Buzz 14 Oct 2026 (relayed by F13)",
+      "evidence": "REPORTED",
+      "value": 51670.1,
+      "change": -180.45,
+      "change_pct": -0.35,
+      "resistance": 53400,
+      "support": 49900
+    },
+    {
+      "id": "hsi",
+      "label": "Hang Seng",
+      "as_of": "2026-10-14T00:00:00+08:00",
+      "as_of_precision": "date",
+      "source": "Bloomberg via M+Global Market Buzz 14 Oct 2026 (relayed by F13)",
+      "evidence": "REPORTED",
+      "value": 24345.22,
+      "change": 74.02,
+      "change_pct": 0.3,
+      "resistance": 25000,
+      "support": 23300
+    },
+    {
+      "id": "cpo",
+      "label": "Crude Palm Oil",
+      "as_of": "2026-10-14T00:00:00+08:00",
+      "as_of_precision": "date",
+      "source": "Bloomberg via M+Global Market Buzz 14 Oct 2026 (relayed by F13)",
+      "evidence": "REPORTED",
+      "value": 4682,
+      "unit": "MYR/tonne",
+      "change": 52,
+      "change_pct": 1.11,
+      "resistance": 4860,
+      "support": 4420
+    }
+  ],
+  "world_surface": {
+    "verdict": "LIVE_TERMINAL_VERIFIED (2026-10-23; restored in T2-R2 2026-10-16)",
+    "surface_status": "ACTIVE",
+    "desired_route_pattern": "https://arif-fazil.com/world/economics/{id}/",
+    "verified_url": "https://arif-fazil.com/world/economics/",
+    "link_policy": "DIRECT_TERMINAL_AND_HUB",
+    "world_link_status": "VERIFIED_LIVE",
+    "world_link_clickable": true,
+    "reversal_ticket": "WORLD-TERMINAL-REVERSAL-001 (CLOSED)",
+    "note": "All 5 World Economics instrument terminals (/world/economics/{gold,oil,gas,klci,usdmyr}/) are verified live HTTP 200."
+  }
+}

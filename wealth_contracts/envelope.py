@@ -10,6 +10,7 @@ DITEMPA BUKAN DIBERI — Forged, not given.
 from __future__ import annotations
 
 import json
+import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -21,6 +22,7 @@ from .epistemic import (
     UncertaintyBand,
 )
 from .authority import ExecutionAuthority
+from .freshness import OMEGA_FIELD_TOOLS, enforce_freshness
 
 
 class WisdomDimension:
@@ -231,12 +233,16 @@ class WealthEnvelope:
             d["who_benefits"] = self.who_benefits
         if self.who_carries_downside:
             d["who_carries_downside"] = self.who_carries_downside
-        if self.session_id:
-            d["session_id"] = self.session_id
-        if self.trace_id:
-            d["trace_id"] = self.trace_id
-        if self.actor_id:
-            d["actor_id"] = self.actor_id
+        # [333-AGI 2026-10-22] Identity fields are ALWAYS emitted. FastMCP's
+        # structured-output validation treats every property declared in
+        # WEALTH_OUTPUT_SCHEMA as a required field, so the old omit-when-None
+        # pattern made every OBSERVE_UNBOUND call fail validation
+        # ("data/trace_id must be string" — reproduced 2× live on
+        # wealth_synthesize 2026-10-22). Anonymous sessions emit honest empty
+        # strings; a trace id is always GENERATED — traceability is the asset.
+        d["session_id"] = self.session_id or ""
+        d["trace_id"] = self.trace_id or f"trc-{uuid.uuid4().hex[:12]}"
+        d["actor_id"] = self.actor_id or ""
 
         # Constitutional fields
         if self.witness:
@@ -462,7 +468,14 @@ WEALTH_OUTPUT_SCHEMA: dict = {
         "execution_authorized": {"type": "boolean"},
         "execution_authority": {
             "type": "string",
-            "enum": ["OBSERVATION", "RECOMMENDATION", "ADVISORY", "EXECUTIVE", "SOVEREIGN", "BLOCKED"],
+            "enum": [
+                "OBSERVATION",
+                "RECOMMENDATION",
+                "ADVISORY",
+                "EXECUTIVE",
+                "SOVEREIGN",
+                "BLOCKED",
+            ],
         },
         "human_final_authority": {"type": "string"},
         "requires_888_hold": {"type": "boolean"},
@@ -517,13 +530,11 @@ def wrap_result(
     Without these, the output is NOT admissible as Ω08/Ω09 evidence.
     """
     # P1 2026-09-21 — Ω08/Ω09 freshness enforcement
-    if isinstance(result, dict):
-        try:
-            from wealth_mcp.freshness import OMEGA_FIELD_TOOLS, enforce_freshness
-            if tool_name in OMEGA_FIELD_TOOLS:
-                result = enforce_freshness(tool_name, result)
-        except ImportError:
-            pass  # wealth_mcp.freshness not in path — skip enforcement
+    # Canonical home moved to wealth_contracts.freshness (2026-10-25): the
+    # contract layer must not import wealth_mcp (boundary contract
+    # wealth-contract-001). Module is stdlib-only; behaviour unchanged.
+    if isinstance(result, dict) and tool_name in OMEGA_FIELD_TOOLS:
+        result = enforce_freshness(tool_name, result)
     # Auto-compute shadow flag from violations/holds in result
     # BUG FIX (2026-08-08): respect explicit shadow kwarg (caller intent).
     # shadow only exists in kwargs (constructor param), not as wrap_result arg.

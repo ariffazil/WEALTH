@@ -330,7 +330,7 @@ class TestTwoStage:
     def test_production_planning_example(self):
         """Production planning example should solve."""
         result = production_planning_example()
-        assert result["solver_status"] == "ok"
+        assert result["solver_status"] == "ok", result
         assert "first_stage_decisions" in result
         assert "total_expected_value" in result
 

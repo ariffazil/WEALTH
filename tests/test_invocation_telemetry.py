@@ -28,6 +28,27 @@ from pathlib import Path
 
 import pytest
 
+from wealth_mcp import server as _server
+
+
+def _shared_contract_available() -> bool:
+    """The telemetry contract lives in the private AAA repo (/root/AAA/lib).
+
+    A clean CI runner has neither the sibling checkout nor a cross-repo token,
+    so this integration test cannot run there. It runs wherever AAA_LIB (or the
+    VPS layout) provides the module; skip with an explicit reason otherwise.
+    """
+    try:
+        return _server._load_invocation_log() is not None
+    except Exception:
+        return False
+
+
+pytestmark = pytest.mark.skipif(
+    not _shared_contract_available(),
+    reason="requires shared AAA/lib invocation_log (private cross-repo contract not provisioned on this runner)",
+)
+
 ORGAN = "WEALTH"
 OBSERVE_TOOL = "capital_registry"
 # A tool that is NOT in WEALTH's OBSERVE-class set, so an unbound session is

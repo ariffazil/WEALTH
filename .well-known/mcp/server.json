@@ -3,18 +3,35 @@
   "version": "2026.07.19",
   "protocolVersion": "2025-11-25",
   "name": "WEALTH MCP",
-  "description": "Capital intelligence — 8-tool compute-only federation surface.",
-  "tools": 8,
+  "description": "Capital intelligence — 15-tool compute-only federation surface.",
+  "tools": 15,
   "endpoint": "https://wealth.arif-fazil.com/mcp",
   "identity": {
     "canonical_name": "WEALTH Capital Intelligence",
     "service_id": "wealth-mcp",
-    "authority": "COMPUTE_ONLY",
-    "port": 18082
+    "authority": "555_COMPUTE_ONLY",
+    "port": 18082,
+    "final_authority": "ARIF",
+    "federation": "arifOS",
+    "organ": "WEALTH",
+    "role": "Capital Intelligence"
   },
   "governance": {
-    "floors": ["F1","F2","F4","F6","F7","F9","F11","F13"],
-    "authority_boundary": "COMPUTE_ONLY",
-    "capital_ledger": "C2_IRREVERSIBLE_WRITE; READONLY_QUERY"
-  }
+    "floors": [
+      "F1",
+      "F2",
+      "F4",
+      "F6",
+      "F7",
+      "F9",
+      "F11",
+      "F13"
+    ],
+    "authority_boundary": "555_COMPUTE_ONLY",
+    "capital_ledger": "C2_IRREVERSIBLE_WRITE; READONLY_QUERY",
+    "final_authority": "ARIF"
+  },
+  "tools_url": "https://wealth.arif-fazil.com/tools",
+  "markets_registry_url": "https://wealth.arif-fazil.com/api/markets/registry",
+  "federation_identity": "https://arif-fazil.com/.well-known/arifos-federation.json"
 }

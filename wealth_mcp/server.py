@@ -81,7 +81,9 @@ _INTERNAL_LEGACY_ALIASES = {
 # Standard library only, and no arifosmcp import (WEALTH coupling rule).
 _TELEMETRY_MODULE: Any = None
 _TELEMETRY_RESOLVED = False
-_TELEMETRY_LIB_DIR = "/root/AAA/lib"
+# Shared contract lives in the AAA repo. Overridable so CI can provision it
+# from a pinned SHA instead of assuming the VPS layout.
+_TELEMETRY_LIB_DIR = os.environ.get("AAA_LIB", "/root/AAA/lib")
 
 # Test-only sink override. Production default is the contract's shared path,
 # /var/lib/arifos/metrics/tool_invocations.jsonl.
